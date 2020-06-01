@@ -1,0 +1,8 @@
+repos/src
+*.kate-swp
+repos/.cipd/
+repos/.gclient
+repos/.gclient_entries
+repos/.idea
+repos/build
+repos/cmake-build-debug

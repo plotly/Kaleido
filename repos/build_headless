@@ -1,0 +1,14 @@
+#!/bin/bash
+# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_headless
+
+cd /repos/src
+mkdir -p out/Headless
+echo 'import("//build/args/headless.gn")' > out/Headless/args.gn
+echo 'enable_nacl=false' >> out/Headless/args.gn
+echo 'symbol_level=0' >> out/Headless/args.gn
+echo 'blink_symbol_level=0' >> out/Headless/args.gn
+echo 'is_debug=false' >> out/Headless/args.gn
+echo 'is_component_build=false' >> out/Headless/args.gn
+
+gn gen out/Headless
+ninja -C out/Headless -j 20 headless_example
