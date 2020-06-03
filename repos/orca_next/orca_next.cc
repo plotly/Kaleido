@@ -169,8 +169,6 @@ void HeadlessExample::ExportNextFigure() {
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
-        // TODO: write JSON repsonse to cout
-        std::cerr << "Invalid JSON Export Request" << std::endl;
         ExportNextFigure();
         return;
     }
@@ -254,29 +252,47 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     headless::HeadlessBrowserContext* browser_context = context_builder.Build();
     browser->SetDefaultBrowserContext(browser_context);
 
-    // Get the URL from the command line.
-    base::CommandLine::StringVector args =
-            base::CommandLine::ForCurrentProcess()->GetArgs();
-
     // Initialize vector of initialization JavaScript scripts
     std::list<std::string> scripts;
 
-    bool localPlotlyjs = true;
+    // Get command line options
+    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
+    std::string plotlyjs_url;
+    if (commandLine->HasSwitch("plotlyjs")) {
+        std::string plotlyjs_arg = commandLine->GetSwitchValueASCII("plotlyjs");
+        // Check if value is a URL
+        GURL url(commandLine->GetSwitchValueASCII("plotlyjs"));
+        if (url.is_valid()) {
+            std::cerr << "plotlyjs arg is a URL" << std::endl;
+            plotlyjs_url = plotlyjs_arg;
+        } else {
+            // Check if this is a local file path
+            if (std::ifstream(plotlyjs_arg)) {
+                    std::cerr << "plotlyjs arg is a local file"  << std::endl;
+                scripts.emplace_back(plotlyjs_arg);
+            } else {
+                std::cerr << "plotlyjs arg is not a URL or local file path. Falling back to online CDN.";
+                plotlyjs_url = "https://cdn.plot.ly/plotly-latest.min.js";
+            }
+        }
+    } else {
+        plotlyjs_url = "https://cdn.plot.ly/plotly-latest.min.js";
+    }
 
     GURL url;
-    if (localPlotlyjs) {
+    if (plotlyjs_url.empty()) {
         // Empty HTML document, we will load plotly.js as a script after initialization
-        scripts.emplace_back("/home/jmmease/scratch/plotly-latest.min.js");
         url = GURL(
                 "data:text/html,<html></html>"
         );
     } else {
         // Load plotly.js from CDN
-        url = GURL(
-                "data:text/html,<html>"
-                "<script type=\"text/javascript\" src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>"
-                "</html>"
-        );
+        std::stringstream urlStringStream;
+        urlStringStream << "data:text/html,<html><script type=\"text/javascript\" src=\""
+                        << plotlyjs_url
+                        << "\"></script></html>";
+
+        url = GURL(urlStringStream.str());
     }
 
     // Additional initialization scripts (these must be added after plotly.js)
