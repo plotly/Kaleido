@@ -89,4 +89,11 @@ cd \$dir_path
 chmod +x ../build/orca_next/orca_next
 
 # Copy javascript
-cp -r ../orca_next/js ../build/orca_next/
+pushd ../orca_next/js/
+mkdir -p build/
+npm install
+./node_modules/browserify/bin/cmd.js --s orca_next src/component/plotly-graph/index.js > build/bundle.js
+popd
+
+mkdir -p ../build/orca_next/js/
+cp ../orca_next/js/build/bundle.js ../build/orca_next/js/

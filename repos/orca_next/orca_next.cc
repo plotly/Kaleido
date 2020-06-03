@@ -165,7 +165,7 @@ void HeadlessExample::ExportNextFigure() {
         return;
     }
 
-    std::string exportFunction = "function(spec) { return exportFromSpec(spec); }";
+    std::string exportFunction = "function(spec) { return orca_next.render(spec).then(JSON.stringify); }";
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
@@ -202,7 +202,7 @@ void HeadlessExample::OnExportComplete(
         LOG(ERROR) << "Failed to serialize document: "
                    << result->GetExceptionDetails()->GetText();
     } else {
-        printf("%s\n", result->GetResult()->GetValue()->GetString().c_str());
+        std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
     }
     // Repeat for next figure on standard-in
     ExportNextFigure();
@@ -280,7 +280,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     }
 
     // Additional initialization scripts (these must be added after plotly.js)
-    scripts.emplace_back("./js/utils.js");
+    scripts.emplace_back("./js/bundle.js");
 
     // Open a tab (i.e., HeadlessWebContents) in the newly created browser
     // context.

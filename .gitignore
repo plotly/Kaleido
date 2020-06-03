@@ -6,3 +6,5 @@ repos/.gclient_entries
 repos/.idea
 repos/build
 repos/cmake-build-debug
+repos/orca_next/js/node_modules
+repos/orca_next/js/build

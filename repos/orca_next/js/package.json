@@ -1,0 +1,20 @@
+{
+  "name": "orca_next",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify --s orca_next src/component/plotly-graph/index.js > build/bundle.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fast-isnumeric": "^1.1.4",
+    "is-plain-obj": "^2.1.0",
+    "semver": "^7.3.2"
+  },
+  "devDependencies": {
+    "browserify": "^16.5.1"
+  }
+}

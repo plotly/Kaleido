@@ -27,11 +27,16 @@ RUN apt-get update
 
 RUN \
     apt-get update && apt-get install -y ssh git curl lsb-base lsb-release sudo python2.7
+        
+# Add npm 
+RUN \
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - \
+    && apt-get install -y nodejs
 
 # Set default Python to 2.7 for gclient
-# RUN \
-#     sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 10 \
-#     && python --version
+RUN \
+    sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 10 \
+    && python --version
 
 # Change default Python to 2.7    
 RUN \
@@ -66,7 +71,7 @@ RUN \
     | base64 -d > install-build-deps.sh && chmod +x ./install-build-deps.sh && \
     ./install-build-deps.sh --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
 
-    
+     
 # Change default Python to 2.7    
 RUN \
     ln -sf /usr/bin/python2.7 /usr/bin/python \
