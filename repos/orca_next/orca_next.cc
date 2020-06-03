@@ -19,7 +19,8 @@
 #include "headless/public/headless_web_contents.h"
 #include "ui/gfx/geometry/size.h"
 
-
+#include <streambuf>
+#include <fstream>
 #include <iostream>
 
 
@@ -32,10 +33,14 @@
 // load and printing its DOM. Note that browser initialization happens outside
 // this class.
 class HeadlessExample : public headless::HeadlessWebContents::Observer,
-                        public headless::page::Observer {
+                        public headless::page::Observer,
+                        public headless::runtime::Observer
+                        {
 public:
     HeadlessExample(headless::HeadlessBrowser* browser,
-                    headless::HeadlessWebContents* web_contents);
+                    headless::HeadlessWebContents* web_contents,
+                    bool localPlotlyjs);
+
     ~HeadlessExample() override;
 
     // headless::HeadlessWebContents::Observer implementation:
@@ -45,13 +50,21 @@ public:
     void OnLoadEventFired(
             const headless::page::LoadEventFiredParams& params) override;
 
+    void OnExecutionContextCreated(const headless::runtime::ExecutionContextCreatedParams& params) override;
+
     void ExportNextFigure();
 
     // Tip: Observe headless::inspector::ExperimentalObserver::OnTargetCrashed to
     // be notified of renderer crashes.
     void OnExportComplete(std::unique_ptr<headless::runtime::EvaluateResult> result);
 
+    void OnScriptCompileComplete(std::unique_ptr<headless::runtime::CompileScriptResult> result);
+    void OnRunScriptComplete(std::unique_ptr<headless::runtime::RunScriptResult> result);
+//    void OnRuntimeEnabled(std::unique_ptr<headless::runtime::EnableResult>);
+
 private:
+    bool localPlotlyjs;
+
     // The headless browser instance. Owned by the headless library. See main().
     headless::HeadlessBrowser* browser_;
     // Our tab. Owned by |browser_|.
@@ -59,6 +72,7 @@ private:
     // The DevTools client used to control the tab.
     std::unique_ptr<headless::HeadlessDevToolsClient> devtools_client_;
     // A helper for creating weak pointers to this class.
+    // weak_factory_ MUST BE LAST PROPERTY DEFINED!
     base::WeakPtrFactory<HeadlessExample> weak_factory_{this};
 };
 
@@ -68,9 +82,11 @@ namespace {
 
 HeadlessExample::HeadlessExample(
         headless::HeadlessBrowser* browser,
-        headless::HeadlessWebContents* web_contents
+        headless::HeadlessWebContents* web_contents,
+        bool localPlotlyjs
 )
-        : browser_(browser),
+        : localPlotlyjs(localPlotlyjs),
+          browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
     web_contents_->AddObserver(this);
@@ -97,11 +113,37 @@ void HeadlessExample::DevToolsTargetReady() {
     // HeadlessShell::DevToolTargetReady for how to handle that case correctly.
     devtools_client_->GetPage()->AddObserver(this);
     devtools_client_->GetPage()->Enable();
+
+    devtools_client_->GetRuntime()->AddObserver(this);
+    devtools_client_->GetRuntime()->Enable();
 }
 
 void HeadlessExample::OnLoadEventFired(
         const headless::page::LoadEventFiredParams& params) {
-    ExportNextFigure();
+
+    // Enable runtime
+    if (localPlotlyjs) {
+        // Load Plotly.js from local plotly.js bundle
+        std::string scriptPath("/home/jmmease/scratch/plotly-latest.min.js");
+        std::ifstream t(scriptPath);
+        std::string scriptString((std::istreambuf_iterator<char>(t)),
+                                 std::istreambuf_iterator<char>());
+
+        devtools_client_->GetRuntime()->CompileScript(
+                scriptString,
+                scriptPath,
+                true,
+                base::BindOnce(&HeadlessExample::OnScriptCompileComplete, weak_factory_.GetWeakPtr())
+        );
+    } else {
+        // Plotly.js was loaded from CDN, we are ready to start figure export
+        ExportNextFigure();
+    }
+}
+
+void HeadlessExample::OnExecutionContextCreated(
+        const headless::runtime::ExecutionContextCreatedParams& params) {
+    std::cerr << "OnExecutionContextCreated";
 }
 
 void HeadlessExample::ExportNextFigure() {
@@ -115,6 +157,7 @@ void HeadlessExample::ExportNextFigure() {
         g_example = nullptr;
         return;
     }
+    // TODO: Parse exportSpec as JSON to prevent code injection
 
     // Create expression that evaluates to a promise. This figure should become the input figure
     std::stringstream exprStringStream = std::stringstream();
@@ -150,6 +193,33 @@ void HeadlessExample::OnExportComplete(
     ExportNextFigure();
 }
 
+void HeadlessExample::OnScriptCompileComplete(
+        std::unique_ptr<headless::runtime::CompileScriptResult> result) {
+    // Make sure the evaluation succeeded before running script
+    if (result->HasExceptionDetails()) {
+        LOG(ERROR) << "Failed to compile script: "
+                   << result->GetExceptionDetails()->GetText();
+    } else {
+        std::string plotlyjsScriptId = result->GetScriptId();
+        devtools_client_->GetRuntime()->RunScript(
+                plotlyjsScriptId,
+                base::BindOnce(&HeadlessExample::OnRunScriptComplete, weak_factory_.GetWeakPtr())
+                );
+    }
+}
+
+void HeadlessExample::OnRunScriptComplete(
+        std::unique_ptr<headless::runtime::RunScriptResult> result) {
+    std::cerr << "OnRunScriptComplete" << "\n";
+    // Make sure the evaluation succeeded before reading the result.
+    if (result->HasExceptionDetails()) {
+        LOG(ERROR) << "Failed to run script: "
+                   << result->GetExceptionDetails()->GetText();
+    } else {
+        ExportNextFigure();
+    }
+}
+
 // This function is called by the headless library after the browser has been
 // initialized. It runs on the UI thread.
 void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
@@ -173,9 +243,23 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     base::CommandLine::StringVector args =
             base::CommandLine::ForCurrentProcess()->GetArgs();
 
-    // Load plotly.js from CDN
-    // TODO: use require/js to load from
-    GURL url("data:text/html,<html><script src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script></html>");
+
+    bool localPlotlyjs = false;
+
+    GURL url;
+    if (localPlotlyjs) {
+        // Empty HTML document, we will load plotly.js as a script after initialization
+        url = GURL(
+                "data:text/html,<html></html>"
+        );
+    } else {
+        // Load plotly.js from CDN
+        url = GURL(
+                "data:text/html,<html>"
+                "<script type=\"text/javascript\" src=\"https://cdn.plot.ly/plotly-latest.min.js\"></script>"
+                "</html>"
+        );
+    }
 
     // Open a tab (i.e., HeadlessWebContents) in the newly created browser
     // context.
@@ -191,7 +275,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
     std::string exportSpec; // = exportSpecStream.str();
-    g_example = new HeadlessExample(browser, web_contents);
+    g_example = new HeadlessExample(browser, web_contents, localPlotlyjs);
 }
 
 int main(int argc, const char** argv) {

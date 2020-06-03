@@ -9,10 +9,18 @@ mkdir -p out/Headless
 # Write out/Headless/args.gn
 echo 'import("//build/args/headless.gn")' > out/Headless/args.gn
 echo 'enable_nacl=false' >> out/Headless/args.gn
-echo 'symbol_level=0' >> out/Headless/args.gn
-echo 'blink_symbol_level=0' >> out/Headless/args.gn
-echo 'is_debug=false' >> out/Headless/args.gn
 echo 'is_component_build=false' >> out/Headless/args.gn
+
+# Small as possible
+#echo 'symbol_level=0' >> out/Headless/args.gn
+#echo 'blink_symbol_level=0' >> out/Headless/args.gn
+#echo 'is_debug=false' >> out/Headless/args.gn
+
+# For debugging and better stack traces
+echo 'symbol_level=1' >> out/Headless/args.gn
+echo 'blink_symbol_level=1' >> out/Headless/args.gn
+echo 'is_debug=true' >> out/Headless/args.gn
+
 
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
