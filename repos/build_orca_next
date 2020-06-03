@@ -83,6 +83,10 @@ export LD_LIBRARY_PATH=\$dir_path/lib:\$LD_LIBRARY_PATH
 export FONTCONFIG_PATH=\$dir_path/etc/fonts
 export XDG_DATA_HOME=\$dir_path/xdg
 
-\$dir_path/bin/orca_next --no-sandbox --disable-gpu \$1
+cd \$dir_path
+./bin/orca_next --no-sandbox --disable-gpu \$1
 " > ../build/orca_next/orca_next
 chmod +x ../build/orca_next/orca_next
+
+# Copy javascript
+cp -r ../orca_next/js ../build/orca_next/

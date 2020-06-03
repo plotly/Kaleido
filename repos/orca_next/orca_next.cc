@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
+#include "base/json/json_reader.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -22,6 +23,7 @@
 #include <streambuf>
 #include <fstream>
 #include <iostream>
+#include <utility>
 
 
 #if defined(OS_WIN)
@@ -39,7 +41,7 @@ class HeadlessExample : public headless::HeadlessWebContents::Observer,
 public:
     HeadlessExample(headless::HeadlessBrowser* browser,
                     headless::HeadlessWebContents* web_contents,
-                    bool localPlotlyjs);
+                    std::list<std::string> startupScripts);
 
     ~HeadlessExample() override;
 
@@ -53,17 +55,19 @@ public:
     void OnExecutionContextCreated(const headless::runtime::ExecutionContextCreatedParams& params) override;
 
     void ExportNextFigure();
+    void LoadNextScript();
 
     // Tip: Observe headless::inspector::ExperimentalObserver::OnTargetCrashed to
     // be notified of renderer crashes.
-    void OnExportComplete(std::unique_ptr<headless::runtime::EvaluateResult> result);
-
+//    void OnExportComplete(std::unique_ptr<headless::runtime::EvaluateResult> result);
+    void OnExportComplete(std::unique_ptr<headless::runtime::CallFunctionOnResult> result);
     void OnScriptCompileComplete(std::unique_ptr<headless::runtime::CompileScriptResult> result);
     void OnRunScriptComplete(std::unique_ptr<headless::runtime::RunScriptResult> result);
 //    void OnRuntimeEnabled(std::unique_ptr<headless::runtime::EnableResult>);
 
 private:
-    bool localPlotlyjs;
+    int contextId;
+    std::list<std::string> startupScripts;
 
     // The headless browser instance. Owned by the headless library. See main().
     headless::HeadlessBrowser* browser_;
@@ -83,9 +87,9 @@ namespace {
 HeadlessExample::HeadlessExample(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
-        bool localPlotlyjs
+        std::list<std::string> startupScripts
 )
-        : localPlotlyjs(localPlotlyjs),
+        : startupScripts(std::move(startupScripts)),
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
@@ -120,30 +124,33 @@ void HeadlessExample::DevToolsTargetReady() {
 
 void HeadlessExample::OnLoadEventFired(
         const headless::page::LoadEventFiredParams& params) {
-
     // Enable runtime
-    if (localPlotlyjs) {
-        // Load Plotly.js from local plotly.js bundle
-        std::string scriptPath("/home/jmmease/scratch/plotly-latest.min.js");
-        std::ifstream t(scriptPath);
-        std::string scriptString((std::istreambuf_iterator<char>(t)),
-                                 std::istreambuf_iterator<char>());
-
-        devtools_client_->GetRuntime()->CompileScript(
-                scriptString,
-                scriptPath,
-                true,
-                base::BindOnce(&HeadlessExample::OnScriptCompileComplete, weak_factory_.GetWeakPtr())
-        );
-    } else {
-        // Plotly.js was loaded from CDN, we are ready to start figure export
-        ExportNextFigure();
-    }
+    LoadNextScript();
 }
 
 void HeadlessExample::OnExecutionContextCreated(
         const headless::runtime::ExecutionContextCreatedParams& params) {
-    std::cerr << "OnExecutionContextCreated";
+    contextId = params.GetContext()->GetId();
+}
+
+void HeadlessExample::LoadNextScript() {
+     if (startupScripts.empty()) {
+         // Finished processing startup scripts, start exporting figures
+         ExportNextFigure();
+     } else {
+         // Load Plotly.js from local plotly.js bundle
+         std::string scriptPath(startupScripts.front());
+         startupScripts.pop_front();
+         std::ifstream t(scriptPath);
+         std::string scriptString((std::istreambuf_iterator<char>(t)),
+                                  std::istreambuf_iterator<char>());
+
+         devtools_client_->GetRuntime()->CompileScript(
+                 scriptString,
+                 scriptPath,
+                 true,
+                 base::BindOnce(&HeadlessExample::OnScriptCompileComplete, weak_factory_.GetWeakPtr()));
+     }
 }
 
 void HeadlessExample::ExportNextFigure() {
@@ -157,30 +164,56 @@ void HeadlessExample::ExportNextFigure() {
         g_example = nullptr;
         return;
     }
-    // TODO: Parse exportSpec as JSON to prevent code injection
 
-    // Create expression that evaluates to a promise. This figure should become the input figure
-    std::stringstream exprStringStream = std::stringstream();
-    exprStringStream << "(function(){"
-                     << "var spec = " << exportSpec << ";"
-                     <<  "return Plotly.toImage(spec.figure, {format: spec.format || 'png', scale: spec.scale || 1.0, width: spec.width || 700, height: spec.height || 450});"
-                     << "})()";
+    std::string exportFunction = "function(spec) { return exportFromSpec(spec); }";
 
-    std::cerr << exprStringStream.str();
-    std::unique_ptr<headless::runtime::EvaluateParams> eval_params =
-            headless::runtime::EvaluateParams::Builder().SetExpression(
-                    exprStringStream.str()
-            ).SetAwaitPromise(true).Build();
+    base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
+    if (!json.has_value()) {
+        // TODO: write JSON repsonse to cout
+        std::cerr << "Invalid JSON Export Request" << std::endl;
+        ExportNextFigure();
+        return;
+    }
 
-    std::cerr << "Evaluate... " << "\n";
-    devtools_client_->GetRuntime()->Evaluate(
+    std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args;
+    args.push_back(
+            headless::runtime::CallArgument::Builder()
+                    .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
+                    .Build()
+    );
+
+    std::unique_ptr<headless::runtime::CallFunctionOnParams> eval_params =
+            headless::runtime::CallFunctionOnParams::Builder()
+            .SetFunctionDeclaration(exportFunction)
+            .SetArguments(std::move(args))
+            .SetExecutionContextId(contextId)
+            .SetAwaitPromise(true).Build();
+
+    devtools_client_->GetRuntime()->CallFunctionOn(
             std::move(eval_params),
             base::BindOnce(&HeadlessExample::OnExportComplete, weak_factory_.GetWeakPtr()));
+
+    // Create expression that evaluates to a promise. This figure should become the input figure
+//    std::stringstream exprStringStream = std::stringstream();
+//    exprStringStream << "(function(){"
+//                     << "var spec = " << exportSpec << ";"
+//                     <<  "return Plotly.toImage(spec.figure, {format: spec.format || 'png', scale: spec.scale || 1.0, width: spec.width || 700, height: spec.height || 450});"
+//                     << "})()";
+//
+//    std::cerr << exprStringStream.str();
+//    std::unique_ptr<headless::runtime::EvaluateParams> eval_params =
+//            headless::runtime::EvaluateParams::Builder().SetExpression(
+//                    exprStringStream.str()
+//            ).SetAwaitPromise(true).Build();
+//
+//    std::cerr << "Evaluate... " << "\n";
+//    devtools_client_->GetRuntime()->Evaluate(
+//            std::move(eval_params),
+//            base::BindOnce(&HeadlessExample::OnExportComplete, weak_factory_.GetWeakPtr()));
 }
 
-
 void HeadlessExample::OnExportComplete(
-        std::unique_ptr<headless::runtime::EvaluateResult> result) {
+        std::unique_ptr<headless::runtime::CallFunctionOnResult> result) {
     std::cerr << "OnExportComplete" << "\n";
     // Make sure the evaluation succeeded before reading the result.
     if (result->HasExceptionDetails()) {
@@ -192,6 +225,20 @@ void HeadlessExample::OnExportComplete(
     // Repeat for next figure on standard-in
     ExportNextFigure();
 }
+
+//void HeadlessExample::OnExportComplete(
+//        std::unique_ptr<headless::runtime::EvaluateResult> result) {
+//    std::cerr << "OnExportComplete" << "\n";
+//    // Make sure the evaluation succeeded before reading the result.
+//    if (result->HasExceptionDetails()) {
+//        LOG(ERROR) << "Failed to serialize document: "
+//                   << result->GetExceptionDetails()->GetText();
+//    } else {
+//        printf("%s\n", result->GetResult()->GetValue()->GetString().c_str());
+//    }
+//    // Repeat for next figure on standard-in
+//    ExportNextFigure();
+//}
 
 void HeadlessExample::OnScriptCompileComplete(
         std::unique_ptr<headless::runtime::CompileScriptResult> result) {
@@ -216,7 +263,7 @@ void HeadlessExample::OnRunScriptComplete(
         LOG(ERROR) << "Failed to run script: "
                    << result->GetExceptionDetails()->GetText();
     } else {
-        ExportNextFigure();
+        LoadNextScript();
     }
 }
 
@@ -243,12 +290,15 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     base::CommandLine::StringVector args =
             base::CommandLine::ForCurrentProcess()->GetArgs();
 
+    // Initialize vector of initialization JavaScript scripts
+    std::list<std::string> scripts;
 
-    bool localPlotlyjs = false;
+    bool localPlotlyjs = true;
 
     GURL url;
     if (localPlotlyjs) {
         // Empty HTML document, we will load plotly.js as a script after initialization
+        scripts.emplace_back("/home/jmmease/scratch/plotly-latest.min.js");
         url = GURL(
                 "data:text/html,<html></html>"
         );
@@ -260,6 +310,9 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
                 "</html>"
         );
     }
+
+    // Additional initialization scripts (these must be added after plotly.js)
+    scripts.emplace_back("./js/utils.js");
 
     // Open a tab (i.e., HeadlessWebContents) in the newly created browser
     // context.
@@ -274,8 +327,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // and print its DOM.
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
-    std::string exportSpec; // = exportSpecStream.str();
-    g_example = new HeadlessExample(browser, web_contents, localPlotlyjs);
+    g_example = new HeadlessExample(browser, web_contents, scripts);
 }
 
 int main(int argc, const char** argv) {
