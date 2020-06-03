@@ -59,11 +59,9 @@ public:
 
     // Tip: Observe headless::inspector::ExperimentalObserver::OnTargetCrashed to
     // be notified of renderer crashes.
-//    void OnExportComplete(std::unique_ptr<headless::runtime::EvaluateResult> result);
     void OnExportComplete(std::unique_ptr<headless::runtime::CallFunctionOnResult> result);
     void OnScriptCompileComplete(std::unique_ptr<headless::runtime::CompileScriptResult> result);
     void OnRunScriptComplete(std::unique_ptr<headless::runtime::RunScriptResult> result);
-//    void OnRuntimeEnabled(std::unique_ptr<headless::runtime::EnableResult>);
 
 private:
     int contextId;
@@ -102,6 +100,7 @@ HeadlessExample::~HeadlessExample() {
     devtools_client_->GetPage()->RemoveObserver(this);
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
     web_contents_->RemoveObserver(this);
+    std::cerr << "Shutdown" << std::endl;
     browser_->Shutdown();
 }
 
@@ -162,6 +161,7 @@ void HeadlessExample::ExportNextFigure() {
         // Shut down the browser (see ~HeadlessExample).
         delete g_example;
         g_example = nullptr;
+
         return;
     }
 
@@ -192,24 +192,6 @@ void HeadlessExample::ExportNextFigure() {
     devtools_client_->GetRuntime()->CallFunctionOn(
             std::move(eval_params),
             base::BindOnce(&HeadlessExample::OnExportComplete, weak_factory_.GetWeakPtr()));
-
-    // Create expression that evaluates to a promise. This figure should become the input figure
-//    std::stringstream exprStringStream = std::stringstream();
-//    exprStringStream << "(function(){"
-//                     << "var spec = " << exportSpec << ";"
-//                     <<  "return Plotly.toImage(spec.figure, {format: spec.format || 'png', scale: spec.scale || 1.0, width: spec.width || 700, height: spec.height || 450});"
-//                     << "})()";
-//
-//    std::cerr << exprStringStream.str();
-//    std::unique_ptr<headless::runtime::EvaluateParams> eval_params =
-//            headless::runtime::EvaluateParams::Builder().SetExpression(
-//                    exprStringStream.str()
-//            ).SetAwaitPromise(true).Build();
-//
-//    std::cerr << "Evaluate... " << "\n";
-//    devtools_client_->GetRuntime()->Evaluate(
-//            std::move(eval_params),
-//            base::BindOnce(&HeadlessExample::OnExportComplete, weak_factory_.GetWeakPtr()));
 }
 
 void HeadlessExample::OnExportComplete(
@@ -225,20 +207,6 @@ void HeadlessExample::OnExportComplete(
     // Repeat for next figure on standard-in
     ExportNextFigure();
 }
-
-//void HeadlessExample::OnExportComplete(
-//        std::unique_ptr<headless::runtime::EvaluateResult> result) {
-//    std::cerr << "OnExportComplete" << "\n";
-//    // Make sure the evaluation succeeded before reading the result.
-//    if (result->HasExceptionDetails()) {
-//        LOG(ERROR) << "Failed to serialize document: "
-//                   << result->GetExceptionDetails()->GetText();
-//    } else {
-//        printf("%s\n", result->GetResult()->GetValue()->GetString().c_str());
-//    }
-//    // Repeat for next figure on standard-in
-//    ExportNextFigure();
-//}
 
 void HeadlessExample::OnScriptCompileComplete(
         std::unique_ptr<headless::runtime::CompileScriptResult> result) {
