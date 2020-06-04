@@ -257,43 +257,84 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
 
     // Get command line options
     base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
-    std::string plotlyjs_url;
+    std::cerr << commandLine->GetCommandLineString() << std::endl;
+
+    auto switches = commandLine->GetSwitches();
+    for (auto it = switches.begin(); it == switches.end(); it++) {
+        std::cerr << it->first << "=" << it->second << std::endl;
+    }
+
+    // List to hold script tag URLs
+    std::list<std::string> scriptUrls;
+
+    // Process plotlyjs
     if (commandLine->HasSwitch("plotlyjs")) {
         std::string plotlyjs_arg = commandLine->GetSwitchValueASCII("plotlyjs");
         // Check if value is a URL
-        GURL url(commandLine->GetSwitchValueASCII("plotlyjs"));
-        if (url.is_valid()) {
+        GURL plotlyjs_url(plotlyjs_arg);
+        if (plotlyjs_url.is_valid()) {
             std::cerr << "plotlyjs arg is a URL" << std::endl;
-            plotlyjs_url = plotlyjs_arg;
+            scriptUrls.push_back(plotlyjs_arg);
         } else {
             // Check if this is a local file path
             if (std::ifstream(plotlyjs_arg)) {
-                    std::cerr << "plotlyjs arg is a local file"  << std::endl;
+                    std::cerr << "plotlyjs arg is a local file" << std::endl;
                 scripts.emplace_back(plotlyjs_arg);
             } else {
                 std::cerr << "plotlyjs arg is not a URL or local file path. Falling back to online CDN.";
-                plotlyjs_url = "https://cdn.plot.ly/plotly-latest.min.js";
+                scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
             }
         }
     } else {
-        plotlyjs_url = "https://cdn.plot.ly/plotly-latest.min.js";
+        std::cerr << "No plotlyjs switch" << std::endl;
+        scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
     }
 
-    GURL url;
-    if (plotlyjs_url.empty()) {
-        // Empty HTML document, we will load plotly.js as a script after initialization
-        url = GURL(
-                "data:text/html,<html></html>"
-        );
+    // MathJax
+    if (commandLine->HasSwitch("mathjax")) {
+        std::string mathjax_arg = commandLine->GetSwitchValueASCII("mathjax");
+        GURL mathjax_url(mathjax_arg);
+
+        if (mathjax_url.is_valid()) {
+            std::cerr << "mathjax is a URL" << std::endl;
+            std::stringstream mathjaxStringStream;
+            mathjaxStringStream << mathjax_arg << "?config=TeX-AMS-MML_SVG";
+            scriptUrls.push_back(mathjaxStringStream.str());
+        } else {
+            std::cerr << "mathjax arg is not a valid URL. MathJax features will not be available"  << std::endl;;
+        }
     } else {
-        // Load plotly.js from CDN
-        std::stringstream urlStringStream;
-        urlStringStream << "data:text/html,<html><script type=\"text/javascript\" src=\""
-                        << plotlyjs_url
-                        << "\"></script></html>";
-
-        url = GURL(urlStringStream.str());
+        std::cerr << "No mathjax switch"  << std::endl;;
     }
+
+    // Topojson
+    if (commandLine->HasSwitch("topojson")) {
+        std::string topojson_arg = commandLine->GetSwitchValueASCII("topojson");
+        GURL topojson_url(topojson_arg);
+
+        if (topojson_url.is_valid()) {
+            std::cerr << "topojson is a URL" << std::endl;
+            scriptUrls.push_back(topojson_arg);
+        } else {
+            std::cerr << "topojson arg is not a valid URL. Falling back to to online CDN"  << std::endl;;
+        }
+    } else {
+        std::cerr << "No topojson switch"  << std::endl;;
+    }
+
+    // Process mapbox-token
+
+    // Build initial HTML file as a data:text/html, URL:
+    std::stringstream urlStringStream;
+    urlStringStream << "data:text/html,<html>";
+
+    while (!scriptUrls.empty()) {
+        urlStringStream << "<script type=\"text/javascript\" src=\"" << scriptUrls.front() << "\"></script>";
+        scriptUrls.pop_front();
+    }
+
+    urlStringStream << "</html>";
+    GURL url = GURL(urlStringStream.str());
 
     // Additional initialization scripts (these must be added after plotly.js)
     scripts.emplace_back("./js/bundle.js");
