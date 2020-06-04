@@ -12,18 +12,19 @@ const parse = require('./parse')
  *  - height
  *  - scale
  *  - encoded
- * @param {object} opts : component options
- *  - mapboxAccessToken
- *  - plotGlPixelRatio
- * @param {function} sendToMain
- *  - errorCode
- *  - result
- *    - imgData
+ * @param {string} mapboxAccessToken: mapboxAccessToken
+ * @param {string} topojsonURL
  */
-function render (info, opts) {
-  if (opts === undefined || opts === null) {
-    opts = {};
+function render (info, mapboxAccessToken, topojsonURL) {
+  let opts = {};
+
+  if (mapboxAccessToken !== undefined && mapboxAccessToken.length > 0) {
+    opts.mapboxAccessToken = mapboxAccessToken;
   }
+  if (topojsonURL !== undefined && topojsonURL.length > 0) {
+    opts.topojsonURL = topojsonURL;
+  }
+
   // Parse request
   let parsed = parse(info, opts);
   if (parsed.code) {
@@ -33,15 +34,20 @@ function render (info, opts) {
 
   // Use parsed export request
   info = parsed.result;
-
   const figure = info.figure
   const format = info.format
   const encoded = info.encoded
 
-  const config = Object.assign({
+  // Build default config, and let figure.config override it
+  const defaultConfig = {
     mapboxAccessToken: opts.mapboxAccessToken || null,
     plotGlPixelRatio: opts.plotGlPixelRatio || cst.plotGlPixelRatio
-  }, figure.config)
+  }
+  if (opts.topojsonURL) {
+    defaultConfig.topojsonURL = opts.topojsonURL
+  }
+
+  const config = Object.assign(defaultConfig, figure.config)
 
   let result = null
   let errorCode = null

@@ -42,7 +42,9 @@ public:
     HeadlessExample(headless::HeadlessBrowser* browser,
                     headless::HeadlessWebContents* web_contents,
                     std::list<std::string> startupScripts,
-                    std::string tmpFileName);
+                    std::string tmpFileName,
+                    std::string mapboxToken,
+                    std::string topojsonUrl);
 
     ~HeadlessExample() override;
 
@@ -68,6 +70,8 @@ private:
     int contextId;
     std::string tmpFileName;
     std::list<std::string> startupScripts;
+    std::string mapboxToken;
+    std::string topojsonUrl;
 
     // The headless browser instance. Owned by the headless library. See main().
     headless::HeadlessBrowser* browser_;
@@ -88,10 +92,14 @@ HeadlessExample::HeadlessExample(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
         std::list<std::string> startupScripts,
-        std::string tmpFileName
+        std::string tmpFileName,
+        std::string mapboxToken,
+        std::string topojsonUrl
 )
         : tmpFileName(tmpFileName),
           startupScripts(std::move(startupScripts)),
+          mapboxToken(mapboxToken),
+          topojsonUrl(topojsonUrl),
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
@@ -175,7 +183,8 @@ void HeadlessExample::ExportNextFigure() {
     }
 
     std::cerr << "Received Figure: " << std::endl;
-    std::string exportFunction = "function(spec) { return orca_next.render(spec).then(JSON.stringify); }";
+    std::string exportFunction = "function(spec, mapboxToken, topojsonURL) "
+                                 "{ return orca_next.render(spec, mapboxToken, topojsonURL).then(JSON.stringify); }";
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
@@ -185,9 +194,24 @@ void HeadlessExample::ExportNextFigure() {
     }
 
     std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args;
+    // Export Request
     args.push_back(
             headless::runtime::CallArgument::Builder()
                     .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
+                    .Build()
+    );
+
+    // Mapbox token from command-line
+    args.push_back(
+            headless::runtime::CallArgument::Builder()
+                    .SetValue(std::make_unique<base::Value>(base::StringPiece(mapboxToken)))
+                    .Build()
+    );
+
+    // Topojson from command-line
+    args.push_back(
+            headless::runtime::CallArgument::Builder()
+                    .SetValue(std::make_unique<base::Value>(base::StringPiece(topojsonUrl)))
                     .Build()
     );
 
@@ -319,13 +343,12 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     }
 
     // Topojson
+    std::string topojsonUrl;
     if (commandLine->HasSwitch("topojson")) {
-        std::string topojson_arg = commandLine->GetSwitchValueASCII("topojson");
-        GURL topojson_url(topojson_arg);
-
-        if (topojson_url.is_valid()) {
+        std::string topojsonArg = commandLine->GetSwitchValueASCII("topojson");
+        if (GURL(topojsonArg).is_valid()) {
             std::cerr << "topojson is a URL" << std::endl;
-            scriptUrls.push_back(topojson_arg);
+            topojsonUrl = topojsonArg;
         } else {
             std::cerr << "topojson arg is not a valid URL. Falling back to to online CDN"  << std::endl;;
         }
@@ -334,6 +357,10 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     }
 
     // Process mapbox-token
+    std::string mapboxToken;
+    if (commandLine->HasSwitch("mapbox-access-token")) {
+        mapboxToken = commandLine->GetSwitchValueASCII("mapbox-access-token");
+    }
 
     // Build initial HTML file
     std::stringstream htmlStringStream;
@@ -373,7 +400,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // and print its DOM.
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
-    g_example = new HeadlessExample(browser, web_contents, scripts, tmpFileName);
+    g_example = new HeadlessExample(browser, web_contents, scripts, tmpFileName, mapboxToken, topojsonUrl);
 }
 
 int main(int argc, const char** argv) {
