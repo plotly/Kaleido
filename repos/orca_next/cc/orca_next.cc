@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -59,6 +60,7 @@ public:
 
     void ExportNextFigure();
     void LoadNextScript();
+    void OnPDFCreated(std::string responseString, std::unique_ptr<headless::page::PrintToPDFResult> result);
 
     // Tip: Observe headless::inspector::ExperimentalObserver::OnTargetCrashed to
     // be notified of renderer crashes.
@@ -234,11 +236,72 @@ void HeadlessExample::OnExportComplete(
     if (result->HasExceptionDetails()) {
         LOG(ERROR) << "Failed to serialize document: "
                    << result->GetExceptionDetails()->GetText();
+        ExportNextFigure();
     } else {
-        std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
+        // JSON parse result to get format
+        std::string responseString = result->GetResult()->GetValue()->GetString();
+        base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+        const base::DictionaryValue* responseDict;
+        responseJson.value().GetAsDictionary(&responseDict);
+
+        // format
+        std::string format;
+        responseDict->GetString("format", &format);
+
+        if (format == "pdf" || format == "eps") {
+            std::string bgColor, imgData;
+            responseDict->GetString("pdfBgColor", &bgColor);
+            responseDict->GetString("result", &imgData);
+
+            int width, height;
+            responseDict->GetInteger("width", &width);
+            responseDict->GetInteger("height", &height);
+
+            double scale;
+            responseDict->GetDouble("scale", &scale);
+
+            std::cerr << "format: " << format << ", pdfBgColor:" << bgColor <<
+                         ", width: " << width << ", height: " << height << ", scale: " << scale << std::endl;
+
+            // More to do...
+            devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
+                    headless::page::PrintToPDFParams::Builder()
+                            .SetMarginBottom(0)
+                            .SetMarginTop(0)
+                            .SetMarginLeft(0)
+                            .SetMarginRight(0)
+                            .SetPrintBackground(true)
+//                            .SetPaperWidth()
+//                            .SetPaperHeight()
+                            .Build(),
+                    base::BindOnce(&HeadlessExample::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
+        } else {
+            std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
+            ExportNextFigure();
+        }
     }
-    // Repeat for next figure on standard-in
-    ExportNextFigure();
+}
+
+void HeadlessExample::OnPDFCreated(
+        std::string responseString,
+        std::unique_ptr<headless::page::PrintToPDFResult> result
+    ) {
+  if (!result) {
+    LOG(ERROR) << "Export to PDF failed";
+    // TODO: write error as JSON
+    return;
+  } else {
+      base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+      base::DictionaryValue* responseDict;
+      responseJson.value().GetAsDictionary(&responseDict);
+      responseDict->SetString("result", result->GetData().toBase64());
+
+      std::string response;
+      base::JSONWriter::Write(*responseDict, &response);
+      std::cout << response << "\n";
+  }
+
+  ExportNextFigure();
 }
 
 void HeadlessExample::OnScriptCompileComplete(
@@ -364,14 +427,14 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
 
     // Build initial HTML file
     std::stringstream htmlStringStream;
-    htmlStringStream << "<html>";
+    htmlStringStream << "<html><head>";
 
     while (!scriptUrls.empty()) {
         htmlStringStream << "<script type=\"text/javascript\" src=\"" << scriptUrls.front() << "\"></script>";
         scriptUrls.pop_front();
     }
 
-    htmlStringStream << "</html>";
+    htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img/></body></html>";
 
     // Write html to temp file
     std::string tmpFileName = std::tmpnam(nullptr) + std::string(".html");

@@ -52,12 +52,22 @@ function render (info, mapboxAccessToken, topojsonURL) {
   let result = null
   let errorCode = null
   let errorMsg = null
+  let pdfBgColor = null
 
   const done = () => {
     if (errorCode && !errorMsg) {
       errorMsg = cst.statusMsg[errorCode]
     }
-    return {code: errorCode, message: errorMsg, result}
+    return {
+      code: errorCode,
+      message: errorMsg,
+      pdfBgColor,
+      format,
+      result,
+      width: info.width,
+      height: info.height,
+      scale: info.scale,
+    }
   }
 
   const PRINT_TO_PDF = (format === 'pdf' || format === 'eps')
@@ -73,9 +83,8 @@ function render (info, mapboxAccessToken, topojsonURL) {
   }
 
   // stash `paper_bgcolor` here in order to set the pdf window bg color
-  let bgColor
   const pdfBackground = (gd, _bgColor) => {
-    if (!bgColor) bgColor = _bgColor
+    if (!pdfBgColor) pdfBgColor = _bgColor
     gd._fullLayout.paper_bgcolor = 'rgba(0,0,0,0)'
   }
 
@@ -108,13 +117,6 @@ function render (info, mapboxAccessToken, topojsonURL) {
   if (semver.gte(Plotly.version, '1.30.0')) {
     promise = Plotly
       .toImage({ data: figure.data, layout: figure.layout, config: config }, imgOpts)
-      .then((imgData) => {
-        if (PRINT_TO_PDF) {
-          return toPDF(imgData, imgOpts, bgColor)
-        } else {
-          return imgData
-        }
-      })
   } else if (semver.gte(Plotly.version, '1.11.0')) {
     const gd = document.createElement('div')
 
@@ -141,7 +143,8 @@ function render (info, mapboxAccessToken, topojsonURL) {
             }
           case 'pdf':
           case 'eps':
-            return toPDF(imgData, imgOpts, bgColor)
+          case 'emf':
+            return imgData
         }
       })
   } else {
@@ -150,14 +153,42 @@ function render (info, mapboxAccessToken, topojsonURL) {
     return new Promise((resolve) => {resolve(done())})
   }
 
-  return promise.then((imgData) => {
+  const img = document.body.firstChild
+  let exportPromise = promise.then((imgData) => {
     result = imgData
     return done()
-  }).catch((err) => {
-    errorCode = 525
-    errorMsg = JSON.stringify(err, ['message', 'arguments', 'type', 'name'])
-    return done()
   })
+
+  if (PRINT_TO_PDF) {
+    exportPromise = exportPromise.then((response) => {
+      // Retrun promise that resolves when the image is loaded in the <img> element
+      return new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        img.src = response.result
+        setTimeout(() => reject(new Error('too long to load image')), cst.pdfPageLoadImgTimeout)
+
+        // TODO: set body margin and background color
+        // body {
+        //   margin: 0;
+        //   padding: 0;
+        //   background-color: ${bgColor}
+        // }
+      }).then(() => {
+        // We don't need to transport image bytes back to C++ since PDF export will be performed
+        result = null;
+        return done()
+      })
+    })
+  }
+
+  return exportPromise
+      .catch((err) => {
+        errorCode = 525
+        errorMsg = JSON.stringify(err, ['message', 'arguments', 'type', 'name'])
+        result = null;
+        return done()
+      })
 }
 
 function decodeSVG (imgData) {
