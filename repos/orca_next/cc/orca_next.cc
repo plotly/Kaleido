@@ -156,7 +156,9 @@ void HeadlessExample::ExportNextFigure() {
     std::string exportSpec;
 
     // TODO: Test whether this will work for really large figures. Do we need to read chunks at some point?
+    std::cerr << "Blocking for next figure" << std::endl;
     if (!std::getline(std::cin, exportSpec)) {
+        std::cerr << "No more figures" << std::endl;
         // Reached end of file,
         // Shut down the browser (see ~HeadlessExample).
         delete g_example;
@@ -165,10 +167,12 @@ void HeadlessExample::ExportNextFigure() {
         return;
     }
 
+    std::cerr << "Received Figure: " << exportSpec << std::endl;
     std::string exportFunction = "function(spec) { return orca_next.render(spec).then(JSON.stringify); }";
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
+        std::cerr << "Invalid JSON: " << exportSpec << std::endl;
         ExportNextFigure();
         return;
     }
