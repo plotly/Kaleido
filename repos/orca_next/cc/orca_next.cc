@@ -41,7 +41,8 @@ class HeadlessExample : public headless::HeadlessWebContents::Observer,
 public:
     HeadlessExample(headless::HeadlessBrowser* browser,
                     headless::HeadlessWebContents* web_contents,
-                    std::list<std::string> startupScripts);
+                    std::list<std::string> startupScripts,
+                    std::string tmpFileName);
 
     ~HeadlessExample() override;
 
@@ -65,6 +66,7 @@ public:
 
 private:
     int contextId;
+    std::string tmpFileName;
     std::list<std::string> startupScripts;
 
     // The headless browser instance. Owned by the headless library. See main().
@@ -85,9 +87,11 @@ namespace {
 HeadlessExample::HeadlessExample(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
-        std::list<std::string> startupScripts
+        std::list<std::string> startupScripts,
+        std::string tmpFileName
 )
-        : startupScripts(std::move(startupScripts)),
+        : tmpFileName(tmpFileName),
+          startupScripts(std::move(startupScripts)),
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
@@ -125,6 +129,9 @@ void HeadlessExample::OnLoadEventFired(
         const headless::page::LoadEventFiredParams& params) {
     // Enable runtime
     LoadNextScript();
+
+    // Delete tmp file
+    std::remove(tmpFileName.c_str());
 }
 
 void HeadlessExample::OnExecutionContextCreated(
@@ -167,7 +174,7 @@ void HeadlessExample::ExportNextFigure() {
         return;
     }
 
-    std::cerr << "Received Figure: " << exportSpec << std::endl;
+    std::cerr << "Received Figure: " << std::endl;
     std::string exportFunction = "function(spec) { return orca_next.render(spec).then(JSON.stringify); }";
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
@@ -328,17 +335,27 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
 
     // Process mapbox-token
 
-    // Build initial HTML file as a data:text/html, URL:
-    std::stringstream urlStringStream;
-    urlStringStream << "data:text/html,<html>";
+    // Build initial HTML file
+    std::stringstream htmlStringStream;
+    htmlStringStream << "<html>";
 
     while (!scriptUrls.empty()) {
-        urlStringStream << "<script type=\"text/javascript\" src=\"" << scriptUrls.front() << "\"></script>";
+        htmlStringStream << "<script type=\"text/javascript\" src=\"" << scriptUrls.front() << "\"></script>";
         scriptUrls.pop_front();
     }
 
-    urlStringStream << "</html>";
-    GURL url = GURL(urlStringStream.str());
+    htmlStringStream << "</html>";
+
+    // Write html to temp file
+    std::string tmpFileName = std::tmpnam(nullptr) + std::string(".html");
+    std::cerr << "Temp file: " << tmpFileName << std::endl;
+    std::ofstream htmlFile;
+    htmlFile.open(tmpFileName, std::ios::out);
+    htmlFile << htmlStringStream.str();
+    htmlFile.close();
+
+    // Create file:// url to temp file
+    GURL url = GURL(std::string("file://") + tmpFileName);
 
     // Additional initialization scripts (these must be added after plotly.js)
     scripts.emplace_back("./js/bundle.js");
@@ -356,7 +373,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // and print its DOM.
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
-    g_example = new HeadlessExample(browser, web_contents, scripts);
+    g_example = new HeadlessExample(browser, web_contents, scripts, tmpFileName);
 }
 
 int main(int argc, const char** argv) {
