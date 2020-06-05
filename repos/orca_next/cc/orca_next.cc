@@ -263,7 +263,6 @@ void HeadlessExample::OnExportComplete(
             std::cerr << "format: " << format << ", pdfBgColor:" << bgColor <<
                          ", width: " << width << ", height: " << height << ", scale: " << scale << std::endl;
 
-            // More to do...
             devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
                     headless::page::PrintToPDFParams::Builder()
                             .SetMarginBottom(0)
@@ -271,8 +270,7 @@ void HeadlessExample::OnExportComplete(
                             .SetMarginLeft(0)
                             .SetMarginRight(0)
                             .SetPrintBackground(true)
-//                            .SetPaperWidth()
-//                            .SetPaperHeight()
+                            .SetPreferCSSPageSize(true)  // Use @page {size: } CSS style
                             .Build(),
                     base::BindOnce(&HeadlessExample::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
         } else {
@@ -427,14 +425,16 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
 
     // Build initial HTML file
     std::stringstream htmlStringStream;
-    htmlStringStream << "<html><head>";
+    htmlStringStream << "<html><head><meta charset=\"UTF-8\"><style id=\"head-style\"></style>";
 
+    // Add MathJax Plotly.js config script (no harm if MathJax isn't available)
+    htmlStringStream << "<script>window.PlotlyConfig = {MathJaxConfig: 'local'}</script>\n";
     while (!scriptUrls.empty()) {
         htmlStringStream << "<script type=\"text/javascript\" src=\"" << scriptUrls.front() << "\"></script>";
         scriptUrls.pop_front();
     }
 
-    htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img/></body></html>";
+    htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"orca-image\"><img></body></html>";
 
     // Write html to temp file
     std::string tmpFileName = std::tmpnam(nullptr) + std::string(".html");

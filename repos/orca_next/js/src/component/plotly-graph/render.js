@@ -53,11 +53,15 @@ function render (info, mapboxAccessToken, topojsonURL) {
   let errorCode = null
   let errorMsg = null
   let pdfBgColor = null
-
   const done = () => {
     if (errorCode && !errorMsg) {
       errorMsg = cst.statusMsg[errorCode]
     }
+
+    // Dump HTML string for debugging PDFs
+    // let htmlString = (document.doctype ? new XMLSerializer().serializeToString(document.doctype) + '\n' : '') +
+    //     document.documentElement.outerHTML
+
     return {
       code: errorCode,
       message: errorMsg,
@@ -153,7 +157,9 @@ function render (info, mapboxAccessToken, topojsonURL) {
     return new Promise((resolve) => {resolve(done())})
   }
 
-  const img = document.body.firstChild
+  const img = document.getElementById("orca-image")
+  const style = document.getElementById("head-style")
+
   let exportPromise = promise.then((imgData) => {
     result = imgData
     return done()
@@ -163,17 +169,14 @@ function render (info, mapboxAccessToken, topojsonURL) {
     exportPromise = exportPromise.then((response) => {
       // Retrun promise that resolves when the image is loaded in the <img> element
       return new Promise((resolve, reject) => {
+        style.innerHTML = `
+        @page { size: ${info.width * info.scale}px ${info.height * info.scale}px; }
+        body { margin: 0; padding: 0; background-color: ${pdfBgColor} }
+        `
         img.onload = resolve
         img.onerror = reject
         img.src = response.result
         setTimeout(() => reject(new Error('too long to load image')), cst.pdfPageLoadImgTimeout)
-
-        // TODO: set body margin and background color
-        // body {
-        //   margin: 0;
-        //   padding: 0;
-        //   background-color: ${bgColor}
-        // }
       }).then(() => {
         // We don't need to transport image bytes back to C++ since PDF export will be performed
         result = null;

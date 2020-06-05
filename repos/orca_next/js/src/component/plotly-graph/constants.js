@@ -38,5 +38,5 @@ module.exports = {
   plotGlPixelRatio: 2.5,
 
   // time [in ms] after which printToPDF errors when image isn't loaded
-  pdfPageLoadImgTimeout: 20000
+  pdfPageLoadImgTimeout: 2000
 }
