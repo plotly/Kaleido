@@ -1,5 +1,12 @@
 #!/bin/bash
 # docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/fetch_chromium
 cd /repos
+
+# Remove any prior .gclient file
+rm -f .gclient
+
 echo "fetch chromium"
 fetch --nohooks chromium
+
+# Specify that we want to later sync linux and windows components
+echo -e "\ntarget_os = ['linux', 'win']\n" >> .gclient

@@ -84,7 +84,7 @@ export FONTCONFIG_PATH=\$dir_path/etc/fonts
 export XDG_DATA_HOME=\$dir_path/xdg
 
 cd \$dir_path
-./bin/orca_next --no-sandbox --disable-gpu --allow-file-access-from-files \$@
+./bin/orca_next --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
 " > ../build/orca_next/orca_next
 chmod +x ../build/orca_next/orca_next
 

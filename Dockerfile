@@ -20,13 +20,14 @@ FROM ubuntu:16.04
 # depot_tools commitlog: https://chromium.googlesource.com/chromium/tools/depot_tools/+log
 # depot_tools commit hash from 05/19/2020: e67e41a
 ENV DEPOT_TOOLS_COMMIT=e67e41a CHROMIUM_TAG="83.0.4103.61"
+ENV WIN_TOOLCHAIN_HASH=7ebbede533b63df2394fe770745668433aab2c20
 
 
 # Reference: https://github.com/chromedp/docker-chromium-builder/blob/master/Dockerfile
 RUN apt-get update
 
 RUN \
-    apt-get update && apt-get install -y ssh git curl lsb-base lsb-release sudo python2.7
+    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7
         
 # Add npm 
 RUN \
@@ -38,11 +39,16 @@ RUN \
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 10 \
     && python --version
 
-# Change default Python to 2.7    
-RUN \
-    ln -sf /usr/bin/python2.7 /usr/bin/python \
-    && echo `which python` \
-    && echo `python --version`
+# Force gclient to use Python 2
+ENV GCLIENT_PY3=0
+
+# Add windows toolchain to image
+COPY win_toolchain/ /win_toolchain/
+
+# Set windows toolchain environment variables
+ENV \
+    DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL=/win_toolchain/ \
+    GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23=%WIN_TOOLCHAIN_HASH%
 
 RUN \
     cd / \
@@ -70,14 +76,6 @@ RUN \
     curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_TAG/build/install-build-deps.sh?format=TEXT \
     | base64 -d > install-build-deps.sh && chmod +x ./install-build-deps.sh && \
     ./install-build-deps.sh --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
-
-     
-# Change default Python to 2.7    
-RUN \
-    ln -sf /usr/bin/python2.7 /usr/bin/python \
-    && ln -sf /usr/bin/python2.7 /bin/python \
-    && echo `which python` \
-    && echo `env python --version`
 
 
 # Add SSH support
