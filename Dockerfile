@@ -27,7 +27,7 @@ ENV WIN_TOOLCHAIN_HASH=7ebbede533b63df2394fe770745668433aab2c20
 RUN apt-get update
 
 RUN \
-    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7
+    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 fuse libfuse2
         
 # Add npm 
 RUN \
@@ -48,7 +48,7 @@ COPY win_toolchain/ /win_toolchain/
 # Set windows toolchain environment variables
 ENV \
     DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL=/win_toolchain/ \
-    GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23=%WIN_TOOLCHAIN_HASH%
+    GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23=$WIN_TOOLCHAIN_HASH
 
 RUN \
     cd / \

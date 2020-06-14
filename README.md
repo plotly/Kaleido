@@ -25,7 +25,7 @@ $ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/f
 ## Checkout tag
 This will checkout a specific stable tag of chromium, and then sync all dependencies
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/checkout_revision
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/checkout_revision
 ```
 
 ## Build chromium headless
@@ -35,7 +35,7 @@ $ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/b
 ```
 
 ## Build orca_next
-This will build the `orca_next` application to `repos/build/orca_next`, and bundle shared libraries and fonts. The input source for this application is in `repos/orca_next/orca_next.cc`.  Right now, this is identical to `headless_example`.
+This will build the `orca_next` application to `repos/build/orca_next`, and bundle shared libraries and fonts. The input source for this application is in `repos/orca_next/orca_next.cc`.
 
 ```
 $ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_orca_next
@@ -56,6 +56,14 @@ echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}'
 ```
 
 This shows that we were able to invoke chromium on the most minimal ubuntu 16.04 image without installing any additional dependencies using `apt`, and without using `Xvfb` to simulate X11.
+
+## Cross compile orca_next for Windows
+This will build the `orca_next` application to `repos/build/orca_next_win`, for windows
+
+```
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_orca_next_win
+```
+
 
 ## Update chromium version
 To update the version of chromium in the future, the docker image will need to be updated. Follow the instructions for the `DEPOT_TOOLS_COMMIT` and `CHROMIUM_TAG` environment variables in `Dockerfile`.
