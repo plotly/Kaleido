@@ -77,13 +77,13 @@ cp -r /usr/share/fonts/ ../build/orca_next/xdg/
 
 # launch script
 echo "#!/bin/bash
-dir_path=\$(dirname \$(readlink -f \$0))
+DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
 
-export LD_LIBRARY_PATH=\$dir_path/lib:\$LD_LIBRARY_PATH
-export FONTCONFIG_PATH=\$dir_path/etc/fonts
-export XDG_DATA_HOME=\$dir_path/xdg
+export LD_LIBRARY_PATH=\$DIR/lib:\$LD_LIBRARY_PATH
+export FONTCONFIG_PATH=\$DIR/etc/fonts
+export XDG_DATA_HOME=\$DIR/xdg
 
-cd \$dir_path
+cd \$DIR
 ./bin/orca_next --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
 " > ../build/orca_next/orca_next
 chmod +x ../build/orca_next/orca_next
