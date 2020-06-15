@@ -16,29 +16,30 @@ Build container with:
 $ docker build -t jonmmease/chromium-builder:0.5 -f Dockerfile .
 ```
 
+
 ## Fetch chromium source code
 This will download the full chromium source tre. **Caution**: This may take up to 40GB after build steps below
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/fetch_chromium
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
 ```
 
 ## Checkout tag
 This will checkout a specific stable tag of chromium, and then sync all dependencies
 ```
-$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/checkout_revision
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/checkout_revision
 ```
 
 ## Build chromium headless
 This will build the `headless_example` application to `repos/src/out/Headless/headless_example`
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_headless
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_headless
 ```
 
 ## Build orca_next
 This will build the `orca_next` application to `repos/build/orca_next`, and bundle shared libraries and fonts. The input source for this application is in `repos/orca_next/orca_next.cc`.
 
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_orca_next
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_orca_next
 ```
 
 To run the orca_next application, use the `/repos/build/orca_next/orca_next` bash script. This passes argumnets through to the `repos/build/orca_next/bin/orca_next` executable, but it also sets up the environment needed to use the bundled shared libraries, fonts, etc.
@@ -61,7 +62,7 @@ This shows that we were able to invoke chromium on the most minimal ubuntu 16.04
 This will build the `orca_next` application to `repos/build/orca_next_win`, for windows
 
 ```
-$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_orca_next_win
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_orca_next_win
 ```
 
 
@@ -74,7 +75,7 @@ E.g. Stable chrome version tag on 05/19/2020: 83.0.4103.61, set `CHROMIUM_TAG="8
 > Search through depot_tools commitlog (https://chromium.googlesource.com/chromium/tools/depot_tools/+log) for commit hash of commit from the same day.
 E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e67e41a`
 
-The `CHROMIUM_TAG` environemnt variable must also be updated in the `repos/checkout_revision` script.
+The `CHROMIUM_TAG` environemnt variable must also be updated in the `repos/linux_scripts/checkout_revision` and `repos/mac_scripts/checkout_revision` scripts.
 
 ## CMakeLists.txt
 The CMakeLists.txt file in `repos/` is only there to help IDE's like `CLion`/`KDevelop` figure out how to index the chromium source tree. It can't be used to actually build chromium. Using this approach, it's possible to get full completion and code navigation from `repos/orca_next/orca_next.cc`
