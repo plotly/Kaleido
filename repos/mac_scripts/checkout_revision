@@ -1,9 +1,0 @@
-#!/bin/bash
-# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/checkout_revision
-CHROMIUM_TAG="83.0.4103.61"
-
-cd /repos/src
-git reset --hard
-git checkout tags/$CHROMIUM_TAG
-gclient sync -D --force --reset
-gclient runhooks

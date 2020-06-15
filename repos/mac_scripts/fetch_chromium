@@ -1,12 +1,32 @@
 #!/bin/bash
-# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/fetch_chromium
-cd /repos
 
-# Remove any prior .gclient file
-rm -f .gclient
+# Commits
+DEPOT_TOOLS_COMMIT=e67e41a
+CHROMIUM_TAG="83.0.4103.61"
 
-echo "fetch chromium"
+# full path to mac_scripts/ directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# cd to repos directory
+cd $DIR/..
+
+# Get depot_tools
+git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+cd depot_tools
+
+# Add cloned depot_tools directory to PATH
+export PATH="$PATH:`pwd`"
+
+# Reset to proper commit
+git reset --hard $DEPOT_TOOLS_COMMIT
+
+# Move back to repos directory
+cd ../
 fetch --nohooks chromium
 
-# Specify that we want to later sync linux and windows components
-echo -e "\ntarget_os = ['linux', 'win']\n" >> .gclient
+# Change to cloned src/ directory
+cd src
+git reset --hard
+git checkout tags/$CHROMIUM_TAG
+gclient sync -D --force --reset
+gclient runhooks

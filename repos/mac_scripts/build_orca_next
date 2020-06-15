@@ -1,25 +1,39 @@
 #!/bin/bash
-# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_headless
 
-cd /repos/src
+# full path to mac_scripts/ directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# cd to repos directory
+cd $DIR/..
+
+# Add depot_tools directory to PATH
+export PATH="$PATH:`pwd`/depot_tools"
+
+# cd to repos/src
+cd src
 
 # Make output directory
-mkdir -p out/Headless
+mkdir -p out/Headless_mac
 
-# Write out/Headless/args.gn
-echo 'import("//build/args/headless.gn")' > out/Headless/args.gn
-echo 'enable_nacl=false' >> out/Headless/args.gn
-echo 'is_component_build=false' >> out/Headless/args.gn
+# Write out/Headless_mac/args.gn
+echo "
+# Copied windows compatible options from //build/args/headless.gn
+# Embed resource.pak into binary to simplify deployment.
+headless_use_embedded_resources = true
 
-# Small as possible
-#echo 'symbol_level=0' >> out/Headless/args.gn
-#echo 'blink_symbol_level=0' >> out/Headless/args.gn
-#echo 'is_debug=false' >> out/Headless/args.gn
+# Use embedded data instead external files for headless in order
+# to simplify deployment.
+v8_use_external_startup_data = false
 
-# For debugging and better stack traces
-echo 'symbol_level=1' >> out/Headless/args.gn
-echo 'blink_symbol_level=1' >> out/Headless/args.gn
-echo 'is_debug=true' >> out/Headless/args.gn
+enable_nacl = false
+enable_remoting = false
+
+# Debug / symbols
+symbol_level=0
+blink_symbol_level=0
+is_debug=false
+is_component_build=false
+" > out/Headless_mac/args.gn
 
 
 # 1) Reset headless/BUILD.gn
@@ -39,54 +53,25 @@ executable(\"orca_next\") {
 # 3) Copy orca_next/orca_next.cc to src/headless/app/orca_next.cc
 cp ../orca_next/cc/orca_next.cc headless/app/
 
-# 4) Perform build, result will be out/Headless/orca_next
-gn gen out/Headless
-ninja -C out/Headless -j 20 orca_next
+# 4) Perform build, result will be out/Headless_mac/orca_next
+gn gen out/Headless_mac
+ninja -C out/Headless_mac -j 8 orca_next
 
 # 5) Copy build files
-mkdir -p ../build/orca_next/
-rm -r ../build/orca_next/*
-mkdir -p ../build/orca_next/bin
-cp out/Headless/orca_next ../build/orca_next/bin
-cp -r out/Headless/swiftshader/ ../build/orca_next/bin
-
-# copy shared libraries
-mkdir -p ../build/orca_next/lib/
-
-# /usr/lib/x86_64-linux-gnu/
-for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
-do
-  cp /usr/lib/x86_64-linux-gnu/$SO_FILE ../build/orca_next/lib/$SO_FILE
-done
-
-# /usr/lib/x86_64-linux-gnu/nss
-#cp -r /usr/lib/x86_64-linux-gnu/nss ../build/orca_next/lib/
-cp /usr/lib/x86_64-linux-gnu/nss/* ../build/orca_next/lib/
-
-# /lib/x86_64-linux-gnu/
-for SO_FILE in libexpat.so.1 # libdl.so.2 libpthread.so.0 librt.so.1 libm.so.6 libgcc_s.so.1 libc.so.6
-do
-  cp /lib/x86_64-linux-gnu/$SO_FILE ../build/orca_next/lib/$SO_FILE
-done
-
-# fonts
-mkdir -p ../build/orca_next/etc/
-cp -r /etc/fonts/ ../build/orca_next/etc/fonts
-mkdir -p ../build/orca_next/xdg
-cp -r /usr/share/fonts/ ../build/orca_next/xdg/
+mkdir -p ../build/orca_next_mac/
+rm -r ../build/orca_next_mac/*
+mkdir -p ../build/orca_next_mac/bin
+cp out/Headless_mac/orca_next ../build/orca_next_mac/bin
+cp -r out/Headless_mac/swiftshader/ ../build/orca_next_mac/bin
 
 # launch script
 echo "#!/bin/bash
-dir_path=\$(dirname \$(readlink -f \$0))
+DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
 
-export LD_LIBRARY_PATH=\$dir_path/lib:\$LD_LIBRARY_PATH
-export FONTCONFIG_PATH=\$dir_path/etc/fonts
-export XDG_DATA_HOME=\$dir_path/xdg
-
-cd \$dir_path
+cd \$DIR
 ./bin/orca_next --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
-" > ../build/orca_next/orca_next
-chmod +x ../build/orca_next/orca_next
+" > ../build/orca_next_mac/orca_next
+chmod +x ../build/orca_next_mac/orca_next
 
 # Copy javascript
 pushd ../orca_next/js/
@@ -95,5 +80,5 @@ npm install
 ./node_modules/browserify/bin/cmd.js --s orca_next src/component/plotly-graph/index.js > build/bundle.js
 popd
 
-mkdir -p ../build/orca_next/js/
-cp ../orca_next/js/build/bundle.js ../build/orca_next/js/
+mkdir -p ../build/orca_next_mac/js/
+cp ../orca_next/js/build/bundle.js ../build/orca_next_mac/js/
