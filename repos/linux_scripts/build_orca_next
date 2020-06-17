@@ -4,22 +4,24 @@
 cd /repos/src
 
 # Make output directory
-mkdir -p out/Headless
+mkdir -p out/OrcaNext_linux
 
-# Write out/Headless/args.gn
-echo 'import("//build/args/headless.gn")' > out/Headless/args.gn
-echo 'enable_nacl=false' >> out/Headless/args.gn
-echo 'is_component_build=false' >> out/Headless/args.gn
+# Write out/OrcaNext_linux/args.gn
+echo 'import("//build/args/headless.gn")' > out/OrcaNext_linux/args.gn
+echo 'enable_nacl=false' >> out/OrcaNext_linux/args.gn
+echo 'is_component_build=false' >> out/OrcaNext_linux/args.gn
 
 # Small as possible
-#echo 'symbol_level=0' >> out/Headless/args.gn
-#echo 'blink_symbol_level=0' >> out/Headless/args.gn
-#echo 'is_debug=false' >> out/Headless/args.gn
+#echo 'symbol_level=0' >> out/OrcaNext_linux/args.gn
+#echo 'blink_symbol_level=0' >> out/OrcaNext_linux/args.gn
+#echo 'is_debug=false' >> out/OrcaNext_linux/args.gn
+#echo 'is_official_build=true' >> out/OrcaNext_linux/args.gn
 
 # For debugging and better stack traces
-echo 'symbol_level=1' >> out/Headless/args.gn
-echo 'blink_symbol_level=1' >> out/Headless/args.gn
-echo 'is_debug=true' >> out/Headless/args.gn
+echo 'symbol_level=1' >> out/OrcaNext_linux/args.gn
+echo 'blink_symbol_level=1' >> out/OrcaNext_linux/args.gn
+echo 'is_debug=true' >> out/OrcaNext_linux/args.gn
+echo 'is_official_build=false' >> out/OrcaNext_linux/args.gn
 
 
 # 1) Reset headless/BUILD.gn
@@ -40,16 +42,16 @@ executable(\"orca_next\") {
 rm -rf headless/app/plugins
 cp -r ../orca_next/cc/* headless/app/
 
-# 4) Perform build, result will be out/Headless/orca_next
-gn gen out/Headless
-ninja -C out/Headless -j 20 orca_next
+# 4) Perform build, result will be out/OrcaNext_linux/orca_next
+gn gen out/OrcaNext_linux
+ninja -C out/OrcaNext_linux -j 20 orca_next
 
 # 5) Copy build files
 mkdir -p ../build/orca_next/
 rm -r ../build/orca_next/*
 mkdir -p ../build/orca_next/bin
-cp out/Headless/orca_next ../build/orca_next/bin
-cp -r out/Headless/swiftshader/ ../build/orca_next/bin
+cp out/OrcaNext_linux/orca_next ../build/orca_next/bin
+cp -r out/OrcaNext_linux/swiftshader/ ../build/orca_next/bin
 
 # copy shared libraries
 mkdir -p ../build/orca_next/lib/
@@ -93,8 +95,9 @@ chmod +x ../build/orca_next/orca_next
 pushd ../orca_next/js/
 mkdir -p build/
 npm install
-./node_modules/browserify/bin/cmd.js --s orca_next src/component/plotly-graph/index.js > build/bundle.js
+npm run clean
+npm run build
 popd
 
 mkdir -p ../build/orca_next/js/
-cp ../orca_next/js/build/bundle.js ../build/orca_next/js/
+cp ../orca_next/js/build/*.js ../build/orca_next/js/

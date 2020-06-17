@@ -22,6 +22,7 @@ public:
     ~Plotly() override;
     Plotly(const Plotly &v);
 
+    std::string PluginName() override;
     std::vector<std::unique_ptr<::headless::runtime::CallArgument>> BuildCallArguments() override;
 
 public:
@@ -96,12 +97,16 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
     }
 
     // Additional initialization scripts (these must be added after plotly.js)
-    localScriptFiles.emplace_back("./js/bundle.js");
+    localScriptFiles.emplace_back("./js/orca_next_plugins.js");
 }
 
 Plotly::~Plotly() {}
 
 Plotly::Plotly(const Plotly &v): topojsonUrl(v.topojsonUrl), mapboxToken(v.mapboxToken) {}
+
+std::string Plotly::PluginName() {
+    return "plotly";
+}
 
 std::vector<std::unique_ptr<::headless::runtime::CallArgument>> Plotly::BuildCallArguments() {
     std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args;

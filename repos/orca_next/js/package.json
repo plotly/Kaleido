@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "browserify --s orca_next src/component/plotly-graph/index.js > build/bundle.js",
+    "clean": "rimraf build/",
+    "build": "mkdir -p build/ && browserify --s orca_next_plugins src/index.js > build/orca_next_plugins.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -15,6 +16,7 @@
     "semver": "^7.3.2"
   },
   "devDependencies": {
-    "browserify": "^16.5.1"
+    "browserify": "^16.5.1",
+    "rimraf": "^3.0.2"
   }
 }

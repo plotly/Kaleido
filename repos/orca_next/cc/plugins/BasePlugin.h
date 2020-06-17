@@ -18,6 +18,7 @@ public:
     BasePlugin(const BasePlugin &v);
     virtual ~BasePlugin();
 
+    virtual std::string PluginName() = 0;
     virtual std::vector<std::unique_ptr<::headless::runtime::CallArgument>> BuildCallArguments();
     std::list<std::string> ScriptTags();
     std::list<std::string> LocalScriptFiles();

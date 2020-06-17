@@ -10,7 +10,7 @@ vpython build/vs_toolchain.py update --force
 # Make output directory
 mkdir -p out/Headless_win
 
-# Write out/Headless_win/args.gn
+# Write out/OrcaNext_win/args.gn
 echo "
 # Copied windows compatible options from //build/args/headless.gn
 # Embed resource.pak into binary to simplify deployment.
@@ -32,7 +32,8 @@ symbol_level=0
 blink_symbol_level=0
 is_debug=false
 is_component_build=false
-" > out/Headless_win/args.gn
+is_official_build=true
+" > out/OrcaNext_win/args.gn
 
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
@@ -52,15 +53,15 @@ executable(\"orca_next\") {
 rm -rf headless/app/plugins
 cp -r ../orca_next/cc/* headless/app/
 
-# 4) Perform build, result will be out/Headless_win/orca_next
-gn gen out/Headless_win
-ninja -C out/Headless_win -j 20 orca_next
+# 4) Perform build, result will be out/OrcaNext_win/orca_next
+gn gen out/OrcaNext_win
+ninja -C out/OrcaNext_win -j 20 orca_next
 
 # 5) Copy build files
 mkdir -p ../build/orca_next_win/
 rm -r ../build/orca_next_win/*
-cp out/Headless_win/orca_next.exe ../build/orca_next_win/
-cp -r out/Headless_win/swiftshader/ ../build/orca_next_win/
+cp out/OrcaNext_win/orca_next.exe ../build/orca_next_win/
+cp -r out/OrcaNext_win/swiftshader/ ../build/orca_next_win/
 # 
 # copy shared libraries
 # mkdir -p ../build/orca_next_win/lib/
@@ -101,14 +102,15 @@ cp -r out/Headless_win/swiftshader/ ../build/orca_next_win/
 # chmod +x ../build/orca_next_win/orca_next
 
 # Copy icudtl.dat
-cp ./out/Headless_win/icudtl.dat ../build/orca_next_win/
+cp ./out/OrcaNext_win/icudtl.dat ../build/orca_next_win/
 
 # Copy javascript
 pushd ../orca_next/js/
 mkdir -p build/
 npm install
-./node_modules/browserify/bin/cmd.js --s orca_next src/component/plotly-graph/index.js > build/bundle.js
+npm run clean
+npm run build
 popd
 
 mkdir -p ../build/orca_next_win/js/
-cp ../orca_next/js/build/bundle.js ../build/orca_next_win/js/
+cp ../orca_next/js/build/*.js ../build/orca_next_win/js/

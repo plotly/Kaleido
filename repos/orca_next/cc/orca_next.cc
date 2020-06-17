@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -22,8 +23,8 @@
 #include "ui/gfx/geometry/size.h"
 
 #include "headless/app/orca_next.h"
-#include "plugins/Plotly.h"
-//#include "plugins/BasePlugin.h"
+#include "plugins/Factory.h"
+#include "plugins/BasePlugin.h"
 
 #include <streambuf>
 #include <fstream>
@@ -128,8 +129,9 @@ void OrcaNext::ExportNextFigure() {
     }
 
     std::cerr << "Received Figure: " << std::endl;
-    std::string exportFunction = "function(spec, ...args) "
-                                 "{ return orca_next.render(spec, ...args).then(JSON.stringify); }";
+    std::string exportFunction = base::StringPrintf(
+            "function(spec, ...args) { return orca_next_plugins.%s(spec, ...args).then(JSON.stringify); }",
+            plugin->PluginName().c_str());
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
@@ -278,8 +280,26 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     headless::HeadlessBrowserContext* browser_context = context_builder.Build();
     browser->SetDefaultBrowserContext(browser_context);
 
+    // Get the URL from the command line.
+    base::CommandLine::StringVector args =
+            base::CommandLine::ForCurrentProcess()->GetArgs();
+    if (args.empty()) {
+        LOG(ERROR) << "No Plugin Specified";
+        browser->Shutdown();
+        exit(EXIT_FAILURE);
+        return;
+    }
+
     // Instantiate renderer plugin
-    Plotly *plugin = new Plotly();
+    std::string plugin_name = args[0];
+    BasePlugin *plugin = LoadPlugin(plugin_name);
+    if (!plugin) {
+        // Invalid plugin name
+        LOG(ERROR) << "Invalid plugin: " << plugin_name;
+        browser->Shutdown();
+        exit(EXIT_FAILURE);
+        return;
+    }
 
     // Build initial HTML file
     std::list<std::string> scriptTags = plugin->ScriptTags();
