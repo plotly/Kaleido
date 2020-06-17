@@ -63,7 +63,9 @@ mkdir -p ../build/orca_next_mac/
 rm -r ../build/orca_next_mac/*
 mkdir -p ../build/orca_next_mac/bin
 cp out/OrcaNext_mac/orca_next ../build/orca_next_mac/bin
-cp -r out/OrcaNext_mac/swiftshader/ ../build/orca_next_mac/bin
+
+# Copy icudtl.dat
+cp ./out/OrcaNext_win/icudtl.dat ../build/orca_next_win/
 
 # launch script
 echo "#!/bin/bash

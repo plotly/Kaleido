@@ -47,13 +47,13 @@ To run the orca_next application, use the `/repos/build/orca_next/orca_next` bas
 If you're running Linux locally, try it out on your local linux install with:
 
 ```
-echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | repos/build/orca_next/orca_next
+echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | repos/build/orca_next/orca_next plotly
 ```
 
 You can try it out on in a raw ubuntu:16.04 docker image with:
 
 ```
-echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | docker run -i -v `pwd`/repos/:/repos ubuntu:16.04 /repos/build/orca_next/orca_next
+echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | docker run -i -v `pwd`/repos/:/repos ubuntu:16.04 /repos/build/orca_next/orca_next plotly
 ```
 
 This shows that we were able to invoke chromium on the most minimal ubuntu 16.04 image without installing any additional dependencies using `apt`, and without using `Xvfb` to simulate X11.
