@@ -37,7 +37,8 @@ executable(\"orca_next\") {
 }" >> headless/BUILD.gn
 
 # 3) Copy orca_next/orca_next.cc to src/headless/app/orca_next.cc
-cp ../orca_next/cc/* headless/app/
+rm -rf headless/app/plugins
+cp -r ../orca_next/cc/* headless/app/
 
 # 4) Perform build, result will be out/Headless/orca_next
 gn gen out/Headless

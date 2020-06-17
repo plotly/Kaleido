@@ -6,6 +6,6 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/out/Headless/gen)
 
-add_executable(headless_example src/headless/app/headless_example.cc)
+add_executable(headless_example src/headless/app/headless_example.cc orca_next/cc/plugins/Plotly.cpp orca_next/cc/plugins/Plotly.h)
 add_executable(headless_shell src/headless/app/headless_shell.cc)
 add_executable(orca_next orca_next/orca_next.cc orca_next/cc/orca_next.h)

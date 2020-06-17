@@ -22,6 +22,8 @@
 #include "ui/gfx/geometry/size.h"
 
 #include "headless/app/orca_next.h"
+#include "plugins/Plotly.h"
+//#include "plugins/BasePlugin.h"
 
 #include <streambuf>
 #include <fstream>
@@ -37,15 +39,12 @@
 OrcaNext::OrcaNext(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
-        std::list<std::string> startupScripts,
         std::string tmpFileName,
-        std::string mapboxToken,
-        std::string topojsonUrl
+        BasePlugin *plugin_ptr
 )
         : tmpFileName(tmpFileName),
-          startupScripts(std::move(startupScripts)),
-          mapboxToken(mapboxToken),
-          topojsonUrl(topojsonUrl),
+          remainingLocalScriptsFiles(plugin_ptr->LocalScriptFiles()),
+          plugin(plugin_ptr),
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
@@ -94,13 +93,13 @@ void OrcaNext::OnExecutionContextCreated(
 }
 
 void OrcaNext::LoadNextScript() {
-     if (startupScripts.empty()) {
+     if (remainingLocalScriptsFiles.empty()) {
          // Finished processing startup scripts, start exporting figures
          ExportNextFigure();
      } else {
-         // Load Plotly.js from local plotly.js bundle
-         std::string scriptPath(startupScripts.front());
-         startupScripts.pop_front();
+         // Load Script
+         std::string scriptPath(remainingLocalScriptsFiles.front());
+         remainingLocalScriptsFiles.pop_front();
          std::ifstream t(scriptPath);
          std::string scriptString((std::istreambuf_iterator<char>(t)),
                                   std::istreambuf_iterator<char>());
@@ -129,8 +128,8 @@ void OrcaNext::ExportNextFigure() {
     }
 
     std::cerr << "Received Figure: " << std::endl;
-    std::string exportFunction = "function(spec, mapboxToken, topojsonURL) "
-                                 "{ return orca_next.render(spec, mapboxToken, topojsonURL).then(JSON.stringify); }";
+    std::string exportFunction = "function(spec, ...args) "
+                                 "{ return orca_next.render(spec, ...args).then(JSON.stringify); }";
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
@@ -139,25 +138,12 @@ void OrcaNext::ExportNextFigure() {
         return;
     }
 
-    std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args;
-    // Export Request
-    args.push_back(
+    std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = plugin->BuildCallArguments();
+
+    // Prepend Export spec as first argument
+    args.insert(args.begin(),
             headless::runtime::CallArgument::Builder()
                     .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
-                    .Build()
-    );
-
-    // Mapbox token from command-line
-    args.push_back(
-            headless::runtime::CallArgument::Builder()
-                    .SetValue(std::make_unique<base::Value>(base::StringPiece(mapboxToken)))
-                    .Build()
-    );
-
-    // Topojson from command-line
-    args.push_back(
-            headless::runtime::CallArgument::Builder()
-                    .SetValue(std::make_unique<base::Value>(base::StringPiece(topojsonUrl)))
                     .Build()
     );
 
@@ -292,92 +278,98 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     headless::HeadlessBrowserContext* browser_context = context_builder.Build();
     browser->SetDefaultBrowserContext(browser_context);
 
-    // Initialize vector of initialization JavaScript scripts
-    std::list<std::string> scripts;
+    Plotly *plugin = new Plotly();
 
-    // Get command line options
-    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
-    std::cerr << commandLine->GetCommandLineString() << std::endl;
-
-    auto switches = commandLine->GetSwitches();
-    for (auto it = switches.begin(); it == switches.end(); it++) {
-        std::cerr << it->first << "=" << it->second << std::endl;
-    }
-
-    // List to hold script tag URLs
-    std::list<std::string> scriptUrls;
-
-    // Process plotlyjs
-    if (commandLine->HasSwitch("plotlyjs")) {
-        std::string plotlyjs_arg = commandLine->GetSwitchValueASCII("plotlyjs");
-        // Check if value is a URL
-        GURL plotlyjs_url(plotlyjs_arg);
-        if (plotlyjs_url.is_valid()) {
-            std::cerr << "plotlyjs arg is a URL" << std::endl;
-            scriptUrls.push_back(plotlyjs_arg);
-        } else {
-            // Check if this is a local file path
-            if (std::ifstream(plotlyjs_arg)) {
-                    std::cerr << "plotlyjs arg is a local file" << std::endl;
-                scripts.emplace_back(plotlyjs_arg);
-            } else {
-                std::cerr << "plotlyjs arg is not a URL or local file path. Falling back to online CDN.";
-                scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
-            }
-        }
-    } else {
-        std::cerr << "No plotlyjs switch" << std::endl;
-        scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
-    }
-
-    // MathJax
-    if (commandLine->HasSwitch("mathjax")) {
-        std::string mathjax_arg = commandLine->GetSwitchValueASCII("mathjax");
-        GURL mathjax_url(mathjax_arg);
-
-        if (mathjax_url.is_valid()) {
-            std::cerr << "mathjax is a URL" << std::endl;
-            std::stringstream mathjaxStringStream;
-            mathjaxStringStream << mathjax_arg << "?config=TeX-AMS-MML_SVG";
-            scriptUrls.push_back(mathjaxStringStream.str());
-        } else {
-            std::cerr << "mathjax arg is not a valid URL. MathJax features will not be available"  << std::endl;;
-        }
-    } else {
-        std::cerr << "No mathjax switch"  << std::endl;;
-    }
-
-    // Topojson
-    std::string topojsonUrl;
-    if (commandLine->HasSwitch("topojson")) {
-        std::string topojsonArg = commandLine->GetSwitchValueASCII("topojson");
-        if (GURL(topojsonArg).is_valid()) {
-            std::cerr << "topojson is a URL" << std::endl;
-            topojsonUrl = topojsonArg;
-        } else {
-            std::cerr << "topojson arg is not a valid URL. Falling back to to online CDN"  << std::endl;;
-        }
-    } else {
-        std::cerr << "No topojson switch"  << std::endl;;
-    }
-
-    // Process mapbox-token
-    std::string mapboxToken;
-    if (commandLine->HasSwitch("mapbox-access-token")) {
-        mapboxToken = commandLine->GetSwitchValueASCII("mapbox-access-token");
-    }
+//    // Initialize vector of initialization JavaScript scripts
+//    std::list<std::string> scripts;
+//    // List to hold script tag URLs
+//    std::list<std::string> scriptUrls;
+//
+//    // Get command line options
+//    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
+//    std::cerr << commandLine->GetCommandLineString() << std::endl;
+//
+//    base::CommandLine::SwitchMap switches = commandLine->GetSwitches();
+//
+//    // Process plotlyjs
+//    if (commandLine->HasSwitch("plotlyjs")) {
+//        std::string plotlyjs_arg = commandLine->GetSwitchValueASCII("plotlyjs");
+//        // Check if value is a URL
+//        GURL plotlyjs_url(plotlyjs_arg);
+//        if (plotlyjs_url.is_valid()) {
+//            std::cerr << "plotlyjs arg is a URL" << std::endl;
+//            scriptUrls.push_back(plotlyjs_arg);
+//        } else {
+//            // Check if this is a local file path
+//            if (std::ifstream(plotlyjs_arg)) {
+//                    std::cerr << "plotlyjs arg is a local file" << std::endl;
+//                scripts.emplace_back(plotlyjs_arg);
+//            } else {
+//                std::cerr << "plotlyjs arg is not a URL or local file path. Falling back to online CDN.";
+//                scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
+//            }
+//        }
+//    } else {
+//        std::cerr << "No plotlyjs switch" << std::endl;
+//        scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
+//    }
+//
+//    // MathJax
+//    if (commandLine->HasSwitch("mathjax")) {
+//        std::string mathjax_arg = commandLine->GetSwitchValueASCII("mathjax");
+//        GURL mathjax_url(mathjax_arg);
+//
+//        if (mathjax_url.is_valid()) {
+//            std::cerr << "mathjax is a URL" << std::endl;
+//            std::stringstream mathjaxStringStream;
+//            mathjaxStringStream << mathjax_arg << "?config=TeX-AMS-MML_SVG";
+//            scriptUrls.push_back(mathjaxStringStream.str());
+//        } else {
+//            std::cerr << "mathjax arg is not a valid URL. MathJax features will not be available"  << std::endl;;
+//        }
+//    } else {
+//        std::cerr << "No mathjax switch"  << std::endl;;
+//    }
+//
+//    // Topojson
+//    std::string topojsonUrl;
+//    if (commandLine->HasSwitch("topojson")) {
+//        std::string topojsonArg = commandLine->GetSwitchValueASCII("topojson");
+//        if (GURL(topojsonArg).is_valid()) {
+//            std::cerr << "topojson is a URL" << std::endl;
+//            topojsonUrl = topojsonArg;
+//        } else {
+//            std::cerr << "topojson arg is not a valid URL. Falling back to to online CDN"  << std::endl;;
+//        }
+//    } else {
+//        std::cerr << "No topojson switch"  << std::endl;;
+//    }
+//
+//    // Process mapbox-token
+//    std::string mapboxToken;
+//    if (commandLine->HasSwitch("mapbox-access-token")) {
+//        mapboxToken = commandLine->GetSwitchValueASCII("mapbox-access-token");
+//    }
 
     // Build initial HTML file
+    std::list<std::string> scriptTags = plugin->ScriptTags();
     std::stringstream htmlStringStream;
     htmlStringStream << "<html><head><meta charset=\"UTF-8\"><style id=\"head-style\"></style>";
 
-    // Add MathJax Plotly.js config script (no harm if MathJax isn't available)
-    htmlStringStream << "<script>window.PlotlyConfig = {MathJaxConfig: 'local'}</script>\n";
-    while (!scriptUrls.empty()) {
-        htmlStringStream << "<script type=\"text/javascript\" src=\"" << scriptUrls.front() << "\"></script>";
-        scriptUrls.pop_front();
+    // Add script tags
+    while (!scriptTags.empty()) {
+        std::string tagValue = scriptTags.front();
+        GURL tagUrl(tagValue);
+        if (tagUrl.is_valid()) {
+            // Value is a url, use a src of script tag
+            htmlStringStream << "<script type=\"text/javascript\" src=\"" << tagValue << "\"></script>";
+        } else {
+            // Value is not a url, use a inline JavaScript code
+            htmlStringStream << "<script>" << tagValue << "</script>\n";
+        }
+        scriptTags.pop_front();
     }
-
+    // Close head and add body with img tag place holder for PDF export
     htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"orca-image\"><img></body></html>";
 
     // Write html to temp file
@@ -392,7 +384,8 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     GURL url = GURL(std::string("file://") + tmpFileName);
 
     // Additional initialization scripts (these must be added after plotly.js)
-    scripts.emplace_back("./js/bundle.js");
+//    std::list<std::string> localScriptFiles = plugin.LocalScriptFiles()
+//    scripts.emplace_back("./js/bundle.js");
 
     // Open a tab (i.e., HeadlessWebContents) in the newly created browser
     // context.
@@ -407,7 +400,8 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // and print its DOM.
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
-    g_example = new OrcaNext(browser, web_contents, scripts, tmpFileName, mapboxToken, topojsonUrl);
+    // TODO make plugin a unique ptr and use move semantics here
+    g_example = new OrcaNext(browser, web_contents, tmpFileName, plugin);
 }
 
 int main(int argc, const char** argv) {

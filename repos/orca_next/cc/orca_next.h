@@ -6,6 +6,8 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 
+#include "plugins/BasePlugin.h"
+
 #ifndef CHROMIUM_ORCA_NEXT_H
 #define CHROMIUM_ORCA_NEXT_H
 
@@ -19,10 +21,8 @@ class OrcaNext : public headless::HeadlessWebContents::Observer,
 public:
     OrcaNext(headless::HeadlessBrowser* browser,
              headless::HeadlessWebContents* web_contents,
-             std::list<std::string> startupScripts,
              std::string tmpFileName,
-             std::string mapboxToken,
-             std::string topojsonUrl);
+             BasePlugin *plugin);
 
     ~OrcaNext() override;
 
@@ -48,9 +48,8 @@ public:
 private:
     int contextId;
     std::string tmpFileName;
-    std::list<std::string> startupScripts;
-    std::string mapboxToken;
-    std::string topojsonUrl;
+    std::list<std::string> remainingLocalScriptsFiles;
+    BasePlugin *plugin;
 
     // The headless browser instance. Owned by the headless library. See main().
     headless::HeadlessBrowser* browser_;
