@@ -11,9 +11,7 @@
 #ifndef CHROMIUM_ORCA_NEXT_H
 #define CHROMIUM_ORCA_NEXT_H
 
-// This class contains the main application logic, i.e., waiting for a page to
-// load and printing its DOM. Note that browser initialization happens outside
-// this class.
+
 class OrcaNext : public headless::HeadlessWebContents::Observer,
                  public headless::page::Observer,
                  public headless::runtime::Observer
@@ -39,8 +37,6 @@ public:
     void LoadNextScript();
     void OnPDFCreated(std::string responseString, std::unique_ptr<headless::page::PrintToPDFResult> result);
 
-    // Tip: Observe headless::inspector::ExperimentalObserver::OnTargetCrashed to
-    // be notified of renderer crashes.
     void OnExportComplete(std::unique_ptr<headless::runtime::CallFunctionOnResult> result);
     void OnScriptCompileComplete(std::unique_ptr<headless::runtime::CompileScriptResult> result);
     void OnRunScriptComplete(std::unique_ptr<headless::runtime::RunScriptResult> result);

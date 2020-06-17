@@ -278,78 +278,8 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     headless::HeadlessBrowserContext* browser_context = context_builder.Build();
     browser->SetDefaultBrowserContext(browser_context);
 
+    // Instantiate renderer plugin
     Plotly *plugin = new Plotly();
-
-//    // Initialize vector of initialization JavaScript scripts
-//    std::list<std::string> scripts;
-//    // List to hold script tag URLs
-//    std::list<std::string> scriptUrls;
-//
-//    // Get command line options
-//    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
-//    std::cerr << commandLine->GetCommandLineString() << std::endl;
-//
-//    base::CommandLine::SwitchMap switches = commandLine->GetSwitches();
-//
-//    // Process plotlyjs
-//    if (commandLine->HasSwitch("plotlyjs")) {
-//        std::string plotlyjs_arg = commandLine->GetSwitchValueASCII("plotlyjs");
-//        // Check if value is a URL
-//        GURL plotlyjs_url(plotlyjs_arg);
-//        if (plotlyjs_url.is_valid()) {
-//            std::cerr << "plotlyjs arg is a URL" << std::endl;
-//            scriptUrls.push_back(plotlyjs_arg);
-//        } else {
-//            // Check if this is a local file path
-//            if (std::ifstream(plotlyjs_arg)) {
-//                    std::cerr << "plotlyjs arg is a local file" << std::endl;
-//                scripts.emplace_back(plotlyjs_arg);
-//            } else {
-//                std::cerr << "plotlyjs arg is not a URL or local file path. Falling back to online CDN.";
-//                scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
-//            }
-//        }
-//    } else {
-//        std::cerr << "No plotlyjs switch" << std::endl;
-//        scriptUrls.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
-//    }
-//
-//    // MathJax
-//    if (commandLine->HasSwitch("mathjax")) {
-//        std::string mathjax_arg = commandLine->GetSwitchValueASCII("mathjax");
-//        GURL mathjax_url(mathjax_arg);
-//
-//        if (mathjax_url.is_valid()) {
-//            std::cerr << "mathjax is a URL" << std::endl;
-//            std::stringstream mathjaxStringStream;
-//            mathjaxStringStream << mathjax_arg << "?config=TeX-AMS-MML_SVG";
-//            scriptUrls.push_back(mathjaxStringStream.str());
-//        } else {
-//            std::cerr << "mathjax arg is not a valid URL. MathJax features will not be available"  << std::endl;;
-//        }
-//    } else {
-//        std::cerr << "No mathjax switch"  << std::endl;;
-//    }
-//
-//    // Topojson
-//    std::string topojsonUrl;
-//    if (commandLine->HasSwitch("topojson")) {
-//        std::string topojsonArg = commandLine->GetSwitchValueASCII("topojson");
-//        if (GURL(topojsonArg).is_valid()) {
-//            std::cerr << "topojson is a URL" << std::endl;
-//            topojsonUrl = topojsonArg;
-//        } else {
-//            std::cerr << "topojson arg is not a valid URL. Falling back to to online CDN"  << std::endl;;
-//        }
-//    } else {
-//        std::cerr << "No topojson switch"  << std::endl;;
-//    }
-//
-//    // Process mapbox-token
-//    std::string mapboxToken;
-//    if (commandLine->HasSwitch("mapbox-access-token")) {
-//        mapboxToken = commandLine->GetSwitchValueASCII("mapbox-access-token");
-//    }
 
     // Build initial HTML file
     std::list<std::string> scriptTags = plugin->ScriptTags();
@@ -383,21 +313,14 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // Create file:// url to temp file
     GURL url = GURL(std::string("file://") + tmpFileName);
 
-    // Additional initialization scripts (these must be added after plotly.js)
-//    std::list<std::string> localScriptFiles = plugin.LocalScriptFiles()
-//    scripts.emplace_back("./js/bundle.js");
-
-    // Open a tab (i.e., HeadlessWebContents) in the newly created browser
-    // context.
+    // Open a tab (i.e., HeadlessWebContents) in the newly created browser context.
     headless::HeadlessWebContents::Builder tab_builder(
             browser_context->CreateWebContentsBuilder());
 
-    // We can set options for the opened tab here. In this example we are just
-    // setting the initial URL to navigate to.
+    // We could set other options for the opened tab here, for now only set URL
     tab_builder.SetInitialURL(url);
 
-    // Create an instance of the example app, which will wait for the page to load
-    // and print its DOM.
+    // Create an instance of OrcaNext
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
     // TODO make plugin a unique ptr and use move semantics here

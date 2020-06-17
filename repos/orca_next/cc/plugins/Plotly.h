@@ -113,7 +113,7 @@ std::vector<std::unique_ptr<::headless::runtime::CallArgument>> Plotly::BuildCal
                     .Build()
     );
 
-    // Topojson from command-line
+    // Add topojson url from command-line
     args.push_back(
             headless::runtime::CallArgument::Builder()
                     .SetValue(std::make_unique<base::Value>(base::StringPiece(topojsonUrl)))
