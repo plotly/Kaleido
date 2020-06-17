@@ -21,6 +21,8 @@
 #include "headless/public/headless_web_contents.h"
 #include "ui/gfx/geometry/size.h"
 
+#include "headless/app/orca_next.h"
+
 #include <streambuf>
 #include <fstream>
 #include <iostream>
@@ -32,65 +34,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-// This class contains the main application logic, i.e., waiting for a page to
-// load and printing its DOM. Note that browser initialization happens outside
-// this class.
-class HeadlessExample : public headless::HeadlessWebContents::Observer,
-                        public headless::page::Observer,
-                        public headless::runtime::Observer
-                        {
-public:
-    HeadlessExample(headless::HeadlessBrowser* browser,
-                    headless::HeadlessWebContents* web_contents,
-                    std::list<std::string> startupScripts,
-                    std::string tmpFileName,
-                    std::string mapboxToken,
-                    std::string topojsonUrl);
-
-    ~HeadlessExample() override;
-
-    // headless::HeadlessWebContents::Observer implementation:
-    void DevToolsTargetReady() override;
-
-    // headless::page::Observer implementation:
-    void OnLoadEventFired(
-            const headless::page::LoadEventFiredParams& params) override;
-
-    void OnExecutionContextCreated(const headless::runtime::ExecutionContextCreatedParams& params) override;
-
-    void ExportNextFigure();
-    void LoadNextScript();
-    void OnPDFCreated(std::string responseString, std::unique_ptr<headless::page::PrintToPDFResult> result);
-
-    // Tip: Observe headless::inspector::ExperimentalObserver::OnTargetCrashed to
-    // be notified of renderer crashes.
-    void OnExportComplete(std::unique_ptr<headless::runtime::CallFunctionOnResult> result);
-    void OnScriptCompileComplete(std::unique_ptr<headless::runtime::CompileScriptResult> result);
-    void OnRunScriptComplete(std::unique_ptr<headless::runtime::RunScriptResult> result);
-
-private:
-    int contextId;
-    std::string tmpFileName;
-    std::list<std::string> startupScripts;
-    std::string mapboxToken;
-    std::string topojsonUrl;
-
-    // The headless browser instance. Owned by the headless library. See main().
-    headless::HeadlessBrowser* browser_;
-    // Our tab. Owned by |browser_|.
-    headless::HeadlessWebContents* web_contents_;
-    // The DevTools client used to control the tab.
-    std::unique_ptr<headless::HeadlessDevToolsClient> devtools_client_;
-    // A helper for creating weak pointers to this class.
-    // weak_factory_ MUST BE LAST PROPERTY DEFINED!
-    base::WeakPtrFactory<HeadlessExample> weak_factory_{this};
-};
-
-namespace {
-    HeadlessExample* g_example;
-}
-
-HeadlessExample::HeadlessExample(
+OrcaNext::OrcaNext(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
         std::list<std::string> startupScripts,
@@ -108,7 +52,7 @@ HeadlessExample::HeadlessExample(
     web_contents_->AddObserver(this);
 }
 
-HeadlessExample::~HeadlessExample() {
+OrcaNext::~OrcaNext() {
     // Note that we shut down the browser last, because it owns objects such as
     // the web contents which can no longer be accessed after the browser is gone.
     devtools_client_->GetPage()->RemoveObserver(this);
@@ -119,7 +63,7 @@ HeadlessExample::~HeadlessExample() {
 }
 
 // This method is called when the tab is ready for DevTools inspection.
-void HeadlessExample::DevToolsTargetReady() {
+void OrcaNext::DevToolsTargetReady() {
     // Attach our DevTools client to the tab so that we can send commands to it
     // and observe events.
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
@@ -135,7 +79,7 @@ void HeadlessExample::DevToolsTargetReady() {
     devtools_client_->GetRuntime()->Enable();
 }
 
-void HeadlessExample::OnLoadEventFired(
+void OrcaNext::OnLoadEventFired(
         const headless::page::LoadEventFiredParams& params) {
     // Enable runtime
     LoadNextScript();
@@ -144,12 +88,12 @@ void HeadlessExample::OnLoadEventFired(
     std::remove(tmpFileName.c_str());
 }
 
-void HeadlessExample::OnExecutionContextCreated(
+void OrcaNext::OnExecutionContextCreated(
         const headless::runtime::ExecutionContextCreatedParams& params) {
     contextId = params.GetContext()->GetId();
 }
 
-void HeadlessExample::LoadNextScript() {
+void OrcaNext::LoadNextScript() {
      if (startupScripts.empty()) {
          // Finished processing startup scripts, start exporting figures
          ExportNextFigure();
@@ -165,11 +109,11 @@ void HeadlessExample::LoadNextScript() {
                  scriptString,
                  scriptPath,
                  true,
-                 base::BindOnce(&HeadlessExample::OnScriptCompileComplete, weak_factory_.GetWeakPtr()));
+                 base::BindOnce(&OrcaNext::OnScriptCompileComplete, weak_factory_.GetWeakPtr()));
      }
 }
 
-void HeadlessExample::ExportNextFigure() {
+void OrcaNext::ExportNextFigure() {
     std::string exportSpec;
 
     // TODO: Test whether this will work for really large figures. Do we need to read chunks at some point?
@@ -177,7 +121,7 @@ void HeadlessExample::ExportNextFigure() {
     if (!std::getline(std::cin, exportSpec)) {
         std::cerr << "No more figures" << std::endl;
         // Reached end of file,
-        // Shut down the browser (see ~HeadlessExample).
+        // Shut down the browser (see ~OrcaNext).
         delete g_example;
         g_example = nullptr;
 
@@ -226,10 +170,10 @@ void HeadlessExample::ExportNextFigure() {
 
     devtools_client_->GetRuntime()->CallFunctionOn(
             std::move(eval_params),
-            base::BindOnce(&HeadlessExample::OnExportComplete, weak_factory_.GetWeakPtr()));
+            base::BindOnce(&OrcaNext::OnExportComplete, weak_factory_.GetWeakPtr()));
 }
 
-void HeadlessExample::OnExportComplete(
+void OrcaNext::OnExportComplete(
         std::unique_ptr<headless::runtime::CallFunctionOnResult> result) {
     std::cerr << "OnExportComplete" << "\n";
     // Make sure the evaluation succeeded before reading the result.
@@ -272,7 +216,7 @@ void HeadlessExample::OnExportComplete(
                             .SetPrintBackground(true)
                             .SetPreferCSSPageSize(true)  // Use @page {size: } CSS style
                             .Build(),
-                    base::BindOnce(&HeadlessExample::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
+                    base::BindOnce(&OrcaNext::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
         } else {
             std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
             ExportNextFigure();
@@ -280,7 +224,7 @@ void HeadlessExample::OnExportComplete(
     }
 }
 
-void HeadlessExample::OnPDFCreated(
+void OrcaNext::OnPDFCreated(
         std::string responseString,
         std::unique_ptr<headless::page::PrintToPDFResult> result
     ) {
@@ -302,7 +246,7 @@ void HeadlessExample::OnPDFCreated(
   ExportNextFigure();
 }
 
-void HeadlessExample::OnScriptCompileComplete(
+void OrcaNext::OnScriptCompileComplete(
         std::unique_ptr<headless::runtime::CompileScriptResult> result) {
     // Make sure the evaluation succeeded before running script
     if (result->HasExceptionDetails()) {
@@ -312,12 +256,12 @@ void HeadlessExample::OnScriptCompileComplete(
         std::string plotlyjsScriptId = result->GetScriptId();
         devtools_client_->GetRuntime()->RunScript(
                 plotlyjsScriptId,
-                base::BindOnce(&HeadlessExample::OnRunScriptComplete, weak_factory_.GetWeakPtr())
+                base::BindOnce(&OrcaNext::OnRunScriptComplete, weak_factory_.GetWeakPtr())
                 );
     }
 }
 
-void HeadlessExample::OnRunScriptComplete(
+void OrcaNext::OnRunScriptComplete(
         std::unique_ptr<headless::runtime::RunScriptResult> result) {
     std::cerr << "OnRunScriptComplete" << "\n";
     // Make sure the evaluation succeeded before reading the result.
@@ -463,7 +407,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // and print its DOM.
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
-    g_example = new HeadlessExample(browser, web_contents, scripts, tmpFileName, mapboxToken, topojsonUrl);
+    g_example = new OrcaNext(browser, web_contents, scripts, tmpFileName, mapboxToken, topojsonUrl);
 }
 
 int main(int argc, const char** argv) {
