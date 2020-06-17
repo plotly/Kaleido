@@ -65,7 +65,7 @@ mkdir -p ../build/orca_next_mac/bin
 cp out/OrcaNext_mac/orca_next ../build/orca_next_mac/bin
 
 # Copy icudtl.dat
-cp ./out/OrcaNext_win/icudtl.dat ../build/orca_next_win/
+cp ./out/OrcaNext_mac/icudtl.dat ../build/orca_next_mac/
 
 # launch script
 echo "#!/bin/bash
