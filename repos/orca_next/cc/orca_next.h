@@ -1,4 +1,5 @@
 #include "base/memory/weak_ptr.h"
+#include "base/files/file_util.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -46,6 +47,7 @@ private:
     std::string tmpFileName;
     std::list<std::string> remainingLocalScriptsFiles;
     BasePlugin *plugin;
+    base::FilePath cwd;
 
     // The headless browser instance. Owned by the headless library. See main().
     headless::HeadlessBrowser* browser_;

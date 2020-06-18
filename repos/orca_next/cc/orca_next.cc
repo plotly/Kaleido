@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "base/files/file_util.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -49,6 +50,8 @@ OrcaNext::OrcaNext(
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
+
+    base::GetCurrentDirectory(&cwd);
     web_contents_->AddObserver(this);
 }
 
@@ -102,6 +105,15 @@ void OrcaNext::LoadNextScript() {
          std::string scriptPath(remainingLocalScriptsFiles.front());
          remainingLocalScriptsFiles.pop_front();
          std::ifstream t(scriptPath);
+         if (!t.is_open()) {
+             // Reached end of file,
+             // Shut down the browser (see ~OrcaNext).
+             std::cerr << "Failed to find, or open, local file at "
+                       << scriptPath << " with working directory " << cwd.value() << std::endl;
+             delete g_example;
+             g_example = nullptr;
+             return;
+         }
          std::string scriptString((std::istreambuf_iterator<char>(t)),
                                   std::istreambuf_iterator<char>());
 
