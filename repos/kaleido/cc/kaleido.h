@@ -7,23 +7,23 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 
-#include "plugins/BasePlugin.h"
+#include "scopes/BaseScope.h"
 
 #ifndef CHROMIUM_ORCA_NEXT_H
 #define CHROMIUM_ORCA_NEXT_H
 
 
-class OrcaNext : public headless::HeadlessWebContents::Observer,
+class Kaleido : public headless::HeadlessWebContents::Observer,
                  public headless::page::Observer,
                  public headless::runtime::Observer
 {
 public:
-    OrcaNext(headless::HeadlessBrowser* browser,
-             headless::HeadlessWebContents* web_contents,
-             std::string tmpFileName,
-             BasePlugin *plugin);
+    Kaleido(headless::HeadlessBrowser* browser,
+            headless::HeadlessWebContents* web_contents,
+            std::string tmpFileName,
+            BaseScope *scope);
 
-    ~OrcaNext() override;
+    ~Kaleido() override;
 
     // headless::HeadlessWebContents::Observer implementation:
     void DevToolsTargetReady() override;
@@ -46,7 +46,7 @@ private:
     int contextId;
     std::string tmpFileName;
     std::list<std::string> remainingLocalScriptsFiles;
-    BasePlugin *plugin;
+    BaseScope *scope;
     base::FilePath cwd;
 
     // The headless browser instance. Owned by the headless library. See main().
@@ -57,11 +57,11 @@ private:
     std::unique_ptr<headless::HeadlessDevToolsClient> devtools_client_;
     // A helper for creating weak pointers to this class.
     // weak_factory_ MUST BE LAST PROPERTY DEFINED!
-    base::WeakPtrFactory<OrcaNext> weak_factory_{this};
+    base::WeakPtrFactory<Kaleido> weak_factory_{this};
 };
 
 namespace {
-    OrcaNext* g_example;
+    Kaleido* g_example;
 }
 
 #endif //CHROMIUM_ORCA_NEXT_H

@@ -1,10 +1,10 @@
-## WIP orca_next prototype
+## WIP kaleido prototype
 This is a WIP towards the goal of being able to perform plotly image export from any relatively modern Linux distribution ((Ubuntu 16.04+, Centos 7+, etc.) without any external dependencies.
 
 Rather than buiding on Electron, this idea here is to create a custom, stripped down, build of Chromium headless and then
 bundle the necessary shared objects files, fonts, config, etc.
 
-The Chromium source tree includes a minimal [`headless_example`](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) that we'll use as the starting point for `orca_next`. So far, this repo is focused on scripting a reproducible workflow for building a custom `orca_next.cc` file that has identical functionality to `headless_example`, and bundling dependencies.
+The Chromium source tree includes a minimal [`headless_example`](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) that we'll use as the starting point for `kaleido`. So far, this repo is focused on scripting a reproducible workflow for building a custom `kaleido.cc` file that has identical functionality to `headless_example`, and bundling dependencies.
 
 
 ## Docker container
@@ -35,34 +35,34 @@ This will build the `headless_example` application to `repos/src/out/Headless/he
 $ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_headless
 ```
 
-## Build orca_next
-This will build the `orca_next` application to `repos/build/orca_next`, and bundle shared libraries and fonts. The input source for this application is in `repos/orca_next/orca_next.cc`.
+## Build kaleido
+This will build the `kaleido` application to `repos/build/kaleido`, and bundle shared libraries and fonts. The input source for this application is in `repos/kaleido/kaleido.cc`.
 
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_orca_next
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido
 ```
 
-To run the orca_next application, use the `/repos/build/orca_next/orca_next` bash script. This passes argumnets through to the `repos/build/orca_next/bin/orca_next` executable, but it also sets up the environment needed to use the bundled shared libraries, fonts, etc.
+To run the kaleido application, use the `/repos/build/kaleido/kaleido` bash script. This passes argumnets through to the `repos/build/kaleido/bin/kaleido` executable, but it also sets up the environment needed to use the bundled shared libraries, fonts, etc.
 
 If you're running Linux locally, try it out on your local linux install with:
 
 ```
-echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | repos/build/orca_next/orca_next plotly
+echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | repos/build/kaleido/kaleido plotly
 ```
 
 You can try it out on in a raw ubuntu:16.04 docker image with:
 
 ```
-echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | docker run -i -v `pwd`/repos/:/repos ubuntu:16.04 /repos/build/orca_next/orca_next plotly
+echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}' | docker run -i -v `pwd`/repos/:/repos ubuntu:16.04 /repos/build/kaleido/kaleido plotly
 ```
 
 This shows that we were able to invoke chromium on the most minimal ubuntu 16.04 image without installing any additional dependencies using `apt`, and without using `Xvfb` to simulate X11.
 
-## Cross compile orca_next for Windows
-This will build the `orca_next` application to `repos/build/orca_next_win`, for windows
+## Cross compile kaleido for Windows
+This will build the `kaleido` application to `repos/build/kaleido_win`, for windows
 
 ```
-$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_orca_next_win
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido_win
 ```
 
 
@@ -78,4 +78,4 @@ E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e
 The `CHROMIUM_TAG` environemnt variable must also be updated in the `repos/linux_scripts/checkout_revision` and `repos/mac_scripts/checkout_revision` scripts.
 
 ## CMakeLists.txt
-The CMakeLists.txt file in `repos/` is only there to help IDE's like `CLion`/`KDevelop` figure out how to index the chromium source tree. It can't be used to actually build chromium. Using this approach, it's possible to get full completion and code navigation from `repos/orca_next/orca_next.cc`
+The CMakeLists.txt file in `repos/` is only there to help IDE's like `CLion`/`KDevelop` figure out how to index the chromium source tree. It can't be used to actually build chromium. Using this approach, it's possible to get full completion and code navigation from `repos/kaleido/kaleido.cc`

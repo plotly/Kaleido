@@ -6,7 +6,7 @@ repos/.gclient_entries
 repos/.idea
 repos/build
 repos/cmake-build-debug
-repos/orca_next/js/node_modules
-repos/orca_next/js/build
+repos/kaleido/js/node_modules
+repos/kaleido/js/build
 *.pyc
 win_toolchain/*.zip

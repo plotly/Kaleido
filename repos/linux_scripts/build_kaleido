@@ -1,0 +1,96 @@
+#!/bin/bash
+# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_headless
+
+cd /repos/src
+
+# Make output directory
+mkdir -p out/Kaleido_linux
+
+# Write out/Kaleido_linux/args.gn
+echo '
+import("//build/args/headless.gn")
+enable_nacl=false
+is_component_build=false
+
+symbol_level=0
+blink_symbol_level=0
+is_debug=false
+' > out/Kaleido_linux/args.gn
+
+# 1) Reset headless/BUILD.gn
+git checkout HEAD -- headless/BUILD.gn
+
+# 2) Append kaleido section to headless build file (src/headless/BUILD.gn)
+echo "
+executable(\"kaleido\") {
+  sources = [ \"app/kaleido.cc\" ]
+
+  deps = [
+    \":headless_shell_lib\",
+    \"//skia\",  # we need this to override font render hinting in headless build
+  ]
+}" >> headless/BUILD.gn
+
+# 3) Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
+rm -rf headless/app/plugins
+cp -r ../kaleido/cc/* headless/app/
+
+# 4) Perform build, result will be out/Kaleido_linux/kaleido
+gn gen out/Kaleido_linux
+ninja -C out/Kaleido_linux -j 20 kaleido
+
+# 5) Copy build files
+mkdir -p ../build/kaleido/
+rm -r ../build/kaleido/*
+mkdir -p ../build/kaleido/bin
+cp out/Kaleido_linux/kaleido ../build/kaleido/bin
+cp -r out/Kaleido_linux/swiftshader/ ../build/kaleido/bin
+
+# copy shared libraries
+mkdir -p ../build/kaleido/lib/
+
+# /usr/lib/x86_64-linux-gnu/
+for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
+do
+  cp /usr/lib/x86_64-linux-gnu/$SO_FILE ../build/kaleido/lib/$SO_FILE
+done
+
+# /usr/lib/x86_64-linux-gnu/nss
+#cp -r /usr/lib/x86_64-linux-gnu/nss ../build/kaleido/lib/
+cp /usr/lib/x86_64-linux-gnu/nss/* ../build/kaleido/lib/
+
+# /lib/x86_64-linux-gnu/
+for SO_FILE in libexpat.so.1 # libdl.so.2 libpthread.so.0 librt.so.1 libm.so.6 libgcc_s.so.1 libc.so.6
+do
+  cp /lib/x86_64-linux-gnu/$SO_FILE ../build/kaleido/lib/$SO_FILE
+done
+
+# fonts
+mkdir -p ../build/kaleido/etc/
+cp -r /etc/fonts/ ../build/kaleido/etc/fonts
+mkdir -p ../build/kaleido/xdg
+cp -r /usr/share/fonts/ ../build/kaleido/xdg/
+
+# launch script
+echo "#!/bin/bash
+DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
+
+export LD_LIBRARY_PATH=\$DIR/lib:\$LD_LIBRARY_PATH
+export FONTCONFIG_PATH=\$DIR/etc/fonts
+export XDG_DATA_HOME=\$DIR/xdg
+
+cd \$DIR
+./bin/kaleido --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
+" > ../build/kaleido/kaleido
+chmod +x ../build/kaleido/kaleido
+
+# Copy javascript
+pushd ../kaleido/js/
+mkdir -p build/
+npm install
+npm run clean
+npm run build
+popd
+
+mkdir -p ../build/kaleido/js/
+cp ../kaleido/js/build/*.js ../build/kaleido/js/

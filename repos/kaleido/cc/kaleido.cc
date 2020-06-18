@@ -23,14 +23,15 @@
 #include "headless/public/headless_web_contents.h"
 #include "ui/gfx/geometry/size.h"
 
-#include "headless/app/orca_next.h"
-#include "plugins/Factory.h"
-#include "plugins/BasePlugin.h"
+#include "headless/app/kaleido.h"
+#include "scopes/Factory.h"
+#include "scopes/BaseScope.h"
 
 #include <streambuf>
 #include <fstream>
 #include <iostream>
 #include <utility>
+#include "stdlib.h"
 
 
 #if defined(OS_WIN)
@@ -38,15 +39,15 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
-OrcaNext::OrcaNext(
+Kaleido::Kaleido(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
         std::string tmpFileName,
-        BasePlugin *plugin_ptr
+        BaseScope *scope_ptr
 )
         : tmpFileName(tmpFileName),
-          remainingLocalScriptsFiles(plugin_ptr->LocalScriptFiles()),
-          plugin(plugin_ptr),
+          remainingLocalScriptsFiles(scope_ptr->LocalScriptFiles()),
+          scope(scope_ptr),
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
@@ -55,18 +56,17 @@ OrcaNext::OrcaNext(
     web_contents_->AddObserver(this);
 }
 
-OrcaNext::~OrcaNext() {
+Kaleido::~Kaleido() {
     // Note that we shut down the browser last, because it owns objects such as
     // the web contents which can no longer be accessed after the browser is gone.
     devtools_client_->GetPage()->RemoveObserver(this);
     web_contents_->GetDevToolsTarget()->DetachClient(devtools_client_.get());
     web_contents_->RemoveObserver(this);
-    std::cerr << "Shutdown" << std::endl;
     browser_->Shutdown();
 }
 
 // This method is called when the tab is ready for DevTools inspection.
-void OrcaNext::DevToolsTargetReady() {
+void Kaleido::DevToolsTargetReady() {
     // Attach our DevTools client to the tab so that we can send commands to it
     // and observe events.
     web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
@@ -82,7 +82,7 @@ void OrcaNext::DevToolsTargetReady() {
     devtools_client_->GetRuntime()->Enable();
 }
 
-void OrcaNext::OnLoadEventFired(
+void Kaleido::OnLoadEventFired(
         const headless::page::LoadEventFiredParams& params) {
     // Enable runtime
     LoadNextScript();
@@ -91,12 +91,12 @@ void OrcaNext::OnLoadEventFired(
     std::remove(tmpFileName.c_str());
 }
 
-void OrcaNext::OnExecutionContextCreated(
+void Kaleido::OnExecutionContextCreated(
         const headless::runtime::ExecutionContextCreatedParams& params) {
     contextId = params.GetContext()->GetId();
 }
 
-void OrcaNext::LoadNextScript() {
+void Kaleido::LoadNextScript() {
      if (remainingLocalScriptsFiles.empty()) {
          // Finished processing startup scripts, start exporting figures
          ExportNextFigure();
@@ -107,7 +107,7 @@ void OrcaNext::LoadNextScript() {
          std::ifstream t(scriptPath);
          if (!t.is_open()) {
              // Reached end of file,
-             // Shut down the browser (see ~OrcaNext).
+             // Shut down the browser (see ~Kaleido).
              std::cerr << "Failed to find, or open, local file at "
                        << scriptPath << " with working directory " << cwd.value() << std::endl;
              delete g_example;
@@ -121,29 +121,26 @@ void OrcaNext::LoadNextScript() {
                  scriptString,
                  scriptPath,
                  true,
-                 base::BindOnce(&OrcaNext::OnScriptCompileComplete, weak_factory_.GetWeakPtr()));
+                 base::BindOnce(&Kaleido::OnScriptCompileComplete, weak_factory_.GetWeakPtr()));
      }
 }
 
-void OrcaNext::ExportNextFigure() {
+void Kaleido::ExportNextFigure() {
     std::string exportSpec;
 
     // TODO: Test whether this will work for really large figures. Do we need to read chunks at some point?
-    std::cerr << "Blocking for next figure" << std::endl;
     if (!std::getline(std::cin, exportSpec)) {
-        std::cerr << "No more figures" << std::endl;
         // Reached end of file,
-        // Shut down the browser (see ~OrcaNext).
+        // Shut down the browser (see ~Kaleido).
         delete g_example;
         g_example = nullptr;
 
         return;
     }
 
-    std::cerr << "Received Figure: " << std::endl;
     std::string exportFunction = base::StringPrintf(
-            "function(spec, ...args) { return orca_next_plugins.%s(spec, ...args).then(JSON.stringify); }",
-            plugin->PluginName().c_str());
+            "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
+            scope->PluginName().c_str());
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
@@ -152,7 +149,7 @@ void OrcaNext::ExportNextFigure() {
         return;
     }
 
-    std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = plugin->BuildCallArguments();
+    std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();
 
     // Prepend Export spec as first argument
     args.insert(args.begin(),
@@ -170,16 +167,16 @@ void OrcaNext::ExportNextFigure() {
 
     devtools_client_->GetRuntime()->CallFunctionOn(
             std::move(eval_params),
-            base::BindOnce(&OrcaNext::OnExportComplete, weak_factory_.GetWeakPtr()));
+            base::BindOnce(&Kaleido::OnExportComplete, weak_factory_.GetWeakPtr()));
 }
 
-void OrcaNext::OnExportComplete(
+void Kaleido::OnExportComplete(
         std::unique_ptr<headless::runtime::CallFunctionOnResult> result) {
-    std::cerr << "OnExportComplete" << "\n";
+
     // Make sure the evaluation succeeded before reading the result.
     if (result->HasExceptionDetails()) {
-        LOG(ERROR) << "Failed to serialize document: "
-                   << result->GetExceptionDetails()->GetText();
+        std::cerr << "Failed to serialize document: "
+                  << result->GetExceptionDetails()->GetText();
         ExportNextFigure();
     } else {
         // JSON parse result to get format
@@ -204,9 +201,6 @@ void OrcaNext::OnExportComplete(
             double scale;
             responseDict->GetDouble("scale", &scale);
 
-            std::cerr << "format: " << format << ", pdfBgColor:" << bgColor <<
-                         ", width: " << width << ", height: " << height << ", scale: " << scale << std::endl;
-
             devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
                     headless::page::PrintToPDFParams::Builder()
                             .SetMarginBottom(0)
@@ -216,7 +210,7 @@ void OrcaNext::OnExportComplete(
                             .SetPrintBackground(true)
                             .SetPreferCSSPageSize(true)  // Use @page {size: } CSS style
                             .Build(),
-                    base::BindOnce(&OrcaNext::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
+                    base::BindOnce(&Kaleido::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
         } else {
             std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
             ExportNextFigure();
@@ -224,7 +218,7 @@ void OrcaNext::OnExportComplete(
     }
 }
 
-void OrcaNext::OnPDFCreated(
+void Kaleido::OnPDFCreated(
         std::string responseString,
         std::unique_ptr<headless::page::PrintToPDFResult> result
     ) {
@@ -246,7 +240,7 @@ void OrcaNext::OnPDFCreated(
   ExportNextFigure();
 }
 
-void OrcaNext::OnScriptCompileComplete(
+void Kaleido::OnScriptCompileComplete(
         std::unique_ptr<headless::runtime::CompileScriptResult> result) {
     // Make sure the evaluation succeeded before running script
     if (result->HasExceptionDetails()) {
@@ -256,14 +250,13 @@ void OrcaNext::OnScriptCompileComplete(
         std::string plotlyjsScriptId = result->GetScriptId();
         devtools_client_->GetRuntime()->RunScript(
                 plotlyjsScriptId,
-                base::BindOnce(&OrcaNext::OnRunScriptComplete, weak_factory_.GetWeakPtr())
+                base::BindOnce(&Kaleido::OnRunScriptComplete, weak_factory_.GetWeakPtr())
                 );
     }
 }
 
-void OrcaNext::OnRunScriptComplete(
+void Kaleido::OnRunScriptComplete(
         std::unique_ptr<headless::runtime::RunScriptResult> result) {
-    std::cerr << "OnRunScriptComplete" << "\n";
     // Make sure the evaluation succeeded before reading the result.
     if (result->HasExceptionDetails()) {
         LOG(ERROR) << "Failed to run script: "
@@ -296,25 +289,25 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     base::CommandLine::StringVector args =
             base::CommandLine::ForCurrentProcess()->GetArgs();
     if (args.empty()) {
-        LOG(ERROR) << "No Plugin Specified";
+        LOG(ERROR) << "Error: No Scope Specified" << std::endl;
         browser->Shutdown();
         exit(EXIT_FAILURE);
         return;
     }
 
-    // Instantiate renderer plugin
+    // Instantiate renderer scope
     std::string plugin_name = args[0];
-    BasePlugin *plugin = LoadPlugin(plugin_name);
-    if (!plugin) {
-        // Invalid plugin name
-        LOG(ERROR) << "Invalid plugin: " << plugin_name;
+    BaseScope *scope = LoadPlugin(plugin_name);
+    if (!scope) {
+        // Invalid scope name
+        LOG(ERROR) << "Invalid scope: " << plugin_name;
         browser->Shutdown();
         exit(EXIT_FAILURE);
         return;
     }
 
     // Build initial HTML file
-    std::list<std::string> scriptTags = plugin->ScriptTags();
+    std::list<std::string> scriptTags = scope->ScriptTags();
     std::stringstream htmlStringStream;
     htmlStringStream << "<html><head><meta charset=\"UTF-8\"><style id=\"head-style\"></style>";
 
@@ -332,11 +325,10 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         scriptTags.pop_front();
     }
     // Close head and add body with img tag place holder for PDF export
-    htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"orca-image\"><img></body></html>";
+    htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
     // Write html to temp file
     std::string tmpFileName = std::tmpnam(nullptr) + std::string(".html");
-    std::cerr << "Temp file: " << tmpFileName << std::endl;
     std::ofstream htmlFile;
     htmlFile.open(tmpFileName, std::ios::out);
     htmlFile << htmlStringStream.str();
@@ -352,11 +344,11 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // We could set other options for the opened tab here, for now only set URL
     tab_builder.SetInitialURL(url);
 
-    // Create an instance of OrcaNext
+    // Create an instance of Kaleido
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
 
-    // TODO make plugin a unique ptr and use move semantics here
-    g_example = new OrcaNext(browser, web_contents, tmpFileName, plugin);
+    // TODO make scope a unique ptr and use move semantics here
+    g_example = new Kaleido(browser, web_contents, tmpFileName, scope);
 }
 
 int main(int argc, const char** argv) {

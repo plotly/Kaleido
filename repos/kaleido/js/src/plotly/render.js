@@ -58,10 +58,6 @@ function render (info, mapboxAccessToken, topojsonURL) {
       errorMsg = cst.statusMsg[errorCode]
     }
 
-    // Dump HTML string for debugging PDFs
-    // let htmlString = (document.doctype ? new XMLSerializer().serializeToString(document.doctype) + '\n' : '') +
-    //     document.documentElement.outerHTML
-
     return {
       code: errorCode,
       message: errorMsg,
@@ -157,7 +153,7 @@ function render (info, mapboxAccessToken, topojsonURL) {
     return new Promise((resolve) => {resolve(done())})
   }
 
-  const img = document.getElementById("orca-image")
+  const img = document.getElementById("kaleido-image")
   const style = document.getElementById("head-style")
 
   let exportPromise = promise.then((imgData) => {

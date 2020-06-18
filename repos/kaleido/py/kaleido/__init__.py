@@ -4,11 +4,12 @@ import plotly.graph_objects as go
 import plotly.io as pio
 pio.templates.default = "plotly_dark"
 
-orca_next_path = "/media/jmmease/SSD1/orca-next/repos/build/orca_next/orca_next"
+kaleido_path = "/media/jmmease/SSD1/kaleido/repos/build/kaleido/kaleido"
 mapbox_accesstoken = "pk.eyJ1Ijoiam1tZWFzZSIsImEiOiJjamljeWkwN3IwNjEyM3FtYTNweXV4YmV0In0.2zbgGCjbPTK7CToIg81kMw"
 
 proc = subprocess.Popen(
-    [orca_next_path,
+    [kaleido_path,
+     "plotly",
      "--mathjax=https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js",
      # "--plotlyjs=file:///home/jmmease/scratch/plotly-latest.min.js",
      # "--topojson=file:///home/jmmease/PyDev/repos/plotly.js/dist/topojson/",
@@ -96,8 +97,8 @@ if __name__ == "__main__":
     #     f.write(to_image(fig.to_dict(), format='pdf', width=800))
 
     fig = bulid_mathjax_plot()
-    with open('../fig2.pdf', 'wb') as f:
-        f.write(to_image(fig.to_dict(), format='pdf', width=700))
+    with open('../fig2.png', 'wb') as f:
+        f.write(to_image(fig.to_dict(), format='png', width=700))
     #
     # fig = build_topojson_plot()
     # with open('../fig3.pdf', 'wb') as f:

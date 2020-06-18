@@ -13,9 +13,9 @@ export PATH="$PATH:`pwd`/depot_tools"
 cd src
 
 # Make output directory
-mkdir -p out/OrcaNext_mac
+mkdir -p out/Kaleido_mac
 
-# Write out/OrcaNext_mac/args.gn
+# Write out/Kaleido_mac/args.gn
 echo "
 # Copied windows compatible options from //build/args/headless.gn
 # Embed resource.pak into binary to simplify deployment.
@@ -34,15 +34,15 @@ blink_symbol_level=0
 is_debug=false
 is_component_build=false
 is_official_build=true
-" > out/OrcaNext_mac/args.gn
+" > out/Kaleido_mac/args.gn
 
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
 
-# 2) Append orca_next section to headless build file (src/headless/BUILD.gn)
+# 2) Append kaleido section to headless build file (src/headless/BUILD.gn)
 echo "
-executable(\"orca_next\") {
-  sources = [ \"app/orca_next.cc\" ]
+executable(\"kaleido\") {
+  sources = [ \"app/kaleido.cc\" ]
 
   deps = [
     \":headless_shell_lib\",
@@ -50,39 +50,39 @@ executable(\"orca_next\") {
   ]
 }" >> headless/BUILD.gn
 
-# 3) Copy orca_next/orca_next.cc to src/headless/app/orca_next.cc
+# 3) Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
 rm -rf headless/app/plugins
-cp -r ../orca_next/cc/* headless/app/
+cp -r ../kaleido/cc/* headless/app/
 
-# 4) Perform build, result will be out/OrcaNext_mac/orca_next
-gn gen out/OrcaNext_mac
-ninja -C out/OrcaNext_mac -j 8 orca_next
+# 4) Perform build, result will be out/Kaleido_mac/kaleido
+gn gen out/Kaleido_mac
+ninja -C out/Kaleido_mac -j 8 kaleido
 
 # 5) Copy build files
-mkdir -p ../build/orca_next_mac/
-rm -r ../build/orca_next_mac/*
-mkdir -p ../build/orca_next_mac/bin
-cp out/OrcaNext_mac/orca_next ../build/orca_next_mac/bin
+mkdir -p ../build/kaleido_mac/
+rm -r ../build/kaleido_mac/*
+mkdir -p ../build/kaleido_mac/bin
+cp out/Kaleido_mac/kaleido ../build/kaleido_mac/bin
 
 # Copy icudtl.dat
-cp ./out/OrcaNext_mac/icudtl.dat ../build/orca_next_mac/
+cp ./out/Kaleido_mac/icudtl.dat ../build/kaleido_mac/
 
 # launch script
 echo "#!/bin/bash
 DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
 
 cd \$DIR
-./bin/orca_next --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
-" > ../build/orca_next_mac/orca_next
-chmod +x ../build/orca_next_mac/orca_next
+./bin/kaleido --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
+" > ../build/kaleido_mac/kaleido
+chmod +x ../build/kaleido_mac/kaleido
 
 # Copy javascript
-pushd ../orca_next/js/
+pushd ../kaleido/js/
 mkdir -p build/
 npm install
 npm run clean
 npm run build
 popd
 
-mkdir -p ../build/orca_next_mac/js/
-cp ../orca_next/js/build/*.js ../build/orca_next_mac/js/
+mkdir -p ../build/kaleido_mac/js/
+cp ../kaleido/js/build/*.js ../build/kaleido_mac/js/

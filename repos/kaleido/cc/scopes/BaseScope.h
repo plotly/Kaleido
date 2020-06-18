@@ -12,11 +12,11 @@
 #define CHROMIUM_BASEPLUGIN_H
 
 
-class BasePlugin {
+class BaseScope {
 public:
-    BasePlugin();
-    BasePlugin(const BasePlugin &v);
-    virtual ~BasePlugin();
+    BaseScope();
+    BaseScope(const BaseScope &v);
+    virtual ~BaseScope();
 
     virtual std::string PluginName() = 0;
     virtual std::vector<std::unique_ptr<::headless::runtime::CallArgument>> BuildCallArguments();
@@ -26,29 +26,29 @@ public:
 protected:
     std::list<std::string> scriptTags;
     std::list<std::string> localScriptFiles;
-    const BasePlugin *plugin;
+    const BaseScope *plugin;
 };
 
-BasePlugin::BasePlugin(): scriptTags(), localScriptFiles() {}
-BasePlugin::BasePlugin(const BasePlugin &v):
+BaseScope::BaseScope(): scriptTags(), localScriptFiles() {}
+BaseScope::BaseScope(const BaseScope &v):
     scriptTags(v.scriptTags),
     localScriptFiles(v.localScriptFiles)
     {}
 
-BasePlugin::~BasePlugin() {
+BaseScope::~BaseScope() {
     delete plugin;
 }
 
-std::vector<std::unique_ptr<::headless::runtime::CallArgument>> BasePlugin::BuildCallArguments() {
+std::vector<std::unique_ptr<::headless::runtime::CallArgument>> BaseScope::BuildCallArguments() {
     return std::vector<std::unique_ptr<::headless::runtime::CallArgument>>();
 }
 
-std::list<std::string> BasePlugin::ScriptTags() {
+std::list<std::string> BaseScope::ScriptTags() {
     // Return vector as value so that it is copied and caller is free to mutate it
     return scriptTags;
 }
 
-std::list<std::string> BasePlugin::LocalScriptFiles() {
+std::list<std::string> BaseScope::LocalScriptFiles() {
     // Return vector as value so that it is copied and caller is free to mutate it
     return localScriptFiles;
 }

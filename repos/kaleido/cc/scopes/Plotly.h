@@ -16,7 +16,7 @@
 #define CHROMIUM_PLOTLY_H
 
 
-class Plotly: public BasePlugin {
+class Plotly: public BaseScope {
 public:
     Plotly();
     ~Plotly() override;
@@ -97,7 +97,7 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
     }
 
     // Additional initialization scripts (these must be added after plotly.js)
-    localScriptFiles.emplace_back("./js/orca_next_plugins.js");
+    localScriptFiles.emplace_back("./js/kaleido_scopes.js");
 }
 
 Plotly::~Plotly() {}
