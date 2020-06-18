@@ -1,11 +1,10 @@
 ## WIP kaleido prototype
-This is a WIP towards the goal of being able to perform plotly image export from any relatively modern Linux distribution ((Ubuntu 16.04+, Centos 7+, etc.) without any external dependencies.
+This is a WIP towards the goal of being able to perform static image export of web-based plotting libraries (starting with Plotly), from any relatively modern Linux distribution ((Ubuntu 16.04+, Centos 7+, etc.) without any external dependencies.
 
 Rather than buiding on Electron, this idea here is to create a custom, stripped down, build of Chromium headless and then
 bundle the necessary shared objects files, fonts, config, etc.
 
-The Chromium source tree includes a minimal [`headless_example`](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) that we'll use as the starting point for `kaleido`. So far, this repo is focused on scripting a reproducible workflow for building a custom `kaleido.cc` file that has identical functionality to `headless_example`, and bundling dependencies.
-
+The Chromium source tree includes a minimal [`headless_example`](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) that was used as the starting point for this project.
 
 ## Docker container
 First, create a docker container that is configured to download and build the chromium source tree.  This mostly follows the instructions at https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md to install `depot_tools` and run `install-build-deps.sh` to install the required build dependencies the appropriate stable version of Chromium. The image is based on ubuntu 16.04, which is the recommended OS for building Chromium on Linux.
