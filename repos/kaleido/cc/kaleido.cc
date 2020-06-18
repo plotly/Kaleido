@@ -295,8 +295,13 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         return;
     }
 
+    // Get first command line argument as a std::string using a string stream.
+    // This handles the case where args[0] is a wchar_t on Windows
+    std::stringstream scope_stringstream;
+    scope_stringstream << args[0];
+    std::string plugin_name = scope_stringstream.str();
+
     // Instantiate renderer scope
-    std::string plugin_name = args[0];
     BaseScope *scope = LoadPlugin(plugin_name);
     if (!scope) {
         // Invalid scope name
