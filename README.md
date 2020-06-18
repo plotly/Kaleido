@@ -17,7 +17,7 @@ $ docker build -t jonmmease/chromium-builder:0.5 -f Dockerfile .
 
 
 ## Fetch chromium source code
-This will download the full chromium source tre. **Caution**: This may take up to 40GB after build steps below
+This will download the full chromium source tree. **Caution**: This may take up to 40GB after build steps below
 ```
 $ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
 ```

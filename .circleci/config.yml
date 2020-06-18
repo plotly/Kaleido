@@ -7,3 +7,9 @@ jobs:
     steps:
         - checkout
         - run: docker --version
+        - run: docker pull jonmmease/chromium-builder:0.5
+        - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
+        - run: docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/checkout_revision
+        - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido
+        - run: ls repos/build/kaleido
+        - run: ls repos/build/kaleido_win
