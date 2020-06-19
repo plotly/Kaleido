@@ -18,7 +18,7 @@ jobs:
   mac_build:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
-    resource_class: large  # Large so that build can finish before 5-hour cutoff
+    resource_class: medium
     steps:
       - checkout
       - run:
