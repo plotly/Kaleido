@@ -8,16 +8,17 @@ jobs:
     steps:
       - checkout
       - run: docker --version
-      - run: docker pull jonmmease/chromium-builder:0.5
-      - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
-      - run: docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/checkout_revision
-      - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido
+      - run: docker pull jonmmease/kaleido-builder:0.6
+      - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido
       - run: ls repos/build/kaleido
-      - run: ls repos/build/kaleido_win
+      - run: pushd repos/build && zip -r kaleido_linux.zip ./*
+      - store_artifacts:
+          path: ./repos/build/kaleido_linux.zip
         
   mac_build:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -30,6 +31,9 @@ jobs:
           command: ./repos/mac_scripts/build_kaleido
           no_output_timeout: 30m
       - run: ls repos/build/kaleido_mac
+      - run: pushd repos/build && zip -r kaleido_mac.zip ./*
+      - store_artifacts:
+          path: ./repos/build/kaleido_mac.zip
 
 workflows:
   build-all:

@@ -12,7 +12,14 @@ First, create a docker container that is configured to download and build the ch
 Build container with:
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.6 -f Dockerfile .
+$ docker build -t jonmmease/chromium-builder:0.6 -f repose/linux_scripts/Dockerfile .
+```
+
+### Build "full" docker container
+This container contains pre-compiled version of chromium source tree. Takes several hours to build!
+
+```
+$ docker build -t jonmmease/chromium-builder:0.6 -f repose/linux_full_scripts/Dockerfile .
 ```
 
 
