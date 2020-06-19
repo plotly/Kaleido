@@ -1,15 +1,30 @@
 version: 2.1
+
 jobs:
-  build:
+  linux_win_build:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: medium
     steps:
-        - checkout
-        - run: docker --version
-        - run: docker pull jonmmease/chromium-builder:0.5
-        - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
-        - run: docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/checkout_revision
-        - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido
-        - run: ls repos/build/kaleido
-        - run: ls repos/build/kaleido_win
+      - checkout
+      - run: docker --version
+      - run: docker pull jonmmease/chromium-builder:0.5
+      - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
+      - run: docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/checkout_revision
+      - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido
+      - run: ls repos/build/kaleido
+      - run: ls repos/build/kaleido_win
+        
+  mac_build:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 11.3.0 # indicate our selected version of Xcode
+    steps:
+      - checkout
+      - run: ./repos/mac_scripts/fetch_chromium
+      - run: ./repos/mac_scripts/build_kaleido
+      - run: ls repos/build/kaleido_mac
+
+workflows:
+  build-all:
+    jobs:
+      - mac_build
