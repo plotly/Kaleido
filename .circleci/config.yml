@@ -1,7 +1,7 @@
 version: 2.1
 
 jobs:
-  linux_win_build:
+  linux_build:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: medium
@@ -18,11 +18,11 @@ jobs:
   mac_build:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
-    resource_class: large
+    resource_class: large  # Large so that build can finish before 5-hour cutoff
     steps:
       - checkout
       - run:
-          name: Delete Simulators
+          name: Delete Simulators to save space
           command: sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes/
       - run:
           command: ./repos/mac_scripts/fetch_chromium
@@ -39,3 +39,4 @@ workflows:
   build-all:
     jobs:
       - mac_build
+      - linux_build
