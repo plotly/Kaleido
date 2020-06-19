@@ -42,14 +42,6 @@ RUN \
 # Force gclient to use Python 2
 ENV GCLIENT_PY3=0
 
-# Add windows toolchain to image
-COPY win_toolchain/ /win_toolchain/
-
-# Set windows toolchain environment variables
-ENV \
-    DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL=/win_toolchain/ \
-    GYP_MSVS_HASH_9ff60e43ba91947baca460d0ca3b1b980c3a2c23=$WIN_TOOLCHAIN_HASH
-
 RUN \
     cd / \
     && git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git \ 
@@ -76,18 +68,3 @@ RUN \
     curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_TAG/build/install-build-deps.sh?format=TEXT \
     | base64 -d > install-build-deps.sh && chmod +x ./install-build-deps.sh && \
     ./install-build-deps.sh --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
-
-
-# Add SSH support
-RUN ( \
-    echo 'LogLevel DEBUG2'; \
-    echo 'PermitRootLogin yes'; \
-    echo 'PasswordAuthentication yes'; \
-    echo 'Subsystem sftp /usr/lib/openssh/sftp-server'; \
-  ) > /etc/ssh/sshd_config_test_clion \
-  && rm -r /run/sshd && mkdir /run/sshd
-
-RUN useradd -m user \
-  && yes password | passwd user
-
-CMD ["/usr/sbin/sshd", "-D", "-e", "-f", "/etc/ssh/sshd_config_test_clion"]

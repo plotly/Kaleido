@@ -12,33 +12,33 @@ First, create a docker container that is configured to download and build the ch
 Build container with:
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.5 -f Dockerfile .
+$ docker build -t jonmmease/chromium-builder:0.6 -f Dockerfile .
 ```
 
 
 ## Fetch chromium source code
 This will download the full chromium source tree. **Caution**: This may take up to 40GB after build steps below
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/fetch_chromium
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/fetch_chromium
 ```
 
 ## Checkout tag
 This will checkout a specific stable tag of chromium, and then sync all dependencies
 ```
-$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/checkout_revision
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/checkout_revision
 ```
 
 ## Build chromium headless
 This will build the `headless_example` application to `repos/src/out/Headless/headless_example`
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_headless
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_headless
 ```
 
 ## Build kaleido
 This will build the `kaleido` application to `repos/build/kaleido`, and bundle shared libraries and fonts. The input source for this application is in `repos/kaleido/kaleido.cc`.
 
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_kaleido
 ```
 
 To run the kaleido application, use the `/repos/build/kaleido/kaleido` bash script. This passes argumnets through to the `repos/build/kaleido/bin/kaleido` executable, but it also sets up the environment needed to use the bundled shared libraries, fonts, etc.
@@ -61,7 +61,7 @@ This shows that we were able to invoke chromium on the most minimal ubuntu 16.04
 This will build the `kaleido` application to `repos/build/kaleido_win`, for windows
 
 ```
-$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/linux_scripts/build_kaleido_win
+$ docker run -it --privileged --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_kaleido_win
 ```
 
 

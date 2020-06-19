@@ -7,6 +7,3 @@ rm -f .gclient
 
 echo "fetch chromium"
 fetch --nohooks chromium
-
-# Specify that we want to later sync linux and windows components
-echo -e "\ntarget_os = ['linux', 'win']\n" >> .gclient

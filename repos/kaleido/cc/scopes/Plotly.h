@@ -1,7 +1,7 @@
 //
 // Created by jmmease on 6/17/20.
 //
-#include "BasePlugin.h"
+#include "BaseScope.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "headless/public/devtools/domains/runtime.h"
