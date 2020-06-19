@@ -10,6 +10,7 @@ jobs:
       - run: docker --version
       - run: docker pull jonmmease/kaleido-builder:0.6
       - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido
+      - run: sudo chmod -R 777 repos/build
       - run: ls repos/build/kaleido
       - run: pushd repos/build && zip -r kaleido_linux.zip ./*
       - store_artifacts:
@@ -38,5 +39,5 @@ jobs:
 workflows:
   build-all:
     jobs:
-      - mac_build
+      #- mac_build
       - linux_build
