@@ -20,8 +20,12 @@ jobs:
       xcode: 11.3.0 # indicate our selected version of Xcode
     steps:
       - checkout
-      - run: ./repos/mac_scripts/fetch_chromium
-      - run: ./repos/mac_scripts/build_kaleido
+      - run:
+          command: ./repos/mac_scripts/fetch_chromium
+          no_output_timeout: 30m
+      - run:
+          command: ./repos/mac_scripts/build_kaleido
+          no_output_timeout: 30m
       - run: ls repos/build/kaleido_mac
 
 workflows:
