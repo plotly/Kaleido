@@ -21,6 +21,9 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Delete Simulators
+          command: sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes/
+      - run:
           command: ./repos/mac_scripts/fetch_chromium
           no_output_timeout: 30m
       - run:
