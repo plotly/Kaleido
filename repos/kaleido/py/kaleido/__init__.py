@@ -78,7 +78,7 @@ def bulid_mathjax_plot():
 def bulid_simple_plot():
     return go.Figure(
         {
-            "data":[{"y":[1,3,2], "name":"asdf another", "type": "scatter"}],
+            "data":[{"y":[1,3,2], "name":"asdf another", "type": "scattergl"}],
             "layout": {"title": {"text": "Title"}}
         }
     )
@@ -96,7 +96,9 @@ if __name__ == "__main__":
     topojson = "file:///home/jmmease/PyDev/repos/plotly.js/dist/topojson/"
     mathjax = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"
 
-    scope = PlotlyScope(plotlyjs=plotlyjs, mathjax=mathjax, mapbox_access_token=mapbox_access_token)
+    scope = PlotlyScope(
+        plotlyjs=plotlyjs, mathjax=mathjax, mapbox_access_token=mapbox_access_token
+    )
     # time.sleep(4)
     #
     # fig = build_mapbox_plot()

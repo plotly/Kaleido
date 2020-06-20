@@ -80,7 +80,7 @@ export FONTCONFIG_PATH=\$DIR/etc/fonts
 export XDG_DATA_HOME=\$DIR/xdg
 
 cd \$DIR
-./bin/kaleido --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
+./bin/kaleido --no-sandbox --allow-file-access-from-files --disable-breakpad \$@
 " > ../build/kaleido/kaleido
 chmod +x ../build/kaleido/kaleido
 
