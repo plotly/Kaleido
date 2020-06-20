@@ -72,7 +72,7 @@ echo "#!/bin/bash
 DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
 
 cd \$DIR
-./bin/kaleido --no-sandbox --disable-gpu --allow-file-access-from-files --disable-breakpad \$@
+./bin/kaleido --no-sandbox --allow-file-access-from-files --disable-breakpad \$@
 " > ../build/kaleido_mac/kaleido
 chmod +x ../build/kaleido_mac/kaleido
 

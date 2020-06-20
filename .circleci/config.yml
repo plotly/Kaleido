@@ -15,7 +15,9 @@ jobs:
       - run: pushd repos/build && zip -r kaleido_linux.zip ./*
       - store_artifacts:
           path: ./repos/build/kaleido_linux.zip
-        
+      - store_artifacts:
+          path: ./repos/kaleido/py/dist/*.whl
+
   mac_build:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
