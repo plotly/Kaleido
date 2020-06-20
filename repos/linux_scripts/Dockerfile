@@ -27,8 +27,8 @@ ENV WIN_TOOLCHAIN_HASH=7ebbede533b63df2394fe770745668433aab2c20
 RUN apt-get update
 
 RUN \
-    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 fuse libfuse2
-        
+    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 fuse libfuse2 python3-wheel
+
 # Add npm 
 RUN \
     curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash - \
