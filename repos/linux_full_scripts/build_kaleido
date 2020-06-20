@@ -64,3 +64,8 @@ popd
 
 mkdir -p /repos/build/kaleido/js/
 cp /repos/kaleido/js/build/*.js /repos/build/kaleido/js/
+
+# Build python wheel
+cd ../kaleido/py
+python setup.py copy_executable
+python setup.py bdist_wheel --plat-name manylinux2014_x86_64 --python-tag py

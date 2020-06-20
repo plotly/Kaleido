@@ -2,10 +2,11 @@ import subprocess
 import json
 import base64
 from threading import Lock
+import os
 
 # TODO: compute location in wheel
-kaleido_path = "/media/jmmease/SSD11/kaleido/repos/build/kaleido/kaleido"
-
+executable_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'executable', 'kaleido')
+print(executable_path)
 
 class BaseScope(object):
     _json_encoder = None
@@ -16,7 +17,7 @@ class BaseScope(object):
         kwargs['disable_gpu'] = disable_gpu
 
         # Build process arguments list
-        self.proc_args = [kaleido_path, self.scope_name]
+        self.proc_args = [executable_path, self.scope_name]
         for k, v in kwargs.items():
             if v is True:
                 flag = '--' + k.replace("_", "-")
