@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "clean": "rimraf build/",
-    "build": "mkdir -p build/ && browserify --s kaleido_scopes src/index.js > build/kaleido_scopes.js",
+    "clean": "rimraf build/*",
+    "build": "browserify --s kaleido_scopes src/index.js > build/kaleido_scopes.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
