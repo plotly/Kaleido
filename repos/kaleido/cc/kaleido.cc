@@ -134,7 +134,6 @@ void Kaleido::LoadNextScript() {
 
 void Kaleido::ExportNextFigure() {
     std::string exportSpec;
-
     // TODO: Test whether this will work for really large figures. Do we need to read chunks at some point?
     if (!std::getline(std::cin, exportSpec)) {
         // Reached end of file,

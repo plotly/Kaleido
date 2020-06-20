@@ -184,7 +184,7 @@ function render (info, mapboxAccessToken, topojsonURL) {
   return exportPromise
       .catch((err) => {
         errorCode = 525
-        errorMsg = JSON.stringify(err, ['message', 'arguments', 'type', 'name'])
+        errorMsg = err.message
         result = null;
         return done()
       })

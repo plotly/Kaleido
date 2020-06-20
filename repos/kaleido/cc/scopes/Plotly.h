@@ -4,6 +4,7 @@
 #include "BaseScope.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "headless/public/devtools/domains/runtime.h"
 
 #include <streambuf>
@@ -32,24 +33,23 @@ public:
 
 
 Plotly::Plotly(): topojsonUrl(), mapboxToken() {
-    // Get command line options
-    base::CommandLine *commandLine = base::CommandLine::ForCurrentProcess();
-
     // Add MathJax config
     scriptTags.emplace_back("window.PlotlyConfig = {MathJaxConfig: 'local'}");
 
     // Process plotlyjs
-    if (commandLine->HasSwitch("plotlyjs")) {
-        std::string plotlyjs_arg = commandLine->GetSwitchValueASCII("plotlyjs");
+    if (HasCommandLineSwitch("plotlyjs")) {
+        std::string plotlyjsArg = GetCommandLineSwitch("plotlyjs");
+
         // Check if value is a URL
-        GURL plotlyjs_url(plotlyjs_arg);
-        if (plotlyjs_url.is_valid()) {
-            scriptTags.push_back(plotlyjs_arg);
+        GURL plotlyjsUrl(plotlyjsArg);
+        if (plotlyjsUrl.is_valid()) {
+            scriptTags.push_back(plotlyjsArg);
         } else {
             // Check if this is a local file path
-            if (std::ifstream(plotlyjs_arg)) {
-                localScriptFiles.emplace_back(plotlyjs_arg);
+            if (std::ifstream(plotlyjsArg)) {
+                localScriptFiles.emplace_back(plotlyjsArg);
             } else {
+                std::cerr << "--plotlyjs argument skipped since it is not a valid URL: " << plotlyjsArg;
                 scriptTags.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
             }
         }
@@ -58,28 +58,32 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
     }
 
     // MathJax
-    if (commandLine->HasSwitch("mathjax")) {
-        std::string mathjax_arg = commandLine->GetSwitchValueASCII("mathjax");
-        GURL mathjax_url(mathjax_arg);
+    if (HasCommandLineSwitch("mathjax")) {
+        std::string mathjaxArg = GetCommandLineSwitch("mathjax");
 
-        if (mathjax_url.is_valid()) {
+        GURL mathjaxUrl(mathjaxArg);
+        if (mathjaxUrl.is_valid()) {
             std::stringstream mathjaxStringStream;
-            mathjaxStringStream << mathjax_arg << "?config=TeX-AMS-MML_SVG";
+            mathjaxStringStream << mathjaxArg << "?config=TeX-AMS-MML_SVG";
             scriptTags.push_back(mathjaxStringStream.str());
+        } else {
+            std::cerr << "--mathjax argument skipped since it is not a valid URL: " << mathjaxArg;
         }
     }
 
     // Topojson
-    if (commandLine->HasSwitch("topojson")) {
-        std::string topojsonArg = commandLine->GetSwitchValueASCII("topojson");
+    if (HasCommandLineSwitch("topojson")) {
+        std::string topojsonArg = GetCommandLineSwitch("topojson");
         if (GURL(topojsonArg).is_valid()) {
             topojsonUrl = topojsonArg;
+        } else {
+            std::cerr << "--topojson argument skipped since it is not a valid URL: " << topojsonArg;
         }
     }
 
     // Process mapbox-token
-    if (commandLine->HasSwitch("mapbox-access-token")) {
-        mapboxToken = commandLine->GetSwitchValueASCII("mapbox-access-token");
+    if (HasCommandLineSwitch("mapbox-access-token")) {
+        mapboxToken = GetCommandLineSwitch("mapbox-access-token");
     }
 
     // Additional initialization scripts (these must be added after plotly.js)
