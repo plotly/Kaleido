@@ -39,6 +39,13 @@
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
+void writeError(int code, std::string message) {
+    std::string error = base::StringPrintf(
+            "{\"code\": %d, \"message\": \"%s\", \"result\": null}\n",
+            code, message.c_str());
+    std::cout << error;
+}
+
 Kaleido::Kaleido(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
@@ -108,8 +115,8 @@ void Kaleido::LoadNextScript() {
          if (!t.is_open()) {
              // Reached end of file,
              // Shut down the browser (see ~Kaleido).
-             std::cerr << "Failed to find, or open, local file at "
-                       << scriptPath << " with working directory " << cwd.value() << std::endl;
+             LOG(ERROR) << "Failed to find, or open, local file at "
+                        << scriptPath << " with working directory " << cwd.value() << std::endl;
              delete g_example;
              g_example = nullptr;
              return;
@@ -144,7 +151,7 @@ void Kaleido::ExportNextFigure() {
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
-        std::cerr << "Invalid JSON: " << exportSpec << std::endl;
+        writeError(1, "Invalid JSON");
         ExportNextFigure();
         return;
     }
@@ -175,8 +182,9 @@ void Kaleido::OnExportComplete(
 
     // Make sure the evaluation succeeded before reading the result.
     if (result->HasExceptionDetails()) {
-        std::cerr << "Failed to serialize document: "
-                  << result->GetExceptionDetails()->GetText();
+        std::string error = base::StringPrintf(
+                "Failed to serialize document: %s", result->GetExceptionDetails()->GetText().c_str());
+        writeError(1, error);
         ExportNextFigure();
     } else {
         // JSON parse result to get format
@@ -221,23 +229,22 @@ void Kaleido::OnExportComplete(
 void Kaleido::OnPDFCreated(
         std::string responseString,
         std::unique_ptr<headless::page::PrintToPDFResult> result
-    ) {
-  if (!result) {
-    LOG(ERROR) << "Export to PDF failed";
-    // TODO: write error as JSON
-    return;
-  } else {
-      base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
-      base::DictionaryValue* responseDict;
-      responseJson.value().GetAsDictionary(&responseDict);
-      responseDict->SetString("result", result->GetData().toBase64());
+) {
+    if (!result) {
+        std::string error = std::string("Export to PDF failed");
+        writeError(1, error);
+    } else {
+        base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+        base::DictionaryValue* responseDict;
+        responseJson.value().GetAsDictionary(&responseDict);
+        responseDict->SetString("result", result->GetData().toBase64());
 
-      std::string response;
-      base::JSONWriter::Write(*responseDict, &response);
-      std::cout << response << "\n";
-  }
+        std::string response;
+        base::JSONWriter::Write(*responseDict, &response);
+        std::cout << response << "\n";
+    }
 
-  ExportNextFigure();
+    ExportNextFigure();
 }
 
 void Kaleido::OnScriptCompileComplete(

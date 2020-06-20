@@ -44,20 +44,16 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
         // Check if value is a URL
         GURL plotlyjs_url(plotlyjs_arg);
         if (plotlyjs_url.is_valid()) {
-            std::cerr << "plotlyjs arg is a URL" << std::endl;
             scriptTags.push_back(plotlyjs_arg);
         } else {
             // Check if this is a local file path
             if (std::ifstream(plotlyjs_arg)) {
-                std::cerr << "plotlyjs arg is a local file" << std::endl;
                 localScriptFiles.emplace_back(plotlyjs_arg);
             } else {
-                std::cerr << "plotlyjs arg is not a URL or local file path. Falling back to online CDN.";
                 scriptTags.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
             }
         }
     } else {
-        std::cerr << "No plotlyjs switch" << std::endl;
         scriptTags.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
     }
 
@@ -67,28 +63,18 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
         GURL mathjax_url(mathjax_arg);
 
         if (mathjax_url.is_valid()) {
-            std::cerr << "mathjax is a URL" << std::endl;
             std::stringstream mathjaxStringStream;
             mathjaxStringStream << mathjax_arg << "?config=TeX-AMS-MML_SVG";
             scriptTags.push_back(mathjaxStringStream.str());
-        } else {
-            std::cerr << "mathjax arg is not a valid URL. MathJax features will not be available"  << std::endl;;
         }
-    } else {
-        std::cerr << "No mathjax switch"  << std::endl;;
     }
 
     // Topojson
     if (commandLine->HasSwitch("topojson")) {
         std::string topojsonArg = commandLine->GetSwitchValueASCII("topojson");
         if (GURL(topojsonArg).is_valid()) {
-            std::cerr << "topojson is a URL" << std::endl;
             topojsonUrl = topojsonArg;
-        } else {
-            std::cerr << "topojson arg is not a valid URL. Falling back to to online CDN"  << std::endl;;
         }
-    } else {
-        std::cerr << "No topojson switch"  << std::endl;;
     }
 
     // Process mapbox-token

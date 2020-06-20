@@ -12,14 +12,14 @@ First, create a docker container that is configured to download and build the ch
 Build container with:
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.6 -f repose/linux_scripts/Dockerfile .
+$ docker build -t jonmmease/chromium-builder:0.6 -f repos/linux_scripts/Dockerfile .
 ```
 
 ### Build "full" docker container
 This container contains pre-compiled version of chromium source tree. Takes several hours to build!
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.6 -f repose/linux_full_scripts/Dockerfile .
+$ docker build -t jonmmease/kaleido-builder:0.6 -f repos/linux_full_scripts/Dockerfile .
 ```
 
 
@@ -63,6 +63,13 @@ echo '{"figure":{"data":[{"y":[1,3,2], "name":"asdf another"}]},"format":"png"}'
 ```
 
 This shows that we were able to invoke chromium on the most minimal ubuntu 16.04 image without installing any additional dependencies using `apt`, and without using `Xvfb` to simulate X11.
+
+## Build with full image kaleido
+This will build the `kaleido` application to `repos/build/kaleido`, and bundle shared libraries and fonts. The input source for this application is in `repos/kaleido/kaleido.cc`.
+
+```
+$ docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido
+```
 
 ## Cross compile kaleido for Windows
 This will build the `kaleido` application to `repos/build/kaleido_win`, for windows

@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import plotly.io as pio
 pio.templates.default = "plotly_dark"
 
-kaleido_path = "/media/jmmease/SSD1/kaleido/repos/build/kaleido/kaleido"
+kaleido_path = "/media/jmmease/SSD11/kaleido/repos/build/kaleido/kaleido"
 mapbox_accesstoken = "pk.eyJ1Ijoiam1tZWFzZSIsImEiOiJjamljeWkwN3IwNjEyM3FtYTNweXV4YmV0In0.2zbgGCjbPTK7CToIg81kMw"
 
 proc = subprocess.Popen(
