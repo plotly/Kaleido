@@ -15,14 +15,11 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 cd depot_tools
 
 # Add cloned depot_tools directory to PATH
-$env:path = "$pwd\depot_tools;$env:path"
+$env:path = "$pwd;$env:path"
+echo $env:path
 
 # Reset to proper commit
 git reset --hard $env:DEPOT_TOOLS_COMMIT
-
-# Check python version
-python --version
-python -c "import sys; print(sys.prefix)"
 
 # Move back to repos directory
 cd ../
