@@ -1,5 +1,7 @@
+& {
+
 # cd to repos directory
-cd repos
+cd $PSScriptRoot\..
 
 # Add depot_tools to path
 $env:path += "$pwd\depot_tools"
@@ -39,11 +41,13 @@ if (-Not (Test-Path ..\build\kaleido)) {
     New-Item -Path ..\build\kaleido -ItemType "directory"
 }
 Remove-Item -Recurse -Force ..\build\kaleido\* -ErrorAction Ignore
-Copy-Item out\Kaleido_win\kaleido.exe -Destination ..\build\kaleido\ -Recurse
-Copy-Item out\Kaleido_win\swiftshader -Destination ..\build\kaleido\ -Recurse
+New-Item -Path ..\build\kaleido\bin -ItemType "directory"
+
+Copy-Item out\Kaleido_win\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
+Copy-Item out\Kaleido_win\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
 # Copy icudtl.dat
-Copy-Item .\out\Kaleido_win\icudtl.dat -Destination ..\build\kaleido\
+Copy-Item .\out\Kaleido_win\icudtl.dat -Destination ..\build\kaleido\bin
 
 # Copy javascript
 cd ..\kaleido\js\
@@ -60,3 +64,13 @@ if (-Not (Test-Path ..\build\kaleido\js\)) {
     New-Item -Path ..\build\kaleido\js\ -ItemType "directory"
 }
 Copy-Item ..\kaleido\js\build\*.js -Destination ..\build\kaleido\js\ -Recurse
+
+# Copy kaleido.cmd launch script
+Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
+
+# Build python wheel
+cd ../kaleido/py
+python setup.py copy_executable
+python setup.py bdist_wheel --plat-name win-amd64 # --python-tag py3
+
+}
