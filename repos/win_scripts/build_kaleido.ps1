@@ -71,4 +71,13 @@ Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 # Build python wheel
 cd ../kaleido/py
 python setup.py package
+
+# Change up to kaleido/ directory
+cd ..
+# Build kaleido zip archive
+Compress-Archive -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win.zip
+
+# Build wheel zip archive
+Compress-Archive -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
+
 }

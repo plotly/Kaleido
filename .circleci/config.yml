@@ -37,11 +37,31 @@ jobs:
           no_output_timeout: 30m
       - run: ls repos/build/kaleido_mac
       - run: pushd repos/build && zip -r kaleido_mac.zip ./*
+      - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
       - store_artifacts:
           path: ./repos/build/kaleido_mac.zip
-
+      - store_artifacts:
+          path: ./repos/kaleido/py/kaleido_wheel.zip
+  windows_build:
+    executor: 
+      name: win/default
+      size: "large"
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run: systeminfo
+      - run: .\repos\win_scripts\fetch_chromium.ps1
+      - run: .\repos\win_scripts\build_kaleido.ps1
+      - run: dir .\repos\build\kaleido
+      - run: dir .\repos\kaleido\py\dist
+      - store_artifacts:
+          path: ./repos/build/kaleido_linux.zip
+      - store_artifacts:
+          path: ./repos/kaleido/py/kaleido_wheel.zip
+      
 workflows:
   build-all:
     jobs:
-      #- mac_build
+      - mac_build
       - linux_build
+      - windows_build

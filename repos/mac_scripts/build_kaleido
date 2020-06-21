@@ -86,3 +86,8 @@ popd
 
 mkdir -p ../build/kaleido_mac/js/
 cp ../kaleido/js/build/*.js ../build/kaleido_mac/js/
+
+# Build python wheel
+apt-get install -y python3-wheel
+cd ../kaleido/py
+python3 setup.py package
