@@ -1,6 +1,7 @@
 # Commits
 $env:DEPOT_TOOLS_COMMIT="e67e41a"
 $env:CHROMIUM_TAG="83.0.4103.61"
+$env:DEPOT_TOOLS_UPDATE=0
 
 # cd to repos directory
 cd repos

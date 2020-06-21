@@ -21,7 +21,7 @@ FROM ubuntu:16.04
 # depot_tools commit hash from 05/19/2020: e67e41a
 ENV DEPOT_TOOLS_COMMIT=e67e41a CHROMIUM_TAG="83.0.4103.61"
 ENV WIN_TOOLCHAIN_HASH=7ebbede533b63df2394fe770745668433aab2c20
-
+ENV DEPOT_TOOLS_UPDATE=0
 
 # Reference: https://github.com/chromedp/docker-chromium-builder/blob/master/Dockerfile
 RUN apt-get update

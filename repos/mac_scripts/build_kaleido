@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Don't autoupdate depottools version
+export DEPOT_TOOLS_UPDATE=0
+
 # full path to mac_scripts/ directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 

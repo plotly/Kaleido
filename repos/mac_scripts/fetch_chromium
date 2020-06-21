@@ -3,6 +3,7 @@
 # Commits
 DEPOT_TOOLS_COMMIT=e67e41a
 CHROMIUM_TAG="83.0.4103.61"
+export DEPOT_TOOLS_UPDATE=0
 
 # full path to mac_scripts/ directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
