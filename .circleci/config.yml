@@ -49,12 +49,17 @@ jobs:
     executor: 
       name: win/default
       size: "large"
-      shell: powershell.exe
+      shell: cmd.exe
     steps:
       - checkout
       - run: systeminfo
-      - run: .\repos\win_scripts\fetch_chromium.ps1
-      - run: .\repos\win_scripts\build_kaleido.ps1
+      - run:
+          command: |
+            eval "$('/C/tools/miniconda3/Scripts/conda.exe' 'shell.bash' 'hook')"
+            conda activate base
+            conda install -y python=2.7
+            powershell -file .\repos\win_scripts\fetch_chromium.ps1
+            powershell -file .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
       - store_artifacts:
