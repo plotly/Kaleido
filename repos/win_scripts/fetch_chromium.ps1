@@ -15,7 +15,7 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 cd depot_tools
 
 # Add cloned depot_tools directory to PATH
-$env:path += $pwd
+$env:path = "$pwd\depot_tools;$env:path"
 
 # Reset to proper commit
 git reset --hard $env:DEPOT_TOOLS_COMMIT

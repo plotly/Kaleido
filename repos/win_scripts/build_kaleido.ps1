@@ -4,8 +4,7 @@
 cd $PSScriptRoot\..
 
 # Add depot_tools to path
-dir "$pwd\depot_tools"
-$env:path += "$pwd\depot_tools"
+$env:path = "$pwd\depot_tools;$env:path"
 
 # Check python version
 python --version
