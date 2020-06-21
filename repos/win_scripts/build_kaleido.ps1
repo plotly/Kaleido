@@ -8,6 +8,8 @@ $env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap-3_8_0_chromium_8_bin\py
 echo $env:path
 dir $pwd\depot_tools
 
+$env:GCLIENT_PY3=0
+
 # Check python version
 python --version
 python -c "import sys; print(sys.prefix)"

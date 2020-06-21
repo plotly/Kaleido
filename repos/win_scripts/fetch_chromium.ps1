@@ -17,6 +17,7 @@ cd depot_tools
 # Add cloned depot_tools directory to PATH
 $env:path = "$pwd;$pwd\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
 echo $env:path
+$env:GCLIENT_PY3=0
 
 # Reset to proper commit
 git reset --hard $env:DEPOT_TOOLS_COMMIT
