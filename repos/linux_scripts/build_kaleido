@@ -98,5 +98,4 @@ cp ../kaleido/js/build/*.js ../build/kaleido/js/
 # Build python wheel
 apt-get install -y python3-wheel
 cd ../kaleido/py
-python3 setup.py copy_executable
-python3 setup.py bdist_wheel --plat-name manylinux2014_x86_64 --python-tag py
+python3 setup.py package
