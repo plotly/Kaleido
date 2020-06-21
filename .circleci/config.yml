@@ -11,12 +11,14 @@ jobs:
       - run: docker pull jonmmease/kaleido-builder:0.6
       - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido
       - run: sudo chmod -R 777 repos/build
+      - run: sudo chmod -R 777 repos/kaleido/py
       - run: ls repos/build/kaleido
       - run: pushd repos/build && zip -r kaleido_linux.zip ./*
+      - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
       - store_artifacts:
           path: ./repos/build/kaleido_linux.zip
       - store_artifacts:
-          path: ./repos/kaleido/py/dist/*.whl
+          path: ./repos/kaleido/py/kaleido_wheel.zip
 
   mac_build:
     macos:  # indicate that we are using the macOS executor
