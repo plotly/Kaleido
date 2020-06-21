@@ -53,15 +53,13 @@ jobs:
     steps:
       - checkout
       - run: systeminfo
+      - run: choco install python2
       - run: |
-          choco install python2
-          where python
-          python --version
-          python2 --version
-      - run: |
+          $env:PATH += "C:\Python27"
           python --version
           .\repos\win_scripts\fetch_chromium.ps1
       - run: |
+          $env:PATH += "C:\Python27"
           python --version
           .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
