@@ -4,7 +4,12 @@
 cd $PSScriptRoot\..
 
 # Add depot_tools to path
+dir "$pwd\depot_tools"
 $env:path += "$pwd\depot_tools"
+
+# Check python version
+python --version
+python -c "import sys; print(sys.prefix)"
 
 # Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0

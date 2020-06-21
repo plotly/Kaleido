@@ -46,22 +46,15 @@ jobs:
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
   windows_build:
-    executor: 
+    executor:
       name: win/default
       size: "large"
       shell: powershell.exe
     steps:
       - checkout
       - run: systeminfo
-      - run: choco install python2
-      - run: |
-          $env:PATH += "C:\Python27"
-          python --version
-          .\repos\win_scripts\fetch_chromium.ps1
-      - run: |
-          $env:PATH += "C:\Python27"
-          python --version
-          .\repos\win_scripts\build_kaleido.ps1
+      - run: .\repos\win_scripts\fetch_chromium.ps1
+      - run: .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
       - store_artifacts:

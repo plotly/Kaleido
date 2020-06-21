@@ -20,6 +20,10 @@ $env:path += $pwd
 # Reset to proper commit
 git reset --hard $env:DEPOT_TOOLS_COMMIT
 
+# Check python version
+python --version
+python -c "import sys; print(sys.prefix)"
+
 # Move back to repos directory
 cd ../
 fetch --nohooks chromium
