@@ -65,6 +65,6 @@ jobs:
 workflows:
   build-all:
     jobs:
-      - mac_build
-      - linux_build
+#      - mac_build
+#      - linux_build
       - windows_build

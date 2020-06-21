@@ -1,7 +1,11 @@
 # Commits
 $env:DEPOT_TOOLS_COMMIT="e67e41a"
 $env:CHROMIUM_TAG="83.0.4103.61"
+
+# Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0
+# Tell gclient to use local Vistual Studio install
+$env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
 # cd to repos directory
 cd repos

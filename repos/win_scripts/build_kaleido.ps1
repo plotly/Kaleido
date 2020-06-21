@@ -6,6 +6,8 @@ cd $PSScriptRoot\..
 # Add depot_tools to path
 $env:path += "$pwd\depot_tools"
 
+# Tell gclient not to update depot_tools
+$env:DEPOT_TOOLS_UPDATE=0
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
