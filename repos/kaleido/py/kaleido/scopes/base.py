@@ -3,10 +3,9 @@ import json
 import base64
 from threading import Lock
 import os
+import sys
 
-# TODO: compute location in wheel
 executable_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'executable', 'kaleido')
-print(executable_path)
 
 class BaseScope(object):
     _json_encoder = None
@@ -41,12 +40,16 @@ class BaseScope(object):
 
         print(self.proc_args)
         # Launch kaleido subprocess
+        # Note: shell=True seems to be needed on Windows to handle executable path with
+        # spaces.  This subprocess.Popen makes it sound like this shouldn't be
+        # necessary.
         self._proc = subprocess.Popen(
             self.proc_args,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             # TODO: Hide stderr
             #, stderr=subprocess.PIPE
+            shell=sys.platform == "win32"
         )
 
     @property

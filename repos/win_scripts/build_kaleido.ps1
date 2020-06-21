@@ -70,7 +70,5 @@ Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 
 # Build python wheel
 cd ../kaleido/py
-python setup.py copy_executable
-python setup.py bdist_wheel --plat-name win-amd64 # --python-tag py3
-
+python setup.py package
 }

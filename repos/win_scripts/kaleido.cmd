@@ -1,4 +1,4 @@
 @echo off
 setlocal
-cd %~dp0
+chdir /d "%~dp0"
 .\bin\kaleido.exe %*
