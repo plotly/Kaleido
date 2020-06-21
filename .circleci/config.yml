@@ -49,16 +49,21 @@ jobs:
     executor: 
       name: win/default
       size: "large"
-      shell: cmd.exe
+      shell: powershell.exe
     steps:
       - checkout
       - run: systeminfo
-      - run:
-          command: |
-            conda activate base
-            conda install -y python=2.7
-            powershell -file .\repos\win_scripts\fetch_chromium.ps1
-            powershell -file .\repos\win_scripts\build_kaleido.ps1
+      - run: |
+          choco install python2
+          where python
+          python --version
+          python2 --version
+      - run: |
+          python --version
+          .\repos\win_scripts\fetch_chromium.ps1
+      - run: |
+          python --version
+          .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
       - store_artifacts:
