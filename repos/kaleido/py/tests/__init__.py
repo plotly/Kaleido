@@ -1,6 +1,6 @@
 from os.path import dirname, abspath, join
-here = dirname(abspath(__file__))
-baseline_root = join(here, 'baselines')
+tests_root = dirname(abspath(__file__))
+baseline_root = join(tests_root, 'baselines')
 
 # import subprocess
 # import time
