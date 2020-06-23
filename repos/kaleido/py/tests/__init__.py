@@ -1,6 +1,7 @@
 from os.path import dirname, abspath, join
-tests_root = dirname(abspath(__file__))
-baseline_root = join(tests_root, 'baselines')
+import pathlib
+tests_root = pathlib.Path(__file__).parent
+baseline_root = tests_root / 'baselines'
 
 # import subprocess
 # import time

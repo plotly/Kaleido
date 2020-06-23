@@ -128,7 +128,6 @@ void Kaleido::LoadNextScript() {
 
 void Kaleido::ExportNextFigure() {
     std::string exportSpec;
-    // TODO: Test whether this will work for really large figures. Do we need to read chunks at some point?
     if (!std::getline(std::cin, exportSpec)) {
         // Reached end of file,
         // Shut down the browser (see ~Kaleido).
@@ -138,36 +137,54 @@ void Kaleido::ExportNextFigure() {
         return;
     }
 
-    std::string exportFunction = base::StringPrintf(
-            "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
-            scope->PluginName().c_str());
-
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
+
     if (!json.has_value()) {
         kaleido::utils::writeJsonMessage(1, "Invalid JSON");
         ExportNextFigure();
         return;
     }
 
-    std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();
+    // Read "operation" key, defaulting to "export" if none provided.
+    std::string *maybe_operation = json->FindStringKey("operation");
+    std::string operation;
+    if (maybe_operation) {
+        operation = *maybe_operation;
+    } else {
+        operation = std::string("export");
+    }
 
-    // Prepend Export spec as first argument
-    args.insert(args.begin(),
-            headless::runtime::CallArgument::Builder()
-                    .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
-                    .Build()
-    );
+    // Only operation right now is export, but others can be added in the future
+    if (operation == "export") {
+        std::string exportFunction = base::StringPrintf(
+                "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
+                scope->PluginName().c_str());
 
-    std::unique_ptr<headless::runtime::CallFunctionOnParams> eval_params =
-            headless::runtime::CallFunctionOnParams::Builder()
-            .SetFunctionDeclaration(exportFunction)
-            .SetArguments(std::move(args))
-            .SetExecutionContextId(contextId)
-            .SetAwaitPromise(true).Build();
+        std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();
 
-    devtools_client_->GetRuntime()->CallFunctionOn(
-            std::move(eval_params),
-            base::BindOnce(&Kaleido::OnExportComplete, weak_factory_.GetWeakPtr()));
+        // Prepend Export spec as first argument
+        args.insert(args.begin(),
+                    headless::runtime::CallArgument::Builder()
+                            .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
+                            .Build()
+        );
+
+        std::unique_ptr<headless::runtime::CallFunctionOnParams> eval_params =
+                headless::runtime::CallFunctionOnParams::Builder()
+                        .SetFunctionDeclaration(exportFunction)
+                        .SetArguments(std::move(args))
+                        .SetExecutionContextId(contextId)
+                        .SetAwaitPromise(true).Build();
+
+        devtools_client_->GetRuntime()->CallFunctionOn(
+                std::move(eval_params),
+                base::BindOnce(&Kaleido::OnExportComplete, weak_factory_.GetWeakPtr()));
+    } else {
+        // Unsupported operation
+        kaleido::utils::writeJsonMessage(1, base::StringPrintf("Invalid operation: %s", operation.c_str()));
+        ExportNextFigure();
+        return;
+    }
 }
 
 void Kaleido::OnExportComplete(
