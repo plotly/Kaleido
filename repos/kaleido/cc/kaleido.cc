@@ -26,6 +26,7 @@
 #include "headless/app/kaleido.h"
 #include "scopes/Factory.h"
 #include "scopes/BaseScope.h"
+#include "utils.h"
 
 #include <streambuf>
 #include <fstream>
@@ -38,13 +39,6 @@
 #include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
 #endif
-
-void writeError(int code, std::string message) {
-    std::string error = base::StringPrintf(
-            "{\"code\": %d, \"message\": \"%s\", \"result\": null}\n",
-            code, message.c_str());
-    std::cout << error;
-}
 
 Kaleido::Kaleido(
         headless::HeadlessBrowser* browser,
@@ -150,7 +144,7 @@ void Kaleido::ExportNextFigure() {
 
     base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
     if (!json.has_value()) {
-        writeError(1, "Invalid JSON");
+        kaleido::utils::writeJsonMessage(1, "Invalid JSON");
         ExportNextFigure();
         return;
     }
@@ -183,7 +177,7 @@ void Kaleido::OnExportComplete(
     if (result->HasExceptionDetails()) {
         std::string error = base::StringPrintf(
                 "Failed to serialize document: %s", result->GetExceptionDetails()->GetText().c_str());
-        writeError(1, error);
+        kaleido::utils::writeJsonMessage(1, error);
         ExportNextFigure();
     } else {
         // JSON parse result to get format
@@ -231,7 +225,7 @@ void Kaleido::OnPDFCreated(
 ) {
     if (!result) {
         std::string error = std::string("Export to PDF failed");
-        writeError(1, error);
+        kaleido::utils::writeJsonMessage(1, error);
     } else {
         base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
         base::DictionaryValue* responseDict;
@@ -295,7 +289,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     base::CommandLine::StringVector args =
             base::CommandLine::ForCurrentProcess()->GetArgs();
     if (args.empty()) {
-        LOG(ERROR) << "Error: No Scope Specified" << std::endl;
+        kaleido::utils::writeJsonMessage(1, "No Scope Specified");
         browser->Shutdown();
         exit(EXIT_FAILURE);
         return;
@@ -305,13 +299,19 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     // This handles the case where args[0] is a wchar_t on Windows
     std::stringstream scope_stringstream;
     scope_stringstream << args[0];
-    std::string plugin_name = scope_stringstream.str();
+    std::string scope_name = scope_stringstream.str();
 
     // Instantiate renderer scope
-    BaseScope *scope = LoadPlugin(plugin_name);
+    BaseScope *scope = LoadScope(scope_name);
+
     if (!scope) {
         // Invalid scope name
-        LOG(ERROR) << "Invalid scope: " << plugin_name;
+        kaleido::utils::writeJsonMessage(1,  base::StringPrintf("Invalid scope: %s", scope_name.c_str()));
+        browser->Shutdown();
+        exit(EXIT_FAILURE);
+        return;
+    } else if (!scope->errorMessage.empty()) {
+        kaleido::utils::writeJsonMessage(1,  scope->errorMessage);
         browser->Shutdown();
         exit(EXIT_FAILURE);
         return;
@@ -357,6 +357,9 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
 
     // Create an instance of Kaleido
     headless::HeadlessWebContents *web_contents = tab_builder.Build();
+
+    // Initialization succeeded
+    kaleido::utils::writeJsonMessage(0, "Success");
 
     // TODO make scope a unique ptr and use move semantics here
     g_example = new Kaleido(browser, web_contents, tmpFileName, scope);

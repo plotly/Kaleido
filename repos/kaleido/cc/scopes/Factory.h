@@ -10,7 +10,7 @@
 #ifndef CHROMIUM_FACTORY_H
 #define CHROMIUM_FACTORY_H
 
-BaseScope* LoadPlugin(std::string name) {
+BaseScope* LoadScope(std::string name) {
     std::string name_lower = base::ToLowerASCII(name);
     if (name_lower == "plotly") {
         return new Plotly();

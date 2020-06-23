@@ -52,6 +52,13 @@ class BaseScope(object):
             shell=sys.platform == "win32"
         )
 
+        # Read startup message and check for errors
+        startup_response_bytes = self._proc.stdout.readline()
+        startup_response = json.loads(startup_response_bytes.decode('utf-8'))
+        if startup_response.get("code", 0) != 0:
+            self._proc.wait()
+            raise ValueError(startup_response.get("message", "Failed to start kaleido executable"))
+
     @property
     def scope_name(self):
         raise NotImplementedError

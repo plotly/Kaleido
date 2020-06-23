@@ -9,8 +9,8 @@
 #include <vector>
 #include <string>
 
-#ifndef CHROMIUM_BASEPLUGIN_H
-#define CHROMIUM_BASEPLUGIN_H
+#ifndef CHROMIUM_BASESCOPE_H
+#define CHROMIUM_BASESCOPE_H
 
 
 class BaseScope {
@@ -26,13 +26,15 @@ public:
     std::string GetCommandLineSwitch(std::string name);
     bool HasCommandLineSwitch(std::string name);
 
+    std::string errorMessage;
+
 protected:
     std::list<std::string> scriptTags;
     std::list<std::string> localScriptFiles;
     const BaseScope *plugin;
 };
 
-BaseScope::BaseScope(): scriptTags(), localScriptFiles() {}
+BaseScope::BaseScope(): errorMessage(), scriptTags(), localScriptFiles() {}
 BaseScope::BaseScope(const BaseScope &v):
     scriptTags(v.scriptTags),
     localScriptFiles(v.localScriptFiles)
@@ -72,4 +74,4 @@ std::string BaseScope::GetCommandLineSwitch(std::string name) {
     return value;
 }
 
-#endif //CHROMIUM_BASEPLUGIN_H
+#endif //CHROMIUM_BASESCOPE_H

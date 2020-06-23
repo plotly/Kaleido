@@ -5,8 +5,9 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "headless/public/devtools/domains/runtime.h"
-
+#include "../utils.h"
 #include <streambuf>
 #include <string>
 #include <sstream>
@@ -49,8 +50,8 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
             if (std::ifstream(plotlyjsArg)) {
                 localScriptFiles.emplace_back(plotlyjsArg);
             } else {
-                std::cerr << "--plotlyjs argument skipped since it is not a valid URL: " << plotlyjsArg;
-                scriptTags.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
+                errorMessage = base::StringPrintf("--plotlyjs argument is not a valid URL or file path: %s", plotlyjsArg.c_str());
+                return;
             }
         }
     } else {
@@ -67,7 +68,8 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
             mathjaxStringStream << mathjaxArg << "?config=TeX-AMS-MML_SVG";
             scriptTags.push_back(mathjaxStringStream.str());
         } else {
-            std::cerr << "--mathjax argument skipped since it is not a valid URL: " << mathjaxArg;
+            errorMessage = base::StringPrintf("--mathjax argument is not a valid URL: %s", mathjaxArg.c_str());
+            return;
         }
     }
 
@@ -77,7 +79,8 @@ Plotly::Plotly(): topojsonUrl(), mapboxToken() {
         if (GURL(topojsonArg).is_valid()) {
             topojsonUrl = topojsonArg;
         } else {
-            std::cerr << "--topojson argument skipped since it is not a valid URL: " << topojsonArg;
+            errorMessage = base::StringPrintf("--topojson argument is not a valid URL: %s", topojsonArg.c_str());
+            return;
         }
     }
 
