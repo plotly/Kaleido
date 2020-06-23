@@ -8,8 +8,16 @@ pio.templates.default = None
 import pytest
 from .fixtures import all_figures, all_formats
 
+# Constants
+mapbox_access_token = "pk.eyJ1Ijoiam1tZWFzZSIsImEiOiJjamljeWkwN3IwNjEyM3FtYTNweXV4YmV0In0.2zbgGCjbPTK7CToIg81kMw"
+plotlyjs = "file:///home/jmmease/scratch/plotly-latest.min.js"
+topojson = "file:///home/jmmease/PyDev/repos/plotly.js/dist/topojson/"
+mathjax = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"
 
-scope = PlotlyScope()
+
+# Initialize a global scope, this way we test multiple uses
+scope = PlotlyScope(mathjax=mathjax)
+
 
 @pytest.mark.parametrize('fig,name', all_figures())
 @pytest.mark.parametrize('format', all_formats)
