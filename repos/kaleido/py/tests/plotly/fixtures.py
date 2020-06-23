@@ -60,7 +60,7 @@ def all_figures():
         (mathjax_figure(), 'mathjax'),
         (topojson_figure(), 'topojson'),
         # Comment until we get token worked out
-        # (mapbox_figure(), 'mapbox')
+        (mapbox_figure(), 'mapbox')
     ]
 
 all_formats = ['png', 'jpeg', 'webp', 'svg', 'pdf']
