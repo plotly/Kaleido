@@ -4,8 +4,7 @@ project(chromium)
 set(CMAKE_CXX_STANDARD 14)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/out/Headless/gen)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/out/Kaleido_linux/gen)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/kaleido/cc)
 
-add_executable(headless_example src/headless/app/headless_example.cc orca_next/cc/plugins/Plotly.cpp orca_next/cc/plugins/Plotly.h)
-add_executable(headless_shell src/headless/app/headless_shell.cc)
-add_executable(kaleido kaleido/cc/kaleido.cc kaleido/cc/kaleido.h)
+add_executable(kaleido kaleido/cc/kaleido.cc kaleido/cc/kaleido.h kaleido/cc/scopes/Plotly.h kaleido/cc/scopes/BaseScope.h)
