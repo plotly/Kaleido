@@ -6,3 +6,6 @@ git reset --hard
 git checkout tags/$CHROMIUM_TAG
 gclient sync -D --force --reset
 gclient runhooks
+
+# Build credits
+python /repos/src/tools/licenses.py credits > /repos/CREDITS.html
