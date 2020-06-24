@@ -69,7 +69,7 @@ class CopyExecutable(Command):
         )
 
         # Recompute executable files
-        executable_files.clear()
+        del executable_files[:]
         executable_files.extend(package_files("kaleido/executable"))
 
 class PackageWheel(Command):
