@@ -14,6 +14,9 @@ def package_files(directory):
             paths.append(os.path.join('..', path, filename))
     return paths
 
+
+executable_files = package_files("kaleido/executable")
+
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
     CLEAN_FILES = './build ./dist ./*.pyc ./*.tgz ./*.egg-info'.split(' ')
@@ -65,6 +68,9 @@ class CopyExecutable(Command):
             output_dir
         )
 
+        # Recompute executable files
+        executable_files.clear()
+        executable_files.extend(package_files("kaleido/executable"))
 
 class PackageWheel(Command):
     description = "Build Wheel Package"
@@ -90,7 +96,7 @@ setup(
     name="kaleido",
     version="0.0.1a3",
     packages=["kaleido", "kaleido.scopes"],
-    package_data={'kaleido': package_files("kaleido/executable")},
+    package_data={'kaleido': executable_files},
     cmdclass=dict(
         copy_executable=CopyExecutable, clean=CleanCommand, package=PackageWheel
     )
