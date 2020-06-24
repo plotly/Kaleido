@@ -51,10 +51,18 @@ class CopyExecutable(Command):
         pass
 
     def run(self):
-        shutil.rmtree(os.path.join(here, 'kaleido', 'executable'), ignore_errors=True)
+        output_dir = os.path.join(here, 'kaleido', 'executable')
+        input_dir = os.path.abspath(os.path.join(here, '..', '..', 'build', 'kaleido'))
+
+        print("copy_executable: Deleting {output_dir}".format(output_dir=output_dir))
+        shutil.rmtree(output_dir, ignore_errors=True)
+
+        print("copy_executable: Copying {input_dir} to {output_dir}".format(
+            input_dir=input_dir, output_dir=output_dir)
+        )
         shutil.copytree(
-            os.path.join(here, '..', '..', 'build', 'kaleido'),
-            os.path.join(here, 'kaleido', 'executable')
+            input_dir,
+            output_dir
         )
 
 
