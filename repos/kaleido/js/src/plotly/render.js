@@ -27,7 +27,7 @@ function render (info, mapboxAccessToken, topojsonURL) {
 
   // Parse request
   let parsed = parse(info, opts);
-  if (parsed.code) {
+  if (parsed.code !== 0) {
     // Bad request return promise with error info
     return new Promise((resolve) => {resolve(parsed)})
   }
@@ -49,12 +49,12 @@ function render (info, mapboxAccessToken, topojsonURL) {
 
   const config = Object.assign(defaultConfig, figure.config)
 
+  let errorCode = 0
   let result = null
-  let errorCode = null
   let errorMsg = null
   let pdfBgColor = null
   const done = () => {
-    if (errorCode && !errorMsg) {
+    if (errorCode !== 0 && !errorMsg) {
       errorMsg = cst.statusMsg[errorCode]
     }
 

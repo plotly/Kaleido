@@ -1,6 +1,6 @@
 from kaleido.scopes.base import BaseScope
 from _plotly_utils.utils import PlotlyJSONEncoder
-import plotly
+
 
 class PlotlyScope(BaseScope):
     _json_encoder = PlotlyJSONEncoder
@@ -18,8 +18,6 @@ class PlotlyScope(BaseScope):
     @property
     def scope_name(self):
         return "plotly"
-
-    # def _figure_to_json
 
 
 if __name__ == "__main__":

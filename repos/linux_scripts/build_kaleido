@@ -32,7 +32,7 @@ executable(\"kaleido\") {
 }" >> headless/BUILD.gn
 
 # 3) Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
-rm -rf headless/app/plugins
+rm -rf headless/app/scopes
 cp -r ../kaleido/cc/* headless/app/
 
 # 4) Perform build, result will be out/Kaleido_linux/kaleido

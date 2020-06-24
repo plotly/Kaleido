@@ -25,7 +25,7 @@
 
 #include "headless/app/kaleido.h"
 #include "scopes/Factory.h"
-#include "scopes/BaseScope.h"
+#include "scopes/Base.h"
 #include "utils.h"
 
 #include <streambuf>
@@ -44,7 +44,7 @@ Kaleido::Kaleido(
         headless::HeadlessBrowser* browser,
         headless::HeadlessWebContents* web_contents,
         std::string tmpFileName,
-        BaseScope *scope_ptr
+        kaleido::scopes::BaseScope *scope_ptr
 )
         : tmpFileName(tmpFileName),
           remainingLocalScriptsFiles(scope_ptr->LocalScriptFiles()),
@@ -158,7 +158,7 @@ void Kaleido::ExportNextFigure() {
     if (operation == "export") {
         std::string exportFunction = base::StringPrintf(
                 "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
-                scope->PluginName().c_str());
+                scope->ScopeName().c_str());
 
         std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();
 
@@ -319,7 +319,7 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     std::string scope_name = scope_stringstream.str();
 
     // Instantiate renderer scope
-    BaseScope *scope = LoadScope(scope_name);
+    kaleido::scopes::BaseScope *scope = LoadScope(scope_name);
 
     if (!scope) {
         // Invalid scope name
@@ -333,6 +333,9 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         exit(EXIT_FAILURE);
         return;
     }
+
+    // Add javascript bundle
+    scope->localScriptFiles.emplace_back("./js/kaleido_scopes.js");
 
     // Build initial HTML file
     std::list<std::string> scriptTags = scope->ScriptTags();

@@ -3,7 +3,7 @@
 cd /src
 
 # Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
-rm -rf headless/app/plugins
+rm -rf headless/app/scopes
 cp -r /repos/kaleido/cc/* headless/app/
 
 # Perform build, result will be out/Kaleido_linux/kaleido

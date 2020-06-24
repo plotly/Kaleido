@@ -1,15 +1,7 @@
 # CLion remote docker environment (How to build docker container, run and stop it)
 #
 # Build and run:
-#   docker build -t jonmmease/chromium-builder:0.5 -f Dockerfile .
-#   docker run -d --cap-add sys_ptrace -p127.0.0.1:2222:22 --name orca-next jonmmease/orca-next:0.5
-#   ssh-keygen -f "$HOME/.ssh/known_hosts" -R "[localhost]:2222"
-#
-# stop:
-#   docker stop orca-next
-# 
-# ssh credentials (test user):
-#   user@password
+#   docker build -t jonmmease/chromium-builder:0.6 -f Dockerfile .
 
 FROM ubuntu:16.04
 
@@ -20,7 +12,7 @@ FROM ubuntu:16.04
 # depot_tools commitlog: https://chromium.googlesource.com/chromium/tools/depot_tools/+log
 # depot_tools commit hash from 05/19/2020: e67e41a
 ENV DEPOT_TOOLS_COMMIT=e67e41a CHROMIUM_TAG="83.0.4103.61"
-ENV WIN_TOOLCHAIN_HASH=7ebbede533b63df2394fe770745668433aab2c20
+
 ENV DEPOT_TOOLS_UPDATE=0
 
 # Reference: https://github.com/chromedp/docker-chromium-builder/blob/master/Dockerfile

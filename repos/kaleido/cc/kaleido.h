@@ -7,7 +7,7 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 
-#include "scopes/BaseScope.h"
+#include "scopes/Base.h"
 
 #ifndef CHROMIUM_ORCA_NEXT_H
 #define CHROMIUM_ORCA_NEXT_H
@@ -21,7 +21,7 @@ public:
     Kaleido(headless::HeadlessBrowser* browser,
             headless::HeadlessWebContents* web_contents,
             std::string tmpFileName,
-            BaseScope *scope);
+            kaleido::scopes::BaseScope *scope);
 
     ~Kaleido() override;
 
@@ -46,7 +46,7 @@ private:
     int contextId;
     std::string tmpFileName;
     std::list<std::string> remainingLocalScriptsFiles;
-    BaseScope *scope;
+    kaleido::scopes::BaseScope *scope;
     base::FilePath cwd;
 
     // The headless browser instance. Owned by the headless library. See main().

@@ -113,10 +113,10 @@ class BaseScope(object):
             response = self._proc.stdout.readline()
 
         response = json.loads(response.decode('utf-8'))
-        code = response.pop("code", None)
-        # Check for export error
+        code = response.pop("code", 0)
 
-        if code is not None:
+        # Check for export error
+        if code != 0:
             message = response.get("message", None)
             raise ValueError(
                 "Image export failed with error code {code}: {message}".format(

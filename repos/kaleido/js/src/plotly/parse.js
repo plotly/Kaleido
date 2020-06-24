@@ -105,7 +105,7 @@ function parse (body, _opts) {
     return errorOut(400, 'figure data is likely to make exporter hang, rejecting request')
   }
 
-  return {code: null, message: null, result}
+  return {code: 0, message: null, result}
 }
 
 function parseDim (result, opts, dim) {

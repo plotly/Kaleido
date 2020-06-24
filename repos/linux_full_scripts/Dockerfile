@@ -2,12 +2,6 @@
 #
 # Build and run:
 #   docker build -t jonmmease/kaleido-builder:0.6 -f Dockerfile .
-#
-# stop:
-#   docker stop orca-next
-# 
-# ssh credentials (test user):
-#   user@password
 
 FROM jonmmease/chromium-builder:0.6
 
@@ -16,11 +10,6 @@ FROM jonmmease/chromium-builder:0.6
 RUN \
     cd / \
     && fetch --nohooks chromium
-    
-# Configure gclient to get windows and linux dependencies
-# RUN \
-#     echo '\ntarget_os = ["linux", "win"]\n' >> /.gclient \
-#     && cat /.gclient
 
 # Checkout chromium revision
 RUN \
@@ -32,6 +21,8 @@ RUN gclient runhooks
     
 # Remove .git directory to save space
 RUN rm -r /src/.git
+
+# TODO: remove .git directories from third-party dependencies under src/third_party
 
 # Build create linux out directory
 RUN \
