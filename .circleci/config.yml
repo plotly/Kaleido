@@ -60,6 +60,7 @@ jobs:
             - src
             - depot_tools
             - .gclient
+            - .gclient_entries
 
   windows_build:
     executor:
