@@ -33,6 +33,9 @@ git checkout tags/$CHROMIUM_TAG
 gclient sync -D --force --reset
 gclient runhooks
 
+# 2) Append kaleido section to headless build file (src\headless\BUILD.gn)
+cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
+
 # Delete .git directory to save some space
 # TODO: also delete third-part .git directories
 Remove-Item -Recurse -Force .git
