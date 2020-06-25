@@ -84,10 +84,17 @@ python setup.py package
 
 # Change up to kaleido/ directory
 cd ..
+
 # Build kaleido zip archive
+if (Test-Path ..\build\kaleido_win.zip) {
+    Remove-Item -Recurse -Force ..\build\kaleido_win.zip
+}
 Compress-Archive -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win.zip
 
 # Build wheel zip archive
+if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
+    Remove-Item -Recurse -Force ..\kaleido\py\kaleido_wheel.zip
+}
 Compress-Archive -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
 
 }
