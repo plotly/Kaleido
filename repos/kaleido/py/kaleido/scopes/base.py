@@ -40,9 +40,13 @@ class BaseScope(object):
         self._shutdown_kaleido()
 
     def _ensure_kaleido(self):
-        if self._proc is None:
+        if self._proc is None or self._proc.poll() is not None:
             with self._proc_lock:
-                if self._proc is None:
+                if self._proc is None or self._proc.poll() is not None:
+                    # Wait on process if crashed to prevent zombies
+                    if self._proc is not None:
+                        self._proc.wait()
+
                     # Launch kaleido subprocess
                     # Note: shell=True seems to be needed on Windows to handle executable path with
                     # spaces.  The subprocess.Popen docs makes it sound like this shouldn't be
