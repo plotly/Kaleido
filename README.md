@@ -1,13 +1,34 @@
 # Overview
 Kaleido is a cross-platform library for generating static images (e.g. png, svg, pdf, etc.) for web-based visualization libraries, with a particular focus on eliminating external dependencies. The project's initial focus is on the export of plotly.js images from Python for use by plotly.py, but it is designed to be relatively straight-forward to extend to other web-based visualization libraries, and other programming languages.  The primary focus of Kaleido (at least initially) is to serve as a dependency of web-based visualization libraries like plotly.py. As such, the focus is on providing a programmatic-friendly, rather than user-friendly, API.
 
+# Try it out
+
+Install the `kaleido` package from PyPI.
+
+```
+$ pip install kaleido
+```
+
+Export a plotly figure as a png image.
+
+```
+from kaleido.scopes.plotly import PlotlyScope
+import plotly.graph_objects as go
+scope = PlotlyScope()
+
+fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+with open("figure.png", "wb") as f:
+    f.write(scope.to_image(fig, format="png"))
+```
+
+Then, open `figure.png`
 
 # Background
 As simple as it sounds, programmatically generating static images from web-based visualization libraries is a difficult problem.  The core difficulty is that these libraries don't actually render plots (i.e. color the pixels) on their own, instead they delegate this work to web technologies like SVG, Canvas, WebGL, etc.  This means that they are entirely dependent on the presence of a complete web browser to operate.
 
 When the figure is displayed in a browser window, it's relatively straight-forward for a visualization library to provide an export-image button because it has full access to the browser for rendering.  The difficulty arises when trying to export an image programmatically (e.g. from Python) without displaying it in a browser and without user interaction.  To accomplish this, the Python portion of the visualization library needs programmatic access to a full web browser.
 
-There are three main approaches that are currently in use among the Python web-based visualization libraries.
+There are three main approaches that are currently in use among Python web-based visualization libraries.
 
   1. bokeh, altair, bqplot, and ipyvolume rely on the Selenium Python library to control a system web browser such as Firefox or Chrome/Chromium to perform image rendering.
   2. plotly.py relies on Orca, which is a custom headless Electron application that uses the Chromium browser engine built into Electron to perform image rendering. Orca runs as a local web server and plotly.py sends requests to it using a local port.
@@ -26,12 +47,12 @@ The goal of Kaleido is to make static image export of web-based visualization li
 # Approach
 To accomplish this goal, Kaleido introduces a new approach.  The core of Kaleido is a standalone C++ application that embeds Chromium as a library. This architecture allows Kaleido to communicate with the browser engine using the C++ API rather than requiring a local network connection. A thin Python wrapper runs the Kaledo C++ application as a subprocess and communicates with it by writing image export JSON requests to standard-in and retrieving results by reading from standard-out.  Other language wrappers (e.g. R, Julia, Scala, Rust, etc.) can fairly easily be written in the future because the interface relies only on standard-in / standard-out communication using JSON requests.
 
-By compiling Chromium as a library, we have a degree of control over what is included in the Chromium build. In particular, on Linux we can build Chromium in [headless](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) mode, which eliminates a large number of runtime dependencies (e.g. the `libXss` library mentioned above).  The remaining dependencies are small enough to bundle with the library, making it possible to run Kaleido in the most minimal Linux environments with not additional dependencies required. So for example, the c++ Kaleido executable can run inside an `ubuntu:16.04` docker container without anything be installed using `apt`.
+By compiling Chromium as a library, we have a degree of control over what is included in the Chromium build. In particular, on Linux we can build Chromium in [headless](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) mode, which eliminates a large number of runtime dependencies (e.g. the `libXss` library mentioned above).  The remaining dependencies are small enough to bundle with the library, making it possible to run Kaleido in the most minimal Linux environments with no additional dependencies required. So for example, the C++ Kaleido executable can run inside an `ubuntu:16.04` docker container without anything be installed using `apt`.
 
 The Python wrapper and the Kaleido executable can then be packaged as operating system dependent Python wheels that can be distributed on PyPI.
 
 # Disadvantages
-While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB and several hours.  Because of this, on Linux this work can be done once and distributed as a docker container, but we don't have a similar shortcut for Windows and MacOS. Because of this, we're still working on finding a CI solution for MacOS and Windows.
+While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB and several hours.  On Linux this work can be done once and distributed as a docker container, but we don't have a similar shortcut for Windows and MacOS. Because of this, we're still working on finding a CI solution for MacOS and Windows.
 
 # Scope (Plugin) architecture
 While motivated by the needs of plotly.py, we made the decision early on to design Kaleido to make it fairly straightforward to add support for additional libraries.  Plugins in Kaleido are called "scopes". We hope to collaborate with many other web-based visualization libraries to solve this problem once as for all by developing scopes for a wide range of libraries across the community.
@@ -49,7 +70,7 @@ $ cd Kaleido
 There are two approaches to building Kaleido on Linux, both of which rely on Docker.
 
 ## Method 1
-This approach relies on the `jonmmease/kaleido-builder` docker image, and the scripts in `repos/linux_full_scripts`, to compile Kaleido.  This docker image is over 30GB, but in includes a precompiled instance of the Chromium source tree making it possible to compile Kaleido in just a few 10s of seconds. The downside of this approach is that the chromium source tree is not visible outside of the docker image so it may be difficult for development environments to index it. This is the approach used for Continuous integration on Linux 
+This approach relies on the `jonmmease/kaleido-builder` docker image, and the scripts in `repos/linux_full_scripts`, to compile Kaleido.  This docker image is over 30GB, but in includes a precompiled instance of the Chromium source tree making it possible to compile Kaleido in just a few 10s of seconds. The downside of this approach is that the chromium source tree is not visible outside of the docker image so it may be difficult for development environments to index it. This is the approach used for Continuous Integration on Linux.
 
 Download docker image
 ```
@@ -89,7 +110,7 @@ $ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/l
 ```
 
 ## MacOS
-To build on MacOS, first install XCode version 11.0+ and nodejs 12.  See https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md for more information on build requirements.
+To build on MacOS, first install XCode version 11.0+, nodejs 12, and Python 3.  See https://chromium.googlesource.com/chromium/src/+/master/docs/mac_build_instructions.md for more information on build requirements.
 
 Then fetch the chromium codebase
 
@@ -104,7 +125,7 @@ $ /repos/mac_scripts/build_kaleido
 ```
 
 ## Windows
-To build on Windows, first install Visual Studio 2019 (community edition is fine). See https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md for more information on build requirements.
+To build on Windows, first install Visual Studio 2019 (community edition is fine), nodejs 12, and Python 3. See https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md for more information on build requirements.
 
 Then fetch the chromium codebase from a Power Shell command prompt
 
@@ -138,17 +159,18 @@ Update the `LoadScope` function in `repos/kaleido/cc/scopes/Factory.h` so that a
 ## repos/kaleido/js/src/superviz/render.js
 Next, add a new `render` JavaScript function to a new file at `repos/kaleido/js/src/superviz/render.js`.  The first argument of this function will be a JavaScript object that corresponds to the arguments to the `BaseScope.to_image` Python method: `figure`, `format`, `width`, `height`, and `scale`. The second through last argument will match the arguments constructed in the `BuildCallArguments` C++ method above.
 
-This function is responsible for return a `Promise` that resolves to an object that includes the result of the image export attempt. The object should have the following properties
+This function is responsible for returning a `Promise` that resolves to an object that includes the result of the image export attempt. The object should have the following properties
  
-  - `code`: If an error occurred, the code should be a non-zero integer and an associated `message` should be included that describes the error. If export was successful, `code` should be `null`
+  - `code`: If an error occurred, the code should be a non-zero integer and an associated `message` should be included that describes the error. If export was successful, `code` should be `0`
   - `message`: If an error occurred, this should be a string containing the error message. If export was successful, `message` should be `null`
-  - `result`: The image export result. All formats except `svg` should be base64 encoded. If the input format is `pdf`, then the `render` function should choose the most appropriate image format that will be embedded in pdf (e.g. `svg`) and instead of returning a `result`, it should set this image as the `src` property of the `<img>` tag with id `kaleido-image`.
+  - `result`: The image export result as a string. All formats except `svg` should be base64 encoded. If the input format is `pdf`, then the `render` function should choose the most appropriate image format that will be embedded in pdf (e.g. `svg`) and instead of returning a `result`, it should set this image as the `src` property of the `<img>` tag with id `kaleido-image`.
   - `format`, `width`, `height`, `scale`: The format, width, height, and scale factor that were used. Even though these values are inputs, the `render` function may supply its own defaults and whatever values were actually used to generate the image should be included here. If the input format was `pdf`, then this `format` returned here should be whatever image format was used to generate the image that will be embedded in the PDF. e.g. `svg`.
   - `pdfBgColor`: If the `format` is `pdf`, this property should contain the desired background color of the figure. It is recommended that, if possible, the background color the associated figure image be set to fully transparent so that the PDF background color will fully show through. If `format` was not PDF this property should be set to `null`.
   
 
 Additional JavaScript helper functions can be added to the `repos/kaleido/js/src/superviz/` directory. The JavaScript files are bundled using [`browserify`](http://browserify.org/) on build. Additional NPM dependencies can be added to `repos/kaleido/js/package.json`. Note that the visualization library itself shouldn't be added as an NPM dependency, this is because we want to keep the resulting JavaScript bundle as small as possible, and we don't want to have to release a new version of Kaleido for each release of various visualization libraries.  Instead, the visualization libraries should be loaded from a CDN url by default and added to `scriptTags` above. It is also helpful to support loading the visualization library from a local JavaScript file, adding the path to `localScriptFiles` instead.
 
+See `repos/kaleido/js/src/plotly/render.js` for a reference example.
 
 ## repos/kaleido/js/src/index.js
 Update the `module.exports` section of `repos/kaleido/js/src/index.js` to include `superviz: require("./superviz/render")`.
@@ -157,11 +179,11 @@ Update the `module.exports` section of `repos/kaleido/js/src/index.js` to includ
 # Language wrapper architecture
 This section provides a high-level overview of the interactions between the Python and C++ layers.
 
-The first time an image export request is made in the Python library, the Kaleido C++ executable is launched as a subprocess of the Python interpreter. The first, and only, positional argument should be the scope name.  After that, a series of flags of the form `--flag` are passed to the executable. These flags would correspond to the constructor arguments of the `SupervizScope` python class.
+The first time an image export request is made in the Python library, the Kaleido C++ executable is launched as a subprocess of the Python interpreter. The first, and only, positional argument should be the scope name.  After that, a series of flags of the form `--flag` are passed to the executable. These flags would correspond to the constructor arguments of the `SupervizScope` Python class.
 
-When construction is complete, the Kaledo executable will write a single line to std-out. This is a JSON string with `code` and `message` properties. If initialization was successful, `code` is 0 and `message` is `null`.  If something went wrong (e.g. a validation failure), then the `code` will be a non-zero integer and an error `message` will be included.  In this case, the Python layer will raise a `ValueError` with the returned `message`.
+When construction is complete, the Kaledo executable will write a single line to standard-out. This is a JSON string with `code` and `message` properties. If initialization was successful, `code` is 0 and `message` is ignored.  If something went wrong (e.g. a validation failure), then the `code` will be a non-zero integer and an error `message` will be included.  In this case, the Python layer will raise a `ValueError` with the returned `message`.
 
-Each time an image export request is made of the Python library, a request JSON string is formed and written to standard-in, followed by a newline. This JSON string should contain the figure specification in the `figure` property, as well as `format`, `width`, `height`, `scale` options.  In response, the Kaleido C++ executable will write a single JSON string to standard out.  This JSON string also has the `code` and `message` properties. Again, if something went wrong, `code` will be non-zero and the `message` will describe the problem. And again, the Python layer will raise a `ValueError` with the contents of the message.  If `code` is 0, then the `result` property will contain the image data, which is returned by the Python layer as a `bytes` object.
+Each time an image export request is made of the Python library, a request JSON string is formed and written to standard-in, followed by a newline. This JSON string should contain the figure specification in the `figure` property, as well as `format`, `width`, `height`, `scale` options.  In response, the Kaleido C++ executable will write a single JSON string, followed by a newline, to standard out.  This JSON string also has the `code` and `message` properties. Again, if something went wrong, `code` will be non-zero and the `message` will describe the problem. And again, the Python layer will raise a `ValueError` with the contents of the message.  If `code` is 0, then the `result` property will contain the image data, which is returned by the Python layer as a `bytes` object.
 
 
 # Building Docker containers
