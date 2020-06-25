@@ -23,29 +23,57 @@ jobs:
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
 
-  mac_build:
+  mac_fetch:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
     resource_class: medium
     steps:
       - checkout
       - run:
-          name: Delete Simulators to save space
-          command: sudo rm -rf /Library/Developer/CoreSimulator/Profiles/Runtimes/
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
       - run:
+          name: Fetch detpot_tools and chromium source tree
           command: ./repos/mac_scripts/fetch_chromium
           no_output_timeout: 30m
       - run:
+          name: Delete .git directories to save space (skipping angle taken from electron circleci build)
+          command: |
+            cd src
+            ( find . -type d -name ".git" -not -path "./third_party/angle/*" ) | xargs rm -rf
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+
+  mac_build:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 11.3.0 # indicate our selected version of Xcode
+    resource_class: medium
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./repos
+      - run:
           command: ./repos/mac_scripts/build_kaleido
           no_output_timeout: 30m
-      - run: ls repos/build/kaleido_mac
       - run: pushd repos/build && zip -r kaleido_mac.zip ./*
       - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
       - store_artifacts:
           path: ./repos/build/kaleido_mac.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
-
+          
   windows_fetch:
     executor:
       name: win/default
@@ -55,7 +83,7 @@ jobs:
       - checkout
       - run: .\repos\win_scripts\fetch_chromium.ps1
       - persist_to_workspace:
-          root: .\repos
+          root: ./repos
           paths:
             - src
             - depot_tools
@@ -71,30 +99,11 @@ jobs:
       - checkout
       - attach_workspace:
           at: .\repos
-      #- run: choco install windows-sdk-10-version-2004-windbg  # Install "Debugging Tools for Windows"
       - run: .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
       - store_artifacts:
-          path: ./repos/build/kaleido_linux.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
-      
-  windows_build2:
-    executor:
-      name: win/default
-      size: "xlarge"
-      shell: powershell.exe
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .\repos
-      - run: choco install windows-sdk-10-version-2004-windbg  # Install "Debugging Tools for Windows"
-      - run: .\repos\win_scripts\build_kaleido.ps1
-      - run: dir .\repos\build\kaleido
-      - run: dir .\repos\kaleido\py\dist
-      - store_artifacts:
-          path: ./repos/build/kaleido_linux.zip
+          path: ./repos/build/kaleido_win.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
       
@@ -105,9 +114,14 @@ workflows:
       - windows_build:
           requires:
             - windows_fetch
-      - windows_build2:
+
+  build-mac:
+    jobs:
+      - mac_fetch
+      - mac_build:
           requires:
-            - windows_fetch      
+            - mac_fetch
+
   #build-linux:
     #jobs:
      #- mac_build
