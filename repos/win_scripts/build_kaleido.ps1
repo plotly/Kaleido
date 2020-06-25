@@ -44,7 +44,7 @@ Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse
 
 # 4) Perform build, result will be out/Kaleido_win/kaleido
 gn gen out\Kaleido_win
-ninja -C out\Kaleido_win -j 8 kaleido
+ninja -C out\Kaleido_win -j 16 kaleido
 
 # 5) Copy build files
 if (-Not (Test-Path ..\build\kaleido)) {

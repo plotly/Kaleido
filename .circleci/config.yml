@@ -45,15 +45,31 @@ jobs:
           path: ./repos/build/kaleido_mac.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
-  windows_build:
+
+  windows_fetch:
     executor:
       name: win/default
-      size: "large"
+      size: "medium"
       shell: powershell.exe
     steps:
       - checkout
-      - run: systeminfo
       - run: .\repos\win_scripts\fetch_chromium.ps1
+      - persist_to_workspace:
+          root: .\repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+
+  windows_build:
+    executor:
+      name: win/default
+      size: "xlarge"
+      shell: powershell.exe
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .\repos
       - run: .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
@@ -63,8 +79,11 @@ jobs:
           path: ./repos/kaleido/py/kaleido_wheel.zip
       
 workflows:
-  build-all:
+  build-windows:
+    jobs:
+      - windows_build
+  build-linux:
     jobs:
 #      - mac_build
       - linux_build
-#      - windows_build
+

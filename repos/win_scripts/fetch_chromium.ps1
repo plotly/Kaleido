@@ -32,3 +32,7 @@ git reset --hard
 git checkout tags/$CHROMIUM_TAG
 gclient sync -D --force --reset
 gclient runhooks
+
+# Delete .git directory to save some space
+# TODO: also delete third-part .git directories
+Remove-Item -Recurse -Force .git
