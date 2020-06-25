@@ -93,7 +93,7 @@ jobs:
   windows_build:
     executor:
       name: win/default
-      size: "xlarge"
+      size: "large"
       shell: powershell.exe
     steps:
       - checkout
