@@ -11,7 +11,7 @@ $ pip install kaleido
 
 Export a plotly figure as a png image.
 
-```
+```python
 from kaleido.scopes.plotly import PlotlyScope
 import plotly.graph_objects as go
 scope = PlotlyScope()
