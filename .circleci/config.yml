@@ -81,7 +81,10 @@ jobs:
 workflows:
   build-windows:
     jobs:
-      - windows_build
+      - windows_fetch
+      - windows_build:
+          requires:
+            - windows_fetch
   build-linux:
     jobs:
 #      - mac_build
