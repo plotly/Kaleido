@@ -1,6 +1,6 @@
 # Commits
-$env:DEPOT_TOOLS_COMMIT="e67e41a"
-$env:CHROMIUM_TAG="83.0.4103.61"
+$DEPOT_TOOLS_COMMIT="e67e41a"
+$CHROMIUM_TAG="83.0.4103.61"
 
 # Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0
@@ -20,7 +20,7 @@ echo $env:path
 $env:GCLIENT_PY3=0
 
 # Reset to proper commit
-git reset --hard $env:DEPOT_TOOLS_COMMIT
+git reset --hard $DEPOT_TOOLS_COMMIT
 git log -2
 
 # Move back to repos directory
@@ -30,7 +30,6 @@ fetch --nohooks chromium
 # Change to cloned src/ directory
 cd src
 git reset --hard
-git fetch --tags
 git checkout tags/$CHROMIUM_TAG
 git log -2
 gclient sync -D --force --reset

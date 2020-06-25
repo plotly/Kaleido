@@ -71,6 +71,25 @@ jobs:
       - checkout
       - attach_workspace:
           at: .\repos
+      #- choco install windows-sdk-10-version-2004-windbg  # Install "Debugging Tools for Windows"
+      - run: .\repos\win_scripts\build_kaleido.ps1
+      - run: dir .\repos\build\kaleido
+      - run: dir .\repos\kaleido\py\dist
+      - store_artifacts:
+          path: ./repos/build/kaleido_linux.zip
+      - store_artifacts:
+          path: ./repos/kaleido/py/kaleido_wheel.zip
+      
+  windows_build2:
+    executor:
+      name: win/default
+      size: "xlarge"
+      shell: powershell.exe
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .\repos
+      - choco install windows-sdk-10-version-2004-windbg  # Install "Debugging Tools for Windows"
       - run: .\repos\win_scripts\build_kaleido.ps1
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
@@ -86,6 +105,9 @@ workflows:
       - windows_build:
           requires:
             - windows_fetch
+      - windows_build2:
+          requires:
+            - windows_fetch      
   #build-linux:
     #jobs:
      #- mac_build
