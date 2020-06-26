@@ -56,6 +56,25 @@ jobs:
             - .gclient
             - .gclient_entries
 
+  mac_build_blink:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 11.3.0 # indicate our selected version of Xcode
+    resource_class: medium
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./repos
+      - run:
+          command: ./repos/mac_scripts/build_blink
+          no_output_timeout: 30m
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+          
   mac_build:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
@@ -93,7 +112,7 @@ jobs:
   windows_build:
     executor:
       name: win/default
-      size: "large"
+      size: "xlarge"
       shell: powershell.exe
     steps:
       - checkout
@@ -118,9 +137,12 @@ workflows:
   build-mac:
     jobs:
       - mac_fetch
-      - mac_build:
+      - mac_build_blink:
           requires:
             - mac_fetch
+      - mac_build:
+          requires:
+            - mac_build_blink
 
   #build-linux:
     #jobs:

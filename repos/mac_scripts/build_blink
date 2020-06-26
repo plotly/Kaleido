@@ -1,0 +1,44 @@
+#!/bin/bash
+
+# Don't autoupdate depottools version
+export DEPOT_TOOLS_UPDATE=0
+
+# full path to mac_scripts/ directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# cd to repos directory
+cd $DIR/..
+
+# Add depot_tools directory to PATH
+export PATH="$PATH:`pwd`/depot_tools"
+
+# cd to repos/src
+cd src
+
+# Make output directory
+mkdir -p out/Kaleido_mac
+
+# Write out/Kaleido_mac/args.gn
+echo "
+# Copied windows compatible options from //build/args/headless.gn
+# Embed resource.pak into binary to simplify deployment.
+headless_use_embedded_resources = true
+
+# Use embedded data instead external files for headless in order
+# to simplify deployment.
+v8_use_external_startup_data = false
+
+enable_nacl = false
+enable_remoting = false
+
+# Debug / symbols
+symbol_level=0
+blink_symbol_level=0
+is_debug=false
+is_component_build=false
+is_official_build=true
+" > out/Kaleido_mac/args.gn
+
+# 4) Perform build, result will be out/Kaleido_mac/kaleido
+gn gen out/Kaleido_mac
+ninja -C out/Kaleido_mac -j 8 gl_blink
