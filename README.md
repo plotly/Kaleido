@@ -3,10 +3,16 @@ Kaleido is a cross-platform library for generating static images (e.g. png, svg,
 
 # Try it out
 
-Install the `kaleido` package from PyPI.
+Download the latest version of the kaleido Python wheel for your operating system from the releases page at https://github.com/plotly/Kaleido/releases.
 
+Install the kaleido wheel.
 ```
-$ pip install kaleido
+$ pip install /path/to/kaleido-{version}.whl
+```
+
+Install plotly.
+```
+$ pip install plotly
 ```
 
 Export a plotly figure as a png image.
@@ -21,7 +27,7 @@ with open("figure.png", "wb") as f:
     f.write(scope.to_image(fig, format="png"))
 ```
 
-Then, open `figure.png`
+Then, open `figure.png` in the current working directory.
 
 # Background
 As simple as it sounds, programmatically generating static images from web-based visualization libraries is a difficult problem.  The core difficulty is that these libraries don't actually render plots (i.e. color the pixels) on their own, instead they delegate this work to web technologies like SVG, Canvas, WebGL, etc.  This means that they are entirely dependent on the presence of a complete web browser to operate.
