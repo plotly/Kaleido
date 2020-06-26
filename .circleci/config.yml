@@ -46,7 +46,7 @@ jobs:
       - run:
           name: Delete .git directories to save space (skipping angle taken from electron circleci build)
           command: |
-            cd src
+            cd ./repos/src
             ( find . -type d -name ".git" -not -path "./third_party/angle/*" ) | xargs rm -rf
       - persist_to_workspace:
           root: ./repos
