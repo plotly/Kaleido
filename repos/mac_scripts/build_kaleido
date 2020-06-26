@@ -62,13 +62,16 @@ gn gen out/Kaleido_mac
 ninja -C out/Kaleido_mac -j 8 kaleido
 
 # 5) Copy build files
-mkdir -p ../build/kaleido_mac/
-rm -r ../build/kaleido_mac/*
-mkdir -p ../build/kaleido_mac/bin
-cp out/Kaleido_mac/kaleido ../build/kaleido_mac/bin
+mkdir -p ../build/kaleido/
+rm -r ../build/kaleido/*
+mkdir -p ../build/kaleido/bin
+cp out/Kaleido_mac/kaleido ../build/kaleido/bin
 
 # Copy icudtl.dat
-cp ./out/Kaleido_mac/icudtl.dat ../build/kaleido_mac/
+cp ./out/Kaleido_mac/icudtl.dat ../build/kaleido/bin
+
+# Copy dynamic libraries
+cp ./out/Kaleido_mac/lib*.dylib ../build/kaleido/bin
 
 # launch script
 echo "#!/bin/bash
@@ -76,8 +79,8 @@ DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
 
 cd \$DIR
 ./bin/kaleido --no-sandbox --allow-file-access-from-files --disable-breakpad \$@
-" > ../build/kaleido_mac/kaleido
-chmod +x ../build/kaleido_mac/kaleido
+" > ../build/kaleido/kaleido
+chmod +x ../build/kaleido/kaleido
 
 # Copy javascript
 pushd ../kaleido/js/
@@ -87,10 +90,9 @@ npm run clean
 npm run build
 popd
 
-mkdir -p ../build/kaleido_mac/js/
-cp ../kaleido/js/build/*.js ../build/kaleido_mac/js/
+mkdir -p ../build/kaleido/js/
+cp ../kaleido/js/build/*.js ../build/kaleido/js/
 
 # Build python wheel
-apt-get install -y python3-wheel
 cd ../kaleido/py
 python3 setup.py package
