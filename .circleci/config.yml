@@ -23,6 +23,8 @@ jobs:
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
 
+          
+          
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
@@ -144,8 +146,7 @@ workflows:
           requires:
             - mac_build_blink
 
-  #build-linux:
-    #jobs:
-     #- mac_build
-      #- linux_build;
+  build-linux:
+    jobs:
+      - linux_build
 
