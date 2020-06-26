@@ -94,7 +94,7 @@ class PackageWheel(Command):
 
 setup(
     name="kaleido",
-    version="0.0.1a3",
+    version="0.0.1rc1",
     packages=["kaleido", "kaleido.scopes"],
     package_data={'kaleido': executable_files},
     cmdclass=dict(
