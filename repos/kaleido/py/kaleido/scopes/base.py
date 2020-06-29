@@ -1,7 +1,9 @@
 import subprocess
 import json
 import base64
-from threading import Lock
+from json import JSONDecodeError
+from threading import Lock, Thread
+import io
 import os
 import sys
 
@@ -14,7 +16,8 @@ class BaseScope(object):
     def __init__(self, disable_gpu=True, suppress_stderr=True, **kwargs):
 
         # Properties
-        self.suppress_stderr = suppress_stderr
+        self._std_error = io.StringIO()
+        self._std_error_thread = None
 
         # TODO: Validate disable_gpu
         kwargs['disable_gpu'] = disable_gpu
@@ -39,6 +42,11 @@ class BaseScope(object):
     def __del__(self):
         self._shutdown_kaleido()
 
+    def _collect_standard_error(self):
+        while self._proc is not None:
+            val = self._proc.stderr.readline().decode('utf-8')
+            self._std_error.write(val)
+
     def _ensure_kaleido(self):
         if self._proc is None or self._proc.poll() is not None:
             with self._proc_lock:
@@ -47,29 +55,39 @@ class BaseScope(object):
                     if self._proc is not None:
                         self._proc.wait()
 
+                    # Reset _std_error buffer
+                    self._std_error = io.StringIO()
+
                     # Launch kaleido subprocess
                     # Note: shell=True seems to be needed on Windows to handle executable path with
                     # spaces.  The subprocess.Popen docs makes it sound like this shouldn't be
                     # necessary.
-                    if self.suppress_stderr:
-                        stderr = open(os.devnull, "wb")
-                    else:
-                        stderr = None
-
                     self._proc = subprocess.Popen(
                         self.proc_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
-                        stderr=stderr,
+                        stderr=subprocess.PIPE,
                         shell=sys.platform == "win32"
                     )
 
+                    # Set up thread to asynchronously collect standard error stream
+                    self._std_error_thread = Thread(target=self._collect_standard_error)
+                    self._std_error_thread.setDaemon(True)
+                    self._std_error_thread.start()
+
                     # Read startup message and check for errors
-                    startup_response_bytes = self._proc.stdout.readline()
-                    startup_response = json.loads(startup_response_bytes.decode('utf-8'))
-                    if startup_response.get("code", 0) != 0:
-                        self._proc.wait()
-                        raise ValueError(startup_response.get("message", "Failed to start kaleido executable"))
+                    startup_response_string = self._proc.stdout.readline().decode('utf-8')
+                    if not startup_response_string:
+                        message = (
+                            "Failed to start Kaleido subprocess. Error stream:\n\n" +
+                            self._std_error.getvalue()
+                        )
+                        raise ValueError(message)
+                    else:
+                        startup_response = json.loads(startup_response_string)
+                        if startup_response.get("code", 0) != 0:
+                            self._proc.wait()
+                            raise ValueError(startup_response.get("message", "Failed to start Kaleido subprocess"))
 
     def _shutdown_kaleido(self):
         if self._proc is not None:
@@ -110,13 +128,27 @@ class BaseScope(object):
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with self._proc_lock:
+            # Reset _std_error buffer
+            self._std_error = io.StringIO()
+
             # Write and flush spec
             self._proc.stdin.write(export_spec)
             self._proc.stdin.write("\n".encode('utf-8'))
             self._proc.stdin.flush()
             response = self._proc.stdout.readline()
 
-        response = json.loads(response.decode('utf-8'))
+        response_string = response.decode('utf-8')
+        if not response_string:
+            message = (
+                    "Image export failed. Error stream:\n\n" +
+                    self._std_error.getvalue()
+            )
+            raise ValueError(message)
+        try:
+            response = json.loads(response_string)
+        except JSONDecodeError:
+            print("Invalid JSON: " + repr(response_string))
+            raise
         code = response.pop("code", 0)
 
         # Check for export error
