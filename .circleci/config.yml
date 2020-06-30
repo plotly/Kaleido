@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@2.2.0 # The Windows orb give you everything you need to start using the Windows executor.
+  win: circleci/windows@2.4.0 # The Windows orb give you everything you need to start using the Windows executor.
 
 jobs:
   linux_build:
@@ -104,6 +104,7 @@ jobs:
       shell: powershell.exe
     steps:
       - checkout
+      - run: echo $Host.Version
       - run: python ./repos/version/build_pep440_version.py
       - run: .\repos\win_scripts\fetch_chromium.ps1
       - persist_to_workspace:
