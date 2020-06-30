@@ -1,4 +1,6 @@
 repos/src
+repos/depot_tools
+*.DS_Store
 *.kate-swp
 repos/.cipd/
 repos/.gclient
