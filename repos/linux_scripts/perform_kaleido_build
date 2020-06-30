@@ -39,6 +39,9 @@ cp -r /usr/share/fonts/ /repos/build/kaleido/xdg/
 # launch script
 cp /repos/linux_scripts/launch_script /repos/build/kaleido/kaleido
 
+# version
+cp /repos/kaleido/version /repos/build/kaleido/
+
 # Copy javascript
 pushd /repos/kaleido/js/
 mkdir -p build/

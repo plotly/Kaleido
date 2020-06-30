@@ -49,6 +49,9 @@ New-Item -Path ..\build\kaleido\bin -ItemType "directory"
 Copy-Item out\Kaleido_win\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
 Copy-Item out\Kaleido_win\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
+# version
+cp ..\kaleido\version ..\build\kaleido\
+
 # Copy icudtl.dat
 Copy-Item .\out\Kaleido_win\icudtl.dat -Destination ..\build\kaleido\bin
 

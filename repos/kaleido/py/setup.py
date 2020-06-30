@@ -7,6 +7,9 @@ import distutils.util
 
 here = os.path.dirname(os.path.abspath(__file__))
 
+with open(os.path.join(os.path.dirname(here), 'version'), 'r') as f:
+    version = f.read()
+
 def package_files(directory):
     paths = []
     for (path, directories, filenames) in os.walk(directory):
@@ -72,6 +75,22 @@ class CopyExecutable(Command):
         del executable_files[:]
         executable_files.extend(package_files("kaleido/executable"))
 
+
+class WriteVersion(Command):
+    description = "Write _version.py file"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        with open(os.path.join(here, 'kaleido', '_version.py'), 'w') as f:
+            f.write('__version__ = "{version}"\n'.format(version=version))
+
+
 class PackageWheel(Command):
     description = "Build Wheel Package"
     user_options = []
@@ -85,6 +104,7 @@ class PackageWheel(Command):
     def run(self):
         self.run_command("clean")
         self.run_command("copy_executable")
+        self.run_command("write_version")
         cmd_obj = self.distribution.get_command_obj('bdist_wheel')
 
         # Use current platform as plat_name, but replace linux with manylinux2014
@@ -94,10 +114,13 @@ class PackageWheel(Command):
 
 setup(
     name="kaleido",
-    version="0.0.1rc1",
+    version=version,
     packages=["kaleido", "kaleido.scopes"],
     package_data={'kaleido': executable_files},
     cmdclass=dict(
-        copy_executable=CopyExecutable, clean=CleanCommand, package=PackageWheel
+        copy_executable=CopyExecutable,
+        clean=CleanCommand,
+        write_version=WriteVersion,
+        package=PackageWheel,
     )
 )

@@ -82,6 +82,9 @@ cd \$DIR
 " > ../build/kaleido/kaleido
 chmod +x ../build/kaleido/kaleido
 
+# version
+cp ../kaleido/version ../build/kaleido/
+
 # Copy javascript
 pushd ../kaleido/js/
 mkdir -p build/

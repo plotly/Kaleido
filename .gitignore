@@ -8,11 +8,14 @@ repos/build
 repos/cmake-build-debug
 repos/kaleido/js/node_modules
 repos/kaleido/js/build
+repos/kaleido/version
 *.pyc
 win_toolchain/*.zip
 repos/kaleido/py/kaleido/executable
+repos/kaleido/py/kaleido/_version.py
 repos/kaleido/py/build/
 repos/kaleido/py/dist/
+
 *.egg-info/
 repos/kaleido/py/scratch/
 .idea/

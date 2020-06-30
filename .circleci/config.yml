@@ -10,6 +10,7 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - run: python ./repos/version/build_pep440_version.py
       - run: docker --version
       - run: docker pull jonmmease/kaleido-builder:0.6
       - run: docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido
@@ -31,6 +32,7 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - run: python ./repos/version/build_pep440_version.py
       - run:
           name: Delete simulators and unused platforms to save space
           command: |
@@ -102,6 +104,7 @@ jobs:
       shell: powershell.exe
     steps:
       - checkout
+      - run: python ./repos/version/build_pep440_version.py
       - run: .\repos\win_scripts\fetch_chromium.ps1
       - persist_to_workspace:
           root: ./repos
