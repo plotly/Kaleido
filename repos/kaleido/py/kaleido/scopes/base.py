@@ -12,6 +12,7 @@ executable_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(_
 
 class BaseScope(object):
     _json_encoder = None
+    _text_formats = ("svg",)
 
     def __init__(self, disable_gpu=True, suppress_stderr=True, **kwargs):
 
@@ -162,7 +163,7 @@ class BaseScope(object):
 
         # Export successful
         img_string = response.pop("result", None)
-        if format == 'svg':
+        if format in self._text_formats:
             img = img_string.encode()
         else:
             img = base64.decodebytes(img_string.encode())

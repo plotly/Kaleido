@@ -4,6 +4,7 @@ from _plotly_utils.utils import PlotlyJSONEncoder
 
 class PlotlyScope(BaseScope):
     _json_encoder = PlotlyJSONEncoder
+    _text_formats = ("svg", "json")
 
     def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, **kwargs):
         # TODO: validate args
