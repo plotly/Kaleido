@@ -122,6 +122,9 @@ jobs:
       shell: powershell.exe
     steps:
       - checkout
+      - run:
+          name: Update PowerShell.Archive to fix slash direction
+          command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
       - attach_workspace:
           at: .\repos
       - run: .\repos\win_scripts\build_kaleido.ps1
