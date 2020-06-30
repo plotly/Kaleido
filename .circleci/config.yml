@@ -63,7 +63,7 @@ jobs:
   mac_build_blink:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
-    resource_class: medium
+    resource_class: large
     steps:
       - checkout
       - attach_workspace:
@@ -82,7 +82,7 @@ jobs:
   mac_build:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
-    resource_class: medium
+    resource_class: large
     steps:
       - checkout
       - attach_workspace:
