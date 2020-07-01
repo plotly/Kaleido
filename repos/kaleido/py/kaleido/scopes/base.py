@@ -51,9 +51,10 @@ class BaseScope(object):
             self._proc_args.append(flag)
 
     def _collect_standard_error(self):
-        while self._proc is not None:
-            val = self._proc.stderr.readline().decode('utf-8')
-            self._std_error.write(val)
+        while True:
+            if self._proc is not None:
+                val = self._proc.stderr.readline().decode('utf-8')
+                self._std_error.write(val)
 
     def _ensure_kaleido(self):
         if self._proc is None or self._proc.poll() is not None:
@@ -80,9 +81,10 @@ class BaseScope(object):
                     )
 
                     # Set up thread to asynchronously collect standard error stream
-                    self._std_error_thread = Thread(target=self._collect_standard_error)
-                    self._std_error_thread.setDaemon(True)
-                    self._std_error_thread.start()
+                    if self._std_error_thread is None:
+                        self._std_error_thread = Thread(target=self._collect_standard_error)
+                        self._std_error_thread.setDaemon(True)
+                        self._std_error_thread.start()
 
                     # Read startup message and check for errors
                     startup_response_string = self._proc.stdout.readline().decode('utf-8')
