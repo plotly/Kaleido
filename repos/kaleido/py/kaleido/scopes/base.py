@@ -13,28 +13,21 @@ executable_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(_
 class BaseScope(object):
     _json_encoder = None
     _text_formats = ("svg",)
+    _chromium_flags = ("disable_gpu",)
+    _scope_flags = ()
 
-    def __init__(self, disable_gpu=True, suppress_stderr=True, **kwargs):
+    def __init__(self, disable_gpu=True):
+
+        # Collect chromium flags
+        self._disable_gpu = disable_gpu
 
         # Properties
         self._std_error = io.StringIO()
         self._std_error_thread = None
-
-        # TODO: Validate disable_gpu
-        kwargs['disable_gpu'] = disable_gpu
+        self._proc_args = None
 
         # Build process arguments list
-        self.proc_args = [executable_path, self.scope_name]
-        for k, v in kwargs.items():
-            if v is True:
-                flag = '--' + k.replace("_", "-")
-            elif v is False or v is None:
-                # Logical flag set to False, don't inlude argument
-                continue
-            else:
-                # Flag with associated value
-                flag = '--' + k.replace("_", "-") + "=" + repr(str(v))
-            self.proc_args.append(flag)
+        self._update_proc_args()
 
         # Launch subprocess
         self._proc = None
@@ -42,6 +35,20 @@ class BaseScope(object):
 
     def __del__(self):
         self._shutdown_kaleido()
+
+    def _update_proc_args(self):
+        self._proc_args = [executable_path, self.scope_name]
+        for k in self._chromium_flags + self._scope_flags:
+            v = getattr(self, k)
+            if v is True:
+                flag = '--' + k.replace("_", "-")
+            elif v is False or v is None:
+                # Logical flag set to False, don't include flag or argument
+                continue
+            else:
+                # Flag with associated value
+                flag = '--' + k.replace("_", "-") + "=" + repr(str(v))
+            self._proc_args.append(flag)
 
     def _collect_standard_error(self):
         while self._proc is not None:
@@ -63,8 +70,9 @@ class BaseScope(object):
                     # Note: shell=True seems to be needed on Windows to handle executable path with
                     # spaces.  The subprocess.Popen docs makes it sound like this shouldn't be
                     # necessary.
+                    self._update_proc_args()
                     self._proc = subprocess.Popen(
-                        self.proc_args,
+                        self._proc_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
@@ -112,6 +120,16 @@ class BaseScope(object):
     @property
     def scope_name(self):
         raise NotImplementedError
+
+    # Flag property methods
+    @property
+    def disable_gpu(self):
+        return self._disable_gpu
+
+    @disable_gpu.setter
+    def disable_gpu(self, val):
+        self._disable_gpu = val
+        self._shutdown_kaleido()
 
     def to_image(self, figure, format="png", width=700, height=500, scale=1):
         # Ensure that kaleido subprocess is running

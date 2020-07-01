@@ -45,10 +45,10 @@ def test_simple_figure(fig, name, format):
     # write_baseline(data, name, format)
 
     if format == "svg":
-        # SVG not yet reprodicible
+        # SVG not yet reproducible
         assert result.startswith(b'<svg')
     elif format == "pdf":
-        # PDF not yet reprodicible
+        # PDF not yet reproducible
         assert result.startswith(b'%PDF')
     else:
         assert result == expected
