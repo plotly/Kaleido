@@ -93,7 +93,7 @@ $ docker pull jonmmease/kaleido-builder:0.6
 Build Kaleido
 
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido
+$ /repos/linux_full_scripts/build_kaleido
 ```
 
 ### Method 2
@@ -104,22 +104,17 @@ Download docker image
 $ docker pull jonmmease/chromium-builder:0.6
 ```
 
-Fetch the Chromium codebase
+Fetch the Chromium codebase and checkout the specific tag, then sync all dependencies
 
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/fetch_chromium
-```
-
-Checkout the specific stable tag of chromium, and then sync all dependencies
-```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/checkout_revision
+$ /repos/linux_scripts/fetch_chromium
 ```
 
 Then build the `kaleido` application to `repos/build/kaleido`, and bundle shared libraries and fonts. The input source for this application is stored under `repos/kaleido/cc/`. The build step will also
 create the Python wheel under `repos/kaleido/py/dist/`
 
 ```
-$ docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_kaleido
+$ /repos/linux_scripts/build_kaleido
 ```
 
 ## MacOS

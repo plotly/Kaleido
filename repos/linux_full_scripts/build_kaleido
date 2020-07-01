@@ -1,5 +1,11 @@
-#!/bin/bash
+# full path to linux_full_scripots/ directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# perform_kaleido_build expect to be run from src directory
-cd /src
-/repos/linux_scripts/perform_kaleido_build
+# cd to the top-level project directory
+cd $DIR/../..
+
+# Update version based on git tags
+python ./repos/version/build_pep440_version.py
+
+# Perform build using docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/kaleido-builder:0.6 /repos/linux_full_scripts/build_kaleido_docker

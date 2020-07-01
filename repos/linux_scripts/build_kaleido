@@ -1,27 +1,11 @@
-#!/bin/bash
-# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/build_headless
+# full path to linux_scripots/ directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-cd /repos/src
+# cd to the top-level project directory
+cd $DIR/../..
 
-# Make output directory
-mkdir -p out/Kaleido_linux
+# Update version based on git tags
+python ./repos/version/build_pep440_version.py
 
-# Write out/Kaleido_linux/args.gn
-cp /repos/linux_scripts/args.gn out/Kaleido_linux/args.gn
-
-# 1) Reset headless/BUILD.gn
-git checkout HEAD -- headless/BUILD.gn
-
-# 2) Append kaleido section to headless build file (src/headless/BUILD.gn)
-echo "
-executable(\"kaleido\") {
-  sources = [ \"app/kaleido.cc\" ]
-
-  deps = [
-    \":headless_shell_lib\",
-    \"//skia\",  # we need this to override font render hinting in headless build
-  ]
-}" >> headless/BUILD.gn
-
-# perform_kaleido_build expect to be run from src directory
-/repos/linux_scripts/perform_kaleido_build
+# Perform build using docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_kaleido_docker

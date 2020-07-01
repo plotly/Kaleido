@@ -3,6 +3,9 @@
 # cd to repos directory
 cd $PSScriptRoot\..
 
+# Update version based on git tag
+python .\version\build_pep440_version.py
+
 # Add depot_tools to path
 $env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
 echo $env:path

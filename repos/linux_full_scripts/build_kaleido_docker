@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# perform_kaleido_build expect to be run from src directory
+cd /src
+/repos/linux_scripts/perform_kaleido_build
