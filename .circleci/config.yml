@@ -24,8 +24,6 @@ jobs:
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
 
-          
-          
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
@@ -59,6 +57,7 @@ jobs:
             - depot_tools
             - .gclient
             - .gclient_entries
+            - kaleido/version
 
   mac_build_blink:
     macos:  # indicate that we are using the macOS executor
@@ -114,6 +113,7 @@ jobs:
             - depot_tools
             - .gclient
             - .gclient_entries
+            - kaleido/version
 
   windows_build:
     executor:

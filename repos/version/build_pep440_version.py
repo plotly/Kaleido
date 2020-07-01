@@ -24,5 +24,10 @@ if __name__ == "__main__":
         os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
     version_file_path = os.path.join(repo_path, "repos", "kaleido", 'version')
+    version = git_pep440_version(repo_path)
     with open(version_file_path, 'w') as f:
-        f.write(git_pep440_version(repo_path))
+        f.write(version)
+    print("Wrote {version} to {version_file_path}".format(
+        version=version,
+        version_file_path=version_file_path,
+    ))
