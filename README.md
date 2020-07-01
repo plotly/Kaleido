@@ -224,4 +224,4 @@ E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e
 The environment variable must also be updated in the `repos/linux_scripts/checkout_revision`, `repos/mac_scripts/fetch_chromium`, and `repos/win_scripts/fetch_chromium.ps1` scripts.
 
 # CMakeLists.txt
-The CMakeLists.txt file in `repos/` is only there to help IDE's like `CLion`/`KDevelop` figure out how to index the chromium source tree. It can't be used to actually build chromium. Using this approach, it's possible to get full completion and code navigation from `repos/kaleido/kaleido.cc` in CLion.
+The CMakeLists.txt file in `repos/` is only there to help IDE's like `CLion`/`KDevelop` figure out how to index the chromium source tree. It can't be used to actually build chromium. Using this approach, it's possible to get full completion and code navigation from `repos/kaleido/cc/kaleido.cc` in CLion.
