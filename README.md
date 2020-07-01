@@ -72,6 +72,13 @@ $ git clone git@github.com:plotly/Kaleido.git
 $ cd Kaleido
 ```
 
+## Update version
+Before building, generate the version string based on the git commit log with
+
+```
+$ python repos\version\build_pep440_version.py
+```
+
 ## Linux
 There are two approaches to building Kaleido on Linux, both of which rely on Docker.
 
