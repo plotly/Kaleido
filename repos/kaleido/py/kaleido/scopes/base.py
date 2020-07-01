@@ -21,6 +21,12 @@ class BaseScope(object):
         # Collect chromium flags
         self._disable_gpu = disable_gpu
 
+        # to_image-level default values
+        self.default_format = "png"
+        self.default_width = 700
+        self.default_height = 500
+        self.default_scale = 1
+
         # Properties
         self._std_error = io.StringIO()
         self._std_error_thread = None
@@ -133,7 +139,14 @@ class BaseScope(object):
         self._disable_gpu = val
         self._shutdown_kaleido()
 
-    def to_image(self, figure, format="png", width=700, height=500, scale=1):
+    def to_image(self, figure, format=None, width=None, height=None, scale=None):
+
+        # Infer defaults
+        format = format if format is not None else self.default_format
+        width = width if width is not None else self.default_width
+        height = height if height is not None else self.default_height
+        scale = scale if scale is not None else self.default_scale
+
         # Ensure that kaleido subprocess is running
         self._ensure_kaleido()
 
