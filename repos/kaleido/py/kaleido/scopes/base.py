@@ -139,7 +139,7 @@ class BaseScope(object):
         self._disable_gpu = val
         self._shutdown_kaleido()
 
-    def to_image(self, data, format=None, width=None, height=None, scale=None):
+    def transform(self, data, format=None, width=None, height=None, scale=None):
 
         # Infer defaults
         format = format if format is not None else self.default_format
