@@ -12,7 +12,6 @@ executable_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(_
 
 class BaseScope(object):
     _json_encoder = None
-    _text_formats = ("svg",)
     _chromium_flags = ("disable_gpu",)
     _scope_flags = ()
 
@@ -20,12 +19,6 @@ class BaseScope(object):
 
         # Collect chromium flags
         self._disable_gpu = disable_gpu
-
-        # to_image-level default values
-        self.default_format = "png"
-        self.default_width = 700
-        self.default_height = 500
-        self.default_scale = 1
 
         # Properties
         self._std_error = io.StringIO()
@@ -139,25 +132,14 @@ class BaseScope(object):
         self._disable_gpu = val
         self._shutdown_kaleido()
 
-    def transform(self, data, format=None, width=None, height=None, scale=None):
-
-        # Infer defaults
-        format = format if format is not None else self.default_format
-        width = width if width is not None else self.default_width
-        height = height if height is not None else self.default_height
-        scale = scale if scale is not None else self.default_scale
-
+    def transform(self, data, **kwargs):
         # Ensure that kaleido subprocess is running
         self._ensure_kaleido()
 
         # Perform export
-        export_spec = json.dumps({
-            "data": data,
-            "format": format,
-            "width": width,
-            "height": height,
-            "scale": scale,
-        }, cls=self._json_encoder).encode('utf-8')
+        export_spec = json.dumps(
+            dict(kwargs, data=data),
+            cls=self._json_encoder).encode('utf-8')
 
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
@@ -174,7 +156,7 @@ class BaseScope(object):
         response_string = response.decode('utf-8')
         if not response_string:
             message = (
-                    "Image export failed. Error stream:\n\n" +
+                    "Transform failed. Error stream:\n\n" +
                     self._std_error.getvalue()
             )
             raise ValueError(message)
@@ -189,15 +171,11 @@ class BaseScope(object):
         if code != 0:
             message = response.get("message", None)
             raise ValueError(
-                "Image export failed with error code {code}: {message}".format(
+                "Transform failed with error code {code}: {message}".format(
                     code=code, message=message
                 )
             )
 
         # Export successful
         img_string = response.pop("result", None)
-        if format in self._text_formats:
-            img = img_string.encode()
-        else:
-            img = base64.decodebytes(img_string.encode())
-        return img
+        return img_string.encode()

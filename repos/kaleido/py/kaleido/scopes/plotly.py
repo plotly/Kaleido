@@ -1,5 +1,6 @@
 from kaleido.scopes.base import BaseScope
 from _plotly_utils.utils import PlotlyJSONEncoder
+import base64
 
 
 class PlotlyScope(BaseScope):
@@ -15,11 +16,35 @@ class PlotlyScope(BaseScope):
         self._topojson = topojson
         self._mapbox_access_token = mapbox_access_token
 
+        # to_image-level default values
+        self.default_format = "png"
+        self.default_width = 700
+        self.default_height = 500
+        self.default_scale = 1
+
         super(PlotlyScope, self).__init__(**kwargs)
 
     @property
     def scope_name(self):
         return "plotly"
+
+    def transform(self, data, format=None, width=None, height=None, scale=None):
+        # TODO: validate args
+
+        # Apply defualts
+        format = format if format is not None else self.default_format
+        width = width if width is not None else self.default_width
+        height = height if height is not None else self.default_height
+        scale = scale if scale is not None else self.default_scale
+
+        img = super(PlotlyScope, self).transform(
+            data, format=format, width=width, height=height, scale=scale
+        )
+
+        if format not in self._text_formats:
+            img = base64.decodebytes(img)
+
+        return img
 
     # Flag property methods
     @property
