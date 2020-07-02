@@ -22,7 +22,7 @@ scope = PlotlyScope()
 
 fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
 with open("figure.png", "wb") as f:
-    f.write(scope.to_image(fig, format="png"))
+    f.write(scope.transform(fig, format="png"))
 ```
 
 Then, open `figure.png` in the current working directory.
@@ -148,52 +148,10 @@ $ /repos/mac_scripts/build_kaleido.ps1
 ```
 
 # Scope architecture
-This section describes the current requirements for adding a new scope for a new visualization library. This section will assume that the new library is named superviz.
-
-## repos/kaleido/py/kaleido/scopes/superviz.py
-First add a new Python class named `SupervizScope` to a new file at `repos/kaleido/py/kaleido/scopes/superviz.py`. This class should subclass `BaseScope`. It must implement the constructor and override the `scope_name` property to return the string `'superviz'`.  The constructor should accept and validate any global configuration values the library needs. In particular, this may include the path/URL of the `superviz.js` library.
-
-See `repos/kaleido/py/kaleido/scopes/plotly.py` for a reference example.
-
-## repos/kaleido/cc/scopes/Superviz.h
-Next, add a new `SupervizScope` C++ class to a new file at `repos/kaleido/cc/scopes/Superviz.h`. This class should subclass the `BaseScope`. It must override the `ScopeName` method to return the string `"superviz"`. In the constructor, it should look for command-line switches that correspond to the global configuration values above. These switches will have identical names to the Python variables defined above, but with underscores replaced by hyphens. The `scriptTags` list property should be updated with the `<script>` tag URLs that should be included in the initial HTML document.  The `localScriptFiles` list property should be updated with the paths of local JavaScript files to load dynamically after the initial HTML document has been loaded.
-
-It must also override the `BuildCallArguments` method. This method is responsible for returning a `std::vector` of chromium `CallArguments`. These should correspond to the same global configuration parameters, but here the order is significant, so choose an order here that matches the argument order of the JavaScript `render` method described below.
-
-See `repos/kaleido/cc/scopes/Plotly.h` for a reference example.
-
-## repos/kaleido/cc/scopes/Factory.h
-Update the `LoadScope` function in `repos/kaleido/cc/scopes/Factory.h` so that an instance of the `SupervizScope` class is returned when the input string is `"superviz"`.
-
-## repos/kaleido/js/src/superviz/render.js
-Next, add a new `render` JavaScript function to a new file at `repos/kaleido/js/src/superviz/render.js`.  The first argument of this function will be a JavaScript object that corresponds to the arguments to the `BaseScope.to_image` Python method: `figure`, `format`, `width`, `height`, and `scale`. The second through last argument will match the arguments constructed in the `BuildCallArguments` C++ method above.
-
-This function is responsible for returning a `Promise` that resolves to an object that includes the result of the image export attempt. The object should have the following properties
- 
-  - `code`: If an error occurred, the code should be a non-zero integer and an associated `message` should be included that describes the error. If export was successful, `code` should be `0`
-  - `message`: If an error occurred, this should be a string containing the error message. If export was successful, `message` should be `null`
-  - `result`: The image export result as a string. All formats except `svg` should be base64 encoded. If the input format is `pdf`, then the `render` function should choose the most appropriate image format that will be embedded in pdf (e.g. `svg`) and instead of returning a `result`, it should set this image as the `src` property of the `<img>` tag with id `kaleido-image`.
-  - `format`, `width`, `height`, `scale`: The format, width, height, and scale factor that were used. Even though these values are inputs, the `render` function may supply its own defaults and whatever values were actually used to generate the image should be included here. If the input format was `pdf`, then this `format` returned here should be whatever image format was used to generate the image that will be embedded in the PDF. e.g. `svg`.
-  - `pdfBgColor`: If the `format` is `pdf`, this property should contain the desired background color of the figure. It is recommended that, if possible, the background color the associated figure image be set to fully transparent so that the PDF background color will fully show through. If `format` was not PDF this property should be set to `null`.
-  
-
-Additional JavaScript helper functions can be added to the `repos/kaleido/js/src/superviz/` directory. The JavaScript files are bundled using [`browserify`](http://browserify.org/) on build. Additional NPM dependencies can be added to `repos/kaleido/js/package.json`. Note that the visualization library itself shouldn't be added as an NPM dependency, this is because we want to keep the resulting JavaScript bundle as small as possible, and we don't want to have to release a new version of Kaleido for each release of various visualization libraries.  Instead, the visualization libraries should be loaded from a CDN url by default and added to `scriptTags` above. It is also helpful to support loading the visualization library from a local JavaScript file, adding the path to `localScriptFiles` instead.
-
-See `repos/kaleido/js/src/plotly/render.js` for a reference example.
-
-## repos/kaleido/js/src/index.js
-Update the `module.exports` section of `repos/kaleido/js/src/index.js` to include `superviz: require("./superviz/render")`.
-
+See https://github.com/plotly/Kaleido/wiki/Scope-(Plugin)-Architecture
 
 # Language wrapper architecture
-This section provides a high-level overview of the interactions between the Python and C++ layers.
-
-The first time an image export request is made in the Python library, the Kaleido C++ executable is launched as a subprocess of the Python interpreter. The first, and only, positional argument should be the scope name.  After that, a series of flags of the form `--flag` are passed to the executable. These flags would correspond to the constructor arguments of the `SupervizScope` Python class.
-
-When construction is complete, the Kaledo executable will write a single line to standard-out. This is a JSON string with `code` and `message` properties. If initialization was successful, `code` is 0 and `message` is ignored.  If something went wrong (e.g. a validation failure), then the `code` will be a non-zero integer and an error `message` will be included.  In this case, the Python layer will raise a `ValueError` with the returned `message`.
-
-Each time an image export request is made of the Python library, a request JSON string is formed and written to standard-in, followed by a newline. This JSON string should contain the figure specification in the `figure` property, as well as `format`, `width`, `height`, `scale` options.  In response, the Kaleido C++ executable will write a single JSON string, followed by a newline, to standard out.  This JSON string also has the `code` and `message` properties. Again, if something went wrong, `code` will be non-zero and the `message` will describe the problem. And again, the Python layer will raise a `ValueError` with the contents of the message.  If `code` is 0, then the `result` property will contain the image data, which is returned by the Python layer as a `bytes` object.
-
+See https://github.com/plotly/Kaleido/wiki/Language-wrapper-architecture
 
 # Building Docker containers
 ## chromium-builder
