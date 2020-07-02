@@ -62,8 +62,10 @@ The Python wrapper and the Kaleido executable can then be packaged as operating 
 While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB and several hours.  On Linux this work can be done once and distributed as a docker container, but we don't have a similar shortcut for Windows and MacOS. Because of this, we're still working on finding a CI solution for MacOS and Windows.
 
 # Scope (Plugin) architecture
-While motivated by the needs of plotly.py, we made the decision early on to design Kaleido to make it fairly straightforward to add support for additional libraries.  Plugins in Kaleido are called "scopes". We hope to collaborate with many other web-based visualization libraries to solve this problem once as for all by developing scopes for a wide range of libraries across the community.
+While motivated by the needs of plotly.py, we made the decision early on to design Kaleido to make it fairly straightforward to add support for additional libraries.  Plugins in Kaleido are called "scopes". For more information, see https://github.com/plotly/Kaleido/wiki/Scope-(Plugin)-Architecture.
 
+# Language wrapper architecture
+While Python is the initial target language for Kaleido, it has been designed to make it fairly straightforward to add support for additional languages. For more information, see https://github.com/plotly/Kaleido/wiki/Language-wrapper-architecture.
 
 # Building Kaledo
 Instructions for building Kaleido differ slightly across operating systems.  All of these approaches assume that the Kaleido repository has been cloned and that the working directory is set to the repository root.
@@ -88,7 +90,7 @@ This approach relies on the `jonmmease/kaleido-builder` docker image, and the sc
 
 Download docker image
 ```
-$ docker pull jonmmease/kaleido-builder:0.6
+$ docker pull jonmmease/kaleido-builder:0.7
 ```
 
 Build Kaleido
@@ -102,7 +104,7 @@ This approach relies on the `jonmmease/chromium-builder` docker image, and the s
 
 Download docker image
 ```
-$ docker pull jonmmease/chromium-builder:0.6
+$ docker pull jonmmease/chromium-builder:0.7
 ```
 
 Fetch the Chromium codebase and checkout the specific tag, then sync all dependencies
@@ -146,12 +148,6 @@ Then build Kaleido to `repos/build/kaleido`. The build step will also create the
 ```
 $ /repos/mac_scripts/build_kaleido.ps1
 ```
-
-# Scope architecture
-See https://github.com/plotly/Kaleido/wiki/Scope-(Plugin)-Architecture
-
-# Language wrapper architecture
-See https://github.com/plotly/Kaleido/wiki/Language-wrapper-architecture
 
 # Building Docker containers
 ## chromium-builder
