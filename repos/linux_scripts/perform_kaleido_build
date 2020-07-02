@@ -43,7 +43,7 @@ cp /repos/linux_scripts/launch_script /repos/build/kaleido/kaleido
 cp /repos/kaleido/version /repos/build/kaleido/
 
 # license
-cp ../kaleido/LICENSE.txt ../build/kaleido/
+cp /repos/kaleido/LICENSE.txt /repos/build/kaleido/
 
 # Copy javascript
 pushd /repos/kaleido/js/
