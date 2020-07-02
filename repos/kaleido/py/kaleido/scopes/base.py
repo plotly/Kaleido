@@ -7,36 +7,46 @@ import io
 import os
 import sys
 
-executable_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'executable', 'kaleido')
+executable_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    'executable',
+    'kaleido'
+)
 
 
 class BaseScope(object):
+    # Subclasses may override to specify a custom JSON encoder for input data
     _json_encoder = None
+
+    # Tuple of class properties that will be passed as
+    # command-line flags to configure chromium
     _chromium_flags = ("disable_gpu",)
+
+    # Tuple of class properties that will be passed as command-line
+    # flags to configure scope
     _scope_flags = ()
 
     def __init__(self, disable_gpu=True):
-
-        # Collect chromium flags
+        # Collect chromium flag properties
         self._disable_gpu = disable_gpu
 
-        # Properties
+        # Internal Properties
         self._std_error = io.StringIO()
         self._std_error_thread = None
-        self._proc_args = None
-
-        # Build process arguments list
-        self._update_proc_args()
-
-        # Launch subprocess
         self._proc = None
         self._proc_lock = Lock()
 
     def __del__(self):
         self._shutdown_kaleido()
 
-    def _update_proc_args(self):
-        self._proc_args = [executable_path, self.scope_name]
+    def _build_proc_args(self):
+        """
+        Build list of kaleido command-line arguments based on current values of
+        the properties specified by self._chromium_flags and self._scope_flags
+
+        :return: list of flags
+        """
+        proc_args = [executable_path, self.scope_name]
         for k in self._chromium_flags + self._scope_flags:
             v = getattr(self, k)
             if v is True:
@@ -47,15 +57,26 @@ class BaseScope(object):
             else:
                 # Flag with associated value
                 flag = '--' + k.replace("_", "-") + "=" + repr(str(v))
-            self._proc_args.append(flag)
+            proc_args.append(flag)
+
+        return proc_args
 
     def _collect_standard_error(self):
+        """
+        Write standard-error of subprocess to the _std_error StringIO buffer.
+        Intended to be called once in a background thread
+        """
         while True:
             if self._proc is not None:
                 val = self._proc.stderr.readline().decode('utf-8')
                 self._std_error.write(val)
 
     def _ensure_kaleido(self):
+        """
+        Launch the kaleido subprocess if it is not already running and in a good state
+        """
+        # Use double-check locking to make sure we only initialize the process
+        # from a single thread
         if self._proc is None or self._proc.poll() is not None:
             with self._proc_lock:
                 if self._proc is None or self._proc.poll() is not None:
@@ -70,9 +91,9 @@ class BaseScope(object):
                     # Note: shell=True seems to be needed on Windows to handle executable path with
                     # spaces.  The subprocess.Popen docs makes it sound like this shouldn't be
                     # necessary.
-                    self._update_proc_args()
+                    proc_args = self._build_proc_args()
                     self._proc = subprocess.Popen(
-                        self._proc_args,
+                        proc_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
@@ -100,15 +121,22 @@ class BaseScope(object):
                             raise ValueError(startup_response.get("message", "Failed to start Kaleido subprocess"))
 
     def _shutdown_kaleido(self):
+        """
+        Shut down the kaleido subprocess, if any, and self the _proc property to None
+        """
+        # Use double-check locking to make sure we only shut down the process
+        # a single time when used across threads.
         if self._proc is not None:
             with self._proc_lock:
                 if self._proc is not None:
                     if self._proc.poll() is None:
-                        # Process still running, close stdin to tell kaleido to shut down gracefully
+                        # Process still running, close stdin to tell kaleido
+                        # to shut down gracefully
                         self._proc.stdin.close()
 
-                    # wait for process to terminate if it was running, also prevent zombie process if
-                    # process crashed on it's own
+                    # wait for process to terminate if it was running.
+                    # Also prevent zombie process if process crashed
+                    # on it's own
                     try:
                         self._proc.wait(timeout=2.0)
                     except:
@@ -125,6 +153,7 @@ class BaseScope(object):
     # Flag property methods
     @property
     def disable_gpu(self):
+        """ If True, asks chromium to disable GPU hardware acceleration with --disable-gpu flag"""
         return self._disable_gpu
 
     @disable_gpu.setter
@@ -133,6 +162,15 @@ class BaseScope(object):
         self._shutdown_kaleido()
 
     def transform(self, data, **kwargs):
+        """
+        Transform input data using the current scope
+
+        Subclasses should provide a more helpful docstring
+
+        :param data: JSON-serializable object to be converted
+        :param kwargs: Transform arguments for scope
+        :return: Transformed value as bytes
+        """
         # Ensure that kaleido subprocess is running
         self._ensure_kaleido()
 
