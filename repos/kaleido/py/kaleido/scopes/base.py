@@ -139,7 +139,7 @@ class BaseScope(object):
         self._disable_gpu = val
         self._shutdown_kaleido()
 
-    def to_image(self, figure, format=None, width=None, height=None, scale=None):
+    def to_image(self, data, format=None, width=None, height=None, scale=None):
 
         # Infer defaults
         format = format if format is not None else self.default_format
@@ -152,7 +152,7 @@ class BaseScope(object):
 
         # Perform export
         export_spec = json.dumps({
-            "figure": figure,
+            "data": data,
             "format": format,
             "width": width,
             "height": height,

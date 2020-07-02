@@ -6,7 +6,7 @@ const parse = require('./parse')
 
 /**
  * @param {object} info : info object
- *  - figure
+ *  - data
  *  - format
  *  - width
  *  - height
@@ -24,6 +24,10 @@ function render (info, mapboxAccessToken, topojsonURL) {
   if (topojsonURL !== undefined && topojsonURL.length > 0) {
     opts.topojsonURL = topojsonURL;
   }
+
+  // Rename info.data to info.figure
+  info.figure = info.data
+  delete info.data;
 
   // Parse request
   let parsed = parse(info, opts);

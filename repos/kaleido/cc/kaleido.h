@@ -34,7 +34,7 @@ public:
 
     void OnExecutionContextCreated(const headless::runtime::ExecutionContextCreatedParams& params) override;
 
-    void ExportNextFigure();
+    void ExportNext();
     void LoadNextScript();
     void OnPDFCreated(std::string responseString, std::unique_ptr<headless::page::PrintToPDFResult> result);
 

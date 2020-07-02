@@ -100,7 +100,7 @@ void Kaleido::OnExecutionContextCreated(
 void Kaleido::LoadNextScript() {
      if (remainingLocalScriptsFiles.empty()) {
          // Finished processing startup scripts, start exporting figures
-         ExportNextFigure();
+         ExportNext();
      } else {
          // Load Script
          std::string scriptPath(remainingLocalScriptsFiles.front());
@@ -126,7 +126,7 @@ void Kaleido::LoadNextScript() {
      }
 }
 
-void Kaleido::ExportNextFigure() {
+void Kaleido::ExportNext() {
     std::string exportSpec;
     if (!std::getline(std::cin, exportSpec)) {
         // Reached end of file,
@@ -141,7 +141,7 @@ void Kaleido::ExportNextFigure() {
 
     if (!json.has_value()) {
         kaleido::utils::writeJsonMessage(1, "Invalid JSON");
-        ExportNextFigure();
+        ExportNext();
         return;
     }
 
@@ -182,7 +182,7 @@ void Kaleido::ExportNextFigure() {
     } else {
         // Unsupported operation
         kaleido::utils::writeJsonMessage(1, base::StringPrintf("Invalid operation: %s", operation.c_str()));
-        ExportNextFigure();
+        ExportNext();
         return;
     }
 }
@@ -195,7 +195,7 @@ void Kaleido::OnExportComplete(
         std::string error = base::StringPrintf(
                 "Failed to serialize document: %s", result->GetExceptionDetails()->GetText().c_str());
         kaleido::utils::writeJsonMessage(1, error);
-        ExportNextFigure();
+        ExportNext();
     } else {
         // JSON parse result to get format
         std::string responseString = result->GetResult()->GetValue()->GetString();
@@ -231,7 +231,7 @@ void Kaleido::OnExportComplete(
                     base::BindOnce(&Kaleido::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
         } else {
             std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
-            ExportNextFigure();
+            ExportNext();
         }
     }
 }
@@ -254,7 +254,7 @@ void Kaleido::OnPDFCreated(
         std::cout << response << "\n";
     }
 
-    ExportNextFigure();
+    ExportNext();
 }
 
 void Kaleido::OnScriptCompileComplete(
