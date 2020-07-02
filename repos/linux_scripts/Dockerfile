@@ -19,7 +19,9 @@ ENV DEPOT_TOOLS_UPDATE=0
 RUN apt-get update
 
 RUN \
-    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 fuse libfuse2 python3-wheel
+    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 fuse libfuse2 python3-pip
+
+RUN python3 -m pip install -U wheel
 
 # Add npm 
 RUN \

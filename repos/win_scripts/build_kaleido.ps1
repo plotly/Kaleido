@@ -6,6 +6,10 @@ cd $PSScriptRoot\..
 # Update version based on git tag
 python .\version\build_pep440_version.py
 
+# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
+cp ..\README.md .\kaleido\
+cp ..\LICENSE.txt .\kaleido\
+
 # Add depot_tools to path
 $env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
 echo $env:path
@@ -54,6 +58,9 @@ Copy-Item out\Kaleido_win\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
 # version
 cp ..\kaleido\version ..\build\kaleido\
+
+# license
+cp ..\kaleido\LICENSE.txt ..\build\kaleido\
 
 # Copy icudtl.dat
 Copy-Item .\out\Kaleido_win\icudtl.dat -Destination ..\build\kaleido\bin

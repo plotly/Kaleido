@@ -7,5 +7,9 @@ cd $DIR/../..
 # Update version based on git tags
 python ./repos/version/build_pep440_version.py
 
+# Copy README and LICENSE to kaleido directory so it's available in the docker container
+cp ./README.md ./repos/kaleido/
+cp ./LICENSE.txt ./repos/kaleido/
+
 # Perform build using docker
 docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_kaleido_docker

@@ -91,6 +91,22 @@ class WriteVersion(Command):
             f.write('__version__ = "{version}"\n'.format(version=version))
 
 
+class CopyLicense(Command):
+    description = "Copy License files"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        shutil.copy(
+            os.path.abspath(os.path.join(here, '..', 'LICENSE.txt')), here
+        )
+
+
 class PackageWheel(Command):
     description = "Build Wheel Package"
     user_options = []
@@ -105,6 +121,7 @@ class PackageWheel(Command):
         self.run_command("clean")
         self.run_command("copy_executable")
         self.run_command("write_version")
+        self.run_command("copy_license")
         cmd_obj = self.distribution.get_command_obj('bdist_wheel')
 
         # Use current platform as plat_name, but replace linux with manylinux2014
@@ -112,15 +129,33 @@ class PackageWheel(Command):
         cmd_obj.python_tag = 'py2.py3'
         self.run_command("bdist_wheel")
 
+
+def readme():
+    with open(os.path.join(here, "..", "README.md")) as f:
+        return f.read()
+
+
 setup(
     name="kaleido",
     version=version,
+    author="Jon Mease",
+    author_email="jon@plotly.com",
+    maintainer="Jon Mease",
+    maintainer_email="jon@plotly.com",
+    project_urls={"Github": "https://github.com/plotly/Kaleido"},
+    description="Static image export for web-based visualization libraries with zero dependencies",
+    long_description=readme(),
+    license="MIT",
     packages=["kaleido", "kaleido.scopes"],
-    package_data={'kaleido': executable_files},
+    package_data={
+        'kaleido': executable_files,
+    },
+    # data_files = [("", ["LICENSE.txt", "README.md"])],
     cmdclass=dict(
         copy_executable=CopyExecutable,
         clean=CleanCommand,
         write_version=WriteVersion,
+        copy_license=CopyLicense,
         package=PackageWheel,
     )
 )

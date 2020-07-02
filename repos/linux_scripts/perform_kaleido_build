@@ -42,6 +42,9 @@ cp /repos/linux_scripts/launch_script /repos/build/kaleido/kaleido
 # version
 cp /repos/kaleido/version /repos/build/kaleido/
 
+# license
+cp ../kaleido/LICENSE.txt ../build/kaleido/
+
 # Copy javascript
 pushd /repos/kaleido/js/
 mkdir -p build/
@@ -53,7 +56,11 @@ popd
 mkdir -p /repos/build/kaleido/js/
 cp /repos/kaleido/js/build/*.js /repos/build/kaleido/js/
 
+# Remove with chromium-builder dockerfile 0.7.
+apt-get install -y python3-pip
+python3 -m pip install -U wheel
+# End remove
+
 # Build python wheel
-apt-get install -y python3-wheel
 cd /repos/kaleido/py/
 python3 setup.py package

@@ -11,6 +11,10 @@ cd $DIR/..
 # Update version based on git tag
 python3 ./version/build_pep440_version.py
 
+# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
+cp ../README.md ./kaleido/
+cp ../LICENSE.txt ./kaleido/
+
 # Add depot_tools directory to PATH
 export PATH="$PATH:`pwd`/depot_tools"
 
@@ -86,6 +90,9 @@ chmod +x ../build/kaleido/kaleido
 
 # version
 cp ../kaleido/version ../build/kaleido/
+
+# license
+cp ../kaleido/LICENSE.txt ../build/kaleido/
 
 # Copy javascript
 pushd ../kaleido/js/
