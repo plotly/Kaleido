@@ -11,7 +11,7 @@ jobs:
     steps:
       - checkout
       - run: docker --version
-      - run: docker pull jonmmease/kaleido-builder:0.6
+      - run: docker pull jonmmease/kaleido-builder:0.7
       - run: ./repos/linux_full_scripts/build_kaleido
       - run: sudo chmod -R 777 repos/build
       - run: sudo chmod -R 777 repos/kaleido/py

@@ -202,14 +202,14 @@ The `chromium-builder` container mostly follows the instructions at https://chro
 Build container with:
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.6 -f repos/linux_scripts/Dockerfile .
+$ docker build -t jonmmease/chromium-builder:0.7 -f repos/linux_scripts/Dockerfile .
 ```
 
 ## kaleido-builder
 This container contains a pre-compiled version of chromium source tree. Takes several hours to build!
 
 ```
-$ docker build -t jonmmease/kaleido-builder:0.6 -f repos/linux_full_scripts/Dockerfile .
+$ docker build -t jonmmease/kaleido-builder:0.7 -f repos/linux_full_scripts/Dockerfile .
 ```
 
 

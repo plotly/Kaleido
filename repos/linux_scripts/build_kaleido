@@ -12,4 +12,4 @@ cp ./README.md ./repos/kaleido/
 cp ./LICENSE.txt ./repos/kaleido/
 
 # Perform build using docker
-docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/build_kaleido_docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.7 /repos/linux_scripts/build_kaleido_docker

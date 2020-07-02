@@ -56,11 +56,6 @@ popd
 mkdir -p /repos/build/kaleido/js/
 cp /repos/kaleido/js/build/*.js /repos/build/kaleido/js/
 
-# Remove with chromium-builder dockerfile 0.7.
-apt-get install -y python3-pip
-python3 -m pip install -U wheel
-# End remove
-
 # Build python wheel
 cd /repos/kaleido/py/
 python3 setup.py package
