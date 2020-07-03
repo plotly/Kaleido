@@ -97,4 +97,4 @@ def test_bad_format_file():
     with pytest.raises(ValueError) as e:
         local_scope.transform(fig, format='bogus')
 
-    e.match("wrong format")
+    e.match("Invalid format")

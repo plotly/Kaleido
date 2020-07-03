@@ -8,7 +8,9 @@ class PlotlyScope(BaseScope):
     Scope for transforming Plotly figures to static images
     """
     _json_encoder = PlotlyJSONEncoder
+    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "json")
     _text_formats = ("svg", "json")
+
     _scope_flags = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
     def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, **kwargs):
@@ -63,16 +65,28 @@ class PlotlyScope(BaseScope):
         """
         # TODO: validate args
 
-        # Apply defualts
+        # Apply defaults
         format = format if format is not None else self.default_format
         width = width if width is not None else self.default_width
         height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
 
         # Normalize format
+        original_format = format
         format = format.lower()
         if format == 'jpg':
             format = 'jpeg'
+
+        if format not in self._all_formats:
+            supported_formats_str = repr(list(self._all_formats))
+            raise ValueError(
+                "Invalid format '{original_format}'.\n"
+                "    Supported formats: {supported_formats_str}"
+                .format(
+                    original_format=original_format,
+                    supported_formats_str=supported_formats_str
+                )
+            )
 
         # Transform in superclass
         img = super(PlotlyScope, self).transform(
