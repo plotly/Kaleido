@@ -57,5 +57,6 @@ mkdir -p /repos/build/kaleido/js/
 cp /repos/kaleido/js/build/*.js /repos/build/kaleido/js/
 
 # Build python wheel
+python3 -m pip install -U setuptools
 cd /repos/kaleido/py/
 python3 setup.py package

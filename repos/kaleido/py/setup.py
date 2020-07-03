@@ -145,12 +145,12 @@ setup(
     project_urls={"Github": "https://github.com/plotly/Kaleido"},
     description="Static image export for web-based visualization libraries with zero dependencies",
     long_description=readme(),
+    long_description_content_type="text/markdown",
     license="MIT",
     packages=["kaleido", "kaleido.scopes"],
     package_data={
         'kaleido': executable_files,
     },
-    # data_files = [("", ["LICENSE.txt", "README.md"])],
     cmdclass=dict(
         copy_executable=CopyExecutable,
         clean=CleanCommand,
