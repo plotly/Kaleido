@@ -47,7 +47,11 @@ private:
     std::string tmpFileName;
     std::list<std::string> remainingLocalScriptsFiles;
     kaleido::scopes::BaseScope *scope;
+    std::unique_ptr<base::Environment> env;
+    bool popplerAvailable;
+    bool inkscapeAvailable;
     base::FilePath cwd;
+
 
     // The headless browser instance. Owned by the headless library. See main().
     headless::HeadlessBrowser* browser_;

@@ -15,6 +15,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
 #include "base/files/file_util.h"
+#include "base/environment.h"
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_browser.h"
@@ -49,6 +50,9 @@ Kaleido::Kaleido(
         : tmpFileName(tmpFileName),
           remainingLocalScriptsFiles(scope_ptr->LocalScriptFiles()),
           scope(scope_ptr),
+          env(base::Environment::Create()),
+          popplerAvailable(base::ExecutableExistsInPath(env.get(), "pdftops")),
+          inkscapeAvailable(base::ExecutableExistsInPath(env.get(), "inkscape")),
           browser_(browser),
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
@@ -156,6 +160,35 @@ void Kaleido::ExportNext() {
 
     // Only operation right now is export, but others can be added in the future
     if (operation == "export") {
+
+
+        std::string *maybe_format = json->FindStringKey("format");
+        if (maybe_format) {
+            std::string format = *maybe_format;
+
+            // Validate poppler installed if format is eps
+            if (format == "eps" && !popplerAvailable) {
+                kaleido::utils::writeJsonMessage(
+                        530,
+                        "Exporting to EPS format requires the pdftops command "
+                        "which is provided by the poppler library. "
+                        "Please install poppler and make sure the pdftops command "
+                        "is available on the PATH");
+                ExportNext();
+                return;
+            }
+
+            // Validate inkscape installed if format is emf
+            if (format == "emf" && !inkscapeAvailable) {
+                kaleido::utils::writeJsonMessage(
+                        530,
+                        "Exporting to EMF format requires inkscape. "
+                        "Please install inkscape and make sure it is available on the PATH");
+                ExportNext();
+                return;
+            }
+        }
+
         std::string exportFunction = base::StringPrintf(
                 "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
                 scope->ScopeName().c_str());
@@ -200,7 +233,7 @@ void Kaleido::OnExportComplete(
         // JSON parse result to get format
         std::string responseString = result->GetResult()->GetValue()->GetString();
         base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
-        const base::DictionaryValue* responseDict;
+        base::DictionaryValue* responseDict;
         responseJson.value().GetAsDictionary(&responseDict);
 
         // format
@@ -229,7 +262,61 @@ void Kaleido::OnExportComplete(
                             .SetPreferCSSPageSize(true)  // Use @page {size: } CSS style
                             .Build(),
                     base::BindOnce(&Kaleido::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
+        } else if (format == "emf"){
+            // Write SVG data to temporary file
+            std::string svgData;
+            responseDict->GetString("result", &svgData);
+
+            // Write pdf to temporary file
+            std::string inFileName = std::tmpnam(nullptr) + std::string(".svg");
+            std::ofstream svgFile;
+            svgFile.open(inFileName, std::ios::out);
+            svgFile << svgData;
+            svgFile.close();
+
+            // Convert pdf to eps temporary file
+            std::string outFileName = std::tmpnam(nullptr) + std::string(".emf");
+            std::string command = std::string("inkscape --file ") + inFileName + " --export-emf " + outFileName;
+            int exitCode = std::system(command.c_str());
+            if (exitCode != 0) {
+                kaleido::utils::writeJsonMessage(exitCode, "SVG to EMF conversion failed");
+                ExportNext();
+                return;
+            }
+
+            // Read EMF file as binary
+            std::ifstream emfStream(outFileName, std::ios::ate | std::ios::binary);
+            std::streamsize size = emfStream.tellg();
+            emfStream.seekg(0, std::ios::beg);
+            std::vector<uint8_t> emfBuffer(size);
+            if (emfStream.read((char*)emfBuffer.data(), size))
+            {
+                // cleanup temporary files
+                std::remove(inFileName.c_str());
+                std::remove(outFileName.c_str());
+
+                // Base64 encode EMF data
+                std::string base64emf = headless::protocol::Binary::fromVector(emfBuffer).toBase64();
+
+                // Add base64 encoded EMF data to result dict
+                responseDict->SetString("result", base64emf);
+
+                // Write results JSON string
+                std::string response;
+                base::JSONWriter::Write(*responseDict, &response);
+                std::cout << response << "\n";
+
+                ExportNext();
+            } else {
+                // cleanup temporary files
+                std::remove(inFileName.c_str());
+                std::remove(outFileName.c_str());
+
+                kaleido::utils::writeJsonMessage(1, "Failed to read temporary EMF file");
+                ExportNext();
+            }
         } else {
+            // Write results json string
             std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
             ExportNext();
         }
@@ -247,8 +334,49 @@ void Kaleido::OnPDFCreated(
         base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
         base::DictionaryValue* responseDict;
         responseJson.value().GetAsDictionary(&responseDict);
-        responseDict->SetString("result", result->GetData().toBase64());
 
+        // format
+        std::string format;
+        responseDict->GetString("format", &format);
+
+        // Initialize empty result
+        std::string stringResult;
+
+        if (format == "eps") {
+            // Write pdf to temporary file
+            std::string inFileName = std::tmpnam(nullptr) + std::string(".pdf");
+            std::ofstream pdfFile;
+            pdfFile.open(inFileName, std::ios::out | std::ios::binary);
+            pdfFile.write((char*)result->GetData().data(), result->GetData().size());
+            pdfFile.close();
+
+            // Convert pdf to eps temporary file
+            std::string outFileName = std::tmpnam(nullptr) + std::string(".eps");
+            std::string command = std::string("pdftops -eps ") + inFileName + " " + outFileName;
+            int exitCode = std::system(command.c_str());
+            if (exitCode != 0) {
+                kaleido::utils::writeJsonMessage(exitCode, "PDF to EPS conversion failed");
+                ExportNext();
+                return;
+            }
+
+            // Read EPS file as Text
+            std::ifstream epsStream(outFileName, std::ios::in);
+            stringResult = std::string((std::istreambuf_iterator<char>(epsStream)),
+                                     std::istreambuf_iterator<char>());
+
+            // cleanup temporary files
+            std::remove(inFileName.c_str());
+            std::remove(outFileName.c_str());
+        } else {  // format == "pdf"
+            // Add base64 encoded PDF bytes to result dict
+            stringResult = result->GetData().toBase64();
+        }
+
+        // Add base64 encoded PDF bytes to result dict
+        responseDict->SetString("result", stringResult);
+
+        // Write results JSON string
         std::string response;
         base::JSONWriter::Write(*responseDict, &response);
         std::cout << response << "\n";

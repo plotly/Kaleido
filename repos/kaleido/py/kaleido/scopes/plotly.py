@@ -8,8 +8,8 @@ class PlotlyScope(BaseScope):
     Scope for transforming Plotly figures to static images
     """
     _json_encoder = PlotlyJSONEncoder
-    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "json")
-    _text_formats = ("svg", "json")
+    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "emf", "json")
+    _text_formats = ("svg", "json", "eps")
 
     _scope_flags = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
