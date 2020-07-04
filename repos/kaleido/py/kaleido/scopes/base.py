@@ -161,15 +161,14 @@ class BaseScope(object):
         self._disable_gpu = val
         self._shutdown_kaleido()
 
-    def transform(self, data, **kwargs):
+    def _perform_transform(self, data, **kwargs):
         """
-        Transform input data using the current scope
-
-        Subclasses should provide a more helpful docstring
+        Transform input data using the current scope, returning dict response with error code
+        whether successful or not.
 
         :param data: JSON-serializable object to be converted
         :param kwargs: Transform arguments for scope
-        :return: Transformed value as bytes
+        :return: Dict of response from Kaleido executable, whether successful or not
         """
         # Ensure that kaleido subprocess is running
         self._ensure_kaleido()
@@ -203,9 +202,23 @@ class BaseScope(object):
         except JSONDecodeError:
             print("Invalid JSON: " + repr(response_string))
             raise
-        code = response.pop("code", 0)
+
+        return response
+
+    def transform(self, data, **kwargs):
+        """
+        Transform input data using the current scope
+
+        Subclasses should provide a more helpful docstring
+
+        :param data: JSON-serializable object to be converted
+        :param kwargs: Transform arguments for scope
+        :return: Transformed value as bytes
+        """
+        response = self._perform_transform(data, **kwargs)
 
         # Check for export error
+        code = response.pop("code", 0)
         if code != 0:
             message = response.get("message", None)
             raise ValueError(
@@ -214,6 +227,5 @@ class BaseScope(object):
                 )
             )
 
-        # Export successful
         img_string = response.pop("result", None)
         return img_string.encode()

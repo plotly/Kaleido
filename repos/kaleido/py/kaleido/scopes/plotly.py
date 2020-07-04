@@ -88,10 +88,23 @@ class PlotlyScope(BaseScope):
                 )
             )
 
-        # Transform in superclass
-        img = super(PlotlyScope, self).transform(
+        # Transform in using _perform_transform rather than superclass so we can access the full
+        # response dict, including error codes.
+        response = self._perform_transform(
             figure, format=format, width=width, height=height, scale=scale
         )
+
+        # Check for export error, later can customize error messages for plotly Python users
+        code = response.pop("code", 0)
+        if code != 0:
+            message = response.get("message", None)
+            raise ValueError(
+                "Transform failed with error code {code}: {message}".format(
+                    code=code, message=message
+                )
+            )
+
+        img = response.pop("result", None).encode()
 
         # Base64 decode binary types
         if format not in self._text_formats:
