@@ -105,6 +105,7 @@ void Kaleido::LoadNextScript() {
      if (remainingLocalScriptsFiles.empty()) {
          // Finished processing startup scripts, start exporting figures
          ExportNext();
+         return;
      } else {
          // Load Script
          std::string scriptPath(remainingLocalScriptsFiles.front());
@@ -132,91 +133,90 @@ void Kaleido::LoadNextScript() {
 
 void Kaleido::ExportNext() {
     std::string exportSpec;
-    if (!std::getline(std::cin, exportSpec)) {
-        // Reached end of file,
-        // Shut down the browser (see ~Kaleido).
-        delete g_example;
-        g_example = nullptr;
-
-        return;
-    }
-
-    base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
-
-    if (!json.has_value()) {
-        kaleido::utils::writeJsonMessage(1, "Invalid JSON");
-        ExportNext();
-        return;
-    }
-
-    // Read "operation" key, defaulting to "export" if none provided.
-    std::string *maybe_operation = json->FindStringKey("operation");
-    std::string operation;
-    if (maybe_operation) {
-        operation = *maybe_operation;
-    } else {
-        operation = std::string("export");
-    }
-
-    // Only operation right now is export, but others can be added in the future
-    if (operation == "export") {
-
-
-        std::string *maybe_format = json->FindStringKey("format");
-        if (maybe_format) {
-            std::string format = *maybe_format;
-
-            // Validate poppler installed if format is eps
-            if (format == "eps" && !popplerAvailable) {
-                kaleido::utils::writeJsonMessage(
-                        530,
-                        "Exporting to EPS format requires the pdftops command "
-                        "which is provided by the poppler library. "
-                        "Please install poppler and make sure the pdftops command "
-                        "is available on the PATH");
-                ExportNext();
-                return;
-            }
-
-            // Validate inkscape installed if format is emf
-            if (format == "emf" && !inkscapeAvailable) {
-                kaleido::utils::writeJsonMessage(
-                        530,
-                        "Exporting to EMF format requires inkscape. "
-                        "Please install inkscape and make sure it is available on the PATH");
-                ExportNext();
-                return;
-            }
+    while (true) {
+        // Loop until we receive a valid export request, break loop below when a valid request is received
+        if (!std::getline(std::cin, exportSpec)) {
+            // Reached end of file,
+            // Shut down the browser (see ~Kaleido).
+            delete g_example;
+            g_example = nullptr;
+            return;
         }
 
-        std::string exportFunction = base::StringPrintf(
-                "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
-                scope->ScopeName().c_str());
+        base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
 
-        std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();
+        if (!json.has_value()) {
+            kaleido::utils::writeJsonMessage(1, "Invalid JSON");
+            continue;
+        }
 
-        // Prepend Export spec as first argument
-        args.insert(args.begin(),
-                    headless::runtime::CallArgument::Builder()
-                            .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
-                            .Build()
-        );
+        // Read "operation" key, defaulting to "export" if none provided.
+        std::string *maybe_operation = json->FindStringKey("operation");
+        std::string operation;
+        if (maybe_operation) {
+            operation = *maybe_operation;
+        } else {
+            operation = std::string("export");
+        }
 
-        std::unique_ptr<headless::runtime::CallFunctionOnParams> eval_params =
-                headless::runtime::CallFunctionOnParams::Builder()
-                        .SetFunctionDeclaration(exportFunction)
-                        .SetArguments(std::move(args))
-                        .SetExecutionContextId(contextId)
-                        .SetAwaitPromise(true).Build();
+        // Only operation right now is export, but others can be added in the future
+        if (operation != "export") {
+            // Unsupported operation
+            kaleido::utils::writeJsonMessage(1, base::StringPrintf("Invalid operation: %s", operation.c_str()));
+            continue;
+        } else {
+            std::string *maybe_format = json->FindStringKey("format");
+            if (maybe_format) {
+                std::string format = *maybe_format;
 
-        devtools_client_->GetRuntime()->CallFunctionOn(
-                std::move(eval_params),
-                base::BindOnce(&Kaleido::OnExportComplete, weak_factory_.GetWeakPtr()));
-    } else {
-        // Unsupported operation
-        kaleido::utils::writeJsonMessage(1, base::StringPrintf("Invalid operation: %s", operation.c_str()));
-        ExportNext();
-        return;
+                // Validate poppler installed if format is eps
+                if (format == "eps" && !popplerAvailable) {
+                    kaleido::utils::writeJsonMessage(
+                            530,
+                            "Exporting to EPS format requires the pdftops command "
+                            "which is provided by the poppler library. "
+                            "Please install poppler and make sure the pdftops command "
+                            "is available on the PATH");
+                    continue;
+                }
+
+                // Validate inkscape installed if format is emf
+                if (format == "emf" && !inkscapeAvailable) {
+                    kaleido::utils::writeJsonMessage(
+                            530,
+                            "Exporting to EMF format requires inkscape. "
+                            "Please install inkscape and make sure it is available on the PATH");
+                    continue;
+                }
+            }
+
+            std::string exportFunction = base::StringPrintf(
+                    "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
+                    scope->ScopeName().c_str());
+
+            std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();
+
+            // Prepend Export spec as first argument
+            args.insert(args.begin(),
+                        headless::runtime::CallArgument::Builder()
+                                .SetValue(base::Value::ToUniquePtrValue(json->Clone()))
+                                .Build()
+            );
+
+            std::unique_ptr<headless::runtime::CallFunctionOnParams> eval_params =
+                    headless::runtime::CallFunctionOnParams::Builder()
+                            .SetFunctionDeclaration(exportFunction)
+                            .SetArguments(std::move(args))
+                            .SetExecutionContextId(contextId)
+                            .SetAwaitPromise(true).Build();
+
+            devtools_client_->GetRuntime()->CallFunctionOn(
+                    std::move(eval_params),
+                    base::BindOnce(&Kaleido::OnExportComplete, weak_factory_.GetWeakPtr()));
+            // Break out of loop, OnExportComplete callback responsible for calling ExportNext again after this
+            // the current request is processed.
+            break;
+        }
     }
 }
 
@@ -229,6 +229,7 @@ void Kaleido::OnExportComplete(
                 "Failed to serialize document: %s", result->GetExceptionDetails()->GetText().c_str());
         kaleido::utils::writeJsonMessage(1, error);
         ExportNext();
+        return;
     } else {
         // JSON parse result to get format
         std::string responseString = result->GetResult()->GetValue()->GetString();
@@ -307,6 +308,7 @@ void Kaleido::OnExportComplete(
                 std::cout << response << "\n";
 
                 ExportNext();
+                return;
             } else {
                 // cleanup temporary files
                 std::remove(inFileName.c_str());
@@ -314,11 +316,13 @@ void Kaleido::OnExportComplete(
 
                 kaleido::utils::writeJsonMessage(1, "Failed to read temporary EMF file");
                 ExportNext();
+                return;
             }
         } else {
             // Write results json string
             std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
             ExportNext();
+            return;
         }
     }
 }
@@ -383,6 +387,7 @@ void Kaleido::OnPDFCreated(
     }
 
     ExportNext();
+    return;
 }
 
 void Kaleido::OnScriptCompileComplete(
