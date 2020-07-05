@@ -14,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/string_split.h"
 #include "base/files/file_util.h"
 #include "base/environment.h"
 #include "headless/public/devtools/domains/page.h"
@@ -39,6 +40,36 @@
 #if defined(OS_WIN)
 #include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"
+
+namespace base {
+    bool ExecutableExistsInPath(Environment* env,
+        const std::string& executable) {
+        std::string path;
+        if (!env->GetVar("PATH", &path)) {
+            LOG(ERROR) << "No $PATH variable. Assuming no " << executable << ".";
+            return false;
+        }
+
+        for (const StringPiece& cur_path:
+            SplitStringPiece(path, ";", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
+            
+            // Build wide strings using wstringstreams
+            std::wstringstream wpath_ss;
+            wpath_ss << cur_path.as_string().c_str();
+
+            std::wstringstream wexecutable_ss;
+            wexecutable_ss << executable.c_str() << ".exe";
+
+            FilePath::StringPieceType w_cur_path(wpath_ss.str());
+            FilePath file(w_cur_path);
+
+            if (PathExists(file.Append(wexecutable_ss.str()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
 #endif
 
 Kaleido::Kaleido(
