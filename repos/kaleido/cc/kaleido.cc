@@ -42,6 +42,7 @@
 #include "sandbox/win/src/sandbox_types.h"
 
 namespace base {
+    // Chromium doens't provide and implementation of ExecutableExistsInPath on Windows, so we add one here
     bool ExecutableExistsInPath(Environment* env,
         const std::string& executable) {
         std::string path;
