@@ -39,10 +39,11 @@ def write_baseline(data, name, format):
 @pytest.mark.parametrize('format', all_formats)
 def test_simple_figure(fig, name, format):
     result = scope.transform(fig, format=format, width=700, height=500, scale=1)
-    expected = load_baseline(name, format)
 
-    # # Uncomment to create new baselines
-    # write_baseline(data, name, format)
+    # Uncomment to create new baselines
+    # write_baseline(result, name, format)
+
+    expected = load_baseline(name, format)
 
     if format == "svg":
         # SVG not yet reproducible
@@ -50,6 +51,9 @@ def test_simple_figure(fig, name, format):
     elif format == "pdf":
         # PDF not yet reproducible
         assert result.startswith(b'%PDF')
+    elif format == "emf":
+        # EMF not yet reproducible
+        assert result.startswith(b"\x01\x00\x00")
     else:
         assert result == expected
 
