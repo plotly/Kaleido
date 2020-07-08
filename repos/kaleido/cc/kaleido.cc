@@ -313,6 +313,11 @@ void Kaleido::OnExportComplete(
             int exitCode = std::system(command.c_str());
             if (exitCode != 0) {
                 kaleido::utils::writeJsonMessage(exitCode, "SVG to EMF conversion failed");
+
+                // cleanup temporary files
+                std::remove(inFileName.c_str());
+                std::remove(outFileName.c_str());
+
                 ExportNext();
                 return;
             }

@@ -63,4 +63,5 @@ def all_figures():
         (mapbox_figure(), 'mapbox')
     ]
 
-all_formats = ['png', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'emf']
+# all_formats = ['png', 'jpeg', 'webp', 'svg', 'pdf', 'eps', 'emf']
+all_formats = ['emf']
