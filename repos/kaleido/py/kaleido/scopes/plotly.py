@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from kaleido.scopes.base import BaseScope
 from _plotly_utils.utils import PlotlyJSONEncoder
 import base64
@@ -108,7 +109,7 @@ class PlotlyScope(BaseScope):
 
         # Base64 decode binary types
         if format not in self._text_formats:
-            img = base64.decodebytes(img)
+            img = base64.b64decode(img)
 
         return img
 

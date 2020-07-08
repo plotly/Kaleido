@@ -1,11 +1,15 @@
 import subprocess
 import json
 import base64
-from json import JSONDecodeError
 from threading import Lock, Thread
 import io
 import os
 import sys
+
+try:
+    from json import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
 
 executable_path = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
