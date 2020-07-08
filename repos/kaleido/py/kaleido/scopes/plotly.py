@@ -105,7 +105,7 @@ class PlotlyScope(BaseScope):
                 )
             )
 
-        img = response.pop("result", None).encode()
+        img = response.pop("result", None).encode("utf-8")
 
         # Base64 decode binary types
         if format not in self._text_formats:
