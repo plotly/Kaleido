@@ -7,7 +7,7 @@ jobs:
   linux_build:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
-    resource_class: medium
+    resource_class: large
     steps:
       - checkout
       - run: docker --version
@@ -22,11 +22,51 @@ jobs:
           path: ./repos/build/kaleido_linux.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - kaleido/py/
+            
+  linux_test_37:
+    docker:
+      - image: continuumio/miniconda3
+    steps:
+      - attach_workspace:
+          at: ./repos
+      - run:
+          name: Install dependencies
+          commnad: |
+            conda install python=3.7
+            pip install pytest plotly pandas
+            pip install ./repos/kaleido/py/dist/kaleido-*.whl
+      - run:
+          name: Test Python
+          commnad: |
+            cd ./repos/kaleido/py/
+            pytest -s ./repos/kaleido/py/
+      
+  linux_test_27:
+    docker:
+      - image: continuumio/miniconda3
+    steps:
+      - attach_workspace:
+          at: ./repos
+      - run:
+          name: Install dependencies
+          commnad: |
+            conda install python=2.7
+            pip install pytest plotly pandas mock pathlib
+            pip install ./repos/kaleido/py/dist/kaleido-*.whl
+      - run:
+          name: Test Python
+          commnad: |
+            cd ./repos/kaleido/py/
+            pytest -s ./repos/kaleido/py/
 
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
-    resource_class: medium
+    resource_class: large
     steps:
       - checkout
       - run:
@@ -97,7 +137,7 @@ jobs:
   windows_fetch:
     executor:
       name: win/default
-      size: "medium"
+      size: "large"
       shell: powershell.exe
     steps:
       - checkout
@@ -153,4 +193,10 @@ workflows:
   build-linux:
     jobs:
       - linux_build
+      - linux_test_37
+          requires:
+            - linux_build
+      - linux_test_27
+          requires:
+            - linux_build
 
