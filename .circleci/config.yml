@@ -44,7 +44,7 @@ jobs:
           name: Test Python
           command: |
             cd ./repos/kaleido/py/
-            pytest -s ./repos/kaleido/py/
+            pytest -s tests/
       
   linux_test_27:
     docker:
@@ -62,7 +62,7 @@ jobs:
           name: Test Python
           command: |
             cd ./repos/kaleido/py/
-            pytest -s ./repos/kaleido/py/
+            pytest -s tests/
 
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
