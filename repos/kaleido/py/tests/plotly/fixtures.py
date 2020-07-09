@@ -3,12 +3,13 @@ import plotly.express as px
 from pytest import fixture
 import pandas as pd
 
+font = {"family": "Monospace"}
 
 def simple_figure():
     return go.Figure(
         {
             "data": [{"y": [1, 3, 2], "type": "scatter"}],
-            "layout": {"title": {"text": "Title"}}
+            "layout": {"title": {"text": "Title"}, "font": font}
         }
     )
 
@@ -17,7 +18,7 @@ def gl_figure():
     return go.Figure(
         {
             "data": [{"y": [1, 3, 2], "type": "scattergl"}],
-            "layout": {"title": {"text": "Title"}}
+            "layout": {"title": {"text": "Title"}, "font": font}
         }
     )
 
@@ -26,7 +27,7 @@ def mathjax_figure():
     return go.Figure(
         {
             "data": [{"y": [1, 3, 2], "type": "scatter"}],
-            "layout": {"title": {"text": r"$\pi^2$"}}
+            "layout": {"title": {"text": r"$\pi^2$"}, "font": font}
         }
     )
 
@@ -36,7 +37,7 @@ def topojson_figure():
     return px.choropleth(
         df, locations="iso_alpha", color="lifeExp",
         hover_name="country", color_continuous_scale=px.colors.sequential.Plasma
-    )
+    ).update_layout(font=font)
 
 
 def mapbox_figure():
@@ -49,7 +50,7 @@ def mapbox_figure():
         color_discrete_sequence=["fuchsia"], zoom=3, height=300
     )
     fig.update_layout(mapbox_style="dark")
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0}, font=font)
     return fig
 
 
