@@ -31,17 +31,18 @@ jobs:
     docker:
       - image: continuumio/miniconda3
     steps:
+      - checkout
       - attach_workspace:
           at: ./repos
       - run:
           name: Install dependencies
-          commnad: |
+          command: |
             conda install python=3.7
             pip install pytest plotly pandas
             pip install ./repos/kaleido/py/dist/kaleido-*.whl
       - run:
           name: Test Python
-          commnad: |
+          command: |
             cd ./repos/kaleido/py/
             pytest -s ./repos/kaleido/py/
       
@@ -53,13 +54,13 @@ jobs:
           at: ./repos
       - run:
           name: Install dependencies
-          commnad: |
+          command: |
             conda install python=2.7
             pip install pytest plotly pandas mock pathlib
             pip install ./repos/kaleido/py/dist/kaleido-*.whl
       - run:
           name: Test Python
-          commnad: |
+          command: |
             cd ./repos/kaleido/py/
             pytest -s ./repos/kaleido/py/
 
@@ -173,30 +174,30 @@ jobs:
           path: ./repos/kaleido/py/kaleido_wheel.zip
       
 workflows:
-  build-windows:
-    jobs:
-      - windows_fetch
-      - windows_build:
-          requires:
-            - windows_fetch
+  #build-windows:
+    #jobs:
+      #- windows_fetch
+      #- windows_build:
+          #requires:
+            #- windows_fetch
 
-  build-mac:
-    jobs:
-      - mac_fetch
-      - mac_build_blink:
-          requires:
-            - mac_fetch
-      - mac_build:
-          requires:
-            - mac_build_blink
+  #build-mac:
+    #jobs:
+      #- mac_fetch
+      #- mac_build_blink:
+          #requires:
+            #- mac_fetch
+      #- mac_build:
+          #requires:
+            #- mac_build_blink
 
   build-linux:
     jobs:
       - linux_build
-      - linux_test_37
+      - linux_test_37:
           requires:
             - linux_build
-      - linux_test_27
+      - linux_test_27:
           requires:
             - linux_build
 
