@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            conda install python=3.7
+            conda install python=3.7 poppler
             pip install pytest plotly pandas
             pip install ./repos/kaleido/py/dist/kaleido-*.whl
       - run:
@@ -55,7 +55,7 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            conda install python=2.7
+            conda install python=2.7 poppler
             pip install pytest plotly pandas mock pathlib
             pip install ./repos/kaleido/py/dist/kaleido-*.whl
       - run:
