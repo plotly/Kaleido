@@ -45,6 +45,8 @@ jobs:
           command: |
             cd ./repos/kaleido/py/
             pytest -s tests/
+      - store_artifacts:
+          path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
       
   linux_test_27:
     docker:
@@ -63,7 +65,9 @@ jobs:
           command: |
             cd ./repos/kaleido/py/
             pytest -s tests/
-
+      - store_artifacts:
+          path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
+            
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.3.0 # indicate our selected version of Xcode
