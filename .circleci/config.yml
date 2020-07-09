@@ -178,22 +178,22 @@ jobs:
           path: ./repos/kaleido/py/kaleido_wheel.zip
       
 workflows:
-  #build-windows:
-    #jobs:
-      #- windows_fetch
-      #- windows_build:
-          #requires:
-            #- windows_fetch
+  build-windows:
+    jobs:
+      - windows_fetch
+      - windows_build:
+          requires:
+            - windows_fetch
 
-  #build-mac:
-    #jobs:
-      #- mac_fetch
-      #- mac_build_blink:
-          #requires:
-            #- mac_fetch
-      #- mac_build:
-          #requires:
-            #- mac_build_blink
+  build-mac:
+    jobs:
+      - mac_fetch
+      - mac_build_blink:
+          requires:
+            - mac_fetch
+      - mac_build:
+          requires:
+            - mac_build_blink
 
   build-linux:
     jobs:
