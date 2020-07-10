@@ -6,7 +6,7 @@ cd $DIR/../..
 echo `pwd`
 
 # Download chromium
-docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/fetch_chromium_docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.7 /repos/linux_scripts/fetch_chromium_docker
 
 # Checkout revision
-docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.6 /repos/linux_scripts/checkout_revision_docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.7 /repos/linux_scripts/checkout_revision_docker
