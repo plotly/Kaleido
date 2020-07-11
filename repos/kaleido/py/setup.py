@@ -124,8 +124,8 @@ class PackageWheel(Command):
         self.run_command("copy_license")
         cmd_obj = self.distribution.get_command_obj('bdist_wheel')
 
-        # Use current platform as plat_name, but replace linux with manylinux2010
-        cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux2010-")
+        # Use current platform as plat_name, but replace linux with manylinux2014
+        cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux2014-")
         cmd_obj.python_tag = 'py2.py3'
         self.run_command("bdist_wheel")
 
