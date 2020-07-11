@@ -19,7 +19,7 @@ ENV DEPOT_TOOLS_UPDATE=0
 RUN apt-get update
 
 RUN \
-    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 fuse libfuse2 python3-pip
+    apt-get update && apt-get install -y ssh git curl wget lsb-base lsb-release sudo python2.7 python3-pip
 
 RUN python3 -m pip install -U wheel setuptools
 
@@ -51,11 +51,7 @@ RUN \
 
 RUN \
     echo tzdata tzdata/Zones/Etc UTC | debconf-set-selections
-    
-# Pre accept msttcorefonts EULA
-RUN \
-    echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections
-    
+
 ENV PATH=/depot_tools:$PATH
 
 RUN \
