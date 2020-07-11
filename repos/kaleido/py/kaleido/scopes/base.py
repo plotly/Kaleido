@@ -1,6 +1,5 @@
 import subprocess
 import json
-import base64
 from threading import Lock, Thread
 import io
 import os
