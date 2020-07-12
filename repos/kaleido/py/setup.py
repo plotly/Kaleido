@@ -126,6 +126,12 @@ class PackageWheel(Command):
 
         # Use current platform as plat_name, but replace linux with manylinux2014
         cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux2014-")
+
+        # Set macos platform to 10.10 to match chromium build target (See build/config/mac/mac_sdk.gni)
+        # rather than Python environment
+        if cmd_obj.plat_name.startswith("macosx"):
+            cmd_obj.plat_name = "macosx-10.10-x86_64"
+
         cmd_obj.python_tag = 'py2.py3'
         self.run_command("bdist_wheel")
 
