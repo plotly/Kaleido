@@ -70,7 +70,7 @@ jobs:
             
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
-      xcode: 11.3.0 # indicate our selected version of Xcode
+      xcode: 11.1.0 # indicate our selected version of Xcode
     resource_class: large
     steps:
       - checkout
@@ -104,7 +104,7 @@ jobs:
 
   mac_build_blink:
     macos:  # indicate that we are using the macOS executor
-      xcode: 11.3.0 # indicate our selected version of Xcode
+      xcode: 11.1.0 # indicate our selected version of Xcode
     resource_class: large
     steps:
       - checkout
@@ -123,7 +123,7 @@ jobs:
           
   mac_build:
     macos:  # indicate that we are using the macOS executor
-      xcode: 11.3.0 # indicate our selected version of Xcode
+      xcode: 11.1.0 # indicate our selected version of Xcode
     resource_class: large
     steps:
       - checkout
@@ -178,12 +178,12 @@ jobs:
           path: ./repos/kaleido/py/kaleido_wheel.zip
       
 workflows:
-  build-windows:
-    jobs:
-      - windows_fetch
-      - windows_build:
-          requires:
-            - windows_fetch
+  #build-windows:
+    #jobs:
+      #- windows_fetch
+      #- windows_build:
+          #requires:
+            #- windows_fetch
 
   build-mac:
     jobs:
@@ -195,13 +195,13 @@ workflows:
           requires:
             - mac_build_blink
 
-  build-linux:
-    jobs:
-      - linux_build
-      - linux_test_37:
-          requires:
-            - linux_build
-      - linux_test_27:
-          requires:
-            - linux_build
+  #build-linux:
+    #jobs:
+      #- linux_build
+      #- linux_test_37:
+          #requires:
+            #- linux_build
+      #- linux_test_27:
+          #requires:
+            #- linux_build
 
