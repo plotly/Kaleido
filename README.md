@@ -31,35 +31,53 @@ Then, open `figure.png` in the current working directory.
 
 
 # Background
-As simple as it sounds, programmatically generating static images from web-based visualization libraries is a difficult problem.  The core difficulty is that these libraries don't actually render plots (i.e. color the pixels) on their own, instead they delegate this work to web technologies like SVG, Canvas, WebGL, etc.  This means that they are entirely dependent on the presence of a complete web browser to operate.
+As simple as it sounds, programmatically generating static images (e.g. raster images like PNGs or vector images like SVGs) from web-based visualization libraries (e.g. Plotly.js, Vega-Lite, etc.) is a complex problem.  It's a problem that library developers have struggled with for years, and it has delayed the adoption of these libraries among scientific communities that rely on print-based publications for sharing their research. The core difficulty is that web-based visualization libraries don't actually render plots (i.e. color the pixels) on their own, instead they delegate this work to web technologies like SVG, Canvas, WebGL, etc. Similar to how Matplotlib relies on various backends to display figures, web-based visualization libraries rely on a web browser rendering engine to display figures.
 
-When the figure is displayed in a browser window, it's relatively straight-forward for a visualization library to provide an export-image button because it has full access to the browser for rendering.  The difficulty arises when trying to export an image programmatically (e.g. from Python) without displaying it in a browser and without user interaction.  To accomplish this, the Python portion of the visualization library needs programmatic access to a full web browser.
+When the figure is displayed in a browser window, it's relatively straight-forward for a visualization library to provide an export-image button because it has full access to the browser for rendering.  The difficulty arises when trying to export an image programmatically (e.g. from Python) without displaying it in a browser and without user interaction.  To accomplish this, the Python portion of the visualization library needs programmatic access to a web browser's rendering engine.
 
-There are three main approaches that are currently in use among Python web-based visualization libraries.
+There are three main approaches that are currently in use among Python web-based visualization libraries:
 
-  1. bokeh, altair, bqplot, and ipyvolume rely on the Selenium Python library to control a system web browser such as Firefox or Chrome/Chromium to perform image rendering.
+  1. Bokeh, Altair, bqplot, and ipyvolume rely on the Selenium Python library to control a system web browser such as Firefox or Chrome/Chromium to perform image rendering.
   2. plotly.py relies on Orca, which is a custom headless Electron application that uses the Chromium browser engine built into Electron to perform image rendering. Orca runs as a local web server and plotly.py sends requests to it using a local port.
   3. When operating in the Jupyter notebook or JupyterLab, ipyvolume also supports programmatic image export by sending export requests to the browser using the ipywidgets protocol.
   
-While options 1 and 2 can both be installed using `conda`, they still rely on the presence of some components that must be installed externally. For example, on Linux both require the installation of system libraries like `libXss` that are not typically included in headless Linux installations like you find in JupyterHub installations, Binder, Colab, Azure notebooks, SageMaker, etc.  Also, conda is not as universally available as the pip package manager and neither approach is installable using pip packages.
+While approaches 1 and 2 can both be installed using conda, they still rely on all of the system dependencies of a complete web browser, even the parts that aren't actually necessary for rendering a visualization. For example, on Linux both require the installation of system libraries related to audio (libasound.so), video (libffmpeg.so), GUI toolkit (libgtk-3.so), screensaver (libXss.so), and X11 (libX11-xcb.so) support. Many of these are not typically included in headless Linux installations like you find in JupyterHub, Binder, Colab, Azure notebooks, SageMaker, etc. Also, conda is still not as universally available as the pip package manager and neither approach is installable using pip packages.
 
 Additionally, both 1 and 2 communicate between the Python process and the web browser over a local network port. While not typically a problem, certain firewall and container configurations can interfere with this local network connection.
 
-The advantage of options 3 is that it introduces no additional system dependencies. The disadvantage is that it only works when running in a notebook, not in standalone Python scripts.
+The advantage of options 3 is that it introduces no additional system dependencies. The disadvantage is that it only works when running in a notebook, so it can't be used in standalone Python scripts.
 
-The end result is that all of these libraries have in-depth documentation pages on how to get image export working, and how to troubleshoot the inevitable failures and edge cases. While this is a great improvement over the state of affairs just a couple of years ago, and a lot of excellent work has gone into making these approaches work as seamlessly as possible, the fundamental limitations detailed above still result in sub-optimal user experiences. This is especially true when comparing web-based plotting libraries to traditional plotting libraries like matplotlib and ggplot2 where there's never a question of whether image export will work
+The end result is that all of these libraries have in-depth documentation pages on how to get image export working, and how to troubleshoot the inevitable failures and edge cases. While this is a great improvement over the state of affairs just a couple of years ago, and a lot of excellent work has gone into making these approaches work as seamlessly as possible, the fundamental limitations detailed above still result in sub-optimal user experiences. This is especially true when comparing web-based plotting libraries to traditional plotting libraries like matplotlib and ggplot2 where there's never a question of whether image export will work in a particular context.
 
-The goal of Kaleido is to make static image export of web-based visualization libraries as universally available and reliable as that of matplotlib and ggplot2.
+The goal of the Kaleido project is to make static image export of web-based visualization libraries as universally available and reliable as it is in matplotlib and ggplot2.
 
 # Approach
-To accomplish this goal, Kaleido introduces a new approach.  The core of Kaleido is a standalone C++ application that embeds Chromium as a library. This architecture allows Kaleido to communicate with the browser engine using the C++ API rather than requiring a local network connection. A thin Python wrapper runs the Kaledo C++ application as a subprocess and communicates with it by writing image export JSON requests to standard-in and retrieving results by reading from standard-out.  Other language wrappers (e.g. R, Julia, Scala, Rust, etc.) can fairly easily be written in the future because the interface relies only on standard-in / standard-out communication using JSON requests.
+To accomplish this goal, Kaleido introduces a new approach. The core of Kaleido is a standalone C++ application that embeds the open-source Chromium browser as a library. This architecture allows Kaleido to communicate with the Chromium browser engine using the C++ API rather than requiring a local network connection. A thin Python wrapper runs the Kaleido C++ application as a subprocess and communicates with it by writing image export requests to standard-in and retrieving results by reading from standard-out.  Other language wrappers (e.g. R, Julia, Scala, Rust, etc.) can fairly easily be written in the future because the interface relies only on standard-in / standard-out communication using JSON requests.
 
-By compiling Chromium as a library, we have a degree of control over what is included in the Chromium build. In particular, on Linux we can build Chromium in [headless](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) mode, which eliminates a large number of runtime dependencies (e.g. the `libXss` library mentioned above).  The remaining dependencies are small enough to bundle with the library, making it possible to run Kaleido in the most minimal Linux environments with no additional dependencies required. So for example, the C++ Kaleido executable can run inside an `ubuntu:16.04` docker container without anything be installed using `apt`.
+By compiling Chromium as a library, we have a degree of control over what is included in the Chromium build. In particular, on Linux we can build Chromium in [headless](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) mode, which eliminates a large number of runtime dependencies (e.g. the `libXss` library mentioned above).  The remaining dependencies are small enough to bundle with the library, making it possible to run Kaleido in the most minimal Linux environments with no additional dependencies required. 
 
-The Python wrapper and the Kaleido executable can then be packaged as operating system dependent Python wheels that can be distributed on PyPI.
+By compiling Chromium as a library, we have a degree of control over what is included in the Chromium build. In particular, on Linux we can build Chromium in [headless](https://chromium.googlesource.com/chromium/src/+/lkgr/headless/README.md#usage-as-a-c_library) mode which eliminates a large number of runtime dependencies, including the audio, video, GUI toolkit, screensaver, and X11 dependencies mentioned above. The remaining dependencies can then be bundled with the library, making it possible to run Kaleido in minimal Linux environments with no additional dependencies required. In this way, Kaleido can be distributed as a self-contained library that plays a similar role to a matplotlib backend.
+
+# Advantages
+Compared to Orca, Kaleido brings a wide range of improvements to plotly.py users.
+
+## pip installation support
+Pre-compiled wheels for 64-bit Linux, MacOS, and Windows are available on PyPI and can be installed using pip. As with Orca, Kaleido can also be installed using conda.
+
+## Improved startup time and resource usage
+Kaleido starts up about twice as fast as Orca, and uses about half as much system memory.
+
+## Docker compatibility
+Kaleido can operate inside docker containers based on Ubuntu 14.04+ or Centos 7+ (or most any other Linux distro released after ~2014) without the need to install additional dependencies using apt or yum, and without relying on Xvfb as a headless X11 Server.
+
+## Hosted notebook service compatibility
+Kaleido can be used in just about any online notebook service that permits the use of pip to install the kaleido package. These include Colab, Sagemaker, Azure Notebooks, Databricks, Kaggle, etc. In addition, Kaleido is compatible with the default Docker image used by Binder.
+
+## Security policy / Firewall compatibility
+There were occasionally situations where strict security policies and/or firewall services would block Orca’s ability to bind to a local port. Kaleido does not have this limitation since it does not use ports for communication.
 
 # Disadvantages
-While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB and several hours.  On Linux this work can be done once and distributed as a docker container, but we don't have a similar shortcut for Windows and MacOS. Because of this, we're still working on finding a CI solution for MacOS and Windows.
+While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB of disk space and several hours.  On Linux this work can be done once and distributed as a large docker container, but we don't have a similar shortcut for Windows and MacOS.
 
 # Scope (Plugin) architecture
 While motivated by the needs of plotly.py, we made the decision early on to design Kaleido to make it fairly straightforward to add support for additional libraries.  Plugins in Kaleido are called "scopes". For more information, see https://github.com/plotly/Kaleido/wiki/Scope-(Plugin)-Architecture.
@@ -73,13 +91,6 @@ Instructions for building Kaleido differ slightly across operating systems.  All
 ```
 $ git clone git@github.com:plotly/Kaleido.git
 $ cd Kaleido
-```
-
-## Update version
-Before building, generate the version string based on the git commit log with
-
-```
-$ python repos\version\build_pep440_version.py
 ```
 
 ## Linux
