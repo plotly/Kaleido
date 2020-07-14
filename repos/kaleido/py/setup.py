@@ -137,7 +137,7 @@ class PackageWheel(Command):
 
 
 def readme():
-    with open(os.path.join(here, "..", "README.md")) as f:
+    with open(os.path.join(here, "..", "README.md"), encoding="utf8") as f:
         return f.read()
 
 
