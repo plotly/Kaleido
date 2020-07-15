@@ -4,6 +4,7 @@ import shutil
 from setuptools import setup, Command
 import glob
 import distutils.util
+from io import open
 
 here = os.path.dirname(os.path.abspath(__file__))
 
