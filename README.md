@@ -85,7 +85,7 @@ While motivated by the needs of plotly.py, we made the decision early on to desi
 # Language wrapper architecture
 While Python is the initial target language for Kaleido, it has been designed to make it fairly straightforward to add support for additional languages. For more information, see https://github.com/plotly/Kaleido/wiki/Language-wrapper-architecture.
 
-# Building Kaledo
+# Building Kaleido
 Instructions for building Kaleido differ slightly across operating systems.  All of these approaches assume that the Kaleido repository has been cloned and that the working directory is set to the repository root.
 
 ```
