@@ -4,6 +4,7 @@ from threading import Lock, Thread
 import io
 import os
 import sys
+import locale
 
 try:
     from json import JSONDecodeError
@@ -34,7 +35,7 @@ class BaseScope(object):
         self._disable_gpu = disable_gpu
 
         # Internal Properties
-        self._std_error = io.StringIO()
+        self._std_error = io.BytesIO()
         self._std_error_thread = None
         self._proc = None
         self._proc_lock = Lock()
@@ -71,7 +72,7 @@ class BaseScope(object):
         """
         while True:
             if self._proc is not None:
-                val = self._proc.stderr.readline().decode('utf-8')
+                val = self._proc.stderr.readline()
                 self._std_error.write(val)
 
     def _ensure_kaleido(self):
@@ -88,7 +89,7 @@ class BaseScope(object):
                         self._proc.wait()
 
                     # Reset _std_error buffer
-                    self._std_error = io.StringIO()
+                    self._std_error = io.BytesIO()
 
                     # Launch kaleido subprocess
                     # Note: shell=True seems to be needed on Windows to handle executable path with
@@ -114,7 +115,7 @@ class BaseScope(object):
                     if not startup_response_string:
                         message = (
                             "Failed to start Kaleido subprocess. Error stream:\n\n" +
-                            self._std_error.getvalue()
+                            self._get_decoded_std_error()
                         )
                         raise ValueError(message)
                     else:
@@ -122,6 +123,29 @@ class BaseScope(object):
                         if startup_response.get("code", 0) != 0:
                             self._proc.wait()
                             raise ValueError(startup_response.get("message", "Failed to start Kaleido subprocess"))
+
+    def _get_decoded_std_error(self):
+        """
+        Attempt to decode standard error bytes stream to a string
+        """
+        std_err_str = None
+        try:
+            encoding = sys.stderr.encoding
+            std_err_str = self._std_error.getvalue().decode(encoding)
+        except Exception:
+            pass
+
+        if std_err_str is None:
+            try:
+                encoding = locale.getpreferredencoding(False)
+                std_err_str = self._std_error.getvalue().decode(encoding)
+            except Exception:
+                pass
+
+        if std_err_str is None:
+            std_err_str = "Failed to decode Chromium's standard error stream"
+
+        return std_err_str
 
     def _shutdown_kaleido(self):
         """
@@ -185,7 +209,7 @@ class BaseScope(object):
         # sure we're reading the response to our request
         with self._proc_lock:
             # Reset _std_error buffer
-            self._std_error = io.StringIO()
+            self._std_error = io.BytesIO()
 
             # Write and flush spec
             self._proc.stdin.write(export_spec)
@@ -197,7 +221,7 @@ class BaseScope(object):
         if not response_string:
             message = (
                     "Transform failed. Error stream:\n\n" +
-                    self._std_error.getvalue()
+                    self._get_decoded_std_error()
             )
             raise ValueError(message)
         try:
