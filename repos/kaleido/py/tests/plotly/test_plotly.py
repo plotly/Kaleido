@@ -1,13 +1,18 @@
 import os
-# from os.path import join
-import pathlib
+import sys
 from .. import baseline_root, tests_root
 from kaleido.scopes.plotly import PlotlyScope
 import pytest
 from .fixtures import all_figures, all_formats, mapbox_figure, simple_figure
+import plotly.graph_objects as go
+
 import plotly.io as pio
 pio.templates.default = None
 
+if sys.version_info >= (3, 3):
+    from unittest.mock import Mock
+else:
+    from mock import Mock
 
 os.environ['LIBGL_ALWAYS_SOFTWARE'] = '1'
 os.environ['GALLIUM_DRIVER'] = 'softpipe'
@@ -118,3 +123,41 @@ def test_bad_format_file():
         local_scope.transform(fig, format='bogus')
 
     e.match("Invalid format")
+
+
+def test_figure_size():
+    # Create mocked scope
+    scope = PlotlyScope()
+    transform_mock = Mock(return_value={"code": 0, "result": "image"})
+    scope._perform_transform = transform_mock
+
+    # Set defualt width / height
+    scope.default_width = 543
+    scope.default_height = 567
+    scope.default_format = "svg"
+    scope.default_scale = 2
+
+    # Make sure default width/height is used when no figure
+    # width/height specified
+    transform_mock.reset_mock()
+    fig = go.Figure()
+    scope.transform(fig)
+    transform_mock.assert_called_once_with(
+        fig.to_dict(), format="svg", scale=2, width=543, height=567
+    )
+
+    # Make sure figure's width/height takes precedence over defaults
+    transform_mock.reset_mock()
+    fig = go.Figure().update_layout(width=123, height=234)
+    scope.transform(fig)
+    transform_mock.assert_called_once_with(
+        fig.to_dict(), format="svg", scale=2, width=123, height=234
+    )
+
+    # Make sure kwargs take precedence over Figure layout values
+    transform_mock.reset_mock()
+    fig = go.Figure().update_layout(width=123, height=234)
+    scope.transform(fig, width=987, height=876)
+    transform_mock.assert_called_once_with(
+        fig.to_dict(), format="svg", scale=2, width=987, height=876
+    )

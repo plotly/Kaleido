@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from kaleido.scopes.base import BaseScope
 from _plotly_utils.utils import PlotlyJSONEncoder
+from plotly.graph_objects import Figure
 import base64
 
 
@@ -65,12 +66,19 @@ class PlotlyScope(BaseScope):
         :return: image bytes
         """
         # TODO: validate args
+        if isinstance(figure, Figure):
+            figure = figure.to_dict()
 
-        # Apply defaults
+        # Apply default format and scale
         format = format if format is not None else self.default_format
-        width = width if width is not None else self.default_width
-        height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
+
+        # Get figure layout
+        layout = figure.get("layout", {})
+
+        # Compute default width / height
+        width = width or layout.get("width", None) or self.default_width
+        height = height or layout.get("height", None) or self.default_height
 
         # Normalize format
         original_format = format
@@ -96,7 +104,7 @@ class PlotlyScope(BaseScope):
         )
 
         # Check for export error, later can customize error messages for plotly Python users
-        code = response.pop("code", 0)
+        code = response.get("code", 0)
         if code != 0:
             message = response.get("message", None)
             raise ValueError(
@@ -105,7 +113,7 @@ class PlotlyScope(BaseScope):
                 )
             )
 
-        img = response.pop("result", None).encode("utf-8")
+        img = response.get("result").encode("utf-8")
 
         # Base64 decode binary types
         if format not in self._text_formats:
