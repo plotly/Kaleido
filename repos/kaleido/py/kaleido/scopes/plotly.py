@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 from kaleido.scopes.base import BaseScope
 from _plotly_utils.utils import PlotlyJSONEncoder
-from plotly.graph_objects import Figure
 import base64
 
 
@@ -66,6 +65,7 @@ class PlotlyScope(BaseScope):
         :return: image bytes
         """
         # TODO: validate args
+        from plotly.graph_objects import Figure
         if isinstance(figure, Figure):
             figure = figure.to_dict()
 
