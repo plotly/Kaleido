@@ -16,7 +16,7 @@
     "semver": "^7.3.2"
   },
   "devDependencies": {
-    "browserify": "^16.5.1",
+    "browserify": "^16.5.2",
     "rimraf": "^3.0.2"
   }
 }
