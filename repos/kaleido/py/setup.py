@@ -127,7 +127,7 @@ class PackageWheel(Command):
         cmd_obj = self.distribution.get_command_obj('bdist_wheel')
 
         # Use current platform as plat_name, but replace linux with manylinux2014
-        cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux2014-")
+        cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux1-")
 
         # Set macos platform to 10.10 to match chromium build target (See build/config/mac/mac_sdk.gni)
         # rather than Python environment
