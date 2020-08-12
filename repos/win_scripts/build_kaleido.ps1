@@ -1,4 +1,10 @@
-& {
+echo $args[0]
+if (-not ($args[0] -eq "x86" -or $args[1] -eq "x64")) {
+    throw "Invalid architecture: must be one of x86 or x64"
+}
+
+
+$arch = $args[0]
 
 # cd to repos directory
 cd $PSScriptRoot\..
@@ -29,12 +35,12 @@ $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 cd src
 
 # Make output directory
-if (-Not (Test-Path out\Kaleido_win)) {
-    New-Item -Path out\Kaleido_win -ItemType "directory" -ErrorAction Ignore
+if (-Not (Test-Path out\Kaleido_win_$arch)) {
+    New-Item -Path out\Kaleido_win_$arch -ItemType "directory" -ErrorAction Ignore
 }
 
 # Write out/Kaleido_win/args.gn
-Copy-Item ..\win_scripts\args.gn -Destination out\Kaleido_win
+Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win
 
 # Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
 if (Test-Path headless\app\scopes) {
@@ -43,8 +49,8 @@ if (Test-Path headless\app\scopes) {
 Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse 
 
 # Perform build, result will be out/Kaleido_win/kaleido
-gn gen out\Kaleido_win
-ninja -C out\Kaleido_win -j 16 kaleido
+gn gen out\Kaleido_win_$arch
+ninja -C out\Kaleido_win_$arch -j 16 kaleido
 
 # Copy build files
 if (-Not (Test-Path ..\build\kaleido)) {
@@ -53,8 +59,8 @@ if (-Not (Test-Path ..\build\kaleido)) {
 Remove-Item -Recurse -Force ..\build\kaleido\* -ErrorAction Ignore
 New-Item -Path ..\build\kaleido\bin -ItemType "directory"
 
-Copy-Item out\Kaleido_win\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
-Copy-Item out\Kaleido_win\swiftshader -Destination ..\build\kaleido\bin -Recurse
+Copy-Item out\Kaleido_win_$arch\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
+Copy-Item out\Kaleido_win_$arch\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
 # version
 cp ..\kaleido\version ..\build\kaleido\
@@ -63,7 +69,7 @@ cp ..\kaleido\version ..\build\kaleido\
 cp ..\kaleido\LICENSE.txt ..\build\kaleido\
 
 # Copy icudtl.dat
-Copy-Item .\out\Kaleido_win\icudtl.dat -Destination ..\build\kaleido\bin
+Copy-Item .\out\Kaleido_win_$arch\icudtl.dat -Destination ..\build\kaleido\bin
 
 # Copy javascript
 cd ..\kaleido\js\
@@ -86,6 +92,7 @@ Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 
 # Build python wheel
 cd ../kaleido/py
+$env:KALEIDO_ARCH=$arch
 python setup.py package
 
 # Change up to kaleido/ directory
@@ -102,5 +109,3 @@ if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
     Remove-Item -Recurse -Force ..\kaleido\py\kaleido_wheel.zip
 }
 Compress-Archive -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
-
-}
