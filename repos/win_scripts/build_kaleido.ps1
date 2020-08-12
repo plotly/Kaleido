@@ -1,10 +1,8 @@
-echo $args[0]
-if (-not ($args[0] -eq "x86" -or $args[1] -eq "x64")) {
-    throw "Invalid architecture: must be one of x86 or x64"
-}
-
-
 $arch = $args[0]
+echo $arch
+if (-not ($arch -eq "x86" -or $arch -eq "x64")) {
+    throw "Invalid architecture,: must be one of x86 or x64: received $arch"
+}
 
 # cd to repos directory
 cd $PSScriptRoot\..
