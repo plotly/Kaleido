@@ -169,14 +169,34 @@ jobs:
           command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
       - attach_workspace:
           at: .\repos
-      - run: .\repos\win_scripts\build_kaleido.ps1
+      - run: .\repos\win_scripts\build_kaleido.ps1 x64
       - run: dir .\repos\build\kaleido
       - run: dir .\repos\kaleido\py\dist
       - store_artifacts:
           path: ./repos/build/kaleido_win.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
-      
+
+  windows_build-32:
+    executor:
+      name: win/default
+      size: "xlarge"
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run:
+          name: Update PowerShell.Archive to fix slash direction
+          command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
+      - attach_workspace:
+          at: .\repos
+      - run: .\repos\win_scripts\build_kaleido.ps1 x86
+      - run: dir .\repos\build\kaleido
+      - run: dir .\repos\kaleido\py\dist
+      - store_artifacts:
+          path: ./repos/build/kaleido_win.zip
+      - store_artifacts:
+          path: ./repos/kaleido/py/kaleido_wheel.zip
+
 workflows:
   build-windows:
     jobs:
@@ -184,7 +204,12 @@ workflows:
       - windows_build:
           requires:
             - windows_fetch
-
+  build-windows-32:
+    jobs:
+      - windows_fetch
+      - windows_build-32:
+          requires:
+            - windows_fetch
   build-mac:
     jobs:
       - mac_fetch
