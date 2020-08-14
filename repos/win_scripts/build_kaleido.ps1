@@ -38,7 +38,7 @@ if (-Not (Test-Path out\Kaleido_win_$arch)) {
 }
 
 # Write out/Kaleido_win/args.gn
-Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win
+Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win_$arch\args.gn
 
 # Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
 if (Test-Path headless\app\scopes) {
