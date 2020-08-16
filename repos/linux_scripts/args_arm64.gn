@@ -5,3 +5,5 @@ is_component_build=false
 symbol_level=0
 blink_symbol_level=0
 is_debug=false
+
+target_cpu="x64"

@@ -2,8 +2,11 @@
 # docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/fetch_chromium_docker
 cd /repos
 
-# Remove any prior .gclient file
-rm -f .gclient
+## Remove any prior .gclient file
+#rm -f .gclient
+
+# Replace any prior .gclient file
+cp ./linux_scripts/gclient .gclient
 
 echo "fetch chromium"
 fetch --nohooks chromium

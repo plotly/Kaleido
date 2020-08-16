@@ -1,3 +1,10 @@
+#!/bin/bash
+if [ $# -eq 0 ]; then
+    echo "No architecture provided"
+    exit 1
+fi
+export KALEIDO_ARCH=$1
+
 # full path to linux_scripots/ directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
@@ -12,4 +19,4 @@ cp ./README.md ./repos/kaleido/
 cp ./LICENSE.txt ./repos/kaleido/
 
 # Perform build using docker
-docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.7 /repos/linux_scripts/build_kaleido_docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.7 /repos/linux_scripts/build_kaleido_docker $KALEIDO_ARCH

@@ -2,15 +2,15 @@
 rm -rf headless/app/scopes
 cp -r /repos/kaleido/cc/* headless/app/
 
-# Perform build, result will be out/Kaleido_linux/kaleido
-ninja -C out/Kaleido_linux -j 16 kaleido
+# Perform build, result will be out/Kaleido_linux_$KALEIDO_ARCH/kaleido
+ninja -C out/Kaleido_linux_$KALEIDO_ARCH -j 16 kaleido
 
 # Copy build files
 mkdir -p /repos/build/kaleido/
 rm -rf /repos/build/kaleido/*
 mkdir -p /repos/build/kaleido/bin
-cp out/Kaleido_linux/kaleido /repos/build/kaleido/bin
-cp -r out/Kaleido_linux/swiftshader/ /repos/build/kaleido/bin
+cp out/Kaleido_linux_$KALEIDO_ARCH/kaleido /repos/build/kaleido/bin
+cp -r out/Kaleido_linux_$KALEIDO_ARCH/swiftshader/ /repos/build/kaleido/bin
 
 # copy shared libraries
 mkdir -p /repos/build/kaleido/lib/
