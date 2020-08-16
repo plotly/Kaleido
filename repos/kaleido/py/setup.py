@@ -129,6 +129,13 @@ class PackageWheel(Command):
         # Use current platform as plat_name, but replace linux with manylinux2014
         cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux1-")
 
+        # Handle windows 32-bit cross compilation
+        print(os.environ.get("KALEIDO_ARCH", "x64"))
+        if cmd_obj.plat_name.startswith("win-"):
+            arch = os.environ.get("KALEIDO_ARCH", "x64")
+            if arch == "x86":
+                cmd_obj.plat_name = "win32"
+        print(cmd_obj.plat_name)
         # Set macos platform to 10.10 to match chromium build target (See build/config/mac/mac_sdk.gni)
         # rather than Python environment
         if cmd_obj.plat_name.startswith("macosx"):
