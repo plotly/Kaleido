@@ -6,4 +6,4 @@ symbol_level=0
 blink_symbol_level=0
 is_debug=false
 
-target_cpu="x64"
+target_cpu="arm64"

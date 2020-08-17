@@ -1,6 +1,9 @@
 #!/bin/bash
 CHROMIUM_TAG="83.0.4103.61"
 
+# Replace any prior .gclient file
+cp ./linux_scripts/gclient .gclient
+
 cd /repos/src
 git reset --hard
 git checkout tags/$CHROMIUM_TAG

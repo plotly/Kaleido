@@ -3,10 +3,7 @@
 cd /repos
 
 ## Remove any prior .gclient file
-#rm -f .gclient
-
-# Replace any prior .gclient file
-cp ./linux_scripts/gclient .gclient
+rm -f .gclient
 
 echo "fetch chromium"
 fetch --nohooks chromium

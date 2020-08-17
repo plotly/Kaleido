@@ -4,15 +4,23 @@ if [ $# -eq 0 ]; then
     echo "No architecture provided"
     exit 1
 fi
+
 export KALEIDO_ARCH=$1
 
+
 cd /repos/src
+
+if [ $KALEIDO_ARCH == arm64 ]; then
+    echo "Installing sysroot"
+    python ./build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
+fi
 
 # Make output directory
 mkdir -p out/Kaleido_linux_$KALEIDO_ARCH
 
 # Write out/Kaleido_linux_$KALEIDO_ARCH/args.gn
 cp /repos/linux_scripts/args_$KALEIDO_ARCH.gn out/Kaleido_linux_$KALEIDO_ARCH/args.gn
+gn gen out/Kaleido_linux_$KALEIDO_ARCH
 
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
