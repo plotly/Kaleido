@@ -10,11 +10,6 @@ export KALEIDO_ARCH=$1
 
 cd /repos/src
 
-if [ $KALEIDO_ARCH == arm64 ]; then
-    echo "Installing sysroot"
-    python ./build/linux/sysroot_scripts/install-sysroot.py --arch=arm64
-fi
-
 # Make output directory
 mkdir -p out/Kaleido_linux_$KALEIDO_ARCH
 

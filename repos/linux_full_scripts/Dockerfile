@@ -3,7 +3,7 @@
 # Build and run:
 #   docker build -t jonmmease/kaleido-builder:0.6 -f Dockerfile .
 
-FROM jonmmease/chromium-builder:0.7
+FROM jonmmease/chromium-builder:0.8
 
 
 # Fetch chromium source tree
