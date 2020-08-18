@@ -5,11 +5,15 @@
 
 FROM jonmmease/chromium-builder:0.8
 
+# Update depot_tools in case there are changes in how to fetch code
+RUN cd /depot_tools && git pull
 
 # Fetch chromium source tree
 RUN \
     cd / \
     && fetch --nohooks chromium
+
+COPY ./repos/linux_scripts/gclient /.gclient
 
 # Checkout chromium revision
 RUN \
@@ -24,17 +28,9 @@ RUN rm -r /src/.git
 
 # TODO: remove .git directories from third-party dependencies under src/third_party
 
-# Build create linux out directory
-RUN \
-    cd /src \
-    && mkdir -p out/Kaleido_linux \
-    && echo 'import("//build/args/headless.gn")' > out/Kaleido_linux/args.gn \
-    && echo 'enable_nacl=false' >> out/Kaleido_linux/args.gn \
-    && echo 'is_component_build=false' >> out/Kaleido_linux/args.gn \
-    && echo 'symbol_level=0' >> out/Kaleido_linux/args.gn \
-    && echo 'blink_symbol_level=0' >> out/Kaleido_linux/args.gn \
-    && echo 'is_debug=false' >> out/Kaleido_linux/args.gn
-
+# Build create x64 linux out directory
+RUN mkdir -p /src/out/Kaleido_linux_x64/
+COPY ./repos/linux_scripts/args_x64.gn /src/out/Kaleido_linux_x64/args.gn
 
 # Add Kaleido executable
 RUN echo ' \
@@ -52,6 +48,11 @@ executable("kaleido") { \
 # dependencies that Kaleido needs precompiled.
 RUN \
     cd /src \
-    && gn gen out/Kaleido_linux \
-    && ninja -C out/Kaleido_linux -j 20 headless_example
+    && gn gen out/Kaleido_linux_x64 \
+    && ninja -C out/Kaleido_linux_x64 -j 20 headless_example
     
+
+# Initialize project directories for other architectures, but don't precompile
+RUN mkdir -p /src/out/Kaleido_linux_arm64/
+COPY ./repos/linux_scripts/args_arm64.gn /src/out/Kaleido_linux_arm64/args.gn
+RUN cd /src && gn gen out/Kaleido_linux_arm64

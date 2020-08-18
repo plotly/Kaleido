@@ -99,7 +99,7 @@ This approach relies on the `jonmmease/kaleido-builder` docker image, and the sc
 
 Download docker image
 ```
-$ docker pull jonmmease/kaleido-builder:0.7
+$ docker pull jonmmease/kaleido-builder:0.8
 ```
 
 Build Kaleido
@@ -113,7 +113,7 @@ This approach relies on the `jonmmease/chromium-builder` docker image, and the s
 
 Download docker image
 ```
-$ docker pull jonmmease/chromium-builder:0.7
+$ docker pull jonmmease/chromium-builder:0.8
 ```
 
 Fetch the Chromium codebase and checkout the specific tag, then sync all dependencies
@@ -165,14 +165,14 @@ The `chromium-builder` container mostly follows the instructions at https://chro
 Build container with:
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.7 -f repos/linux_scripts/Dockerfile .
+$ docker build -t jonmmease/chromium-builder:0.8 -f repos/linux_scripts/Dockerfile .
 ```
 
 ## kaleido-builder
 This container contains a pre-compiled version of chromium source tree. Takes several hours to build!
 
 ```
-$ docker build -t jonmmease/kaleido-builder:0.7 -f repos/linux_full_scripts/Dockerfile .
+$ docker build -t jonmmease/kaleido-builder:0.8 -f repos/linux_full_scripts/Dockerfile .
 ```
 
 
