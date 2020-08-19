@@ -13,7 +13,7 @@ commands:
       - checkout
       - attach_workspace:
           at: ./repos
-      - run: docker pull jonmmease/chomium-builder:0.8
+      #- run: docker pull jonmmease/chomium-builder:0.8
       - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
       - run: sudo chmod -R 777 repos/build
       - run: sudo chmod -R 777 repos/kaleido/py
@@ -56,7 +56,7 @@ jobs:
     resource_class: large
     steps:
       - checkout
-      - run: docker pull jonmmease/chomium-builder:0.8
+      - run: docker pull jonmmease/chromium-builder:0.8
       - run:
           name: Fetch detpot_tools and chromium source tree
           command: ./repos/linux_scripts/fetch_chromium
