@@ -70,14 +70,11 @@ jobs:
           name: Open permissions of fetched src directory
           command: |
             sudo chmod -R 777 ./repos/src
-            sudo chmod 777 .gclient*
             sudo chmod -R 777 kaleido/version
       - persist_to_workspace:
           root: ./repos
           paths:
             - src
-            - .gclient
-            - .gclient_entries
             - kaleido/version
             
   linux_build_x64:
