@@ -1,5 +1,10 @@
 #!/bin/bash
 # docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/fetch_chromium_docker
+
+# Update depot tools for fetch
+cd /depot_tools/
+git pull
+
 cd /repos
 
 ## Remove any prior .gclient file
