@@ -75,7 +75,6 @@ jobs:
           root: ./repos
           paths:
             - src
-            - kaleido/version
             
   linux_build_x64:
     machine: 
