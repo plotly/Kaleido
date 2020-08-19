@@ -65,7 +65,7 @@ jobs:
           name: Delete .git directories to save space (skipping angle taken from electron circleci build)
           command: |
             cd ./repos/src
-            rm -rf .git
+            sudo rm -rf .git
       - persist_to_workspace:
           root: ./repos
           paths:
