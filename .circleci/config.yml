@@ -70,7 +70,6 @@ jobs:
           name: Open permissions of fetched src directory
           command: |
             sudo chmod -R 777 ./repos/src
-            sudo chmod -R 777 kaleido/version
       - persist_to_workspace:
           root: ./repos
           paths:
