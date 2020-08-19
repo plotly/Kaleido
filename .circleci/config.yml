@@ -51,10 +51,9 @@ commands:
 
 jobs:
   linux_fetch:
-    parameters:
-      arch:
-        default: "x64"
-        type: string
+    machine: 
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: large
     steps:
       - checkout
       - run: docker pull jonmmease/chomium-builder:0.8
