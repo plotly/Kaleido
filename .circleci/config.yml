@@ -11,9 +11,10 @@ commands:
         type: string
     steps:
       - checkout
-      - run: docker --version
-      - run: docker pull jonmmease/kaleido-builder:0.8
-      - run: ./repos/linux_full_scripts/build_kaleido <<parameters.arch>>
+      - attach_workspace:
+          at: ./repos
+      - run: docker pull jonmmease/chomium-builder:0.8
+      - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
       - run: sudo chmod -R 777 repos/build
       - run: sudo chmod -R 777 repos/kaleido/py
       - run: ls repos/build/kaleido
@@ -47,9 +48,34 @@ commands:
           path: ./repos/build/kaleido_win_<<parameters.arch>>.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
-  
-  
+
 jobs:
+  linux_fetch:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - run: docker pull jonmmease/chomium-builder:0.8
+      - run:
+          name: Fetch detpot_tools and chromium source tree
+          command: ./repos/linux_scripts/fetch_chromium
+          no_output_timeout: 30m
+      - run:
+          name: Delete .git directories to save space (skipping angle taken from electron circleci build)
+          command: |
+            cd ./repos/src
+            ( find . -type d -name ".git" -not -path "./third_party/angle/*" ) | xargs rm -rf
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+            - kaleido/version
+            
   linux_build_x64:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
@@ -240,7 +266,10 @@ workflows:
 
   build-linux-x64:
     jobs:
-      - linux_build_x64
+      - linux_fetch
+      - linux_build_x64:
+          requires:
+            - linux_fetch
       - linux_test_37:
           requires:
             - linux_build_x64
@@ -250,4 +279,7 @@ workflows:
 
   build-linux-arm64:
     jobs:
-      - linux_build_arm64
+      - linux_fetch
+      - linux_build_arm64:
+          requires:
+            - linux_fetch
