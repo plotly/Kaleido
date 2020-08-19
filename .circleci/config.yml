@@ -66,11 +66,16 @@ jobs:
           command: |
             cd ./repos/src
             sudo rm -rf .git
+      - run:
+          name: Open permissions of fetched src directory
+          command: |
+            sudo chmod -R 777 ./repos/src
+            sudo chmod 777 .gclient*
+            sudo chmod -R 777 kaleido/version
       - persist_to_workspace:
           root: ./repos
           paths:
             - src
-            - depot_tools
             - .gclient
             - .gclient_entries
             - kaleido/version
