@@ -7,4 +7,4 @@ solutions = [
     "custom_vars": {},
   },
 ]
-target_cpu=["x64", "arm", "arm64"]
+target_cpu=["x64", "arm64"]
