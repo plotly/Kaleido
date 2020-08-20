@@ -21,5 +21,8 @@ executable(\"kaleido\") {
   ]
 }" >> headless/BUILD.gn
 
+# Install sysroots
+/repos/src/build/linux/sysroot_scripts/install-sysroot.py --all
+
 # Build credits
 python /repos/src/tools/licenses.py credits > /repos/CREDITS.html

@@ -35,11 +35,11 @@ elif [ $KALEIDO_ARCH == "arm64" ]; then
     # /usr/lib/aarch64-linux-gnu/
   for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
   do
-    cp /debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+    cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
   done
 
   # /usr/lib/aarch64-linux-gnu/nss
-  cp /debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/nss/* /repos/build/kaleido/lib/
+  cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/nss/* /repos/build/kaleido/lib/
 
 fi
 
