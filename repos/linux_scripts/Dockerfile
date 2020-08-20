@@ -58,11 +58,3 @@ RUN \
     curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_TAG/build/install-build-deps.sh?format=TEXT \
     | base64 -d > install-build-deps.sh && chmod +x ./install-build-deps.sh && \
     ./install-build-deps.sh --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
-
-RUN \
-    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_TAG/build/linux/sysroot_scripts/sysroots.json?format=TEXT \
-    | base64 -d > sysroots.json
-
-RUN \
-    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_TAG/build/linux/sysroot_scripts/install-sysroot.py?format=TEXT \
-    | base64 -d > install-sysroot.py && python3 ./install-sysroot.py --all
