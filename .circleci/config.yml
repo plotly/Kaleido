@@ -78,7 +78,7 @@ jobs:
   linux_build_x64:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
-    resource_class: large
+    resource_class: xlarge
     steps:
       - linux_build:
           arch: "x64"
@@ -86,7 +86,7 @@ jobs:
   linux_build_arm64:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
-    resource_class: large
+    resource_class: xlarge
     steps:
       - linux_build:
           arch: "arm64"
