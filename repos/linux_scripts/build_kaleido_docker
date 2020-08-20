@@ -17,19 +17,5 @@ mkdir -p out/Kaleido_linux_$KALEIDO_ARCH
 cp /repos/linux_scripts/args_$KALEIDO_ARCH.gn out/Kaleido_linux_$KALEIDO_ARCH/args.gn
 gn gen out/Kaleido_linux_$KALEIDO_ARCH
 
-# 1) Reset headless/BUILD.gn
-git checkout HEAD -- headless/BUILD.gn
-
-# 2) Append kaleido section to headless build file (src/headless/BUILD.gn)
-echo "
-executable(\"kaleido\") {
-  sources = [ \"app/kaleido.cc\" ]
-
-  deps = [
-    \":headless_shell_lib\",
-    \"//skia\",  # we need this to override font render hinting in headless build
-  ]
-}" >> headless/BUILD.gn
-
 # perform_kaleido_build expect to be run from src directory
 /repos/linux_scripts/perform_kaleido_build

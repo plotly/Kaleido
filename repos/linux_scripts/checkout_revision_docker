@@ -10,5 +10,16 @@ git checkout tags/$CHROMIUM_TAG
 gclient sync -D --force --reset
 gclient runhooks
 
+# Append kaleido section to headless build file (src/headless/BUILD.gn)
+echo "
+executable(\"kaleido\") {
+  sources = [ \"app/kaleido.cc\" ]
+
+  deps = [
+    \":headless_shell_lib\",
+    \"//skia\",  # we need this to override font render hinting in headless build
+  ]
+}" >> headless/BUILD.gn
+
 # Build credits
 python /repos/src/tools/licenses.py credits > /repos/CREDITS.html
