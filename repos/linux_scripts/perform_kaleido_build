@@ -2,33 +2,46 @@
 rm -rf headless/app/scopes
 cp -r /repos/kaleido/cc/* headless/app/
 
-# Perform build, result will be out/Kaleido_linux/kaleido
-ninja -C out/Kaleido_linux -j 16 kaleido
+# Perform build, result will be out/Kaleido_linux_$KALEIDO_ARCH/kaleido
+ninja -C out/Kaleido_linux_$KALEIDO_ARCH -j 16 kaleido
 
 # Copy build files
 mkdir -p /repos/build/kaleido/
 rm -rf /repos/build/kaleido/*
 mkdir -p /repos/build/kaleido/bin
-cp out/Kaleido_linux/kaleido /repos/build/kaleido/bin
-cp -r out/Kaleido_linux/swiftshader/ /repos/build/kaleido/bin
+cp out/Kaleido_linux_$KALEIDO_ARCH/kaleido /repos/build/kaleido/bin
+cp -r out/Kaleido_linux_$KALEIDO_ARCH/swiftshader/ /repos/build/kaleido/bin
 
 # copy shared libraries
 mkdir -p /repos/build/kaleido/lib/
 
-# /usr/lib/x86_64-linux-gnu/
-for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
-do
-  cp /usr/lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
-done
+if [ $KALEIDO_ARCH == "x64" ]; then
+  # /usr/lib/x86_64-linux-gnu/
+  for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
+  do
+    cp /usr/lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+  done
 
-# /usr/lib/x86_64-linux-gnu/nss
-cp /usr/lib/x86_64-linux-gnu/nss/* /repos/build/kaleido/lib/
+  # /usr/lib/x86_64-linux-gnu/nss
+  cp /usr/lib/x86_64-linux-gnu/nss/* /repos/build/kaleido/lib/
 
-# /lib/x86_64-linux-gnu/
-for SO_FILE in libexpat.so.1 # libdl.so.2 libpthread.so.0 librt.so.1 libm.so.6 libgcc_s.so.1 libc.so.6
-do
-  cp /lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
-done
+  # /lib/x86_64-linux-gnu/
+  for SO_FILE in libexpat.so.1 # libdl.so.2 libpthread.so.0 librt.so.1 libm.so.6 libgcc_s.so.1 libc.so.6
+  do
+    cp /lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+  done
+
+elif [ $KALEIDO_ARCH == "arm64" ]; then
+    # /usr/lib/aarch64-linux-gnu/
+  for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
+  do
+    cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+  done
+
+  # /usr/lib/aarch64-linux-gnu/nss
+  cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/nss/* /repos/build/kaleido/lib/
+
+fi
 
 # fonts
 mkdir -p /repos/build/kaleido/etc/

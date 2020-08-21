@@ -127,7 +127,7 @@ class PackageWheel(Command):
         cmd_obj = self.distribution.get_command_obj('bdist_wheel')
 
         # Use current platform as plat_name, but replace linux with manylinux2014
-        cmd_obj.plat_name = distutils.util.get_platform().replace("linux-", "manylinux1-")
+        cmd_obj.plat_name = distutils.util.get_platform()
 
         # Handle windows 32-bit cross compilation
         print(os.environ.get("KALEIDO_ARCH", "x64"))
@@ -135,10 +135,27 @@ class PackageWheel(Command):
             arch = os.environ.get("KALEIDO_ARCH", "x64")
             if arch == "x86":
                 cmd_obj.plat_name = "win32"
-        print(cmd_obj.plat_name)
+            elif arch == "x64":
+                cmd_obj.plat_name = "win_amd64"
+            else:
+                raise ValueError(
+                    "Unsupported architecture {arch} for plat_name {plat_name}".format(
+                        arch=arch, plat_name=cmd_obj.plat_name)
+                )
+        elif cmd_obj.plat_name.startswith("linux"):
+            arch = os.environ.get("KALEIDO_ARCH", "x64")
+            if arch == "x64":
+                cmd_obj.plat_name = "manylinux1-x86_64"
+            elif arch == "x86":
+                cmd_obj.plat_name = "manylinux1-i686"
+            elif arch == "arm64":
+                cmd_obj.plat_name = "manylinux2014-aarch64"
+            elif arch == "arm":
+                cmd_obj.plat_name = "manylinux2014-armv7l"
+
         # Set macos platform to 10.10 to match chromium build target (See build/config/mac/mac_sdk.gni)
         # rather than Python environment
-        if cmd_obj.plat_name.startswith("macosx"):
+        elif cmd_obj.plat_name.startswith("macosx"):
             cmd_obj.plat_name = "macosx-10.10-x86_64"
 
         cmd_obj.python_tag = 'py2.py3'

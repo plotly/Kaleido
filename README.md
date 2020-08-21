@@ -94,26 +94,10 @@ $ cd Kaleido
 ## Linux
 There are two approaches to building Kaleido on Linux, both of which rely on Docker.
 
-## Method 1
-This approach relies on the `jonmmease/kaleido-builder` docker image, and the scripts in `repos/linux_full_scripts`, to compile Kaleido.  This docker image is over 30GB, but in includes a precompiled instance of the Chromium source tree making it possible to compile Kaleido in just a few 10s of seconds. The downside of this approach is that the chromium source tree is not visible outside of the docker image so it may be difficult for development environments to index it. This is the approach used for Continuous Integration on Linux.
-
+The Linux build relies on the `jonmmease/chromium-builder` docker image, and the scripts in `repos/linux_scripts`, to download the chromium source to a local folder and then build it.
 Download docker image
 ```
-$ docker pull jonmmease/kaleido-builder:0.7
-```
-
-Build Kaleido
-
-```
-$ /repos/linux_full_scripts/build_kaleido
-```
-
-### Method 2
-This approach relies on the `jonmmease/chromium-builder` docker image, and the scripts in `repos/linux_scripts`, to download the chromium source to a local folder and then build it.  This takes longer to get set up than method 2 because the Chromium source tree must be compiled from scratch, but it downloads a copy of the chromium source tree to `repos/src` which makes it possible for development environments like CLion to index the Chromium codebase to provide code completion.
-
-Download docker image
-```
-$ docker pull jonmmease/chromium-builder:0.7
+$ docker pull jonmmease/chromium-builder:0.8
 ```
 
 Fetch the Chromium codebase and checkout the specific tag, then sync all dependencies
@@ -126,7 +110,13 @@ Then build the `kaleido` application to `repos/build/kaleido`, and bundle shared
 create the Python wheel under `repos/kaleido/py/dist/`
 
 ```
-$ /repos/linux_scripts/build_kaleido
+$ /repos/linux_scripts/build_kaleido x64
+```
+
+The above command will build Kaleido for the 64-bit Intel architecture. Kaleido can also be build for 64-bit ARM architecture with
+
+```
+$ /repos/linux_scripts/build_kaleido arm64
 ```
 
 ## MacOS
@@ -155,7 +145,12 @@ $ /repos/win_scripts/fetch_chromium.ps1
 
 Then build Kaleido to `repos/build/kaleido`. The build step will also create the Python wheel under `repos/kaleido/py/dist/`
 ```
-$ /repos/mac_scripts/build_kaleido.ps1
+$ /repos/mac_scripts/build_kaleido.ps1 x64
+```
+
+The above commnad will generate a 64-bit build. A 32-bit build can be generated using 
+```
+$ /repos/mac_scripts/build_kaleido.ps1 x86
 ```
 
 # Building Docker containers
@@ -165,14 +160,14 @@ The `chromium-builder` container mostly follows the instructions at https://chro
 Build container with:
 
 ```
-$ docker build -t jonmmease/chromium-builder:0.7 -f repos/linux_scripts/Dockerfile .
+$ docker build -t jonmmease/chromium-builder:0.8 -f repos/linux_scripts/Dockerfile .
 ```
 
 ## kaleido-builder
 This container contains a pre-compiled version of chromium source tree. Takes several hours to build!
 
 ```
-$ docker build -t jonmmease/kaleido-builder:0.7 -f repos/linux_full_scripts/Dockerfile .
+$ docker build -t jonmmease/kaleido-builder:0.8 -f repos/linux_full_scripts/Dockerfile .
 ```
 
 

@@ -3,30 +3,94 @@ version: 2.1
 orbs:
   win: circleci/windows@2.4.0 # The Windows orb give you everything you need to start using the Windows executor.
 
-jobs:
+commands:
   linux_build:
-    machine: 
-      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
-    resource_class: large
+    parameters:
+      arch:
+        default: "x64"
+        type: string
     steps:
       - checkout
-      - run: docker --version
-      - run: docker pull jonmmease/kaleido-builder:0.7
-      - run: ./repos/linux_full_scripts/build_kaleido
+      - attach_workspace:
+          at: ./repos
+      #- run: docker pull jonmmease/chomium-builder:0.8
+      - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
       - run: sudo chmod -R 777 repos/build
       - run: sudo chmod -R 777 repos/kaleido/py
       - run: ls repos/build/kaleido
-      - run: pushd repos/build && zip -r kaleido_linux.zip ./*
+      - run: pushd repos/build && zip -r kaleido_linux_<<parameters.arch>>.zip ./*
       - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
       - store_artifacts:
-          path: ./repos/build/kaleido_linux.zip
+          path: ./repos/build/kaleido_linux_<<parameters.arch>>.zip
       - store_artifacts:
           path: ./repos/kaleido/py/kaleido_wheel.zip
       - persist_to_workspace:
           root: ./repos
           paths:
             - kaleido/py/
+  
+  windows_build:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Update PowerShell.Archive to fix slash direction
+          command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
+      - attach_workspace:
+          at: .\repos
+      - run: .\repos\win_scripts\build_kaleido.ps1 <<parameters.arch>>
+      - run: dir .\repos\build\kaleido
+      - run: dir .\repos\kaleido\py\dist
+      - store_artifacts:
+          path: ./repos/build/kaleido_win_<<parameters.arch>>.zip
+      - store_artifacts:
+          path: ./repos/kaleido/py/kaleido_wheel.zip
+
+jobs:
+  linux_fetch:
+    machine: 
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: large
+    steps:
+      - checkout
+      - run: docker pull jonmmease/chromium-builder:0.8
+      - run:
+          name: Fetch detpot_tools and chromium source tree
+          command: ./repos/linux_scripts/fetch_chromium
+          no_output_timeout: 30m
+      - run:
+          name: Delete .git directories to save space (skipping angle taken from electron circleci build)
+          command: |
+            cd ./repos/src
+            sudo rm -rf .git
+      - run:
+          name: Open permissions of fetched src directory
+          command: |
+            sudo chmod -R 777 ./repos/src
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
             
+  linux_build_x64:
+    machine: 
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: xlarge
+    steps:
+      - linux_build:
+          arch: "x64"
+
+  linux_build_arm64:
+    machine: 
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: xlarge
+    steps:
+      - linux_build:
+          arch: "arm64"
+
   linux_test_37:
     docker:
       - image: continuumio/miniconda3
@@ -157,57 +221,36 @@ jobs:
             - .gclient_entries
             - kaleido/version
 
-  windows_build:
+  windows_build_x64:
     executor:
       name: win/default
       size: "xlarge"
       shell: powershell.exe
     steps:
-      - checkout
-      - run:
-          name: Update PowerShell.Archive to fix slash direction
-          command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
-      - attach_workspace:
-          at: .\repos
-      - run: .\repos\win_scripts\build_kaleido.ps1 x64
-      - run: dir .\repos\build\kaleido
-      - run: dir .\repos\kaleido\py\dist
-      - store_artifacts:
-          path: ./repos/build/kaleido_win.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+      - windows_build:
+          arch: "x64"
 
-  windows_build-32:
+  windows_build_x86:
     executor:
       name: win/default
       size: "xlarge"
       shell: powershell.exe
     steps:
-      - checkout
-      - run:
-          name: Update PowerShell.Archive to fix slash direction
-          command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
-      - attach_workspace:
-          at: .\repos
-      - run: .\repos\win_scripts\build_kaleido.ps1 x86
-      - run: dir .\repos\build\kaleido
-      - run: dir .\repos\kaleido\py\dist
-      - store_artifacts:
-          path: ./repos/build/kaleido_win.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+      - windows_build:
+          arch: "x86"
 
 workflows:
-  build-windows:
+  build-windows-x64:
     jobs:
       - windows_fetch
-      - windows_build:
+      - windows_build_x64:
           requires:
             - windows_fetch
-  build-windows-32:
+
+  build-windows-x86:
     jobs:
       - windows_fetch
-      - windows_build-32:
+      - windows_build_x86:
           requires:
             - windows_fetch
   build-mac:
@@ -220,13 +263,22 @@ workflows:
           requires:
             - mac_build_blink
 
-  build-linux:
+  build-linux-x64:
     jobs:
-      - linux_build
+      - linux_fetch
+      - linux_build_x64:
+          requires:
+            - linux_fetch
       - linux_test_37:
           requires:
-            - linux_build
+            - linux_build_x64
       - linux_test_27:
           requires:
-            - linux_build
+            - linux_build_x64
 
+  build-linux-arm64:
+    jobs:
+      - linux_fetch
+      - linux_build_arm64:
+          requires:
+            - linux_fetch
