@@ -13,17 +13,10 @@ commands:
       - checkout
       - attach_workspace:
           at: ./repos
-      #- run: docker pull jonmmease/chomium-builder:0.8
       - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
-      - run: sudo chmod -R 777 repos/build
-      - run: sudo chmod -R 777 repos/kaleido/py
-      - run: ls repos/build/kaleido
-      - run: pushd repos/build && zip -r kaleido_linux_<<parameters.arch>>.zip ./*
-      - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
+      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/build/kaleido_linux_<<parameters.arch>>.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+          path: ./repos/kaleido/kaleido_artifacts_linux_<<parameters.arch>>.zip
       - persist_to_workspace:
           root: ./repos
           paths:
@@ -42,12 +35,9 @@ commands:
       - attach_workspace:
           at: .\repos
       - run: .\repos\win_scripts\build_kaleido.ps1 <<parameters.arch>>
-      - run: dir .\repos\build\kaleido
-      - run: dir .\repos\kaleido\py\dist
+      - run: python .\repos\kaleido\py\setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/build/kaleido_win_<<parameters.arch>>.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+          path: ./repos/kaleido/kaleido_artifacts_win_<<parameters.arch>>.zip
 
 jobs:
   linux_fetch:
@@ -195,13 +185,11 @@ jobs:
           at: ./repos
       - run:
           command: ./repos/mac_scripts/build_kaleido
-          no_output_timeout: 30m
-      - run: pushd repos/build && zip -r kaleido_mac.zip ./*
-      - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
+          no_output_timeout: 30m          
+      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/build/kaleido_mac.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+          path: ./repos/kaleido/kaleido_artifacts_mac_<<parameters.arch>>.zip
+
           
   windows_fetch:
     executor:
