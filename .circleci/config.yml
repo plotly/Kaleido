@@ -14,7 +14,7 @@ commands:
       - attach_workspace:
           at: ./repos
       - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
-      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
+      - run: python ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
           path: ./repos/kaleido/kaleido_artifacts_linux_<<parameters.arch>>.zip
       - persist_to_workspace:
@@ -69,6 +69,8 @@ jobs:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "x64"
     steps:
       - linux_build:
           arch: "x64"
@@ -77,6 +79,8 @@ jobs:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "arm64"
     steps:
       - linux_build:
           arch: "arm64"
@@ -214,6 +218,8 @@ jobs:
       name: win/default
       size: "xlarge"
       shell: powershell.exe
+    environment:
+      KALEIDO_ARCH: "x64"
     steps:
       - windows_build:
           arch: "x64"
@@ -223,6 +229,8 @@ jobs:
       name: win/default
       size: "xlarge"
       shell: powershell.exe
+    environment:
+      KALEIDO_ARCH: "x86"
     steps:
       - windows_build:
           arch: "x86"

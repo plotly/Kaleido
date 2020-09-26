@@ -231,11 +231,12 @@ class HashBundleArtifacts(Command):
                 )
 
         # Copy executable
-        arch = os.environ.get("KALEIDO_ARCH", "x64")
         system = platform.system()
         if system == "Windows":
+            arch = os.environ["KALEIDO_ARCH"]
             suffix = "win_" + arch
         elif system == "Linux":
+            arch = os.environ["KALEIDO_ARCH"]
             suffix = "linux_" + arch
         elif system == "Darwin":
             suffix = "mac"
