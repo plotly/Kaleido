@@ -8,9 +8,20 @@ import distutils.util
 from io import open
 
 here = os.path.dirname(os.path.abspath(__file__))
+repo_root = os.path.dirname(os.path.dirname(os.path.dirname(here)))
+is_repo = os.path.exists(os.path.join(repo_root, ".git"))
 
-with open(os.path.join(os.path.dirname(here), 'version'), 'r') as f:
-    version = f.read()
+if is_repo:
+    with open(os.path.join(os.path.dirname(here), 'version'), 'r') as f:
+        version = f.read()
+    with open(os.path.join(here, "..", "README.md"), encoding="utf8") as f:
+        long_description = f.read()
+else:
+    # Follow this path on source package installation
+    with open(os.path.join(here, 'kaleido', '_version.py'), 'r') as f:
+        version = f.read()
+    long_description = None
+
 
 def package_files(directory):
     paths = []
@@ -184,11 +195,6 @@ class PackageWheel(Command):
         self.run_command("bdist_wheel")
 
 
-def readme():
-    with open(os.path.join(here, "..", "README.md"), encoding="utf8") as f:
-        return f.read()
-
-
 setup(
     name="kaleido",
     version=version,
@@ -198,7 +204,7 @@ setup(
     maintainer_email="jon@plotly.com",
     project_urls={"Github": "https://github.com/plotly/Kaleido"},
     description="Static image export for web-based visualization libraries with zero dependencies",
-    long_description=readme(),
+    long_description=long_description,
     long_description_content_type="text/markdown",
     license="MIT",
     packages=["kaleido", "kaleido.scopes"],
