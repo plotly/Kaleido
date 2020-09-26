@@ -22,9 +22,10 @@ def package_files(directory):
 
 executable_files = package_files("kaleido/executable")
 
+
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
-    CLEAN_FILES = './build ./dist ./*.pyc ./*.tgz ./*.egg-info'.split(' ')
+    CLEAN_FILES = './build ./dist ./*.pyc ./*.tgz ./*.egg-info ./kaleido/executable'.split(' ')
 
     user_options = []
 
@@ -109,6 +110,27 @@ class CopyLicense(Command):
         )
 
 
+class PackageSourceDistribution(Command):
+    description = "Build source distribution package"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        self.run_command("clean")
+        self.run_command("write_version")
+        self.run_command("copy_license")
+
+        # Remove executable files
+        del executable_files[:]
+
+        self.run_command("sdist")
+
+
 class PackageWheel(Command):
     description = "Build Wheel Package"
     user_options = []
@@ -184,6 +206,7 @@ setup(
         'kaleido': executable_files,
     },
     cmdclass=dict(
+        package_source=PackageSourceDistribution,
         copy_executable=CopyExecutable,
         clean=CleanCommand,
         write_version=WriteVersion,
