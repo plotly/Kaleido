@@ -15,6 +15,7 @@ cp ..\README.md .\kaleido\
 cp ..\LICENSE.txt .\kaleido\
 
 # Add depot_tools to path
+$original_path = $env:path
 $env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
 echo $env:path
 
@@ -89,6 +90,7 @@ Copy-Item ..\kaleido\js\build\*.js -Destination ..\build\kaleido\js\ -Recurse
 Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 
 # Build python wheel
+$env:path = $original_path
 cd ../kaleido/py
 $env:KALEIDO_ARCH=$arch
 python setup.py package

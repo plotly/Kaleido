@@ -6,9 +6,11 @@ from setuptools import setup, Command
 import glob
 import distutils.util
 from io import open
+import hashlib
 
 here = os.path.dirname(os.path.abspath(__file__))
 parent = os.path.dirname(here)
+executable_build_dir = os.path.abspath(os.path.join(here, '..', '..', 'build'))
 is_repo = all(
     os.path.exists(os.path.join(parent, fn)) for fn in ["version", "README.md", "LICENSE.txt"]
 )
@@ -76,7 +78,7 @@ class CopyExecutable(Command):
 
     def run(self):
         output_dir = os.path.join(here, 'kaleido', 'executable')
-        input_dir = os.path.abspath(os.path.join(here, '..', '..', 'build', 'kaleido'))
+        input_dir = os.path.abspath(os.path.join(executable_build_dir, 'kaleido'))
 
         print("copy_executable: Deleting {output_dir}".format(output_dir=output_dir))
         shutil.rmtree(output_dir, ignore_errors=True)
@@ -202,6 +204,74 @@ class PackageWheel(Command):
         self.run_command("bdist_wheel")
 
 
+class HashBundleArtifacts(Command):
+    description = "Zip and hash archives, gather to single zip"
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        import platform
+        artifacts_dir = os.path.join(parent, 'artifacts')
+        python_dist_dir = os.path.join(here, 'dist')
+        # Create fresh empty artifacts directory
+        if os.path.exists(artifacts_dir):
+            shutil.rmtree(artifacts_dir)
+        os.makedirs(artifacts_dir)
+
+        # Copy python packages
+        for fn in os.listdir(python_dist_dir):
+            if fn.endswith(".tar.gz") or fn.endswith(".whl"):
+                shutil.copyfile(
+                    os.path.join(here, "dist", fn), os.path.join(artifacts_dir, fn)
+                )
+
+        # Copy executable
+        arch = os.environ.get("KALEIDO_ARCH", "x64")
+        system = platform.system()
+        if system == "Windows":
+            suffix = "win_" + arch
+        elif system == "Linux":
+            suffix = "linux_" + arch
+        elif system == "Darwin":
+            suffix = "mac"
+        else:
+            raise ValueError("Unknown system {system}".format(system=system))
+
+        # Full executable
+        input_dir = os.path.abspath(os.path.join(executable_build_dir, 'kaleido'))
+        output_base = os.path.join(artifacts_dir, "kaleido_{suffix}".format(suffix=suffix))
+        shutil.make_archive(output_base, "zip", input_dir)
+
+        # Minimal executable, if any
+        input_dir = os.path.abspath(os.path.join(executable_build_dir, 'kaleido_minimal'))
+        if os.path.exists(input_dir):
+            output_base = os.path.join(artifacts_dir, "kaleido_minimal_{suffix}".format(suffix=suffix))
+            shutil.make_archive(output_base, "zip", input_dir)
+
+        # Write hash files
+        for fn in list(os.listdir(artifacts_dir)):
+            in_filepath = os.path.join(artifacts_dir, fn)
+            out_filepath = os.path.join(artifacts_dir, fn + ".sha256")
+            with open(in_filepath, "rb") as in_f:
+                file_bytes = in_f.read() # read entire file as bytes
+                readable_hash = hashlib.sha256(file_bytes).hexdigest()
+                with open(out_filepath, "wt") as out_f:
+                    out_f.write(readable_hash)
+
+        # Write all artifacts into single zip file
+        output_base = os.path.join(
+            os.path.dirname(artifacts_dir),
+            "kaleido_artifacts_{suffix}".format(suffix=suffix)
+        )
+        if os.path.exists(output_base + ".zip"):
+            os.remove(output_base + ".zip")
+        shutil.make_archive(output_base, "zip", artifacts_dir)
+
 setup(
     name="kaleido",
     version=version,
@@ -225,5 +295,6 @@ setup(
         write_version=WriteVersion,
         copy_license=CopyLicenseAndReadme,
         package=PackageWheel,
+        bundle_hash_artifacts=HashBundleArtifacts,
     )
 )
