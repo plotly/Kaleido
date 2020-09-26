@@ -268,9 +268,14 @@ class HashBundleArtifacts(Command):
             os.path.dirname(artifacts_dir),
             "kaleido_artifacts_{suffix}".format(suffix=suffix)
         )
-        if os.path.exists(output_base + ".zip"):
-            os.remove(output_base + ".zip")
+        output_zipfile = output_base + ".zip"
+        if os.path.exists(output_zipfile):
+            os.remove(output_zipfile)
+        print("Writing artifacts archive to {output_zipfile} ... ".format(
+            output_zipfile=output_zipfile
+        ), end="")
         shutil.make_archive(output_base, "zip", artifacts_dir)
+        print("done")
 
 setup(
     name="kaleido",
