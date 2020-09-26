@@ -8,15 +8,19 @@ import distutils.util
 from io import open
 
 here = os.path.dirname(os.path.abspath(__file__))
-repo_root = os.path.dirname(os.path.dirname(os.path.dirname(here)))
-is_repo = os.path.exists(os.path.join(repo_root, ".git"))
+parent = os.path.dirname(here)
+is_repo = all(
+    os.path.exists(os.path.join(parent, fn)) for fn in ["version", "README.md", "LICENSE.txt"]
+)
 
 if is_repo:
+    print("Running setup.py from the kaleido repository tree")
     with open(os.path.join(os.path.dirname(here), 'version'), 'r') as f:
         version = f.read()
     with open(os.path.join(here, "..", "README.md"), encoding="utf8") as f:
         long_description = f.read()
 else:
+    print("Running setup.py during source installation")
     # Follow this path on source package installation
     with open(os.path.join(here, 'kaleido', '_version.py'), 'r') as f:
         version = f.read()
@@ -36,7 +40,7 @@ executable_files = package_files("kaleido/executable")
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
-    CLEAN_FILES = './build ./dist ./*.pyc ./*.tgz ./*.egg-info ./kaleido/executable'.split(' ')
+    CLEAN_FILES = './build ./*.pyc ./*.tgz ./*.egg-info ./kaleido/kaleido/_version.py ./kaleido/executable'.split(' ')
 
     user_options = []
 
@@ -105,8 +109,8 @@ class WriteVersion(Command):
             f.write('__version__ = "{version}"\n'.format(version=version))
 
 
-class CopyLicense(Command):
-    description = "Copy License files"
+class CopyLicenseAndReadme(Command):
+    description = "Copy License and Readme files"
     user_options = []
 
     def initialize_options(self):
@@ -118,6 +122,9 @@ class CopyLicense(Command):
     def run(self):
         shutil.copy(
             os.path.abspath(os.path.join(here, '..', 'LICENSE.txt')), here
+        )
+        shutil.copy(
+            os.path.abspath(os.path.join(here, '..', 'README.md')), here
         )
 
 
@@ -216,7 +223,7 @@ setup(
         copy_executable=CopyExecutable,
         clean=CleanCommand,
         write_version=WriteVersion,
-        copy_license=CopyLicense,
+        copy_license=CopyLicenseAndReadme,
         package=PackageWheel,
     )
 )

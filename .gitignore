@@ -14,6 +14,7 @@ repos/kaleido/version
 repos/kaleido/LICENSE.txt
 repos/kaleido/README.md
 repos/kaleido/py/LICENSE.txt
+repos/kaleido/py/README.md
 repos/kaleido/py/tests/baselines/plotly/failed
 *.pyc
 win_toolchain/*.zip
