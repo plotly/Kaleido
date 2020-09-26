@@ -188,7 +188,7 @@ jobs:
           no_output_timeout: 30m          
       - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/kaleido/kaleido_artifacts_mac_<<parameters.arch>>.zip
+          path: ./repos/kaleido/kaleido_artifacts_mac.zip
 
           
   windows_fetch:
