@@ -84,4 +84,7 @@ python3 -m pip install -U setuptools
 cd /repos/kaleido/py/
 rm -rf ./dist
 python3 setup.py package
-python3 setup.py package_source
+
+if [ $KALEIDO_ARCH == "x64" ]; then
+  python3 setup.py package_source
+fi
