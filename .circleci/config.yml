@@ -21,6 +21,7 @@ commands:
           root: ./repos
           paths:
             - kaleido/py/
+            - kaleido/tests/
   
   windows_build:
     parameters:
