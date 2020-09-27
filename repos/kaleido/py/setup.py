@@ -1,5 +1,4 @@
-from __future__ import unicode_literals
-import setuptools
+from __future__ import unicode_literals, print_function
 import os
 import shutil
 from setuptools import setup, Command

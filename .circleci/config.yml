@@ -14,7 +14,7 @@ commands:
       - attach_workspace:
           at: ./repos
       - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
-      - run: python ./repos/kaleido/py/setup.py bundle_hash_artifacts
+      - run: ./repos/linux_scripts/bundle_artifacts <<parameters.arch>>
       - store_artifacts:
           path: ./repos/kaleido/kaleido_artifacts_linux_<<parameters.arch>>.zip
       - persist_to_workspace:
