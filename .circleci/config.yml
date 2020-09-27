@@ -101,8 +101,8 @@ jobs:
       - run:
           name: Test Python
           command: |
-            cd ./repos/kaleido/py/
-            pytest -s tests/
+            cd ./repos/kaleido/tests/
+            pytest -s py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
       
@@ -121,8 +121,8 @@ jobs:
       - run:
           name: Test Python
           command: |
-            cd ./repos/kaleido/py/
-            pytest -s tests/
+            cd ./repos/kaleido/tests/
+            pytest -s py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
             
