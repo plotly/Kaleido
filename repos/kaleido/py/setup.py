@@ -24,7 +24,8 @@ else:
     print("Running setup.py during source installation")
     # Follow this path on source package installation
     with open(os.path.join(here, 'kaleido', '_version.py'), 'r') as f:
-        version = f.read()
+        version_py = f.read()
+    version = eval(version_py.strip().split("=")[1])
     long_description = None
 
 
