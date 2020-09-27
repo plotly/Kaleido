@@ -35,6 +35,10 @@ public:
     void OnExecutionContextCreated(const headless::runtime::ExecutionContextCreatedParams& params) override;
 
     void ExportNext();
+    void Reload();
+    void OnHeapUsageComplete(std::unique_ptr<headless::runtime::GetHeapUsageResult> result);
+    void OnHeapEvalComplete(std::unique_ptr<headless::runtime::EvaluateResult> result);
+
     void LoadNextScript();
     void OnPDFCreated(std::string responseString, std::unique_ptr<headless::page::PrintToPDFResult> result);
 
@@ -44,8 +48,10 @@ public:
 
 private:
     int contextId;
+    double jsHeapSizeLimit;
     std::string tmpFileName;
-    std::list<std::string> remainingLocalScriptsFiles;
+    std::vector<std::string> localScriptFiles;
+    size_t nextScriptIndex;
     kaleido::scopes::BaseScope *scope;
     std::unique_ptr<base::Environment> env;
     bool popplerAvailable;

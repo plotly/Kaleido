@@ -80,7 +80,6 @@ Kaleido::Kaleido(
         kaleido::scopes::BaseScope *scope_ptr
 )
         : tmpFileName(tmpFileName),
-          remainingLocalScriptsFiles(scope_ptr->LocalScriptFiles()),
           scope(scope_ptr),
           env(base::Environment::Create()),
           popplerAvailable(base::ExecutableExistsInPath(env.get(), "pdftops")),
@@ -89,11 +88,19 @@ Kaleido::Kaleido(
           web_contents_(web_contents),
           devtools_client_(headless::HeadlessDevToolsClient::Create()) {
 
+    // Populate remainingLocalScriptsFiles vector
+    for (std::string const &s: scope_ptr->LocalScriptFiles()) {
+        localScriptFiles.push_back(s);
+    }
     base::GetCurrentDirectory(&cwd);
     web_contents_->AddObserver(this);
 }
 
 Kaleido::~Kaleido() {
+
+    // Delete tmp file
+    std::remove(tmpFileName.c_str());
+
     // Note that we shut down the browser last, because it owns objects such as
     // the web contents which can no longer be accessed after the browser is gone.
     devtools_client_->GetPage()->RemoveObserver(this);
@@ -122,10 +129,8 @@ void Kaleido::DevToolsTargetReady() {
 void Kaleido::OnLoadEventFired(
         const headless::page::LoadEventFiredParams& params) {
     // Enable runtime
+    nextScriptIndex = 0;
     LoadNextScript();
-
-    // Delete tmp file
-    std::remove(tmpFileName.c_str());
 }
 
 void Kaleido::OnExecutionContextCreated(
@@ -134,14 +139,15 @@ void Kaleido::OnExecutionContextCreated(
 }
 
 void Kaleido::LoadNextScript() {
-     if (remainingLocalScriptsFiles.empty()) {
-         // Finished processing startup scripts, start exporting figures
-         ExportNext();
+     if (localScriptFiles.size() <= nextScriptIndex) {
+         // Finished processing startup scripts, get heap memory usage, which will then start ExportNext loop
+         devtools_client_->GetRuntime()->Evaluate(
+                 "JSON.stringify({jsHeapSizeLimit: window.performance.memory.jsHeapSizeLimit})",
+                 base::BindOnce(&Kaleido::OnHeapEvalComplete, weak_factory_.GetWeakPtr()));
          return;
      } else {
          // Load Script
-         std::string scriptPath(remainingLocalScriptsFiles.front());
-         remainingLocalScriptsFiles.pop_front();
+         std::string scriptPath(localScriptFiles[nextScriptIndex++]);
          std::ifstream t(scriptPath);
          if (!t.is_open()) {
              // Reached end of file,
@@ -260,7 +266,7 @@ void Kaleido::OnExportComplete(
         std::string error = base::StringPrintf(
                 "Failed to serialize document: %s", result->GetExceptionDetails()->GetText().c_str());
         kaleido::utils::writeJsonMessage(1, error);
-        ExportNext();
+        Reload();
         return;
     } else {
         // JSON parse result to get format
@@ -313,7 +319,7 @@ void Kaleido::OnExportComplete(
             int exitCode = std::system(command.c_str());
             if (exitCode != 0) {
                 kaleido::utils::writeJsonMessage(exitCode, "SVG to EMF conversion failed");
-                ExportNext();
+                Reload();
                 return;
             }
 
@@ -339,7 +345,7 @@ void Kaleido::OnExportComplete(
                 base::JSONWriter::Write(*responseDict, &response);
                 std::cout << response << "\n";
 
-                ExportNext();
+                Reload();
                 return;
             } else {
                 // cleanup temporary files
@@ -347,15 +353,55 @@ void Kaleido::OnExportComplete(
                 std::remove(outFileName.c_str());
 
                 kaleido::utils::writeJsonMessage(1, "Failed to read temporary EMF file");
-                ExportNext();
+                Reload();
                 return;
             }
         } else {
             // Write results json string
             std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
-            ExportNext();
+            Reload();
             return;
         }
+    }
+}
+
+void Kaleido::Reload() {
+    std::unique_ptr<headless::runtime::GetHeapUsageParams> params =
+            headless::runtime::GetHeapUsageParams::Builder().Build();
+    devtools_client_->GetRuntime()->GetExperimental()->GetHeapUsage(
+            std::move(params), base::BindOnce(&Kaleido::OnHeapUsageComplete, weak_factory_.GetWeakPtr()));
+}
+
+void Kaleido::OnHeapUsageComplete(std::unique_ptr<headless::runtime::GetHeapUsageResult> result) {
+    double heapUsageRatio = result->GetUsedSize() / jsHeapSizeLimit;
+    if (heapUsageRatio >= 0.5) {
+        // Reload page to clear memory
+        std::unique_ptr<headless::page::ReloadParams> params =
+        headless::page::ReloadParams::Builder().Build();
+        devtools_client_->GetPage()->Reload(std::move(params));
+    } else {
+        // Memory usage low enough, keep going without reloading page
+        ExportNext();
+    }
+}
+
+void Kaleido::OnHeapEvalComplete(std::unique_ptr<headless::runtime::EvaluateResult> result) {
+    if (result->HasExceptionDetails()) {
+        std::string error = base::StringPrintf(
+                "Failed to get window.performance.memory: %s", result->GetExceptionDetails()->GetText().c_str());
+        kaleido::utils::writeJsonMessage(1, error);
+        Reload();
+        return;
+    } else {
+        std::string responseString = result->GetResult()->GetValue()->GetString();
+        base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+        base::DictionaryValue* responseDict;
+        responseJson.value().GetAsDictionary(&responseDict);
+
+        // jsHeapSizeLimit
+        responseDict->GetDouble("jsHeapSizeLimit", &jsHeapSizeLimit);
+
+        ExportNext();
     }
 }
 
@@ -392,7 +438,7 @@ void Kaleido::OnPDFCreated(
             int exitCode = std::system(command.c_str());
             if (exitCode != 0) {
                 kaleido::utils::writeJsonMessage(exitCode, "PDF to EPS conversion failed");
-                ExportNext();
+                Reload();
                 return;
             }
 
@@ -418,7 +464,7 @@ void Kaleido::OnPDFCreated(
         std::cout << response << "\n";
     }
 
-    ExportNext();
+    Reload();
     return;
 }
 
