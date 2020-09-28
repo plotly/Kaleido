@@ -103,7 +103,7 @@ jobs:
           name: Test Python
           command: |
             cd ./repos/kaleido/tests/
-            pytest -s py/
+            pytest -s test_py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
       
@@ -123,7 +123,7 @@ jobs:
           name: Test Python
           command: |
             cd ./repos/kaleido/tests/
-            pytest -s py/
+            pytest -s test_py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
             
