@@ -71,9 +71,14 @@ class BaseScope(object):
         Intended to be called once in a background thread
         """
         while True:
+            # Usually there should aways be a process
             if self._proc is not None:
                 val = self._proc.stderr.readline()
                 self._std_error.write(val)
+            else:
+                # Due to concurrency the process may be killed while this loop is still running
+                # in this case break the loop 
+                return
 
     def _ensure_kaleido(self):
         """
