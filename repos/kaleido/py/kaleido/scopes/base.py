@@ -110,7 +110,7 @@ class BaseScope(object):
                     )
 
                     # Set up thread to asynchronously collect standard error stream
-                    if self._std_error_thread is None:
+                    if self._std_error_thread is None or not self._std_error_thread.is_alive():
                         self._std_error_thread = Thread(target=self._collect_standard_error)
                         self._std_error_thread.setDaemon(True)
                         self._std_error_thread.start()
