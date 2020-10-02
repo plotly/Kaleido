@@ -20,7 +20,7 @@ os.environ['GALLIUM_DRIVER'] = 'softpipe'
 
 # Constants
 mapbox_access_token = os.environ.get("MAPBOX_TOKEN")
-local_plotlyjs_path = tests_root / "plotly" / "resources" / "plotly.min.js"
+local_plotlyjs_path = tests_root / "test_plotly" / "resources" / "plotly.min.js"
 local_plotlyjs_url = local_plotlyjs_path.as_uri()
 
 mathjax = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"

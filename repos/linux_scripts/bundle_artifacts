@@ -1,0 +1,9 @@
+#!/bin/bash
+if [ $# -eq 0 ]; then
+    echo "No architecture provided"
+    exit 1
+fi
+export KALEIDO_ARCH=$1
+
+# Perform build using docker
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.8 /repos/linux_scripts/bundle_artifacts_docker $KALEIDO_ARCH
