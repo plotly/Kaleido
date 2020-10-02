@@ -21,7 +21,10 @@ class BaseScope(object):
     _scope_flags = ()
 
     _default_chromium_args = (
-        "--disable-gpu", "--allow-file-access-from-files", "--disable-breakpad",
+        "--disable-gpu",
+        "--allow-file-access-from-files",
+        "--disable-breakpad",
+        "--disable-dev-shm-usage",
     )
 
     _scope_chromium_args = ()
