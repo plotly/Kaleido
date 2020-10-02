@@ -13,21 +13,15 @@ commands:
       - checkout
       - attach_workspace:
           at: ./repos
-      #- run: docker pull jonmmease/chomium-builder:0.8
       - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
-      - run: sudo chmod -R 777 repos/build
-      - run: sudo chmod -R 777 repos/kaleido/py
-      - run: ls repos/build/kaleido
-      - run: pushd repos/build && zip -r kaleido_linux_<<parameters.arch>>.zip ./*
-      - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
+      - run: ./repos/linux_scripts/bundle_artifacts <<parameters.arch>>
       - store_artifacts:
-          path: ./repos/build/kaleido_linux_<<parameters.arch>>.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+          path: ./repos/kaleido/kaleido_artifacts_linux_<<parameters.arch>>.zip
       - persist_to_workspace:
           root: ./repos
           paths:
             - kaleido/py/
+            - kaleido/tests/
   
   windows_build:
     parameters:
@@ -42,12 +36,9 @@ commands:
       - attach_workspace:
           at: .\repos
       - run: .\repos\win_scripts\build_kaleido.ps1 <<parameters.arch>>
-      - run: dir .\repos\build\kaleido
-      - run: dir .\repos\kaleido\py\dist
+      - run: python .\repos\kaleido\py\setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/build/kaleido_win_<<parameters.arch>>.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+          path: ./repos/kaleido/kaleido_artifacts_win_<<parameters.arch>>.zip
 
 jobs:
   linux_fetch:
@@ -79,6 +70,8 @@ jobs:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "x64"
     steps:
       - linux_build:
           arch: "x64"
@@ -87,6 +80,8 @@ jobs:
     machine: 
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "arm64"
     steps:
       - linux_build:
           arch: "arm64"
@@ -107,8 +102,8 @@ jobs:
       - run:
           name: Test Python
           command: |
-            cd ./repos/kaleido/py/
-            pytest -s tests/
+            cd ./repos/kaleido/tests/
+            pytest -s test_py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
       
@@ -127,8 +122,8 @@ jobs:
       - run:
           name: Test Python
           command: |
-            cd ./repos/kaleido/py/
-            pytest -s tests/
+            cd ./repos/kaleido/tests/
+            pytest -s test_py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
             
@@ -195,13 +190,11 @@ jobs:
           at: ./repos
       - run:
           command: ./repos/mac_scripts/build_kaleido
-          no_output_timeout: 30m
-      - run: pushd repos/build && zip -r kaleido_mac.zip ./*
-      - run: pushd repos/kaleido/py/ && zip -r kaleido_wheel.zip ./dist
+          no_output_timeout: 30m          
+      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/build/kaleido_mac.zip
-      - store_artifacts:
-          path: ./repos/kaleido/py/kaleido_wheel.zip
+          path: ./repos/kaleido/kaleido_artifacts_mac.zip
+
           
   windows_fetch:
     executor:
@@ -226,6 +219,8 @@ jobs:
       name: win/default
       size: "xlarge"
       shell: powershell.exe
+    environment:
+      KALEIDO_ARCH: "x64"
     steps:
       - windows_build:
           arch: "x64"
@@ -235,6 +230,8 @@ jobs:
       name: win/default
       size: "xlarge"
       shell: powershell.exe
+    environment:
+      KALEIDO_ARCH: "x86"
     steps:
       - windows_build:
           arch: "x86"

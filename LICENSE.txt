@@ -3,8 +3,10 @@ All code developed in this repository is released under the MIT license (1).
 The Kaleido executable includes Chromium, which is released under the 3-clause BSD license (2).
 
 Chromium includes a wide range of third-party dependencies with varying licenses.
-See the repos/CREDITS.html (https://github.com/plotly/Kaleido/blob/master/repos/CREDITS.html)
-for license details of these dependencies.
+See the CREDITS.html file distributed with this package for license details 
+of these dependencies.
+
+The CREDITS.html is also available at https://github.com/plotly/Kaleido/blob/master/repos/CREDITS.html
 
 (1) ----
 The MIT License (MIT)

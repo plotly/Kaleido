@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ $# -eq 0 ]; then
+    echo "No architecture provided"
+    exit 1
+fi
+export KALEIDO_ARCH=$1
+
+python3 /repos/kaleido/py/setup.py bundle_hash_artifacts

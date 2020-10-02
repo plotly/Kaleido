@@ -11,12 +11,6 @@ try:
 except ImportError:
     JSONDecodeError = ValueError
 
-executable_path = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    'executable',
-    'kaleido'
-)
-
 
 class BaseScope(object):
     # Subclasses may override to specify a custom JSON encoder for input data
@@ -70,6 +64,42 @@ class BaseScope(object):
     def __del__(self):
         self._shutdown_kaleido()
 
+    @classmethod
+    def executable_path(cls):
+        vendored_executable_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'executable',
+            'kaleido'
+        )
+        if os.path.exists(vendored_executable_path):
+            # The kaleido executable is vendored under kaleido/executable.
+            # It was probably install as a PyPI wheel
+            executable_path = vendored_executable_path
+        else:
+            # The kaleido executable is not vendored under kaleido/executable,
+            # Probably installed using conda, where the executable is a separate package
+            # and is placed on the system PATH
+            executable_path = which("kaleido")
+            if executable_path is None:
+                path = os.environ.get("PATH", os.defpath)
+                formatted_path = path.replace(os.pathsep, "\n    ")
+                raise ValueError(
+                    """
+The kaleido executable is required by the kaleido Python library, but it was not included
+in the Python package and it could not be found on the system PATH.
+
+Searched for included kaleido executable at:
+    {vendored_executable_path} 
+
+Searched for executable 'kaleido' on the following system PATH:
+    {formatted_path}\n""".format(
+                        vendored_executable_path=vendored_executable_path,
+                        formatted_path=formatted_path,
+                    )
+                )
+
+        return executable_path
+
     def _build_proc_args(self):
         """
         Build list of kaleido command-line arguments based on current values of
@@ -77,7 +107,7 @@ class BaseScope(object):
 
         :return: list of flags
         """
-        proc_args = [executable_path, self.scope_name]
+        proc_args = [self.executable_path(), self.scope_name]
         for k in self._scope_flags:
             v = getattr(self, k)
             if v is True:
@@ -101,9 +131,14 @@ class BaseScope(object):
         Intended to be called once in a background thread
         """
         while True:
+            # Usually there should aways be a process
             if self._proc is not None:
                 val = self._proc.stderr.readline()
                 self._std_error.write(val)
+            else:
+                # Due to concurrency the process may be killed while this loop is still running
+                # in this case break the loop
+                return
 
     def _ensure_kaleido(self):
         """
@@ -135,7 +170,7 @@ class BaseScope(object):
                     )
 
                     # Set up thread to asynchronously collect standard error stream
-                    if self._std_error_thread is None:
+                    if self._std_error_thread is None or not self._std_error_thread.is_alive():
                         self._std_error_thread = Thread(target=self._collect_standard_error)
                         self._std_error_thread.setDaemon(True)
                         self._std_error_thread.start()
@@ -297,3 +332,95 @@ class BaseScope(object):
 
         img_string = response.pop("result", None)
         return img_string.encode()
+
+
+# PATH helpers
+def which_py2(cmd, mode=os.F_OK | os.X_OK, path=None):
+    """
+    Backport (unmodified) of shutil.which command from Python 3.6
+    Remove this when Python 2 support is dropped
+
+    Given a command, mode, and a PATH string, return the path which
+    conforms to the given mode on the PATH, or None if there is no such
+    file.
+
+    `mode` defaults to os.F_OK | os.X_OK. `path` defaults to the result
+    of os.environ.get("PATH"), or can be overridden with a custom search
+    path.
+    """
+    # Check that a given file can be accessed with the correct mode.
+    # Additionally check that `file` is not a directory, as on Windows
+    # directories pass the os.access check.
+    def _access_check(fn, mode):
+        return os.path.exists(fn) and os.access(fn, mode) and not os.path.isdir(fn)
+
+    # If we're given a path with a directory part, look it up directly rather
+    # than referring to PATH directories. This includes checking relative to
+    # the current directory, e.g. ./script
+    if os.path.dirname(cmd):
+        if _access_check(cmd, mode):
+            return cmd
+        return None
+
+    if path is None:
+        path = os.environ.get("PATH", os.defpath)
+    if not path:
+        return None
+    path = path.split(os.pathsep)
+
+    if sys.platform == "win32":
+        # The current directory takes precedence on Windows.
+        if not os.curdir in path:
+            path.insert(0, os.curdir)
+
+        # PATHEXT is necessary to check on Windows.
+        pathext = os.environ.get("PATHEXT", "").split(os.pathsep)
+        # See if the given file matches any of the expected path extensions.
+        # This will allow us to short circuit when given "python.exe".
+        # If it does match, only test that one, otherwise we have to try
+        # others.
+        if any(cmd.lower().endswith(ext.lower()) for ext in pathext):
+            files = [cmd]
+        else:
+            files = [cmd + ext for ext in pathext]
+    else:
+        # On other platforms you don't have things like PATHEXT to tell you
+        # what file suffixes are executable, so just pass on cmd as-is.
+        files = [cmd]
+
+    seen = set()
+    for dir in path:
+        normdir = os.path.normcase(dir)
+        if not normdir in seen:
+            seen.add(normdir)
+            for thefile in files:
+                name = os.path.join(dir, thefile)
+                if _access_check(name, mode):
+                    return name
+    return None
+
+
+def which(cmd):
+    """
+    Return the absolute path of the input executable string, based on the
+    user's current PATH variable.
+
+    This is a wrapper for shutil.which that is compatible with Python 2.
+
+    Parameters
+    ----------
+    cmd: str
+        String containing the name of an executable on the user's path.
+
+    Returns
+    -------
+    str or None
+        String containing the absolute path of the executable, or None if
+        the executable was not found.
+
+    """
+    if sys.version_info > (3, 0):
+        import shutil
+        return shutil.which(cmd)
+    else:
+        return which_py2(cmd)
