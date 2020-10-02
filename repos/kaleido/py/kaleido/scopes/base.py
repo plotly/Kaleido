@@ -246,14 +246,14 @@ Searched for executable 'kaleido' on the following system PATH:
     @property
     def disable_gpu(self):
         """ If True, asks chromium to disable GPU hardware acceleration with --disable-gpu flag"""
-        return "--disable-gpu" in self._extra_chromium_args
+        return "--disable-gpu" in self.chromium_args
 
     @disable_gpu.setter
     def disable_gpu(self, val):
-        new_args = [arg for arg in self._extra_chromium_args if arg != "--disable-gpu"]
+        new_args = [arg for arg in self.chromium_args if arg != "--disable-gpu"]
         if val:
             new_args.append("--disable-gpu")
-        self._extra_chromium_args = tuple(new_args)
+        self.chromium_args = tuple(new_args)
 
     @property
     def chromium_args(self):
