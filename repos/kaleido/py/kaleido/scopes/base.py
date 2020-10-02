@@ -22,17 +22,44 @@ class BaseScope(object):
     # Subclasses may override to specify a custom JSON encoder for input data
     _json_encoder = None
 
-    # Tuple of class properties that will be passed as
-    # command-line flags to configure chromium
-    _chromium_flags = ("disable_gpu",)
-
     # Tuple of class properties that will be passed as command-line
     # flags to configure scope
     _scope_flags = ()
 
-    def __init__(self, disable_gpu=True):
-        # Collect chromium flag properties
-        self._disable_gpu = disable_gpu
+    _default_chromium_args = (
+        "--disable-gpu", "--allow-file-access-from-files", "--disable-breakpad",
+    )
+
+    _scope_chromium_args = ()
+
+    @classmethod
+    def default_chromium_args(cls):
+        """
+        Get tuple containing the default chromium arguments that will be passed to chromium if not overridden.
+
+        chromium arguments can be overridden in the Scope constructor using the chromium_args argument, or they
+        can be overridden by assigning a tuple to the chromium_args property of an already constructed Scope instance
+
+        :return: tuple of str
+        """
+        return cls._default_chromium_args + cls._scope_chromium_args
+
+    def __init__(
+            self,
+            disable_gpu=True,
+            chromium_args=True,
+    ):
+        if chromium_args is True:
+            chromium_args = self.default_chromium_args()
+        elif chromium_args is False:
+            chromium_args = ()
+
+        # Handle backward compatibility for disable_gpu flag
+        if disable_gpu is False:
+            # If disable_gpu is set to False, then remove corresponding flag from extra_chromium_args
+            chromium_args = [arg for arg in chromium_args if arg != "--disable-gpu"]
+
+        self._chromium_args = tuple(chromium_args)
 
         # Internal Properties
         self._std_error = io.BytesIO()
@@ -46,12 +73,12 @@ class BaseScope(object):
     def _build_proc_args(self):
         """
         Build list of kaleido command-line arguments based on current values of
-        the properties specified by self._chromium_flags and self._scope_flags
+        the properties specified by self._scope_flags and self.chromium_args
 
         :return: list of flags
         """
         proc_args = [executable_path, self.scope_name]
-        for k in self._chromium_flags + self._scope_flags:
+        for k in self._scope_flags:
             v = getattr(self, k)
             if v is True:
                 flag = '--' + k.replace("_", "-")
@@ -62,6 +89,9 @@ class BaseScope(object):
                 # Flag with associated value
                 flag = '--' + k.replace("_", "-") + "=" + repr(str(v))
             proc_args.append(flag)
+
+        # Append self.chromium_args
+        proc_args.extend(self.chromium_args)
 
         return proc_args
 
@@ -181,11 +211,22 @@ class BaseScope(object):
     @property
     def disable_gpu(self):
         """ If True, asks chromium to disable GPU hardware acceleration with --disable-gpu flag"""
-        return self._disable_gpu
+        return "--disable-gpu" in self._extra_chromium_args
 
     @disable_gpu.setter
     def disable_gpu(self, val):
-        self._disable_gpu = val
+        new_args = [arg for arg in self._extra_chromium_args if arg != "--disable-gpu"]
+        if val:
+            new_args.append("--disable-gpu")
+        self._extra_chromium_args = tuple(new_args)
+
+    @property
+    def chromium_args(self):
+        return self._chromium_args
+
+    @chromium_args.setter
+    def chromium_args(self, val):
+        self._chromium_args = tuple(val)
         self._shutdown_kaleido()
 
     def _perform_transform(self, data, **kwargs):
