@@ -7,4 +7,4 @@ export XDG_DATA_HOME=$DIR/xdg
 unset LD_PRELOAD
 
 cd $DIR
-./bin/kaleido --no-sandbox --allow-file-access-from-files --disable-breakpad $@
+./bin/kaleido $@

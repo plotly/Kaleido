@@ -13,6 +13,7 @@ class PlotlyScope(BaseScope):
     _text_formats = ("svg", "json", "eps")
 
     _scope_flags = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
+    _scope_chromium_args = ("--no-sandbox",)
 
     def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, **kwargs):
         # TODO: validate args

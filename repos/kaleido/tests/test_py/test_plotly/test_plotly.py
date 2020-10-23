@@ -161,3 +161,28 @@ def test_figure_size():
     transform_mock.assert_called_once_with(
         fig.to_dict(), format="svg", scale=2, width=987, height=876
     )
+
+
+def test_gpu_arg():
+    # --disable-gpu is a default
+    assert "--disable-gpu" in PlotlyScope.default_chromium_args()
+
+    # Check that --disable-gpu is in scope instance chromium_args
+    scope = PlotlyScope()
+    assert "--disable-gpu" in scope.chromium_args
+    assert "--disable-gpu" in scope._build_proc_args()
+
+    # Check that --disable-gpu is in scope instance chromium_args
+    scope = PlotlyScope(disable_gpu=False)
+    assert "--disable-gpu" not in scope.chromium_args
+    assert "--disable-gpu" not in scope._build_proc_args()
+    scope.disable_gpu = True
+    assert "--disable-gpu" in scope.chromium_args
+    assert "--disable-gpu" in scope._build_proc_args()
+
+
+def test_custopm_chromium_arg():
+    # Check that --disable-gpu is in scope instance chromium_args
+    chromium_args = PlotlyScope.default_chromium_args() + ("--single-process",)
+    scope = PlotlyScope(chromium_args=chromium_args)
+    assert "--single-process" in scope._build_proc_args()
