@@ -19,6 +19,7 @@ cp /repos/kaleido/version /repos/build/kaleido_minimal/
 
 # license
 cp /repos/kaleido/LICENSE.txt /repos/build/kaleido_minimal/
+cp /repos/kaleido/README.md /repos/build/kaleido_minimal/
 cp /repos/CREDITS.html /repos/build/kaleido_minimal/
 
 # Copy javascript

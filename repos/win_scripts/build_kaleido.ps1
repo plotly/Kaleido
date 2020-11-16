@@ -13,6 +13,7 @@ python .\version\build_pep440_version.py
 # Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
 cp ..\README.md .\kaleido\
 cp ..\LICENSE.txt .\kaleido\
+cp .\CREDITS.html .\kaleido\
 
 # Add depot_tools to path
 $original_path = $env:path
@@ -66,6 +67,7 @@ cp ..\kaleido\version ..\build\kaleido\
 
 # license
 cp ..\kaleido\LICENSE.txt ..\build\kaleido\
+cp ..\kaleido\CREDITS.html ..\build\kaleido\
 
 # Copy icudtl.dat
 Copy-Item .\out\Kaleido_win_$arch\icudtl.dat -Destination ..\build\kaleido\bin
