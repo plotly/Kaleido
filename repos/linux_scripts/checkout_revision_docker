@@ -24,5 +24,10 @@ executable(\"kaleido\") {
 # Install sysroots
 /repos/src/build/linux/sysroot_scripts/install-sysroot.py --all
 
-# Build credits
-python /repos/src/tools/licenses.py credits > /repos/CREDITS.html
+# Note: line below will build the CREDITS.html file, but with  CHROMIUM_TAG="83.0.4103.61" this file was missing the
+# vulkan license info. So the file has not been manually updated by downloading the contents of the chrome://credits/
+# page, which does include vulkan
+#
+## Build credits
+# python /repos/src/tools/licenses.py credits > /repos/CREDITS.html
+#
