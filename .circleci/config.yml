@@ -109,7 +109,7 @@ jobs:
       
   linux_test_27:
     docker:
-      - image: continuumio/miniconda3
+      - image: continuumio/miniconda2
     steps:
       - attach_workspace:
           at: ./repos
