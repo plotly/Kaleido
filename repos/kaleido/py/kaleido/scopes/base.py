@@ -5,6 +5,7 @@ import io
 import os
 import sys
 import locale
+import platform
 
 try:
     from json import JSONDecodeError
@@ -74,6 +75,12 @@ class BaseScope(object):
             'executable',
             'kaleido'
         )
+
+        # Add .cmd extension on Windows. The which function below doesn't need this, but os.path.exists requires
+        # the file extension
+        if platform.system() == "Windows":
+            vendored_executable_path += ".cmd"
+
         if os.path.exists(vendored_executable_path):
             # The kaleido executable is vendored under kaleido/executable.
             # It was probably install as a PyPI wheel
