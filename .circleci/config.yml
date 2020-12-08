@@ -250,32 +250,32 @@ workflows:
       - windows_build_x86:
           requires:
             - windows_fetch
-  #build-mac:
-    #jobs:
-      #- mac_fetch
-      #- mac_build_blink:
-          #requires:
-            #- mac_fetch
-      #- mac_build:
-          #requires:
-            #- mac_build_blink
+  build-mac:
+    jobs:
+      - mac_fetch
+      - mac_build_blink:
+          requires:
+            - mac_fetch
+      - mac_build:
+          requires:
+            - mac_build_blink
 
-  #build-linux-x64:
-    #jobs:
-      #- linux_fetch
-      #- linux_build_x64:
-          #requires:
-            #- linux_fetch
-      #- linux_test_37:
-          #requires:
-            #- linux_build_x64
-      #- linux_test_27:
-          #requires:
-            #- linux_build_x64
+  build-linux-x64:
+    jobs:
+      - linux_fetch
+      - linux_build_x64:
+          requires:
+            - linux_fetch
+      - linux_test_37:
+          requires:
+            - linux_build_x64
+      - linux_test_27:
+          requires:
+            - linux_build_x64
 
-  #build-linux-arm64:
-    #jobs:
-      #- linux_fetch
-      #- linux_build_arm64:
-          #requires:
-            #- linux_fetch
+  build-linux-arm64:
+    jobs:
+      - linux_fetch
+      - linux_build_arm64:
+          requires:
+            - linux_fetch
