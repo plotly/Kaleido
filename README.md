@@ -38,7 +38,7 @@ See the plotly static image export documentation for more information: https://p
 
 The kaleido Python package provides a low-level Python API that is designed to be used by high-level plotting libraries like Plotly.  Here is an example of exporting a Plotly figure using the low-level Kaleido API:
 
-> Note: This particular example uses an online copy of the plotly JavaScript library from a CDN location, so it will not work without an internet connection.  When the plotly Python library uses Kaleido (as in the example above), is provides the path to its own local offline copy of plotly.js and so no internet connection is required.
+> Note: This particular example uses an online copy of the plotly JavaScript library from a CDN location, so it will not work without an internet connection.  When the plotly Python library uses Kaleido (as in the example above), it provides the path to its own local offline copy of plotly.js and so no internet connection is required.
 
 ```python
 from kaleido.scopes.plotly import PlotlyScope
