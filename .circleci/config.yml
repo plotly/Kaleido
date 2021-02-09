@@ -47,6 +47,16 @@ commands:
         type: string
     steps:
       - checkout
+      - run:
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
       - attach_workspace:
           at: ./repos
       - run:
@@ -67,6 +77,16 @@ commands:
         type: string
     steps:
       - checkout
+      - run:
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
       - attach_workspace:
           at: ./repos
       - run:
