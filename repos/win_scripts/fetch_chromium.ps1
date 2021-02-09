@@ -1,6 +1,6 @@
 # Commits
-$DEPOT_TOOLS_COMMIT="e67e41a"
-$CHROMIUM_TAG="83.0.4103.61"
+$DEPOT_TOOLS_COMMIT="e342fb1"
+$CHROMIUM_TAG="88.0.4324.150"
 
 # Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0

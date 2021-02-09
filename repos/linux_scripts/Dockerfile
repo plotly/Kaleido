@@ -11,7 +11,7 @@ FROM ubuntu:16.04
 
 # depot_tools commitlog: https://chromium.googlesource.com/chromium/tools/depot_tools/+log
 # depot_tools commit hash from 05/19/2020: e67e41a
-ENV DEPOT_TOOLS_COMMIT=e67e41a CHROMIUM_TAG="83.0.4103.61"
+ENV DEPOT_TOOLS_COMMIT=e342fb1 CHROMIUM_TAG="88.0.4324.150"
 
 ENV DEPOT_TOOLS_UPDATE=0
 
