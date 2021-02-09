@@ -40,6 +40,44 @@ commands:
       - store_artifacts:
           path: ./repos/kaleido/kaleido_artifacts_win_<<parameters.arch>>.zip
 
+  mac_build_blink:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./repos
+      - run:
+          command: ./repos/mac_scripts/build_blink <<parameters.arch>>
+          no_output_timeout: 30m
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+          
+  mac_build:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./repos
+      - run:
+          command: ./repos/mac_scripts/build_kaleido <<parameters.arch>>
+          no_output_timeout: 30m          
+      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
+      - store_artifacts:
+          path: ./repos/kaleido/kaleido_artifacts_mac.zip
+
+          
+          
 jobs:
   linux_fetch:
     machine: 
@@ -161,40 +199,48 @@ jobs:
             - .gclient_entries
             - kaleido/version
 
-  mac_build_blink:
+            
+  mac_build_blink_x64:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.1.0 # indicate our selected version of Xcode
     resource_class: large
+    environment:
+      KALEIDO_ARCH: "x64"
     steps:
-      - checkout
-      - attach_workspace:
-          at: ./repos
-      - run:
-          command: ./repos/mac_scripts/build_blink
-          no_output_timeout: 30m
-      - persist_to_workspace:
-          root: ./repos
-          paths:
-            - src
-            - depot_tools
-            - .gclient
-            - .gclient_entries
-          
-  mac_build:
-    macos:  # indicate that we are using the macOS executor
-      xcode: 11.1.0 # indicate our selected version of Xcode
-    resource_class: large
-    steps:
-      - checkout
-      - attach_workspace:
-          at: ./repos
-      - run:
-          command: ./repos/mac_scripts/build_kaleido
-          no_output_timeout: 30m          
-      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
-      - store_artifacts:
-          path: ./repos/kaleido/kaleido_artifacts_mac.zip
+      - mac_build_blink:
+          arch: "x64"
 
+  mac_build_blink_arm64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 12.2.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "arm64"
+    steps:
+      - mac_build_blink:
+          arch: "arm64"
+            
+            
+  mac_build_x64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 11.1.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "x64"
+    steps:
+      - mac_build:
+          arch: "x64"
+
+  mac_build_arm64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 12.2.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "arm64"
+    steps:
+      - mac_build:
+          arch: "arm64"
+            
           
   windows_fetch:
     executor:
@@ -250,16 +296,27 @@ workflows:
       - windows_build_x86:
           requires:
             - windows_fetch
-  build-mac:
+            
+  build-mac-x64:
     jobs:
       - mac_fetch
-      - mac_build_blink:
+      - mac_build_blink_x64:
           requires:
             - mac_fetch
-      - mac_build:
+      - mac_build_x64:
           requires:
-            - mac_build_blink
+            - mac_build_blink_x64
 
+  build-mac-arm64:
+    jobs:
+      - mac_fetch
+      - mac_build_blink_arm64:
+          requires:
+            - mac_fetch
+      - mac_build_arm64:
+          requires:
+            - mac_build_blink_arm64
+            
   build-linux-x64:
     jobs:
       - linux_fetch

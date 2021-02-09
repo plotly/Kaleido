@@ -239,7 +239,8 @@ class HashBundleArtifacts(Command):
             arch = os.environ["KALEIDO_ARCH"]
             suffix = "linux_" + arch
         elif system == "Darwin":
-            suffix = "mac"
+            arch = os.environ["KALEIDO_ARCH"]
+            suffix = "mac_" + arch
         else:
             raise ValueError("Unknown system {system}".format(system=system))
 
