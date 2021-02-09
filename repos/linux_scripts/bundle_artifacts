@@ -6,4 +6,4 @@ fi
 export KALEIDO_ARCH=$1
 
 # Perform build using docker
-docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.8 /repos/linux_scripts/bundle_artifacts_docker $KALEIDO_ARCH
+docker run -it -v `pwd`/repos/:/repos  jonmmease/chromium-builder:0.9 /repos/linux_scripts/bundle_artifacts_docker $KALEIDO_ARCH
