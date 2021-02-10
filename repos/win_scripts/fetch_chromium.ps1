@@ -2,8 +2,6 @@
 $DEPOT_TOOLS_COMMIT="e342fb1"
 $CHROMIUM_TAG="88.0.4324.150"
 
-# Tell gclient not to update depot_tools
-$env:DEPOT_TOOLS_UPDATE=0
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
