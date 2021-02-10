@@ -202,6 +202,10 @@ jobs:
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
       - run:
+          name: Display disk usage
+          command: |
+            du -h /Applications | sort -h
+      - run:
           name: Fetch detpot_tools and chromium source tree
           command: ./repos/mac_scripts/fetch_chromium
           no_output_timeout: 30m
