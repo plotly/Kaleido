@@ -33,4 +33,5 @@ gclient sync -D --force --reset
 gclient runhooks
 
 # Write out credits file
-python ./repos/src/tools/licenses.py credits > ./repos/CREDITS.html
+cd ..
+python ./src/tools/licenses.py credits > ./CREDITS.html
