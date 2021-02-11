@@ -69,6 +69,8 @@ commands:
             - depot_tools
             - .gclient
             - .gclient_entries
+            - kaleido/version
+            - CREDITS.html
           
   mac_build:
     parameters:
@@ -123,6 +125,11 @@ jobs:
           root: ./repos
           paths:
             - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+            - kaleido/version
+            - CREDITS.html
             
   linux_build_x64:
     machine: 
@@ -218,6 +225,7 @@ jobs:
             - .gclient
             - .gclient_entries
             - kaleido/version
+            - CREDITS.html
 
             
   mac_build_blink_x64:
@@ -279,6 +287,7 @@ jobs:
             - .gclient
             - .gclient_entries
             - kaleido/version
+            - CREDITS.html
 
   windows_build_x64:
     executor:
