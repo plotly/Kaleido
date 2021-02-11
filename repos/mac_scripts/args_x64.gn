@@ -14,4 +14,4 @@ symbol_level=0
 blink_symbol_level=0
 is_debug=false
 is_component_build=false
-is_official_build=true
+is_official_build=false

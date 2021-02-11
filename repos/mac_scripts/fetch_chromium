@@ -31,3 +31,7 @@ git reset --hard
 git checkout tags/$CHROMIUM_TAG
 gclient sync -D --force --reset
 gclient runhooks
+
+# Write out credits file
+cd ..
+python ./src/tools/licenses.py credits > ./CREDITS.html
