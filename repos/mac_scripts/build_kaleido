@@ -27,14 +27,14 @@ cp ./CREDITS.html ./kaleido/
 # Add depot_tools directory to PATH
 export PATH="$PATH:`pwd`/depot_tools"
 
+# Write out/Kaleido_mac_$KALEIDO_ARCH/args.gn
+cp ./mac_scripts/args_$KALEIDO_ARCH.gn ./src/out/Kaleido_mac_$KALEIDO_ARCH/args.gn
+
 # cd to repos/src
 cd src
 
 # Make output directory
 mkdir -p out/Kaleido_mac_$KALEIDO_ARCH
-
-# Write out/Kaleido_mac_$KALEIDO_ARCH/args.gn
-cp /repos/mac_scripts/args_$KALEIDO_ARCH.gn out/Kaleido_mac_$KALEIDO_ARCH/args.gn
 
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
