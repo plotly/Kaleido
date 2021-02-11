@@ -12,3 +12,6 @@ rm -f .gclient
 
 echo "fetch chromium"
 fetch --nohooks chromium
+
+## Write out credits
+python /repos/src/tools/licenses.py credits > /repos/CREDITS.html

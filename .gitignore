@@ -27,3 +27,4 @@ repos/kaleido/py/dist/
 *.egg-info/
 repos/kaleido/py/scratch/
 .idea/
+repos/CREDITS.html
