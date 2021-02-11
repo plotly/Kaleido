@@ -57,6 +57,18 @@ commands:
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+            sudo rm -rf /Applications/iTunes.app
+            sudo rm -rf /Applications/Preview.app
+            sudo rm -rf /Applications/Books.app
+            sudo rm -rf /Applications/Mail.app
+            sudo rm -rf /Applications/Utilities/Grapher.app
+            sudo rm -rf /Applications/Stickies.app
+            sudo rm -rf /Applications/Safari.app
+            sudo rm -rf /Applications/Photos.app
+            sudo rm -rf /Applications/QuickTime Player.app
+            sudo rm -rf /Applications/Contacts.app
+            sudo rm -rf /Applications/Calendar.app
+            sudo rm -rf /Applications/Messages.app
       - attach_workspace:
           at: ./repos
       - run:
@@ -87,6 +99,18 @@ commands:
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+            sudo rm -rf /Applications/iTunes.app
+            sudo rm -rf /Applications/Preview.app
+            sudo rm -rf /Applications/Books.app
+            sudo rm -rf /Applications/Mail.app
+            sudo rm -rf /Applications/Utilities/Grapher.app
+            sudo rm -rf /Applications/Stickies.app
+            sudo rm -rf /Applications/Safari.app
+            sudo rm -rf /Applications/Photos.app
+            sudo rm -rf /Applications/QuickTime Player.app
+            sudo rm -rf /Applications/Contacts.app
+            sudo rm -rf /Applications/Calendar.app
+            sudo rm -rf /Applications/Messages.app
       - attach_workspace:
           at: ./repos
       - run:
@@ -201,10 +225,18 @@ jobs:
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
             sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
-      - run:
-          name: Display disk usage
-          command: |
-            du -h /Applications | sort -h
+            sudo rm -rf /Applications/iTunes.app
+            sudo rm -rf /Applications/Preview.app
+            sudo rm -rf /Applications/Books.app
+            sudo rm -rf /Applications/Mail.app
+            sudo rm -rf /Applications/Utilities/Grapher.app
+            sudo rm -rf /Applications/Stickies.app
+            sudo rm -rf /Applications/Safari.app
+            sudo rm -rf /Applications/Photos.app
+            sudo rm -rf /Applications/QuickTime Player.app
+            sudo rm -rf /Applications/Contacts.app
+            sudo rm -rf /Applications/Calendar.app
+            sudo rm -rf /Applications/Messages.app
       - run:
           name: Fetch detpot_tools and chromium source tree
           command: ./repos/mac_scripts/fetch_chromium
