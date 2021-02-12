@@ -96,9 +96,8 @@ commands:
           no_output_timeout: 30m          
       - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
-          path: ./repos/kaleido/kaleido_artifacts_mac.zip
+          path: ./repos/kaleido/kaleido_artifacts_mac_<<parameters.arch>>.zip
 
-          
           
 jobs:
   linux_fetch:
@@ -230,7 +229,7 @@ jobs:
             
   mac_build_blink_x64:
     macos:  # indicate that we are using the macOS executor
-      xcode: 11.1.0 # indicate our selected version of Xcode
+      xcode: 12.2.0 # indicate our selected version of Xcode
     resource_class: large
     environment:
       KALEIDO_ARCH: "x64"
@@ -251,7 +250,7 @@ jobs:
             
   mac_build_x64:
     macos:  # indicate that we are using the macOS executor
-      xcode: 11.1.0 # indicate our selected version of Xcode
+      xcode: 12.2.0 # indicate our selected version of Xcode
     resource_class: large
     environment:
       KALEIDO_ARCH: "x64"
