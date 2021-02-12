@@ -1,6 +1,6 @@
 # Commits
-DEPOT_TOOLS_COMMIT=ac96016
-CHROMIUM_TAG="87.0.4280.141"
+$env:DEPOT_TOOLS_COMMIT=ac96016
+$env:CHROMIUM_TAG="87.0.4280.141"
 
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
