@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Commits
-DEPOT_TOOLS_COMMIT=e342fb1
-CHROMIUM_TAG="88.0.4324.150"
+DEPOT_TOOLS_COMMIT=ac96016
+CHROMIUM_TAG="87.0.4280.141"
 export DEPOT_TOOLS_UPDATE=0
 
 # full path to mac_scripts/ directory
