@@ -70,6 +70,10 @@ cp ./out/Kaleido_mac_$KALEIDO_ARCH/icudtl.dat ../build/kaleido/bin
 # Copy dynamic libraries
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/lib*.dylib ../build/kaleido/bin
 
+# Copy Resources libraries
+mkdir ../build/kaleido/bin/Resources/
+cp ./out/Kaleido_mac_$KALEIDO_ARCH/Resources/* ../build/kaleido/bin/Resources
+
 # launch script
 echo "#!/bin/bash
 DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
