@@ -68,6 +68,9 @@ cp out/Kaleido_mac_$KALEIDO_ARCH/kaleido ../build/kaleido/bin
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/icudtl.dat ../build/kaleido/bin
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/settings.dat ../build/kaleido/bin
 
+# Copy Resources directory
+cp -r ./out/Kaleido_mac_$KALEIDO_ARCH/Resources ../build/kaleido/
+
 # Copy dynamic libraries
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/libswiftshader*.dylib ../build/kaleido/bin
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/libGLES*.dylib ../build/kaleido/bin
