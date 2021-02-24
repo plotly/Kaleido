@@ -27,14 +27,14 @@ cp ./CREDITS.html ./kaleido/
 # Add depot_tools directory to PATH
 export PATH="$PATH:`pwd`/depot_tools"
 
+# Make output directory
+mkdir -p ./src/out/Kaleido_mac_$KALEIDO_ARCH/
+
 # Write out/Kaleido_mac_$KALEIDO_ARCH/args.gn
 cp ./mac_scripts/args_$KALEIDO_ARCH.gn ./src/out/Kaleido_mac_$KALEIDO_ARCH/args.gn
 
 # cd to repos/src
 cd src
-
-# Make output directory
-mkdir -p out/Kaleido_mac_$KALEIDO_ARCH
 
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
@@ -66,10 +66,6 @@ cp out/Kaleido_mac_$KALEIDO_ARCH/kaleido ../build/kaleido/bin
 
 # Copy icudtl.dat and settings.dat
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/icudtl.dat ../build/kaleido/bin
-cp ./out/Kaleido_mac_$KALEIDO_ARCH/settings.dat ../build/kaleido/bin
-
-# Copy Resources directory
-cp -r ./out/Kaleido_mac_$KALEIDO_ARCH/Resources ../build/kaleido/
 
 # Copy dynamic libraries
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/libswiftshader*.dylib ../build/kaleido/bin
