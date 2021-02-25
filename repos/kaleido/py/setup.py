@@ -201,7 +201,7 @@ class PackageWheel(Command):
             if arch == "x64":
                 cmd_obj.plat_name = "macosx-10.11-x86_64"
             elif arch == "arm64":
-                cmd_obj.plat_name = "macosx-11-arm64"
+                cmd_obj.plat_name = "macosx-11.0-arm64"
 
         cmd_obj.python_tag = 'py2.py3'
         self.run_command("bdist_wheel")
