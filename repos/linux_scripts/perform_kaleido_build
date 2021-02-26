@@ -81,7 +81,8 @@ cp /repos/linux_scripts/launch_script /repos/build/kaleido/kaleido
 cp /repos/linux_scripts/minimal_launch_script /repos/build/kaleido_minimal/kaleido
 
 # Build python wheel
-python3 -m pip install -U setuptools
+python3 -m pip install setuptools==50
+
 cd /repos/kaleido/py/
 rm -rf ./dist
 python3 setup.py package

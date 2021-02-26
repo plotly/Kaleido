@@ -1,9 +1,7 @@
 # Commits
-$DEPOT_TOOLS_COMMIT="e67e41a"
-$CHROMIUM_TAG="83.0.4103.61"
+$env:DEPOT_TOOLS_COMMIT="e342fb1"
+$env:CHROMIUM_TAG="88.0.4324.150"
 
-# Tell gclient not to update depot_tools
-$env:DEPOT_TOOLS_UPDATE=0
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
@@ -37,6 +35,9 @@ gclient runhooks
 
 # 2) Append kaleido section to headless build file (src\headless\BUILD.gn)
 cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
+
+## Write out credits
+python ..\src\tools\licenses.py credits > ..\CREDITS.html
 
 # Delete .git directory to save some space
 # TODO: also delete third-part .git directories

@@ -1,3 +1,4 @@
+repos/CREDITS.html
 repos/src
 repos/depot_tools
 *.DS_Store
@@ -27,3 +28,4 @@ repos/kaleido/py/dist/
 *.egg-info/
 repos/kaleido/py/scratch/
 .idea/
+repos/CREDITS.html

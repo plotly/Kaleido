@@ -1,5 +1,5 @@
 #!/bin/bash
-CHROMIUM_TAG="83.0.4103.61"
+CHROMIUM_TAG="88.0.4324.150"
 
 # Replace any prior .gclient file
 cp ./linux_scripts/gclient .gclient

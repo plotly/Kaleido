@@ -1,5 +1,5 @@
 #!/bin/bash
-# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.5 /repos/fetch_chromium_docker
+# docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.9 /repos/fetch_chromium_docker
 
 # Update depot tools for fetch
 cd /depot_tools/
@@ -12,3 +12,6 @@ rm -f .gclient
 
 echo "fetch chromium"
 fetch --nohooks chromium
+
+## Write out credits
+python /repos/src/tools/licenses.py credits > /repos/CREDITS.html

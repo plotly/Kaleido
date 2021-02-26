@@ -195,10 +195,13 @@ class PackageWheel(Command):
             elif arch == "arm":
                 cmd_obj.plat_name = "manylinux2014-armv7l"
 
-        # Set macos platform to 10.10 to match chromium build target (See build/config/mac/mac_sdk.gni)
-        # rather than Python environment
+        # Set macos platform to 10.11 rather than Python environment
         elif cmd_obj.plat_name.startswith("macosx"):
-            cmd_obj.plat_name = "macosx-10.10-x86_64"
+            arch = os.environ.get("KALEIDO_ARCH", "x64")
+            if arch == "x64":
+                cmd_obj.plat_name = "macosx-10.11-x86_64"
+            elif arch == "arm64":
+                cmd_obj.plat_name = "macosx-11.0-arm64"
 
         cmd_obj.python_tag = 'py2.py3'
         self.run_command("bdist_wheel")
@@ -239,7 +242,8 @@ class HashBundleArtifacts(Command):
             arch = os.environ["KALEIDO_ARCH"]
             suffix = "linux_" + arch
         elif system == "Darwin":
-            suffix = "mac"
+            arch = os.environ["KALEIDO_ARCH"]
+            suffix = "mac_" + arch
         else:
             raise ValueError("Unknown system {system}".format(system=system))
 
