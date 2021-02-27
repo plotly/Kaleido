@@ -18,11 +18,17 @@ class BaseScope(object):
     # flags to configure scope
     _scope_flags = ()
 
+    # Specify default chromium arguments
     _default_chromium_args = (
         "--disable-gpu",
         "--allow-file-access-from-files",
         "--disable-breakpad",
         "--disable-dev-shm-usage",
+    ) + (
+        # Add "--single-process" when running on AWS Lambda. Flag is described
+        # as for debugging only by the chromium project, but it's the only way to get
+        # chromium headless working on Lambda
+        ("--single-process",) if os.environ.get("LAMBDA_RUNTIME_DIR", None) else ()
     )
 
     _scope_chromium_args = ()
