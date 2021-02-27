@@ -115,9 +115,19 @@ class PlotlyScope(BaseScope):
         # Get figure layout
         layout = figure.get("layout", {})
 
-        # Compute default width / height
-        width = width or layout.get("width", None) or self.default_width
-        height = height or layout.get("height", None) or self.default_height
+        # Compute image width / height
+        width = (
+                width
+                or layout.get("width", None)
+                or layout.get("template", {}).get("layout", {}).get("width", None)
+                or self.default_width
+        )
+        height = (
+                height
+                or layout.get("height", None)
+                or layout.get("template", {}).get("layout", {}).get("height", None)
+                or self.default_height
+        )
 
         # Normalize format
         original_format = format
