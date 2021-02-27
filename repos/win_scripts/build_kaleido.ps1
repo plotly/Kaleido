@@ -74,7 +74,7 @@ if (-Not (Test-Path ..\build\kaleido\etc)) {
     New-Item -Path ..\build\kaleido\etc -ItemType "directory"
 }
 Expand-Archive -LiteralPath '..\vendor\Mathjax-2.7.5.zip' -DestinationPath ..\build\kaleido\etc\
-Rename-Item ..\build\kaleido\etc\Mathjax-2.7.5 ..\build\kaleido\etc\mathjax
+Rename-Item -Path ..\build\kaleido\etc\Mathjax-2.7.5 -NewName mathjax
 
 # Copy icudtl.dat
 Copy-Item .\out\Kaleido_win_$arch\icudtl.dat -Destination ..\build\kaleido\bin
