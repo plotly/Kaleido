@@ -34,9 +34,6 @@ module.exports = {
 
   mathJaxConfigQuery: '?config=TeX-AMS-MML_SVG',
 
-  // config option passed in render step
-  plotGlPixelRatio: 2.5,
-
   // time [in ms] after which printToPDF errors when image isn't loaded
   pdfPageLoadImgTimeout: 20000
 }
