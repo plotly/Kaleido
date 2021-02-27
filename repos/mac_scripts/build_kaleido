@@ -64,6 +64,11 @@ rm -r ../build/kaleido/*
 mkdir -p ../build/kaleido/bin
 cp out/Kaleido_mac_$KALEIDO_ARCH/kaleido ../build/kaleido/bin
 
+# mathjax
+mkdir -p ../build/kaleido/etc
+unzip ../vendor/Mathjax-2.7.5.zip -d ../build/kaleido/etc/
+mv ../build/kaleido/etc/Mathjax-2.7.5 ../build/kaleido/etc/mathjax
+
 # Copy icudtl.dat and settings.dat
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/icudtl.dat ../build/kaleido/bin
 

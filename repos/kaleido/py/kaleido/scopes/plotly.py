@@ -1,8 +1,10 @@
 from __future__ import absolute_import
-from kaleido.scopes.base import BaseScope
+from kaleido.scopes.base import BaseScope, which
 from _plotly_utils.utils import PlotlyJSONEncoder
 import base64
-
+import os
+from pathlib import Path
+import subprocess
 
 class PlotlyScope(BaseScope):
     """
@@ -19,9 +21,14 @@ class PlotlyScope(BaseScope):
         # TODO: validate args
         # Save scope flags as internal properties
         self._plotlyjs = plotlyjs
-        self._mathjax = mathjax
         self._topojson = topojson
         self._mapbox_access_token = mapbox_access_token
+
+        # Try to find local MathJax, but never fail if something goes wrong
+        try:
+            self._initialize_mathax(mathjax)
+        except:
+            self._mathjax = None
 
         # to_image-level default values
         self.default_format = "png"
@@ -30,6 +37,37 @@ class PlotlyScope(BaseScope):
         self.default_scale = 1
 
         super(PlotlyScope, self).__init__(**kwargs)
+
+    def _initialize_mathax(self, mathjax=None):
+        if mathjax is not None:
+            self._mathjax = mathjax
+            return
+
+        vendored_mathjax_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'executable',
+            'etc',
+            'mathjax',
+            'MathJax.js'
+        )
+        mathjax_path = None
+        if os.path.exists(vendored_mathjax_path):
+            # MathJax is vendored under kaleido/executable.
+            # It was probably install as a PyPI wheel
+            mathjax_path = vendored_mathjax_path
+        else:
+            mathjax_path_executable = which("mathjax-path")
+            if mathjax_path_executable:
+                # A script named "mathjax-path" found on the PATH,
+                # MathJax was probably installed as a conda package
+                path_bytes = subprocess.check_output(mathjax_path_executable)
+                mathjax_path = path_bytes.decode("utf8").strip()
+
+        if mathjax_path:
+            mathjax_uri = Path(mathjax_path).absolute().as_uri()
+            self._mathjax = mathjax_uri
+        else:
+            self._mathjax = None
 
     @property
     def scope_name(self):
