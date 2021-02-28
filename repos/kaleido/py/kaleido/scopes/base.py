@@ -14,18 +14,21 @@ except ImportError:
 
 
 class BaseScope(object):
-    # Subclasses may override to specify a custom JSON encoder for input data
-    _json_encoder = None
-
     # Tuple of class properties that will be passed as command-line
     # flags to configure scope
     _scope_flags = ()
 
+    # Specify default chromium arguments
     _default_chromium_args = (
         "--disable-gpu",
         "--allow-file-access-from-files",
         "--disable-breakpad",
         "--disable-dev-shm-usage",
+    ) + (
+        # Add "--single-process" when running on AWS Lambda. Flag is described
+        # as for debugging only by the chromium project, but it's the only way to get
+        # chromium headless working on Lambda
+        ("--single-process",) if os.environ.get("LAMBDA_RUNTIME_DIR", None) else ()
     )
 
     _scope_chromium_args = ()
@@ -274,6 +277,9 @@ Searched for executable 'kaleido' on the following system PATH:
         self._chromium_args = tuple(val)
         self._shutdown_kaleido()
 
+    def _json_dumps(self, val):
+        return json.dumps(val)
+
     def _perform_transform(self, data, **kwargs):
         """
         Transform input data using the current scope, returning dict response with error code
@@ -287,9 +293,7 @@ Searched for executable 'kaleido' on the following system PATH:
         self._ensure_kaleido()
 
         # Perform export
-        export_spec = json.dumps(
-            dict(kwargs, data=data),
-            cls=self._json_encoder).encode('utf-8')
+        export_spec = self._json_dumps(dict(kwargs, data=data)).encode('utf-8')
 
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request

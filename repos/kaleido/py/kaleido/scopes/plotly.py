@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from kaleido.scopes.base import BaseScope, which
-from _plotly_utils.utils import PlotlyJSONEncoder
+import plotly.io as pio
 import base64
 import os
 from pathlib import Path
@@ -10,7 +10,6 @@ class PlotlyScope(BaseScope):
     """
     Scope for transforming Plotly figures to static images
     """
-    _json_encoder = PlotlyJSONEncoder
     _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
     _text_formats = ("svg", "json", "eps")
 
@@ -73,6 +72,9 @@ class PlotlyScope(BaseScope):
     def scope_name(self):
         return "plotly"
 
+    def _json_dumps(self, val):
+        return pio.to_json(val, validate=False, remove_uids=False)
+
     def transform(self, figure, format=None, width=None, height=None, scale=None):
         """
         Convert a Plotly figure into a static image
@@ -115,9 +117,19 @@ class PlotlyScope(BaseScope):
         # Get figure layout
         layout = figure.get("layout", {})
 
-        # Compute default width / height
-        width = width or layout.get("width", None) or self.default_width
-        height = height or layout.get("height", None) or self.default_height
+        # Compute image width / height
+        width = (
+                width
+                or layout.get("width", None)
+                or layout.get("template", {}).get("layout", {}).get("width", None)
+                or self.default_width
+        )
+        height = (
+                height
+                or layout.get("height", None)
+                or layout.get("template", {}).get("layout", {}).get("height", None)
+                or self.default_height
+        )
 
         # Normalize format
         original_format = format

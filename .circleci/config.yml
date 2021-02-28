@@ -280,7 +280,9 @@ jobs:
     steps:
       - checkout
       - run: echo $Host.Version
-      - run: .\repos\win_scripts\fetch_chromium.ps1
+      - run:
+            command: .\repos\win_scripts\fetch_chromium.ps1
+            no_output_timeout: 30m
       - persist_to_workspace:
           root: ./repos
           paths:

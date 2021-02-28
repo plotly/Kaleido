@@ -38,14 +38,14 @@ function render (info, mapboxAccessToken, topojsonURL) {
 
   // Use parsed export request
   info = parsed.result;
-  const figure = info.figure
-  const format = info.format
-  const encoded = info.encoded
+  const figure = info.figure;
+  const format = info.format;
+  const encoded = info.encoded;
 
   // Build default config, and let figure.config override it
   const defaultConfig = {
     mapboxAccessToken: opts.mapboxAccessToken || null,
-    plotGlPixelRatio: opts.plotGlPixelRatio || cst.plotGlPixelRatio
+    plotGlPixelRatio: info.scale * 2
   }
   if (opts.topojsonURL) {
     defaultConfig.topojsonURL = opts.topojsonURL
