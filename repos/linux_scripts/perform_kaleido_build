@@ -5,6 +5,11 @@ cp -r /repos/kaleido/cc/* headless/app/
 # Perform build, result will be out/Kaleido_linux_$KALEIDO_ARCH/kaleido
 ninja -C out/Kaleido_linux_$KALEIDO_ARCH -j 16 kaleido
 
+if [ ! -f "out/Kaleido_linux_$KALEIDO_ARCH/kaleido" ]
+then
+  echo "Error: Kaleido executable was not built";
+  exit 1
+fi
 
 ## First build up kaledo_minimal directory with core kaleido files
 mkdir -p /repos/build/kaleido_minimal/

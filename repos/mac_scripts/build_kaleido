@@ -58,6 +58,12 @@ cp -r ../kaleido/cc/* headless/app/
 gn gen out/Kaleido_mac_$KALEIDO_ARCH
 ninja -C out/Kaleido_mac_$KALEIDO_ARCH -j 8 kaleido
 
+if [ ! -f "out/Kaleido_mac_$KALEIDO_ARCH/kaleido" ]
+then
+  echo "Error: Kaleido executable was not built";
+  exit 1
+fi
+
 # 5) Copy build files
 mkdir -p ../build/kaleido/
 rm -r ../build/kaleido/*
