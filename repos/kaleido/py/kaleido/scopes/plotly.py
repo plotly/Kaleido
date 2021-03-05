@@ -1,6 +1,5 @@
 from __future__ import absolute_import
 from kaleido.scopes.base import BaseScope, which
-import plotly.io as pio
 import base64
 import os
 from pathlib import Path
@@ -73,6 +72,7 @@ class PlotlyScope(BaseScope):
         return "plotly"
 
     def _json_dumps(self, val):
+        import plotly.io as pio
         return pio.to_json(val, validate=False, remove_uids=False)
 
     def transform(self, figure, format=None, width=None, height=None, scale=None):
