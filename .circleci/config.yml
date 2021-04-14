@@ -326,59 +326,59 @@ jobs:
           arch: "x86"
 
 workflows:
-  #build-windows-x64:
-    #jobs:
-      #- windows_fetch
-      #- windows_build_x64:
-          #requires:
-            #- windows_fetch
+  build-windows-x64:
+    jobs:
+      - windows_fetch
+      - windows_build_x64:
+          requires:
+            - windows_fetch
 
-  #build-windows-x86:
-    #jobs:
-      #- windows_fetch
-      #- windows_build_x86:
-          #requires:
-            #- windows_fetch
+  build-windows-x86:
+    jobs:
+      - windows_fetch
+      - windows_build_x86:
+          requires:
+            - windows_fetch
             
-  #build-mac-x64:
-    #jobs:
-      #- mac_fetch
-      #- mac_build_blink_x64:
-          #requires:
-            #- mac_fetch
-      #- mac_build_x64:
-          #requires:
-            #- mac_build_blink_x64
+  build-mac-x64:
+    jobs:
+      - mac_fetch
+      - mac_build_blink_x64:
+          requires:
+            - mac_fetch
+      - mac_build_x64:
+          requires:
+            - mac_build_blink_x64
 
-  #build-mac-arm64:
-    #jobs:
-      #- mac_fetch
-      #- mac_build_blink_arm64:
-          #requires:
-            #- mac_fetch
-      #- mac_build_arm64:
-          #requires:
-            #- mac_build_blink_arm64
+  build-mac-arm64:
+    jobs:
+      - mac_fetch
+      - mac_build_blink_arm64:
+          requires:
+            - mac_fetch
+      - mac_build_arm64:
+          requires:
+            - mac_build_blink_arm64
             
-  #build-linux-x64:
-    #jobs:
-      #- linux_fetch
-      #- linux_build_x64:
-          #requires:
-            #- linux_fetch
-      #- linux_test_37:
-          #requires:
-            #- linux_build_x64
-      #- linux_test_27:
-          #requires:
-            #- linux_build_x64
+  build-linux-x64:
+    jobs:
+      - linux_fetch
+      - linux_build_x64:
+          requires:
+            - linux_fetch
+      - linux_test_37:
+          requires:
+            - linux_build_x64
+      - linux_test_27:
+          requires:
+            - linux_build_x64
 
-  #build-linux-arm64:
-    #jobs:
-      #- linux_fetch
-      #- linux_build_arm64:
-          #requires:
-            #- linux_fetch
+  build-linux-arm64:
+    jobs:
+      - linux_fetch
+      - linux_build_arm64:
+          requires:
+            - linux_fetch
 
   build-linux-arm:
     jobs:
