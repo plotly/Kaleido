@@ -274,8 +274,10 @@ Searched for executable 'kaleido' on the following system PATH:
 
     @chromium_args.setter
     def chromium_args(self, val):
-        self._chromium_args = tuple(val)
-        self._shutdown_kaleido()
+        val = tuple(val)
+        if self._chromium_args != tuple(val):
+            self._chromium_args = tuple(val)
+            self._shutdown_kaleido()
 
     def _json_dumps(self, val):
         return json.dumps(val)
