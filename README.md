@@ -103,7 +103,7 @@ Kaleido can be used in just about any online notebook service that permits the u
 There were occasionally situations where strict security policies and/or firewall services would block Orca’s ability to bind to a local port. Kaleido does not have this limitation since it does not use ports for communication.
 
 # Disadvantages
-While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB of disk space and several hours.  On Linux this work can be done once and distributed as a large docker container, but we don't have a similar shortcut for Windows and MacOS.
+While this approach has many advantages, the main disadvantage is that building Chromium is not for the faint of heart.  Even on powerful workstations, downloading and building the Chromium code base takes 50+ GB of disk space and several hours.
 
 # Scope (Plugin) architecture
 While motivated by the needs of plotly.py, we made the decision early on to design Kaleido to make it fairly straightforward to add support for additional libraries.  Plugins in Kaleido are called "scopes". For more information, see https://github.com/plotly/Kaleido/wiki/Scope-(Plugin)-Architecture.
