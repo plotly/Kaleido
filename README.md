@@ -120,8 +120,6 @@ $ cd Kaleido
 ```
 
 ## Linux
-There are two approaches to building Kaleido on Linux, both of which rely on Docker.
-
 The Linux build relies on the `jonmmease/chromium-builder` docker image, and the scripts in `repos/linux_scripts`, to download the chromium source to a local folder and then build it.
 Download docker image
 ```
@@ -190,14 +188,6 @@ Build container with:
 ```
 $ docker build -t jonmmease/chromium-builder:0.9 -f repos/linux_scripts/Dockerfile .
 ```
-
-## kaleido-builder
-This container contains a pre-compiled version of chromium source tree. Takes several hours to build!
-
-```
-$ docker build -t jonmmease/kaleido-builder:0.9 -f repos/linux_full_scripts/Dockerfile .
-```
-
 
 # Updating chromium version
 To update the version of Chromium in the future, the docker images will need to be updated. Follow the instructions for the `DEPOT_TOOLS_COMMIT` and `CHROMIUM_TAG` environment variables in `linux_scripts/Dockerfile`.
