@@ -305,7 +305,11 @@ Searched for executable 'kaleido' on the following system PATH:
             self._proc.stdin.write(export_spec)
             self._proc.stdin.write("\n".encode('utf-8'))
             self._proc.stdin.flush()
-            response = self._proc.stdout.readline()
+            try:
+                response = self._proc.stdout.readline()
+            except BaseException:  # allows to catch KeyboardInterrupt = CTRL+C
+                print("Error stream:\n", self._get_decoded_std_error())
+                raise
 
         response_string = response.decode('utf-8')
         if not response_string:
