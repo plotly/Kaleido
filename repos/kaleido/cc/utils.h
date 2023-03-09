@@ -19,7 +19,7 @@ namespace kaleido {
             std::string error = base::StringPrintf(
                     "{\"code\": %d, \"message\": \"%s\", \"result\": null, \"version\": \"%s\"}\n",
                     code, message.c_str(), version.c_str());
-            std::cout << error;
+            std::cout << error << std::flush;
         }
     }
 }
