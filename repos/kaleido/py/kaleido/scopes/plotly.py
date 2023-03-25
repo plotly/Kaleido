@@ -183,8 +183,9 @@ class PlotlyScope(BaseScope):
 
     @plotlyjs.setter
     def plotlyjs(self, val):
-        self._plotlyjs = val
-        self._shutdown_kaleido()
+        if self._plotlyjs != val:
+            self._plotlyjs = val
+            self._shutdown_kaleido()
 
     @property
     def mathjax(self):
@@ -196,8 +197,9 @@ class PlotlyScope(BaseScope):
 
     @mathjax.setter
     def mathjax(self, val):
-        self._mathjax = val
-        self._shutdown_kaleido()
+        if self._mathjax != val:
+            self._mathjax = val
+            self._shutdown_kaleido()
 
     @property
     def topojson(self):
@@ -209,8 +211,9 @@ class PlotlyScope(BaseScope):
 
     @topojson.setter
     def topojson(self, val):
-        self._topojson = val
-        self._shutdown_kaleido()
+        if self._topojson != val:
+            self._topojson = val
+            self._shutdown_kaleido()
 
     @property
     def mapbox_access_token(self):
@@ -223,5 +226,6 @@ class PlotlyScope(BaseScope):
 
     @mapbox_access_token.setter
     def mapbox_access_token(self, val):
-        self._mapbox_access_token = val
-        self._shutdown_kaleido()
+        if self._mapbox_access_token != val:
+            self._mapbox_access_token = val
+            self._shutdown_kaleido()
