@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # docker run -it -v /media/jmmease/SSD1/chromium_build/repos/:/repos  jonmmease/chromium-builder:0.9 /repos/build_headless
 if [ $# -eq 0 ]; then
     echo "No architecture provided"

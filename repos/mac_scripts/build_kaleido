@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ $# -eq 0 ]; then
     echo "No architecture provided"
@@ -84,7 +84,7 @@ cp ./out/Kaleido_mac_$KALEIDO_ARCH/libGLES*.dylib ../build/kaleido/bin
 cp ./out/Kaleido_mac_$KALEIDO_ARCH/libEGL*.dylib ../build/kaleido/bin
 
 # launch script
-echo "#!/bin/bash
+echo "#!/usr/bin/env bash
 DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
 
 cd \$DIR
