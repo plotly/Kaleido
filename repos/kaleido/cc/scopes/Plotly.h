@@ -69,6 +69,7 @@ namespace kaleido {
 
                 GURL mathjaxUrl(mathjaxArg);
                 if (mathjaxUrl.is_valid()) {
+                    loadMathjax = true;
                     std::stringstream mathjaxStringStream;
                     mathjaxStringStream << mathjaxArg << "?config=TeX-AMS-MML_SVG";
                     scriptTags.push_back(mathjaxStringStream.str());

@@ -82,6 +82,7 @@ cp -r /usr/share/fonts/ /repos/build/kaleido/xdg/
 # mathjax
 unzip /repos/vendor/Mathjax-2.7.5.zip -d /repos/build/kaleido/etc/
 mv /repos/build/kaleido/etc/Mathjax-2.7.5 /repos/build/kaleido/etc/mathjax
+cp /repos/kaleido/mathjax_config.cfg /repos/build/kaleido/
 
 # Add full launch script
 cp /repos/linux_scripts/launch_script /repos/build/kaleido/kaleido
