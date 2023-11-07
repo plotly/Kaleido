@@ -553,6 +553,16 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
     std::stringstream htmlStringStream;
     htmlStringStream << "<html><head><meta charset=\"UTF-8\"><style id=\"head-style\"></style>";
 
+    // Configure Mathjax if enabled.
+    if (scope->loadMathjax) {
+        std::ifstream mathjaxConfig("./mathjax_config.cfg");
+        if (mathjaxConfig.is_open()) {
+            htmlStringStream << "<script type=\"text/x-mathjax-config\">MathJax.Hub.Config("
+            << mathjaxConfig.rdbuf() << ");</script>";
+            mathjaxConfig.close();
+        }
+    }
+
     // Add script tags
     while (!scriptTags.empty()) {
         std::string tagValue = scriptTags.front();

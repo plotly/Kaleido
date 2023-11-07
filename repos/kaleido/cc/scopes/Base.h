@@ -30,6 +30,7 @@ namespace kaleido {
                 std::string errorMessage;
 
             public:
+                bool loadMathjax = false;
                 std::list<std::string> scriptTags;
                 std::list<std::string> localScriptFiles;
                 const BaseScope *plugin;
