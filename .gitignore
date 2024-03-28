@@ -30,3 +30,5 @@ repos/kaleido/py/scratch/
 .idea/
 repos/CREDITS.html
 venv/*
+repos/old_src_third_party*/*
+repos/.gclient_previous_sync_commits
