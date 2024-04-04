@@ -45,7 +45,9 @@ function render (info) {
 
   let promise
 
-  promise = mermaid.render("graph", info.data)
+  // TODO create different rendering call for v<10 and v>=10 of mermaidjs ?
+
+  promise = mermaid.render("graph", info.markdown)
 
   let exportPromise = promise.then((imgData) => {
     result = imgData.svg
