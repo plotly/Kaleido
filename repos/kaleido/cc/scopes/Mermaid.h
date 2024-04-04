@@ -59,7 +59,7 @@ namespace kaleido {
             }
 
             // Initialize mermaid object
-            scriptTags.emplace_back("mermaid.initialize( { startOnLoad: false, securityLevel: 'loose'} ); window.mermaid = mermaid;")
+            scriptTags.emplace_back("mermaid.initialize( { startOnLoad: false, securityLevel: 'loose'} ); window.mermaid = mermaid;");
 
         }
 

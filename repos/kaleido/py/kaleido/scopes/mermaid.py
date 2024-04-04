@@ -9,10 +9,10 @@ class MermaidScope(BaseScope):
     _all_formats = ("svg")
     _text_formats = ("svg")
 
-    _scope_flags = ("mermaidjs")
+    _scope_flags = ("mermaidjs",)
     _scope_chromium_args = ("--no-sandbox",)
 
-    def __init__(self, mermaidjs, **kwargs):
+    def __init__(self, mermaidjs=None, **kwargs):
         
         self._mermaidjs = mermaidjs
 
@@ -28,7 +28,7 @@ class MermaidScope(BaseScope):
         return "mermaid"
 
     
-    def transform(self, markdown, format, width=None, height=None, scale=None):
+    def transform(self, markdown, format=None, width=None, height=None, scale=None):
         """
         Convert a Mermaid markdown into a static image
 
