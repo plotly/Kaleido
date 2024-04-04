@@ -560,6 +560,8 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         if (tagUrl.is_valid()) {
             // Value is a url, use a src of script tag
             htmlStringStream << "<script type=\"text/javascript\" src=\"" << tagValue << "\"></script>";
+        } else if  (tagValue.find("import") != std::string::npos && tagValue.find("+esm") != std::string::npos) {
+            htmlStringStream << "<script type=\"module\">" << tagValue << "</script>\n";
         } else {
             // Value is not a url, use a inline JavaScript code
             htmlStringStream << "<script>" << tagValue << "</script>\n";
