@@ -1,11 +1,25 @@
 /* global Mermaid:false */
 
 const semver = require('semver')
+const hasOwn = require('object.hasown')
+
+if (!Object.hasOwn) {
+	hasOwn.shim();
+}
 
 /**
-
+ * @param {object} info : info object
+ *  - data
+ *  - format
+ *  - width
+ *  - height
+ *  - scale
  */
-function render () {
+function render (info) {
+
+  // Rename info.data to info.markdown
+  info.markdown = info.data
+  delete info.data;
   
   let errorCode = 0
   let result = null
@@ -18,22 +32,23 @@ function render () {
     }
 
     return {
-    // TODO this is hardcoded 
       code: errorCode,
       message: errorMsg,
       pdfBgColor,
-      format: "svg",
+      format: info.format,
       result,
-      width: 200,
-      height: 200,
-      scale: 1,
+      width: info.width,
+      height: info.height,
+      scale: info.scale,
     }
   }
 
-  let promise = Promise.resolve("TO DO");
+  let promise
+
+  promise = mermaid.render("graph", info.data)
 
   let exportPromise = promise.then((imgData) => {
-    result = imgData
+    result = imgData.svg
     return done()
   })
 

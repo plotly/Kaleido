@@ -1,4 +1,4 @@
-from kaleido.scopes.base import BaseScope, which
+from kaleido.scopes.base import BaseScope
 import base64
 
 
