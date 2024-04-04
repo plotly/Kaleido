@@ -34,7 +34,34 @@ namespace kaleido {
 
         };
 
-        MermaidScope::MermaidScope()  {}
+        MermaidScope::MermaidScope()  {
+
+            // Process mermaidjs
+            if (HasCommandLineSwitch("mermaidjs")) {
+                std::string mermaidjsArg = GetCommandLineSwitch("mermaidjs");
+
+                // Check if value is a URL
+                GURL mermaidjsUrl(mermaidjsArg);
+                if (mermaidjsUrl.is_valid() || (mermaidjsArg.find("import") != std::string::npos && mermaidjsArg.find("+esm") != std::string::npos)) {
+                    scriptTags.push_back(mermaidjsArg);
+                } else {
+                    // Check if this is a local file path
+                    if (std::ifstream(mermaidjsArg)) {
+                        localScriptFiles.emplace_back(mermaidjsArg);
+                    } else {
+                        errorMessage = base::StringPrintf("--mermaidjs argument is not a valid URL or file path: %s",
+                                                          mermaidjsArg.c_str());
+                        return;
+                    }
+                }
+            } else {
+                scriptTags.emplace_back("import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/+esm';");
+            }
+
+            // Initialize mermaid object
+            scriptTags.emplace_back("mermaid.initialize( { startOnLoad: false, securityLevel: 'loose'} ); window.mermaid = mermaid;")
+
+        }
 
         MermaidScope::~MermaidScope() {}
 
