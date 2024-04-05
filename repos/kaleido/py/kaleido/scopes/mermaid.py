@@ -16,7 +16,7 @@ class MermaidScope(BaseScope):
         
         self._mermaidjs = mermaidjs
 
-        self.default_format = "png"
+        self.default_format = "svg"
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
@@ -32,7 +32,7 @@ class MermaidScope(BaseScope):
         """
         Convert a Mermaid markdown into a static image
 
-        :param markdown: Plotly figure or figure dictionary
+        :param markdown: Mermaid graph definition in markdown
         :param format: The desired image format. For now, just 'svg' is supported.
            
         :param width: The width of the exported image in layout pixels.
@@ -53,11 +53,13 @@ class MermaidScope(BaseScope):
             If not specified, will default to the `scope.default_scale` property
         :return: image bytes
         """
+       
+
         format = format.lower() if format is not None else self.default_format
         width = width if width is not None else self.default_width
         height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
-
+ 
         if format not in self._all_formats:
             supported_formats_str = repr(list(self._all_formats))
             raise ValueError(

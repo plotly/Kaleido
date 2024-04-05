@@ -16,10 +16,6 @@ if (!Object.hasOwn) {
  *  - scale
  */
 function render (info) {
-
-  // Rename info.data to info.markdown
-  info.markdown = info.data
-  delete info.data;
   
   let errorCode = 0
   let result = null
@@ -47,7 +43,7 @@ function render (info) {
 
   // TODO create different rendering call for v<10 and v>=10 of mermaidjs ?
 
-  promise = mermaid.render("graph", info.markdown)
+  promise = mermaid.render("graph", info.data)
 
   let exportPromise = promise.then((imgData) => {
     result = imgData.svg
