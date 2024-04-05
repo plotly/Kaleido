@@ -23,14 +23,20 @@ namespace kaleido {
             std::cout << error;
         }
 
+        bool endsWith(const std::string& fullString, const std::string& ending) 
+        { 
+            if (ending.size() > fullString.size()) 
+                return false; 
+            return fullString.compare(fullString.size() - ending.size(), ending.size(), ending) == 0; 
+        } 
+
         bool containsImportStatement(std::string scriptTag) {
             std::regex pattern(R"(\bimport\b)");
             return std::regex_search(scriptTag, pattern);
         }
 
         bool isESModule(std::string scriptTag) {
-            std::regex pattern(R"(\b\w+\.esm\b)");
-            return std::regex_search(scriptTag, pattern);
+            return endsWith(scriptTag, "+esm");
         }
     }
 }
