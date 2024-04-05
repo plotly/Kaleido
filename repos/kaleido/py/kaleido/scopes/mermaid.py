@@ -1,5 +1,6 @@
 from kaleido.scopes.base import BaseScope
-import base64
+import json
+import shlex
 
 
 class MermaidScope(BaseScope):
@@ -9,19 +10,26 @@ class MermaidScope(BaseScope):
     _all_formats = ("svg")
     _text_formats = ("svg")
 
-    _scope_flags = ("mermaidjs",)
+    _scope_flags = ("mermaidjs", "mermaid_config")
     _scope_chromium_args = ("--no-sandbox",)
 
-    def __init__(self, mermaidjs=None, **kwargs):
-        
-        self._mermaidjs = mermaidjs
+    def __init__(self, mermaidjs=None, mermaid_config=None, **kwargs):
+
+        self._mermaidjs = mermaidjs 
 
         self.default_format = "svg"
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
+        self.default_mermaid_config = {"startOnLoad": False, "securityLevel": "loose"}
+
+        self._initialize_mermaid_config(mermaid_config)
         
         super(MermaidScope, self).__init__(**kwargs)
+
+    def _initialize_mermaid_config(self, mermaid_config):
+        self._mermaid_config = mermaid_config if mermaid_config is not None else self.default_mermaid_config
+        self._mermaid_config = json.dumps(self._mermaid_config).replace(" ", "") 
 
     @property
     def scope_name(self):
@@ -100,3 +108,16 @@ class MermaidScope(BaseScope):
     @mermaidjs.setter
     def mermaidjs(self, val):
         self._mermaidjs = val
+
+    
+    @property
+    def mermaid_config(self):
+        """
+        Config object for mermaid initialization. 
+        If not specified, default mermaid configuration will be used.
+        """
+        return self._mermaid_config
+
+    @mermaid_config.setter
+    def mermaid_config(self, val):
+        self._mermaid_config = val

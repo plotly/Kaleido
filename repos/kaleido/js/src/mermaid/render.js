@@ -14,8 +14,12 @@ if (!Object.hasOwn) {
  *  - width
  *  - height
  *  - scale
+ * @param {string} mermaidConfig: mermaid initialization config object
  */
-function render (info) {
+function render (info, mermaidConfig) {
+
+  mermaidConfigObject = JSON.parse(mermaidConfig)
+  mermaid.initialize( mermaidConfigObject ); 
   
   let errorCode = 0
   let result = null

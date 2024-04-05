@@ -32,12 +32,13 @@ namespace kaleido {
 
             std::vector<std::unique_ptr<::headless::runtime::CallArgument>> BuildCallArguments() override;
 
+            std::string mermaidConfig;
         };
 
-        MermaidScope::MermaidScope()  {
+        MermaidScope::MermaidScope() : mermaidConfig() {
 
             // Initialize mermaid object code
-            std::string mermaidInit = "; mermaid.initialize( { startOnLoad: false, securityLevel: 'loose'} ); window.mermaid = mermaid;";
+            std::string mermaidInit = "; window.mermaid = mermaid;";
 
             // Process mermaidjs
             if (HasCommandLineSwitch("mermaidjs")) {
@@ -68,11 +69,16 @@ namespace kaleido {
                 scriptTags.emplace_back("import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/+esm'" + mermaidInit);
             }
 
+
+            // Process mermaid-config
+            if (HasCommandLineSwitch("mermaid-config")) {
+                mermaidConfig = GetCommandLineSwitch("mermaid-config");
+            }
         }
 
         MermaidScope::~MermaidScope() {}
 
-        MermaidScope::MermaidScope(const MermaidScope &v) {}
+        MermaidScope::MermaidScope(const MermaidScope &v) : mermaidConfig(v.mermaidConfig)  {}
 
         std::string MermaidScope::ScopeName() {
             return "mermaid";
@@ -80,6 +86,14 @@ namespace kaleido {
 
         std::vector<std::unique_ptr<::headless::runtime::CallArgument>> MermaidScope::BuildCallArguments() {
             std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args;
+
+            // Add mermaid config from command line
+            args.push_back(
+                    headless::runtime::CallArgument::Builder()
+                            .SetValue(std::make_unique<base::Value>(base::StringPiece(mermaidConfig)))
+                            .Build()
+            );
+
             return args;
         }
     }
