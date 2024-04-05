@@ -84,8 +84,7 @@ class MermaidScope(BaseScope):
 
         img = response.get("result").encode("utf-8")
 
-        if format not in self._text_formats:
-            img = base64.b64decode(img)
+        # TODO add decodings for non-text image formats
 
         return img
     
