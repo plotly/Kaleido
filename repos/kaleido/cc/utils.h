@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 #ifndef CHROMIUM_UTILS_H
 #define CHROMIUM_UTILS_H
@@ -22,8 +23,14 @@ namespace kaleido {
             std::cout << error;
         }
 
-        bool isScriptModule(std::string scriptTag) {
-            return scriptTag.find("import") != std::string::npos;
+        bool containsImportStatement(std::string scriptTag) {
+            std::regex pattern(R"(\bimport\b)");
+            return std::regex_search(scriptTag, pattern);
+        }
+
+        bool isESModule(std::string scriptTag) {
+            std::regex pattern(R"(\b\w+\.esm\b)");
+            return std::regex_search(scriptTag, pattern);
         }
     }
 }

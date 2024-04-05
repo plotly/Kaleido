@@ -560,12 +560,15 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         if (tagUrl.is_valid()) {
             // Value is a url, use a src of script tag
             htmlStringStream << "<script type=\"text/javascript\" src=\"" << tagValue << "\"></script>";
-        } else if  (kaleido::utils::isScriptModule(tagValue)) {
-            // Value is a module, use a type="module" script tag
-            htmlStringStream << "<script type=\"module\">" << tagValue << "</script>\n";
         } else {
-            // Value is not a url nor a module, use a inline JavaScript code
-            htmlStringStream << "<script>" << tagValue << "</script>\n";
+            if  (kaleido::utils::containsImportStatement(tagValue)) {
+                // Value is a module, use a type="module" script tag
+                htmlStringStream << "<script type=\"module\">" << tagValue << "</script>\n";
+            }
+            else {
+                // Value is not a url nor a module, use a inline JavaScript code
+                htmlStringStream << "<script>" << tagValue << "</script>\n";
+            }
         }
         scriptTags.pop_front();
     }

@@ -47,10 +47,10 @@ namespace kaleido {
                 GURL mermaidjsUrl(mermaidjsArg);
                 if (mermaidjsUrl.is_valid()) {
                     // ESM module
-                    if (mermaidjsArg.find("+esm") != std::string::npos) {
+                    if (kaleido::utils::isESModule(mermaidjsArg)) {
                         scriptTags.push_back("import mermaid from '" + mermaidjsArg + "'" + mermaidInit);
                     }
-                    // CDN module
+                    // Default module
                     else {
                         scriptTags.push_back(mermaidjsArg + mermaidInit);
                     }
