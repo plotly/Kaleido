@@ -21,6 +21,10 @@ namespace kaleido {
                     code, message.c_str(), version.c_str());
             std::cout << error;
         }
+
+        bool isScriptModule(std::string scriptTag) {
+            return scriptTag.find("import") != std::string::npos;
+        }
     }
 }
 
