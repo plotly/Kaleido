@@ -37,7 +37,7 @@ namespace kaleido {
         MermaidScope::MermaidScope()  {
 
             // Initialize mermaid object code
-            std::string mermaidInit = "mermaid.initialize( { startOnLoad: false, securityLevel: 'loose'} ); window.mermaid = mermaid;";
+            std::string mermaidInit = "; mermaid.initialize( { startOnLoad: false, securityLevel: 'loose'} ); window.mermaid = mermaid;";
 
             // Process mermaidjs
             if (HasCommandLineSwitch("mermaidjs")) {
@@ -46,13 +46,14 @@ namespace kaleido {
                 // Check if value is a URL
                 GURL mermaidjsUrl(mermaidjsArg);
                 if (mermaidjsUrl.is_valid()) {
-                    scriptTags.push_back(mermaidjsArg);
-                } else if (mermaidjsArg.find("import") != std::string::npos && mermaidjsArg.find("+esm") != std::string::npos) {
-                    // Add mermaid object initialization
-                    if (mermaidjsArg.find("mermaid.initialize") == std::string::npos) {
-                        mermaidjsArg += "; " + mermaidInit;
+                    // ESM module
+                    if (mermaidjsArg.find("+esm") != std::string::npos) {
+                        scriptTags.push_back("import mermaid from '" + mermaidjsArg + "'" + mermaidInit);
                     }
-                    scriptTags.push_back(mermaidjsArg);
+                    // CDN module
+                    else {
+                        scriptTags.push_back(mermaidjsArg + mermaidInit);
+                    }
                 } else {
                     // Check if this is a local file path
                     if (std::ifstream(mermaidjsArg)) {
@@ -64,7 +65,7 @@ namespace kaleido {
                     }
                 }
             } else {
-                scriptTags.emplace_back("import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/+esm'; " + mermaidInit);
+                scriptTags.emplace_back("import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/+esm'" + mermaidInit);
             }
 
         }
