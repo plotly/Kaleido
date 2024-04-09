@@ -41,7 +41,7 @@ class MermaidScope(BaseScope):
         return "mermaid"
 
     
-    def transform(self, markdown, format=None, width=None, height=None, scale=None):
+    def transform(self, markdown, format=None, width=None, height=None, scale=None, config=None):
         """
         Convert a Mermaid markdown into a static image
 
@@ -67,12 +67,13 @@ class MermaidScope(BaseScope):
         :return: image bytes
         """
        
-
         format = format.lower() if format is not None else self.default_format
         width = width if width is not None else self.default_width
         height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
- 
+        
+        self._initialize_diagram_config(config)
+
         if format not in self._all_formats:
             supported_formats_str = repr(list(self._all_formats))
             raise ValueError(
