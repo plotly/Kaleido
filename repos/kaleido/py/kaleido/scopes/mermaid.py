@@ -13,7 +13,7 @@ class MermaidScope(BaseScope):
     _scope_flags = ("mermaidjs", "mermaid_config")
     _scope_chromium_args = ("--no-sandbox",)
 
-    def __init__(self, mermaidjs=None, mermaid_config=None, **kwargs):
+    def __init__(self, mermaidjs=None, mermaid_config=None, diagram_config=None, **kwargs):
 
         self._mermaidjs = mermaidjs 
 
@@ -21,15 +21,20 @@ class MermaidScope(BaseScope):
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
-        self.default_mermaid_config = {"startOnLoad": False, "securityLevel": "loose"}
+        self.default_mermaid_config = {"startOnLoad": False}
 
         self._initialize_mermaid_config(mermaid_config)
+        self._initialize_diagram_config(diagram_config)
         
         super(MermaidScope, self).__init__(**kwargs)
 
     def _initialize_mermaid_config(self, mermaid_config):
         self._mermaid_config = mermaid_config if mermaid_config is not None else self.default_mermaid_config
         self._mermaid_config = json.dumps(self._mermaid_config).replace(" ", "") 
+
+    def _initialize_diagram_config(self, diagram_config):
+        self._diagram_config = diagram_config if diagram_config is not None else {}
+        self._diagram_config = json.dumps(self._diagram_config).replace(" ", "") 
 
     @property
     def scope_name(self):
@@ -79,7 +84,7 @@ class MermaidScope(BaseScope):
                 )
             )
 
-        response = self._perform_transform(markdown, format=format, width=width, height=height, scale=scale)
+        response = self._perform_transform(markdown, format=format, width=width, height=height, scale=scale, config=self._diagram_config)
 
         code = response.get("code", 0)
         if code != 0:

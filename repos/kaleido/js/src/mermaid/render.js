@@ -2,6 +2,8 @@
 
 const semver = require('semver')
 const hasOwn = require('object.hasown')
+const cst = require('./constants');
+const parse = require('./parse');
 
 if (!Object.hasOwn) {
 	hasOwn.shim();
@@ -14,12 +16,24 @@ if (!Object.hasOwn) {
  *  - width
  *  - height
  *  - scale
+ *  - config
  * @param {string} mermaidConfig: mermaid initialization config object
  */
 function render (info, mermaidConfig) {
 
+  parsed = parse(info, mermaidConfig);
+  if (parsed.code !== 0) {
+    // Bad request return promise with error info
+    return new Promise((resolve) => {resolve(parsed)})
+  }
+
+  // Initialize mermaid object
   mermaidConfigObject = JSON.parse(mermaidConfig)
-  mermaid.initialize( mermaidConfigObject ); 
+  // TODO for v<10 initialize with mermaid.init(mermaidConfigObject)
+  mermaid.initialize( mermaidConfigObject )
+
+  // Set diagram config
+  mermaid.mermaidAPI.setConfig(parsed.config);
   
   let errorCode = 0
   let result = null
@@ -35,11 +49,11 @@ function render (info, mermaidConfig) {
       code: errorCode,
       message: errorMsg,
       pdfBgColor,
-      format: info.format,
+      format: parsed.format,
       result,
-      width: info.width,
-      height: info.height,
-      scale: info.scale,
+      width: parsed.width,
+      height: parsed.height,
+      scale: parsed.scale,
     }
   }
 
@@ -47,12 +61,12 @@ function render (info, mermaidConfig) {
 
   // TODO create different rendering call for v<10 and v>=10 of mermaidjs ?
 
-  promise = mermaid.render("graph", info.data)
+  promise = mermaid.render("graph", parsed.data)
 
   let exportPromise = promise.then((imgData) => {
-    result = imgData.svg
-    return done()
-  })
+      result = imgData.svg
+      return done()
+    })
 
   return exportPromise
       .catch((err) => {
