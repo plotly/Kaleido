@@ -2,7 +2,7 @@
 
 const semver = require('semver')
 const hasOwn = require('object.hasown')
-const cst = require('./constants');
+const constants = require('./constants');
 const parse = require('./parse');
 
 if (!Object.hasOwn) {
@@ -42,7 +42,7 @@ function render (info, mermaidConfig) {
   
   const done = () => {
     if (errorCode !== 0 && !errorMsg) {
-      errorMsg = cst.statusMsg[errorCode]
+      errorMsg = constants.statusMsg[errorCode]
     }
 
     return {

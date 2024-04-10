@@ -1,7 +1,7 @@
-const cst = require('./constants')
+const constants = require('./constants')
 const isPositiveNumeric = require('./is-positive-numeric')
 const isNonEmptyString = require('./is-non-empty-string')
-const hasAllProperties = require('./has-all-properties')
+const hasPropertiesOfObject = require('./has-all-properties')
 
 /** mermaid-graph parse
  *
@@ -23,7 +23,7 @@ function parse (body, mermaidConfig) {
     result.code = 0;
     
     const errorOut = (code, extra) => {
-        let message = `${cst.statusMsg[code]}`
+        let message = `${constants.statusMsg[code]}`
         if (extra) { 
             message = `${message} (${extra})`
         }
@@ -35,30 +35,28 @@ function parse (body, mermaidConfig) {
     }
     
     if (isNonEmptyString(body.format)) {
-        if (cst.contentFormat[body.format]) {
+        if (constants.contentFormat[body.format]) {
             result.format = opts.format
         } else {
             return errorOut(406, 'wrong format')
         }
     } else {
-        result.format = cst.dflt.format;
+        result.format = constants.defaultParams.format;
     }
 
-    result.scale = isPositiveNumeric(body.scale) ? Number(body.scale) : cst.dflt.scale
-    result.width = isPositiveNumeric(body.width) ? Number(body.width) : cst.dflt.width
-    result.height = isPositiveNumeric(body.height) ? Number(body.height) : cst.dflt.height
+    result.scale = isPositiveNumeric(body.scale) ? Number(body.scale) : constants.defaultParams.scale
+    result.width = isPositiveNumeric(body.width) ? Number(body.width) : constants.defaultParams.width
+    result.height = isPositiveNumeric(body.height) ? Number(body.height) : constants.defaultParams.height
 
-    if (!hasAllProperties(body.config, mermaid.mermaidAPI.defaultConfig)) {
+    if (!hasPropertiesOfObject(body.config, mermaid.mermaidAPI.defaultConfig)) {
         return errorOut(400, 'wrong diagram config parameters')
     }
 
-    if (!hasAllProperties(mermaidConfig, mermaid)) {
+    if (!hasPropertiesOfObject(mermaidConfig, mermaid)) {
         return errorOut(400, 'wrong mermaid config parameters')
     }
 
     return result
  }
-
- 
 
 module.exports = parse

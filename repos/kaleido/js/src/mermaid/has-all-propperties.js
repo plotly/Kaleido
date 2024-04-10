@@ -1,7 +1,13 @@
-function hasAllProperties(obj1, obj2) {
-    for (var prop in obj1) {
-        if (obj1.hasOwnProperty(prop)) {
-            if (!obj2.hasOwnProperty(prop)) {
+/** checks if a given object contains _only_ properties of another object
+ *
+ * @param {object} containedObject : given object that is checked
+ * @param {object} mermaidConfig : another object
+ * @return {boolean}
+ */
+function hasPropertiesOfObject(containedObject, object) {
+    for (var prop in containedObject) {
+        if (containedObject.hasOwnProperty(prop)) {
+            if (!object.hasOwnProperty(prop)) {
                 return false;
             }
         }
@@ -9,5 +15,5 @@ function hasAllProperties(obj1, obj2) {
     return true;
 }
   
-  module.exports = hasAllProperties
+  module.exports = hasPropertiesOfObject 
   

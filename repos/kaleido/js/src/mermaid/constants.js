@@ -8,7 +8,7 @@ module.exports = {
       406: 'requested format is not acceptable',
     },
   
-    dflt: {
+    defaultParams: {
       format: 'svg',
       scale: 1,
       width: 700,
