@@ -8,11 +8,11 @@ function hasPropertiesOfObject(containedObject, object) {
     for (var prop in containedObject) {
         if (containedObject.hasOwnProperty(prop)) {
             if (!object.hasOwnProperty(prop)) {
-                return false;
+                return false
             }
         }
     }
-    return true;
+    return true
 }
   
   module.exports = hasPropertiesOfObject 

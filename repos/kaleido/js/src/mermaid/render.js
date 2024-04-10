@@ -2,8 +2,8 @@
 
 const semver = require('semver')
 const hasOwn = require('object.hasown')
-const constants = require('./constants');
-const parse = require('./parse');
+const constants = require('./constants')
+const parse = require('./parse')
 
 if (!Object.hasOwn) {
 	hasOwn.shim();
@@ -32,7 +32,7 @@ function render (info, mermaidConfig) {
   mermaid.initialize( parsed.mermaidConfig )
 
   // Set diagram config
-  mermaid.mermaidAPI.setConfig(parsed.config);
+  mermaid.mermaidAPI.setConfig(parsed.config)
   
   let errorCode = 0
   let result = null

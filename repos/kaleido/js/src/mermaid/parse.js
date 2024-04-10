@@ -41,7 +41,7 @@ function parse (body, mermaidConfig) {
             return errorOut(406, 'wrong format')
         }
     } else {
-        result.format = constants.defaultParams.format;
+        result.format = constants.defaultParams.format
     }
 
     result.scale = isPositiveNumeric(body.scale) ? Number(body.scale) : constants.defaultParams.scale
@@ -55,7 +55,7 @@ function parse (body, mermaidConfig) {
     }
 
     result.mermaidConfig  = parseJSON(mermaidConfig)
-    if (!hasPropertiesOfObject( result.mermaidConfig , mermaid)) {
+    if (!hasPropertiesOfObject(result.mermaidConfig, mermaid)) {
         return errorOut(400, 'wrong mermaid config parameters')
     }
 
@@ -63,9 +63,11 @@ function parse (body, mermaidConfig) {
  }
 
 function parseJSON(blob) {
-    let parsed = JSON.parse(blob);
-    if (typeof parsed === 'string') parsed = parseJSON(parsed);
-    return parsed;
+    let parsed = JSON.parse(blob)
+    while (typeof(parsed) === 'string') {
+        JSON.parse(parsed)
+    }
+    return parsed
  }
 
 module.exports = parse
