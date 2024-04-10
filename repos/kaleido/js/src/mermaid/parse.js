@@ -65,7 +65,7 @@ function parse (body, mermaidConfig) {
 function parseJSON(blob) {
     let parsed = JSON.parse(blob)
     while (typeof(parsed) === 'string') {
-        JSON.parse(parsed)
+        parsed = JSON.parse(parsed)
     }
     return parsed
  }
