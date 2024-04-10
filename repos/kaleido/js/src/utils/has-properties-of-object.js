@@ -5,11 +5,11 @@
  * @return {boolean}
  */
 function hasPropertiesOfObject(containedObject, object) {
-    const containedKeys = Object.keys(containedObject);
-    const keys = Object.keys(object);
-    for (let key of containedKeys) {
-        if (!keys.includes(key)) {
-            return containedKeys;
+    for (var prop in containedObject) {
+        if (containedObject.hasOwnProperty(prop)) {
+            if (!object.hasOwnProperty(prop)) {
+                return false;
+            }
         }
     }
     return true;
