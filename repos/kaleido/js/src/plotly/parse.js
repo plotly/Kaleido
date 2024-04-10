@@ -1,7 +1,7 @@
 const cst = require('./constants')
 const isPlainObj = require('is-plain-obj')
-const isPositiveNumeric = require('./is-positive-numeric')
-const isNonEmptyString = require('./is-non-empty-string')
+const isPositiveNumeric = require('../utils/is-positive-numeric')
+const isNonEmptyString = require('../utils/is-non-empty-string')
 
 const contentFormat = cst.contentFormat
 const ACCEPT_HEADER = Object.keys(contentFormat).reduce(function (obj, key) {

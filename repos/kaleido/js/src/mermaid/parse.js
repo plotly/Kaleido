@@ -1,7 +1,7 @@
 const constants = require('./constants')
-const isPositiveNumeric = require('./is-positive-numeric')
-const isNonEmptyString = require('./is-non-empty-string')
-const hasPropertiesOfObject = require('./has-all-properties')
+const isPositiveNumeric = require('../utils/is-positive-numeric')
+const isNonEmptyString = require('../utils/is-non-empty-string')
+const hasPropertiesOfObject = require('../utils/has-propperties-of-object')
 
 /** mermaid-graph parse
  *
