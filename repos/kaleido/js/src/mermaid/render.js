@@ -21,16 +21,15 @@ if (!Object.hasOwn) {
  */
 function render (info, mermaidConfig) {
 
-  parsed = parse(info, mermaidConfig);
+  let parsed = parse(info, mermaidConfig);
   if (parsed.code !== 0) {
     // Bad request return promise with error info
     return new Promise((resolve) => {resolve(parsed)})
   }
 
   // Initialize mermaid object
-  mermaidConfigObject = JSON.parse(mermaidConfig)
   // TODO for v<10 initialize with mermaid.init(mermaidConfigObject)
-  mermaid.initialize( mermaidConfigObject )
+  mermaid.initialize( parsed.mermaidConfig )
 
   // Set diagram config
   mermaid.mermaidAPI.setConfig(parsed.config);
@@ -57,11 +56,11 @@ function render (info, mermaidConfig) {
     }
   }
 
-  let promise
+  let promise 
 
   // TODO create different rendering call for v<10 and v>=10 of mermaidjs ?
 
-  promise = mermaid.render("graph", parsed.data)
+  promise = mermaid.render("graph", info.data)
 
   let exportPromise = promise.then((imgData) => {
       result = imgData.svg

@@ -36,7 +36,7 @@ function parse (body, mermaidConfig) {
     
     if (isNonEmptyString(body.format)) {
         if (constants.contentFormat[body.format]) {
-            result.format = opts.format
+            result.format = body.format
         } else {
             return errorOut(406, 'wrong format')
         }
@@ -48,15 +48,24 @@ function parse (body, mermaidConfig) {
     result.width = isPositiveNumeric(body.width) ? Number(body.width) : constants.defaultParams.width
     result.height = isPositiveNumeric(body.height) ? Number(body.height) : constants.defaultParams.height
 
-    if (!hasPropertiesOfObject(body.config, mermaid.mermaidAPI.defaultConfig)) {
+    
+    result.config = parseJSON(body.config)
+    if (!hasPropertiesOfObject(result.config, mermaid.mermaidAPI.defaultConfig)) {
         return errorOut(400, 'wrong diagram config parameters')
     }
 
-    if (!hasPropertiesOfObject(mermaidConfig, mermaid)) {
+    result.mermaidConfig  = parseJSON(mermaidConfig)
+    if (!hasPropertiesOfObject( result.mermaidConfig , mermaid)) {
         return errorOut(400, 'wrong mermaid config parameters')
     }
 
     return result
+ }
+
+function parseJSON(blob) {
+    let parsed = JSON.parse(blob);
+    if (typeof parsed === 'string') parsed = parseJSON(parsed);
+    return parsed;
  }
 
 module.exports = parse

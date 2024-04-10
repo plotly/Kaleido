@@ -24,7 +24,7 @@ class MermaidScope(BaseScope):
             See https://mermaid.js.org/config/schema-docs/config.html for more
             If not specified, will default to the default mermaid styling configuration.
         """
-        
+
         self._mermaidjs = mermaidjs 
 
         self.default_format = "svg"
@@ -32,9 +32,10 @@ class MermaidScope(BaseScope):
         self.default_height = 500
         self.default_scale = 1
         self.default_mermaid_config = {"startOnLoad": False}
+        self.default_diagram_config = {}
 
-        self._mermaid_config = self._initialize_config(mermaid_config, self._default_mermaid_config)
-        self._diagram_config = self._initialize_config(diagram_config, {})
+        self._mermaid_config = self._initialize_config(mermaid_config, self.default_mermaid_config)
+        self._diagram_config = self._initialize_config(diagram_config, self.default_diagram_config)
         
         super(MermaidScope, self).__init__(**kwargs)
 
@@ -84,7 +85,7 @@ class MermaidScope(BaseScope):
         height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
         
-        self._diagram_config = self._initialize_config(config, {})
+        self._diagram_config = self._initialize_config(config, self._diagram_config)
 
         if format not in self._all_formats:
             supported_formats_str = repr(list(self._all_formats))
