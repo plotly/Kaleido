@@ -13,8 +13,18 @@ class MermaidScope(BaseScope):
     _scope_flags = ("mermaidjs", "mermaid_config")
     _scope_chromium_args = ("--no-sandbox",)
 
+   
     def __init__(self, mermaidjs=None, mermaid_config=None, diagram_config=None, **kwargs):
+        """
+        Constructor of MermaidScope.
 
+        :param mermaidjs: Path to mermaidjs javascript module.
+        :param mermaid_config: Initial config of mermaid javascript object.
+        :param diagram_config: Diagram style config. 
+            See https://mermaid.js.org/config/schema-docs/config.html for more
+            If not specified, will default to the default mermaid styling configuration.
+        """
+        
         self._mermaidjs = mermaidjs 
 
         self.default_format = "svg"
@@ -23,18 +33,15 @@ class MermaidScope(BaseScope):
         self.default_scale = 1
         self.default_mermaid_config = {"startOnLoad": False}
 
-        self._initialize_mermaid_config(mermaid_config)
-        self._initialize_diagram_config(diagram_config)
+        self._mermaid_config = self._initialize_config(mermaid_config, self._default_mermaid_config)
+        self._diagram_config = self._initialize_config(diagram_config, {})
         
         super(MermaidScope, self).__init__(**kwargs)
 
-    def _initialize_mermaid_config(self, mermaid_config):
-        self._mermaid_config = mermaid_config if mermaid_config is not None else self.default_mermaid_config
-        self._mermaid_config = json.dumps(self._mermaid_config).replace(" ", "") 
-
-    def _initialize_diagram_config(self, diagram_config):
-        self._diagram_config = diagram_config if diagram_config is not None else {}
-        self._diagram_config = json.dumps(self._diagram_config).replace(" ", "") 
+    def _initialize_config(self, new_config, default_config):
+        config = new_config if new_config is not None else default_config
+        config = json.dumps(config).replace(" ", "") 
+        return config
 
     @property
     def scope_name(self):
@@ -64,6 +71,11 @@ class MermaidScope(BaseScope):
             scale factor of less than 1.0 will decrease the image resolution.
 
             If not specified, will default to the `scope.default_scale` property
+            
+        :param config: Diagram style config. 
+            See https://mermaid.js.org/config/schema-docs/config.html for more
+
+            If not specified, will default to the default mermaid styling configuration.
         :return: image bytes
         """
        
@@ -72,7 +84,7 @@ class MermaidScope(BaseScope):
         height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
         
-        self._initialize_diagram_config(config)
+        self._diagram_config = self._initialize_config(config, {})
 
         if format not in self._all_formats:
             supported_formats_str = repr(list(self._all_formats))
