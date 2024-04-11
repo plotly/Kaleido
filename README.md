@@ -57,6 +57,32 @@ Then, open `figure.png` in the current working directory.
 
 ![figure](https://user-images.githubusercontent.com/15064365/86343448-f8f7f400-bc26-11ea-9191-6803748c2dc9.png)
 
+# Use Kaleido to transform Mermaid.js markdown into static image 
+
+Bellow is an example of usage of kaleido to transform [Mermaid.js](https://mermaid.js.org/) markdown into image.
+
+> Note: This particular example uses an online copy of the Mermaid JavaScript library from a CDN location, so it will not work without an internet connection. 
+
+```python
+from kaleido.scopes.mermaid import MermaidScope
+
+scope = MermaidScope()
+
+graphDefinition = """
+    graph LR
+    A --- B
+    B-->C[fa:fa-ban forbidden]
+    B-->D(fa:fa-spinner);
+    """
+
+data = scope.transform(graphDefinition, format="svg", config={"theme" : "default"})
+with open("figure.svg", "wb") as f:
+    f.write(data)
+```
+![figure](https://github.com/coma007/Kaleido/assets/76025555/3dccf1d9-e065-430d-a0d8-17f0437d866c)
+
+Then, open `figure.svg` in the current working directory.
+
 
 # Background
 As simple as it sounds, programmatically generating static images (e.g. raster images like PNGs or vector images like SVGs) from web-based visualization libraries (e.g. Plotly.js, Vega-Lite, etc.) is a complex problem.  It's a problem that library developers have struggled with for years, and it has delayed the adoption of these libraries among scientific communities that rely on print-based publications for sharing their research. The core difficulty is that web-based visualization libraries don't actually render plots (i.e. color the pixels) on their own, instead they delegate this work to web technologies like SVG, Canvas, WebGL, etc. Similar to how Matplotlib relies on various backends to display figures, web-based visualization libraries rely on a web browser rendering engine to display figures.
