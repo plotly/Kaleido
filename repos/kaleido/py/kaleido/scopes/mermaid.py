@@ -10,10 +10,20 @@ class MermaidScope(BaseScope):
     _all_formats = ("svg")
     _text_formats = ("svg")
 
-    _scope_flags = ("mermaidjs", "mermaid_config")
+    _scope_flags = ("mermaidjs", )
     _scope_chromium_args = ("--no-sandbox",)
 
-    def __init__(self, mermaidjs=None, mermaid_config=None, **kwargs):
+   
+    def __init__(self, mermaidjs=None, diagram_config=None, **kwargs):
+        """
+        Constructor of MermaidScope.
+
+        :param mermaidjs: Path to mermaidjs javascript module.
+        :param mermaid_config: Initial config of mermaid javascript object.
+        :param diagram_config: Diagram style config. 
+            See https://mermaid.js.org/config/schema-docs/config.html for more
+            If not specified, will default to the default mermaid styling configuration.
+        """
 
         self._mermaidjs = mermaidjs 
 
@@ -21,22 +31,23 @@ class MermaidScope(BaseScope):
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
-        self.default_mermaid_config = {"startOnLoad": False, "securityLevel": "loose"}
+        self.default_diagram_config = {}
 
-        self._initialize_mermaid_config(mermaid_config)
+        self._diagram_config = self._initialize_config(diagram_config, self.default_diagram_config)
         
         super(MermaidScope, self).__init__(**kwargs)
 
-    def _initialize_mermaid_config(self, mermaid_config):
-        self._mermaid_config = mermaid_config if mermaid_config is not None else self.default_mermaid_config
-        self._mermaid_config = json.dumps(self._mermaid_config).replace(" ", "") 
+    def _initialize_config(self, new_config, default_config):
+        config = new_config if new_config is not None else default_config
+        config = json.dumps(config).replace(" ", "") 
+        return config
 
     @property
     def scope_name(self):
         return "mermaid"
 
     
-    def transform(self, markdown, format=None, width=None, height=None, scale=None):
+    def transform(self, markdown, format=None, width=None, height=None, scale=None, config=None):
         """
         Convert a Mermaid markdown into a static image
 
@@ -59,15 +70,21 @@ class MermaidScope(BaseScope):
             scale factor of less than 1.0 will decrease the image resolution.
 
             If not specified, will default to the `scope.default_scale` property
+            
+        :param config: Diagram style config. 
+            See https://mermaid.js.org/config/schema-docs/config.html for more
+
+            If not specified, will default to the default mermaid styling configuration.
         :return: image bytes
         """
        
-
         format = format.lower() if format is not None else self.default_format
         width = width if width is not None else self.default_width
         height = height if height is not None else self.default_height
         scale = scale if scale is not None else self.default_scale
- 
+        
+        self._diagram_config = self._initialize_config(config, self._diagram_config)
+
         if format not in self._all_formats:
             supported_formats_str = repr(list(self._all_formats))
             raise ValueError(
@@ -79,7 +96,7 @@ class MermaidScope(BaseScope):
                 )
             )
 
-        response = self._perform_transform(markdown, format=format, width=width, height=height, scale=scale)
+        response = self._perform_transform(markdown, format=format, width=width, height=height, scale=scale, config=self._diagram_config)
 
         code = response.get("code", 0)
         if code != 0:
@@ -111,13 +128,13 @@ class MermaidScope(BaseScope):
 
     
     @property
-    def mermaid_config(self):
+    def diagram_config(self):
         """
-        Config object for mermaid initialization. 
-        If not specified, default mermaid configuration will be used.
+        Config object for mermaid diagram. 
+        If not specified, default diagram configuration will be used.
         """
-        return self._mermaid_config
+        return self._diagram_config
 
-    @mermaid_config.setter
-    def mermaid_config(self, val):
-        self._mermaid_config = val
+    @diagram_config.setter
+    def diagram_config(self, val):
+        self._diagram_config = val

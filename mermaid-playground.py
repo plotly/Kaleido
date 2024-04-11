@@ -1,6 +1,6 @@
 from kaleido.scopes.mermaid import MermaidScope
 
-scope = MermaidScope()
+scope = MermaidScope(diagram_config={"theme":"default"} )
 
 graphDefinition = """
     graph LR
