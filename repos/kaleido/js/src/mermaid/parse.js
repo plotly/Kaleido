@@ -12,12 +12,11 @@ const hasPropertiesOfObject = require('../utils/has-properties-of-object')
  *  - width
  *  - height
  *  - config
- * @param {object} mermaidConfig : mermaid config
  * @return {object}
  *  - errorCode
  *  - result
  */
-function parse (body, mermaidConfig) {
+function parse (body) {
 
     let result = body;
     result.code = 0;
@@ -52,11 +51,6 @@ function parse (body, mermaidConfig) {
     result.config = parseJSON(body.config)
     if (!hasPropertiesOfObject(result.config, mermaid.mermaidAPI.defaultConfig)) {
         return errorOut(400, 'wrong diagram config parameters')
-    }
-
-    result.mermaidConfig  = parseJSON(mermaidConfig)
-    if (!hasPropertiesOfObject(result.mermaidConfig, mermaid)) {
-        return errorOut(400, 'wrong mermaid config parameters')
     }
 
     return result

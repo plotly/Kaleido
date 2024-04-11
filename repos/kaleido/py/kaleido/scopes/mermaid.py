@@ -10,11 +10,11 @@ class MermaidScope(BaseScope):
     _all_formats = ("svg")
     _text_formats = ("svg")
 
-    _scope_flags = ("mermaidjs", "mermaid_config")
+    _scope_flags = ("mermaidjs", )
     _scope_chromium_args = ("--no-sandbox",)
 
    
-    def __init__(self, mermaidjs=None, mermaid_config=None, diagram_config=None, **kwargs):
+    def __init__(self, mermaidjs=None, diagram_config=None, **kwargs):
         """
         Constructor of MermaidScope.
 
@@ -31,10 +31,8 @@ class MermaidScope(BaseScope):
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
-        self.default_mermaid_config = {"startOnLoad": False}
         self.default_diagram_config = {}
 
-        self._mermaid_config = self._initialize_config(mermaid_config, self.default_mermaid_config)
         self._diagram_config = self._initialize_config(diagram_config, self.default_diagram_config)
         
         super(MermaidScope, self).__init__(**kwargs)
@@ -130,13 +128,13 @@ class MermaidScope(BaseScope):
 
     
     @property
-    def mermaid_config(self):
+    def diagram_config(self):
         """
-        Config object for mermaid initialization. 
-        If not specified, default mermaid configuration will be used.
+        Config object for mermaid diagram. 
+        If not specified, default diagram configuration will be used.
         """
-        return self._mermaid_config
+        return self._diagram_config
 
-    @mermaid_config.setter
-    def mermaid_config(self, val):
-        self._mermaid_config = val
+    @diagram_config.setter
+    def diagram_config(self, val):
+        self._diagram_config = val

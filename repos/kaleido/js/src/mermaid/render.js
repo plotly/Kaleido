@@ -17,19 +17,14 @@ if (!Object.hasOwn) {
  *  - height
  *  - scale
  *  - config
- * @param {string} mermaidConfig: mermaid initialization config object
  */
-function render (info, mermaidConfig) {
+function render (info) {
 
-  let parsed = parse(info, mermaidConfig);
+  let parsed = parse(info);
   if (parsed.code !== 0) {
     // Bad request return promise with error info
     return new Promise((resolve) => {resolve(parsed)})
   }
-
-  // Initialize mermaid object
-  // TODO for v<10 initialize with mermaid.init(mermaidConfigObject)
-  mermaid.initialize( parsed.mermaidConfig )
 
   // Set diagram config
   mermaid.mermaidAPI.setConfig(parsed.config)
