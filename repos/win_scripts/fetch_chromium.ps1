@@ -1,5 +1,5 @@
 # Commits
-$env:DEPOT_TOOLS_COMMIT="36a0bee"
+$env:DEPOT_TOOLS_COMMIT="b7ed76a09"
 $env:CHROMIUM_VERSION_TAG="88.0.4324.150"
 
 $env:TAR_URL="https://chromium.googlesource.com/chromium/src.git/+archive/refs/tags/${Env:CHROMIUM_VERSION_TAG}.tar.gz"
