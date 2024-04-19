@@ -29,3 +29,4 @@ repos/kaleido/py/dist/
 repos/kaleido/py/scratch/
 .idea/
 repos/CREDITS.html
+repos/*.tar.gz
