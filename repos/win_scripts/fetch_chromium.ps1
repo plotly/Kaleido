@@ -29,7 +29,7 @@ $ProgressPreference = 'SilentlyContinue'
 Invoke-WebRequest -Uri ${Env:TAR_URL} -OutFile "${Env:CHROMIUM_VERSION_TAG}.tar.gz"
 mkdir src
 cd src
-tar -xvzf ..\${Env:CHROMIUM_VERSION_TAG}.tar.gz
+tar -xzf ..\${Env:CHROMIUM_VERSION_TAG}.tar.gz
 
 # Change to cloned src/ directory
 gclient sync -D --force --reset
