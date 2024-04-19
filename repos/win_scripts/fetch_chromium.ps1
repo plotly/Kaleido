@@ -32,8 +32,8 @@ cd src
 tar -xzf ..\${Env:CHROMIUM_VERSION_TAG}.tar.gz
 
 # Change to cloned src/ directory
-gclient --unmanaged sync -D --force --reset
-gclient --unmanaged runhooks
+gclient sync -D --force --reset
+gclient runhooks
 
 # 2) Append kaleido section to headless build file (src\headless\BUILD.gn)
 cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn

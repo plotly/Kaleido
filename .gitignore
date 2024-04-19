@@ -4,7 +4,6 @@ repos/depot_tools
 *.DS_Store
 *.kate-swp
 repos/.cipd/
-repos/.gclient
 repos/.gclient_entries
 repos/.idea
 repos/build
