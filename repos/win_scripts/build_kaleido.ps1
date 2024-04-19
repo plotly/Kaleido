@@ -117,4 +117,4 @@ Compress-Archive -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win_$a
 if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
     Remove-Item -Recurse -Force ..\kaleido\py\kaleido_wheel.zip
 }
-Compress-Archive -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
+Compress-Archive -Force -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
