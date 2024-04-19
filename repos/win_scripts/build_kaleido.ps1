@@ -17,7 +17,7 @@ cp .\CREDITS.html .\kaleido\
 
 # Add depot_tools to path
 $original_path = $env:path
-$env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
+$env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap;$env:path"
 echo $env:path
 
 $env:GCLIENT_PY3=0
