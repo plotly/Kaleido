@@ -30,16 +30,4 @@ Invoke-WebRequest -Uri ${Env:TAR_URL} -OutFile "${Env:CHROMIUM_VERSION_TAG}.tar.
 mkdir src
 cd src
 tar -xzf ..\${Env:CHROMIUM_VERSION_TAG}.tar.gz
-
-# Change to cloned src/ directory
-gclient sync -D --force --reset
-gclient runhooks
-
-# 2) Append kaleido section to headless build file (src\headless\BUILD.gn)
-cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
-
-## Write out credits
-python ..\src\tools\licenses.py credits > ..\CREDITS.html
-
-## Go back to where we started
 cd ..\..
