@@ -111,7 +111,7 @@ cd ..
 if (Test-Path ..\build\kaleido_win.zip) {
     Remove-Item -Recurse -Force ..\build\kaleido_win.zip
 }
-Compress-Archive -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win_$arch.zip
+Compress-Archive -Force -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win_$arch.zip
 
 # Build wheel zip archive
 if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
