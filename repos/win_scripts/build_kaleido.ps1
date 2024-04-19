@@ -8,7 +8,7 @@ if (-not ($arch -eq "x86" -or $arch -eq "x64")) {
 cd $PSScriptRoot\..
 
 # Update version based on git tag
-python .\version\build_pep440_version.py
+python3 .\version\build_pep440_version.py
 
 # Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
 cp ..\README.md .\kaleido\
@@ -23,8 +23,8 @@ echo $env:path
 $env:GCLIENT_PY3=0
 
 # Check python version
-python --version
-python -c "import sys; print(sys.prefix)"
+python3 --version
+python3 -c "import sys; print(sys.prefix)"
 
 # Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0
@@ -46,7 +46,7 @@ Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win_$arch\args.g
 if (Test-Path headless\app\scopes) {
     Remove-Item -Recurse -Force headless\app\scopes
 }
-Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse 
+Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse
 
 # Perform build, result will be out/Kaleido_win/kaleido
 gn gen out\Kaleido_win_$arch
@@ -102,7 +102,7 @@ Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 $env:path = $original_path
 cd ../kaleido/py
 $env:KALEIDO_ARCH=$arch
-python setup.py package
+python3 setup.py package
 
 # Change up to kaleido/ directory
 cd ..
