@@ -18,8 +18,13 @@ $env:path = "$pwd;$pwd\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
 echo $env:path
 $env:GCLIENT_PY3=0
 
+# We're checking out a specific commit, don't autoupdate
+$env:DEPOT_TOOLS_UPDATE=0
+
 # Reset to proper commit
+# Note: You can clone individual branches/tags but not commits
 git reset --hard ${Env:DEPOT_TOOLS_COMMIT}
+git clean -ffd
 git --no-pager log -2
 
 # Move back to repos directory + download tarball
@@ -31,3 +36,6 @@ mkdir src
 cd src
 tar -xzf ..\${Env:CHROMIUM_VERSION_TAG}.tar.gz
 cd ..\..
+
+
+# gclient may not like it not having a .git
