@@ -18,7 +18,7 @@ echo $env:path
 $env:GCLIENT_PY3=0
 
 # Reset to proper commit
-git reset --hard $DEPOT_TOOLS_COMMIT
+git reset --hard ${Env:DEPOT_TOOLS_COMMIT}
 git log -2
 
 # Move back to repos directory
@@ -28,7 +28,7 @@ fetch --nohooks chromium
 # Change to cloned src/ directory
 cd src
 git reset --hard
-git checkout tags/$CHROMIUM_TAG
+git checkout tags/${Env:CHROMIUM_TAG}
 git log -2
 gclient sync -D --force --reset
 gclient runhooks
