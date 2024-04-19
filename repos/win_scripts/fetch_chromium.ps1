@@ -20,15 +20,16 @@ $env:GCLIENT_PY3=0
 
 # Reset to proper commit
 git reset --hard ${Env:DEPOT_TOOLS_COMMIT}
-git log -2
+git log -2 --no-pager
 
-# Move back to repos directory
+# Move back to repos directory + download tarball
+echo "Downloading..."
 cd ..
 $ProgressPreference = 'SilentlyContinue'
 Invoke-WebRequest -Uri ${Env:TAR_URL} -OutFile "${Env:CHROMIUM_VERSION_TAG}.tar.gz"
 mkdir src
 cd src
-tar -xvzf ..\src.tar.gz
+tar -xvzf ..\${Env:CHROMIUM_VERSION_TAG}.tar.gz
 
 # Change to cloned src/ directory
 gclient sync -D --force --reset
