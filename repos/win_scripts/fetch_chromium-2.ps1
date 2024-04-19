@@ -1,5 +1,11 @@
-# Change to cloned src/ directory
-cd repos\src
-gclient sync -D --force --reset --no-history --jobs=3 --revision=${Env:CHROMIUM_VERSION_TAG}
-gclient runhooks
+cd repos\
+
+fetch --nohooks --no-history chromium
+
+cd src
+git reset --hard
+git fetch origin 'refs/tags/${Env:CHROMIUM_VERSION_TAG}:refs/tags/${Env:CHROMIUM_VERSION_TAG}'
+git checkout ${Env:CHROMIUM_VERSION_TAG}
+git clean -ffd
+
 cd ..\..

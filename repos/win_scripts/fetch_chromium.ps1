@@ -27,15 +27,4 @@ git reset --hard ${Env:DEPOT_TOOLS_COMMIT}
 git clean -ffd
 git --no-pager log -2
 
-cd ..
-fetch --nohooks --no-history chromium
-
-cd src
-git reset --hard
-git fetch origin 'refs/tags/${Env:CHROMIUM_VERSION_TAG}:refs/tags/${Env:CHROMIUM_VERSION_TAG}'
-git checkout ${Env:CHROMIUM_VERSION_TAG}
-git clean -ffd
-
 cd ..\..
-
-# gclient may not like it not having a .git
