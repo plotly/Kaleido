@@ -1,3 +1,7 @@
+# Note: we'd like to set a depot tools commit close to the chromium version
+# And we'd like to set DEPOT_TOOLS_UPDATE to 0 so it doesn't update
+# But windows now seems to depend on something else that gets pulled in during the update
+
 # Commits
 $env:DEPOT_TOOLS_COMMIT=""
 $env:CHROMIUM_VERSION_TAG="124.0.6367.60"
@@ -18,8 +22,7 @@ $env:path = "$pwd;$pwd\bootstrap;$env:path"
 echo $env:path
 $env:GCLIENT_PY3=0
 
-# We're checking out a specific commit, don't autoupdate
-$env:DEPOT_TOOLS_UPDATE=0
+$env:DEPOT_TOOLS_UPDATE=1
 
 # Reset to proper commit
 # Note: You can clone individual branches/tags but not commits
@@ -29,5 +32,4 @@ git --no-pager log -2
 
 cd ..\..
 
-# Start-Process -FilePath ".\repos\win_scripts\fetch_chromium.bat" -ArgumentList ${Env:CHROMIUM_VERSION_TAG} -Wait
-# Start-Process -FilePath ".\repos\win_scripts\sync_chromium.bat" -ArgumentList ${Env:CHROMIUM_VERSION_TAG} -Wait
+
