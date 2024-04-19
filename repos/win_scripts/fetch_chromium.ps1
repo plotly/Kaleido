@@ -1,7 +1,8 @@
 # Commits
 $env:DEPOT_TOOLS_COMMIT="36a0bee"
-$env:CHROMIUM_TAG="88.0.4324.150"
+$env:CHROMIUM_VERSION_TAG="88.0.4324.150"
 
+$env:TAR_URL="https://chromium.googlesource.com/chromium/src.git/+archive/refs/tags/${Env:CHROMIUM_VERSION_TAG}.tar.gz"
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
@@ -22,14 +23,14 @@ git reset --hard ${Env:DEPOT_TOOLS_COMMIT}
 git log -2
 
 # Move back to repos directory
-cd ../
-fetch --nohooks chromium
+cd ..
+$ProgressPreference = 'SilentlyContinue'
+Invoke-WebRequest -Uri ${Env:TAR_URL} -OutFile "${Env:CHROMIUM_VERSION_TAG}.tar.gz"
+mkdir src
+cd src
+tar -xvzf ..\src.tar.gz
 
 # Change to cloned src/ directory
-cd src
-git reset --hard
-git checkout tags/${Env:CHROMIUM_TAG}
-git log -2
 gclient sync -D --force --reset
 gclient runhooks
 
