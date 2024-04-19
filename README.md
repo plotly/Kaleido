@@ -15,7 +15,7 @@ or from [conda-forge](https://conda-forge.org/) using conda.
 $ conda install -c conda-forge python-kaleido
 ```
 
-Releases of the core kaleido C++ executable are attached as assets to GitHub releases at https://github.com/plotly/Kaleido/releases. 
+Releases of the core kaleido C++ executable are attached as assets to GitHub releases at https://github.com/plotly/Kaleido/releases.
 
 # Use Kaleido to export plotly.py figures as static images
 
@@ -68,7 +68,7 @@ There are three main approaches that are currently in use among Python web-based
   1. Bokeh, Altair, bqplot, and ipyvolume rely on the Selenium Python library to control a system web browser such as Firefox or Chrome/Chromium to perform image rendering.
   2. plotly.py relies on Orca, which is a custom headless Electron application that uses the Chromium browser engine built into Electron to perform image rendering. Orca runs as a local web server and plotly.py sends requests to it using a local port.
   3. When operating in the Jupyter notebook or JupyterLab, ipyvolume also supports programmatic image export by sending export requests to the browser using the ipywidgets protocol.
-  
+
 While approaches 1 and 2 can both be installed using conda, they still rely on all of the system dependencies of a complete web browser, even the parts that aren't actually necessary for rendering a visualization. For example, on Linux both require the installation of system libraries related to audio (libasound.so), video (libffmpeg.so), GUI toolkit (libgtk-3.so), screensaver (libXss.so), and X11 (libX11-xcb.so) support. Many of these are not typically included in headless Linux installations like you find in JupyterHub, Binder, Colab, Azure notebooks, SageMaker, etc. Also, conda is still not as universally available as the pip package manager and neither approach is installable using pip packages.
 
 Additionally, both 1 and 2 communicate between the Python process and the web browser over a local network port. While not typically a problem, certain firewall and container configurations can interfere with this local network connection.
@@ -167,16 +167,16 @@ Then fetch the chromium codebase from a Power Shell command prompt
 
 ```
 $ /repos/win_scripts/fetch_chromium.ps1
-``` 
+```
 
 Then build Kaleido to `repos/build/kaleido`. The build step will also create the Python wheel under `repos/kaleido/py/dist/`
 ```
-$ /repos/mac_scripts/build_kaleido.ps1 x64
+$ /repos/win_scripts/build_kaleido.ps1 x64
 ```
 
-The above commnad will generate a 64-bit build. A 32-bit build can be generated using 
+The above commnad will generate a 64-bit build. A 32-bit build can be generated using
 ```
-$ /repos/mac_scripts/build_kaleido.ps1 x86
+$ /repos/win_scripts/build_kaleido.ps1 x86
 ```
 
 # Building Docker containers
