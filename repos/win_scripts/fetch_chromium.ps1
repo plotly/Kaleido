@@ -14,7 +14,7 @@ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 cd depot_tools
 
 # Add cloned depot_tools directory to PATH
-$env:path = "$pwd;$pwd\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
+$env:path = "$pwd;$pwd\depot_tools;$env:path"
 echo $env:path
 $env:GCLIENT_PY3=0
 
