@@ -40,3 +40,6 @@ cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
 
 ## Write out credits
 python ..\src\tools\licenses.py credits > ..\CREDITS.html
+
+## Go back to where we started
+cd ..\..
