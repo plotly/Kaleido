@@ -100,7 +100,7 @@ Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 
 # Build python wheel
 $env:path = $original_path
-cd ../kaleido/py
+cd ..\kaleido\py
 $env:KALEIDO_ARCH=$arch
 python3 setup.py package
 
@@ -118,3 +118,5 @@ if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
     Remove-Item -Recurse -Force ..\kaleido\py\kaleido_wheel.zip
 }
 Compress-Archive -Force -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
+
+cd ..\..
