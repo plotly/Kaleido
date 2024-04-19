@@ -20,7 +20,7 @@ $env:GCLIENT_PY3=0
 
 # Reset to proper commit
 git reset --hard ${Env:DEPOT_TOOLS_COMMIT}
-git log -2 --no-pager
+git --no-pager log -2
 
 # Move back to repos directory + download tarball
 echo "Downloading..."
