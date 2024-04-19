@@ -29,5 +29,5 @@ git --no-pager log -2
 
 cd ..\..
 
-Start-Process -FilePath ".\repos\win_scripts\fetch_chromium.bat" -ArgumentList ${Env:CHROMIUM_VERSION_TAG} -Wait
-Start-Process -FilePath ".\repos\win_scripts\sync_chromium.bat" -ArgumentList ${Env:CHROMIUM_VERSION_TAG} -Wait
+# Start-Process -FilePath ".\repos\win_scripts\fetch_chromium.bat" -ArgumentList ${Env:CHROMIUM_VERSION_TAG} -Wait
+# Start-Process -FilePath ".\repos\win_scripts\sync_chromium.bat" -ArgumentList ${Env:CHROMIUM_VERSION_TAG} -Wait
