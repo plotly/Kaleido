@@ -40,7 +40,3 @@ cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
 
 ## Write out credits
 python ..\src\tools\licenses.py credits > ..\CREDITS.html
-
-# Delete .git directory to save some space
-# TODO: also delete third-part .git directories
-Remove-Item -Recurse -Force .git
