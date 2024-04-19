@@ -6,7 +6,6 @@
 $env:DEPOT_TOOLS_COMMIT=""
 $env:CHROMIUM_VERSION_TAG="124.0.6367.60"
 
-$env:TAR_URL="https://chromium.googlesource.com/chromium/src.git/+archive/refs/tags/${Env:CHROMIUM_VERSION_TAG}.tar.gz"
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
