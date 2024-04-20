@@ -7,7 +7,7 @@ Here we describe how to use it with plotly, but there is an option to also use i
 
 In short: If you `pip install kaleido` you can use `fig.write_image("filename.png")`.
 
-[Here is the historical readme](README_HISTORICAL.md)
+[Here is the historical readme](README-HISTORICAL.md)
 
 # Installing Kaleido
 
