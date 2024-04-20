@@ -56,12 +56,13 @@ namespace base {
             
             // Build wide strings using wstringstreams
             std::wstringstream wpath_ss;
-            wpath_ss << cur_path.as_string().c_str();
+            wpath_ss << std::string(cur_path).c_str();
 
             std::wstringstream wexecutable_ss;
             wexecutable_ss << executable.c_str() << ".exe";
 
-            FilePath::StringPieceType w_cur_path(wpath_ss.str());
+            std::wstring wpath_ss_as_string = wpath_ss.str();
+            FilePath::StringPieceType w_cur_path(wpath_ss_as_string);
             FilePath file(w_cur_path);
 
             if (PathExists(file.Append(wexecutable_ss.str()))) {
