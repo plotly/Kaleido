@@ -35,8 +35,8 @@ git --no-pager log -2
 $env:DEPOT_TOOLS_UPDATE=0
 # However, the .\update_dpot_tools.bat file which we don't want to run also has two calls at the end
 # which we do need to run! Google design flaw.
-cmd.exe /c call "%~dp0\cipd_bin_setup.bad"
-cmd.exe /c call "%~dp0\bootstrap\win_tools.bad"
+cmd.exe /c call "%~dp0\cipd_bin_setup.bat"
+cmd.exe /c call "%~dp0\bootstrap\win_tools.bat"
 # If you're updating the DEPOT_TOOLS_COMMIT, you should read the skipped bat file to make sure you're doing
 # the init steps like above and whatever else, but not updating git!
 
