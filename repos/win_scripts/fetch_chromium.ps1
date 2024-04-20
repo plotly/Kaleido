@@ -2,8 +2,10 @@
 $env:DEPOT_TOOLS_COMMIT="f9f61a9d7c0c76a71dc1db860d1994c53c8aa148"
 $env:CHROMIUM_VERSION_TAG="108.0.5359.125"
 # requires windows 10 sdk version 10.0.20348.0 which,\
-# durng vs community install, can be included by going to
-# "visual studio community: 2023" --> "individual components"
+# it has to be installed from:
+# https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/
+# and debugging tools must be enabled, as well as the Desktop Apps.
+# Visual Studio has an option to install it, but it doesn't seem to install everything
 
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
