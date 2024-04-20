@@ -24,6 +24,7 @@
 #include "headless/public/headless_devtools_target.h"
 #include "headless/public/headless_web_contents.h"
 #include "ui/gfx/geometry/size.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #include "headless/app/kaleido.h"
 #include "scopes/Factory.h"
@@ -182,7 +183,7 @@ void Kaleido::ExportNext() {
             return;
         }
 
-        base::Optional<base::Value> json = base::JSONReader::Read(exportSpec);
+        absl::optional<base::Value> json = base::JSONReader::Read(exportSpec);
 
         if (!json.has_value()) {
             kaleido::utils::writeJsonMessage(1, "Invalid JSON");
@@ -272,7 +273,7 @@ void Kaleido::OnExportComplete(
     } else {
         // JSON parse result to get format
         std::string responseString = result->GetResult()->GetValue()->GetString();
-        base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+        absl::optional<base::Value> responseJson = base::JSONReader::Read(responseString);
         base::DictionaryValue* responseDict;
         responseJson.value().GetAsDictionary(&responseDict);
 
@@ -395,7 +396,7 @@ void Kaleido::OnHeapEvalComplete(std::unique_ptr<headless::runtime::EvaluateResu
         return;
     } else {
         std::string responseString = result->GetResult()->GetValue()->GetString();
-        base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+        absl::optional<base::Value> responseJson = base::JSONReader::Read(responseString);
         base::DictionaryValue* responseDict;
         responseJson.value().GetAsDictionary(&responseDict);
 
@@ -414,7 +415,7 @@ void Kaleido::OnPDFCreated(
         std::string error = std::string("Export to PDF failed");
         kaleido::utils::writeJsonMessage(1, error);
     } else {
-        base::Optional<base::Value> responseJson = base::JSONReader::Read(responseString);
+        absl::optional<base::Value> responseJson = base::JSONReader::Read(responseString);
         base::DictionaryValue* responseDict;
         responseJson.value().GetAsDictionary(&responseDict);
 
