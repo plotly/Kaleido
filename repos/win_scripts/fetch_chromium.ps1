@@ -4,7 +4,9 @@
 
 # Commits
 $env:DEPOT_TOOLS_COMMIT="" # See Note: above
-$env:CHROMIUM_VERSION_TAG="124.0.6367.60"
+$env:CHROMIUM_VERSION_TAG="108.0.5359.125"
+# requires windows 10 sdk version 10.0.20348.0 which durng vscode install is present in visual studio community: 2023 individual components
+# not sure if it woudl have come with older depot_tools
 
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
