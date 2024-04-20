@@ -1,11 +1,6 @@
 # Commits
 $env:DEPOT_TOOLS_COMMIT="f9f61a9d7c0c76a71dc1db860d1994c53c8aa148"
 $env:CHROMIUM_VERSION_TAG="108.0.5359.125"
-# requires windows 10 sdk version 10.0.20348.0 which,\
-# it has to be installed from:
-# https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/
-# and debugging tools must be enabled, as well as the Desktop Apps.
-# Visual Studio has an option to install it, but it doesn't seem to install everything
 
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
@@ -37,12 +32,11 @@ git --no-pager log -2
 $env:DEPOT_TOOLS_UPDATE=0
 # However, the .\update_dpot_tools.bat file which we don't want to run also has two calls at the end
 # which we do need to run! Google design flaw.
-# On top of that, you may want to change the version that downloads somehow...
 
 cmd.exe /c cipd_bin_setup.bat
 cmd.exe /c bootstrap\win_tools.bat
-# If you're updating the DEPOT_TOOLS_COMMIT, you should read the skipped bat file to make sure you're doing
-# the init steps like above and whatever else, but not updating git!
+# If you're updating the DEPOT_TOOLS_COMMIT, you should read the skipped bat file to make sure that
+# init steps like this are included here, but don't include any steps to update git. /end TODO
 
 cd ..
 
