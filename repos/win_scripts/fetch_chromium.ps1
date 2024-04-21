@@ -75,7 +75,8 @@ cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
 CheckLastExitCode
 
 ## Write out credits
-python3 $pwd\tools\licenses\licenses.py credits *> ..\CREDITS.html
+python $pwd\tools\licenses\licenses.py credits *> ..\CREDITS.html
+echo "If this last command didn't work, maybe google finally updated licenses.py to use Python3?"
 CheckLastExitCode
 
 ## Go back to root directory
