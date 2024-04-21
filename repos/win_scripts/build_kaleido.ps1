@@ -1,3 +1,5 @@
+$Env:CC_VERSION="cc"
+
 $ErrorActionPreference = "Stop"
 
 $original_path = $env:path
@@ -93,7 +95,7 @@ if (Test-Path headless\app\scopes) {
     Remove-Item -Recurse -Force headless\app\scopes
 }
 
-Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse # we do this twice to make sure it has ur changes after gn ge
+Copy-Item ..\kaleido\${env:CC_VERSION}\* -Destination headless\app\ -Recurse # we do this twice to make sure it has ur changes after gn ge
 ninja -C out\Kaleido_win_$arch -j 16 kaleido
 CheckLastExitCode
 

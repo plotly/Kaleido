@@ -4,7 +4,10 @@ You should have at least 20GB free, compiling takes 6 hours on a 4 core 8GB RAM 
 
 ## Preparing a Build
 
-The `/repos/win_scripts/fetch_chromium.ps1` has two environment variables to set the Chromium tag and depot version.
+### Files to change:
+The `/repos/win_scripts/fetch_chromium.ps1` has two environmental  variables to set the Chromium tag and depot version.
+The `/repos/win_scripts/build_kaleido.ps1` has one environmental variable to set the cc version.
+
 
 The same script also include a TODO note you need to read.
 
@@ -41,7 +44,7 @@ The build step will also create the Python wheel under `repos/kaleido/py/dist/`
 
 ## Build Notes
 
-### Chromium 108.0.5359.125 on 4/20/2024
+### Chromium 108.0.5359.125 on 4/20/2024 (cc-1.5)
 
 Docs ask for:
 
@@ -52,6 +55,6 @@ You can do that through Visual Studio Installer + Windows control panel to activ
 
 I didn't want to install all the options, but I did have to install the debugging tools and the stuff marked as Desktop Apps. Visual Studio has the option to install it as well but it misses the debugging tools and therefore doesn't work (unless control panel modifications).
 
-### Chromium 88.0.4324.150 on 4/21/2024
+### Chromium 88.0.4324.150 on 4/21/2024 (cc)
 
 In addition to the normal stuff, I had to go to Visual Studio Installer, Build Tools-->Modify, search and install ATL.
