@@ -106,8 +106,11 @@ New-Item -Path ..\build\kaleido\bin -ItemType "directory"
 
 Copy-Item out\Kaleido_win_$arch\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
 
-# doesn't work from here
-Copy-Item out\Kaleido_win_$arch\swiftshader -Destination ..\build\kaleido\bin -Recurse
+# This was present pre-adopting this library. I could find a use for it on the windows install.
+# `ldd` nor `bindump` mentions kaleido.exe needing it.
+# So theoretically it could be a dependency, but it also doesn't exist on future versions:
+# So I have cautiously deleted this line. - AJP
+#Copy-Item out\Kaleido_win_$arch\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
 # version
 cp ..\kaleido\version ..\build\kaleido\
