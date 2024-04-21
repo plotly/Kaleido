@@ -1,14 +1,17 @@
 $ErrorActionPreference = "Stop"
 
+$original_path = $env:path
+$original_pwd = $pwd | Select -ExpandProperty Path
+function CleanUp {
+	$env:path = "$original_path"
+	cd $original_pwd
+}
 
+trap { CleanUp }
 function CheckLastExitCode {
     param ([int[]]$SuccessCodes = @(0), [scriptblock]$CleanupScript=$null)
 
     if ($SuccessCodes -notcontains $LastExitCode) {
-        if ($CleanupScript) {
-            "Executing cleanup script: $CleanupScript"
-            &$CleanupScript
-        }
         $msg = @"
 EXE RETURNED EXIT CODE $LastExitCode
 CALLSTACK:$(Get-PSCallStack | Out-String)
@@ -30,11 +33,13 @@ if (-not ($arch -eq "x86" -or $arch -eq "x64")) {
     throw "Invalid architecture,: must be one of x86 or x64: received $arch"
 }
 
+
+# save current directory
+
 # cd to repos directory
 cd $PSScriptRoot\..
 
 # Add depot_tools to path
-$original_path = $env:path
 $env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap;$env:path"
 echo $env:path
 
@@ -166,3 +171,5 @@ if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
 Compress-Archive -Force -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
 
 cd ..\..
+
+CleanUp
