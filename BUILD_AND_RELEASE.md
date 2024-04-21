@@ -31,7 +31,7 @@ Here is a summary (since 2024):
 
 | Date      | Chromium Tag                                                                                                                                                                                           | depot_tools | linux | mac | win | K. CC  | K. Ref | Notes                          |
 | --------  | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ----- | --- | --  |------- | ------ |  ----------------------------- |
-| 4/20/2024 | [108.0.5359.125](https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125) [(docs)](https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125/docs/)                  | f9f61a9d7   |   ❓  |  ❓ |  ❓ | cc-1.5 |        |                                |
+| 4/20/2024 | [108.0.5359.125](https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125) [(docs)](https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125/docs/)                  | f9f61a9d7   |   ❓  |  ❓ |  ❓ | cc-1.5 |        |  Runtime errors likely due to old API degredation |
 | 4/21/2024 | [88.0.4324.150](https://chromium.googlesource.com/chromium/src/+/refs/tags/88.0.4324.150) [(docs)](https://chromium.googlesource.com/chromium/src/+/refs/tags/88.0.4324.150/docs/)                     | f9f61a9d7   |   ❓  |  ❓ | ✅* | cc     |        | Contains a temporary revert of the Kaleido source code to 551875a |
 
 
