@@ -17,7 +17,7 @@ Kaleido depends on building chromium: an ~18GB download, ~25GB after the half-da
 
 Third party dependencies are always in flux and no build is guarenteed to succeed at any point without work.
 
-However, today (4/20/2024) Kaleido uses an [API that Chromium deleted after version 108](https://source.chromium.org/chromium/chromium/src/+/69dde6480cf45b1ee6cee9d2a091546bba1022cf). 
+However, today (4/20/2024) Kaleido uses an [API that Chromium deleted after version 108](https://source.chromium.org/chromium/chromium/src/+/69dde6480cf45b1ee6cee9d2a091546bba1022cf). Furthermore, it appears that the API degraded to be unusable before it was removed.
 
 ## How to build
 
@@ -38,6 +38,8 @@ Here is a summary (since 2024):
 _only counts if it works with circle CI_
 ### Preparing a Build
 
+Also refer to the README for the specific platform.
+
 #### Picking a specific chromium version
 From old README.md/Google:
 > Find a stable chromium version tag from https://chromereleases.googleblog.com/search/label/Desktop%20Update. Look up date of associated tag in GitHub at https://github.com/chromium/chromium/
@@ -46,10 +48,13 @@ E.g. Stable chrome version tag on 05/19/2020: 83.0.4103.61, set `CHROMIUM_TAG="8
 > Search through depot_tools commitlog (https://chromium.googlesource.com/chromium/tools/depot_tools/+log) for commit hash of commit from the same day.
 E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e67e41a`
 
-#### Further Modificaitons
-Also refer to the README for the specific platform.
+#### Patching
 
-In `repos/patches` there are folders by chromium tags and patches for that version of chromium. You might want to look at the README.md for the closest version you're trying to install, and if you see the indicated errors, copy the relevant patch 
+In `repos/patches` there are folders by chromium tags and patches for that version of chromium. You might want to look at the README.md for the closest version you're trying to install, and if you see the indicated errors, copy the relevant patch
+
+#### Copying Run-Time Dependencies
+
+Hopefully your executable doesn't need any `.dll` or `.so` that weren't compiled in as `.lib` or `.a` respectively. Linux and git bash can use `ldd` to resolve dependencies of an `elf` or `exe`, mac has the less powerful `otool -L`. That should let you know if you need to bring any deps with you into the wheel, but theoretically it could be fooled by a dynamic load...
 
 ## Releasing
 
