@@ -43,9 +43,7 @@ The build step will also create the Python wheel under `repos/kaleido/py/dist/`
 
 ### Chromium 108.0.5359.125 on 4/20/2024
 
-The chromium windows instructions asked for the following for x86 and x86_64 architectures.
-
-Also asked for was:
+Docs ask for:
 
 * Windows 11 SDK version 10.0.22621.2428. This can be installed separately or by checking the appropriate box in the Visual Studio Installer.
 * (Windows 11) SDK Debugging Tools 10.0.22621.755 or higher 
