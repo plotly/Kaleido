@@ -1,4 +1,11 @@
 $arch = $args[0]
+$ninja = $false
+if ($args[1] -eq "--from-ninja") {
+	$ninja = $true
+} elseif ($args[0] -eq "--from_ninja") {
+	$ninja = $true
+	$arch = $args[1]
+}
 echo $arch
 if (-not ($arch -eq "x86" -or $arch -eq "x64")) {
     throw "Invalid architecture,: must be one of x86 or x64: received $arch"
@@ -7,49 +14,58 @@ if (-not ($arch -eq "x86" -or $arch -eq "x64")) {
 # cd to repos directory
 cd $PSScriptRoot\..
 
-# Update version based on git tag
-python3 .\version\build_pep440_version.py
-
-# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
-cp ..\README.md .\kaleido\
-cp ..\LICENSE.txt .\kaleido\
-cp .\CREDITS.html .\kaleido\
-
 # Add depot_tools to path
 $original_path = $env:path
 $env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap;$env:path"
 echo $env:path
-
-$env:GCLIENT_PY3=0
-
-# Check python version
-python3 --version
-python3 -c "import sys; print(sys.prefix)"
 
 # Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
+
+$env:GCLIENT_PY3=0
+
+# Write Versions
+if (-not $ninja) {
+
+	# Update version based on git tag
+	python3 .\version\build_pep440_version.py
+
+	# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
+	cp ..\README.md .\kaleido\
+	cp ..\LICENSE.txt .\kaleido\
+	cp .\CREDITS.html .\kaleido\
+
+	# Check python version
+	python3 --version
+	python3 -c "import sys; print(sys.prefix)"
+}
 # cd to repos/src
 cd src
 
-# Make output directory
-if (-Not (Test-Path out\Kaleido_win_$arch)) {
-    New-Item -Path out\Kaleido_win_$arch -ItemType "directory" -ErrorAction Ignore
-}
+# Prep for Ninja
+if (-not $ninja) {
+	# Make output directory
+	if (-Not (Test-Path out\Kaleido_win_$arch)) {
+	    New-Item -Path out\Kaleido_win_$arch -ItemType "directory" -ErrorAction Ignore
+	}
 
-# Write out/Kaleido_win/args.gn
-Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win_$arch\args.gn
+	# Write out/Kaleido_win/args.gn
+	Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win_$arch\args.gn
+
+
+	# Perform build, result will be out/Kaleido_win/kaleido
+	gn gen out\Kaleido_win_$arch
+}
 
 # Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
 if (Test-Path headless\app\scopes) {
     Remove-Item -Recurse -Force headless\app\scopes
 }
-Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse
 
-# Perform build, result will be out/Kaleido_win/kaleido
-gn gen out\Kaleido_win_$arch
+Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse # we do this twice to make sure it has ur changes after gn ge
 ninja -C out\Kaleido_win_$arch -j 16 kaleido
 
 # Copy build files
