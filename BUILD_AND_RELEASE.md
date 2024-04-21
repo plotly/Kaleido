@@ -30,7 +30,7 @@ Refer to:
 Here is a summary (since 2024):
 
 | Date      | Chromium Tag          | depot_tools | linux | mac | win | Kaleido Ref | Notes                        |
-| --------  | --------------------- | ----------- | ----- | --- | --  | -----       |  -----------------------------
+| --------  | --------------------- | ----------- | ----- | --- | --  | -----       |  ----------------------------- |
 | 4/20/2024 | 108.0.5359.125 (docs) | f9f61a9d7   |   ❓  |  ❓ |  ❓ |              | |
 | 4/21/2024 | 88.0.4324.150 (docs)  | f9f61a9d7   |   ❓  |  ❓ |  ❓ |              | Contains a temporary revert of the Kaleido source code to 551875a |
 _only counts if it works with circle CI_
