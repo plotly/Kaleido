@@ -1,3 +1,22 @@
+$ErrorActionPreference = "Stop"
+
+
+function CheckLastExitCode {
+    param ([int[]]$SuccessCodes = @(0), [scriptblock]$CleanupScript=$null)
+
+    if ($SuccessCodes -notcontains $LastExitCode) {
+        if ($CleanupScript) {
+            "Executing cleanup script: $CleanupScript"
+            &$CleanupScript
+        }
+        $msg = @"
+EXE RETURNED EXIT CODE $LastExitCode
+CALLSTACK:$(Get-PSCallStack | Out-String)
+"@
+        throw $msg
+    }
+}
+
 $arch = $args[0]
 $ninja = $false
 if ($args[1] -eq "--from-ninja") {
@@ -32,6 +51,7 @@ if (-not $ninja) {
 
 	# Update version based on git tag
 	python3 .\version\build_pep440_version.py
+	CheckLastExitCode
 
 	# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
 	cp ..\README.md .\kaleido\
@@ -40,7 +60,9 @@ if (-not $ninja) {
 
 	# Check python version
 	python3 --version
+	CheckLastExitCode
 	python3 -c "import sys; print(sys.prefix)"
+	CheckLastExitCode
 }
 # cd to repos/src
 cd src
@@ -58,6 +80,7 @@ if (-not $ninja) {
 
 	# Perform build, result will be out/Kaleido_win/kaleido
 	gn gen out\Kaleido_win_$arch
+	CheckLastExitCode
 }
 
 # Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
@@ -67,6 +90,7 @@ if (Test-Path headless\app\scopes) {
 
 Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse # we do this twice to make sure it has ur changes after gn ge
 ninja -C out\Kaleido_win_$arch -j 16 kaleido
+CheckLastExitCode
 
 # Copy build files
 if (-Not (Test-Path ..\build\kaleido)) {
@@ -76,6 +100,8 @@ Remove-Item -Recurse -Force ..\build\kaleido\* -ErrorAction Ignore
 New-Item -Path ..\build\kaleido\bin -ItemType "directory"
 
 Copy-Item out\Kaleido_win_$arch\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
+
+# doesn't work from here
 Copy-Item out\Kaleido_win_$arch\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
 # version
@@ -101,8 +127,11 @@ if (-Not (Test-Path build)) {
     New-Item -Path build -ItemType "directory"
 }
 npm install
+CheckLastExitCode
 npm run clean
+CheckLastExitCode
 npm run build
+CheckLastExitCode
 
 # Back to src
 cd ..\..\src
@@ -119,6 +148,7 @@ $env:path = $original_path
 cd ..\kaleido\py
 $env:KALEIDO_ARCH=$arch
 python3 setup.py package
+CheckLastExitCode
 
 # Change up to kaleido/ directory
 cd ..
