@@ -54,7 +54,7 @@ namespace base {
 
         for (const StringPiece& cur_path:
             SplitStringPiece(path, ";", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
-            
+
             // Build wide strings using wstringstreams
             std::wstringstream wpath_ss;
             wpath_ss << std::string(cur_path).c_str();
@@ -189,10 +189,11 @@ void Kaleido::ExportNext() {
             kaleido::utils::writeJsonMessage(1, "Invalid JSON");
             continue;
         }
+        base::Value::Dict &jsonDict = json->GetDict();
 
         // Read "operation" key, defaulting to "export" if none provided.
-        std::string *maybe_operation = json->FindStringKey("operation");
-        std::string operation;
+        std::string *maybe_operation = jsonDict.FindString("operation");
+        std::string operation; // We're avoiding carrying pointers through ops
         if (maybe_operation) {
             operation = *maybe_operation;
         } else {
@@ -205,7 +206,7 @@ void Kaleido::ExportNext() {
             kaleido::utils::writeJsonMessage(1, base::StringPrintf("Invalid operation: %s", operation.c_str()));
             continue;
         } else {
-            std::string *maybe_format = json->FindStringKey("format");
+            std::string *maybe_format = jsonDict.FindString("format");
             if (maybe_format) {
                 std::string format = *maybe_format;
 
@@ -274,24 +275,38 @@ void Kaleido::OnExportComplete(
         // JSON parse result to get format
         std::string responseString = result->GetResult()->GetValue()->GetString();
         absl::optional<base::Value> responseJson = base::JSONReader::Read(responseString);
-        base::DictionaryValue* responseDict;
-        responseJson.value().GetAsDictionary(&responseDict);
+        if (!responseJson.has_value()) {
+            std::string error = base::StringPrintf("Export returned null");
+            kaleido::utils::writeJsonMessage(1, error);
+            Reload();
+            return;
+        }
+        base::Value::Dict &responseDict = responseJson->GetDict();
 
         // format
-        std::string format;
-        responseDict->GetString("format", &format);
+        std::string *format_maybe = responseDict.FindString("format");
+
+        if (!format_maybe) {
+            std::string error = base::StringPrintf("Malformed Export JSON: format key not found.");
+            kaleido::utils::writeJsonMessage(1, error);
+            Reload();
+            return;
+        }
+
+        std::string format = *format_maybe;
 
         if (format == "pdf" || format == "eps") {
-            std::string bgColor, imgData;
-            responseDict->GetString("pdfBgColor", &bgColor);
-            responseDict->GetString("result", &imgData);
+            // Lots of possible undefined behavior here if these things don't exist
+            // But all are unused variables that were in the original.
 
-            int width, height;
-            responseDict->GetInteger("width", &width);
-            responseDict->GetInteger("height", &height);
 
-            double scale;
-            responseDict->GetDouble("scale", &scale);
+            //std::string &bgColor = *responseDict.FindString("pdfBgColor");
+            //std::string &imgData = *responseDict.FindString("result");
+
+            //int width = responseDict.FindInt("width").value();
+            //int height = responseDict.FindInt("height").value();
+
+            //double scale = responseDict.FindDouble("scale").value();
 
             devtools_client_->GetPage()->GetExperimental()->PrintToPDF(
                     headless::page::PrintToPDFParams::Builder()
@@ -305,8 +320,7 @@ void Kaleido::OnExportComplete(
                     base::BindOnce(&Kaleido::OnPDFCreated, weak_factory_.GetWeakPtr(), responseString));
         } else if (format == "emf"){
             // Write SVG data to temporary file
-            std::string svgData;
-            responseDict->GetString("result", &svgData);
+            std::string &svgData = *responseDict.FindString("result"); // Hope it is there!
 
             // Write pdf to temporary file
             std::string inFileName = std::tmpnam(nullptr) + std::string(".svg");
@@ -340,11 +354,16 @@ void Kaleido::OnExportComplete(
                 std::string base64emf = headless::protocol::Binary::fromVector(emfBuffer).toBase64();
 
                 // Add base64 encoded EMF data to result dict
-                responseDict->SetString("result", base64emf);
+                responseDict.Set("result", base64emf);
+                // I'm very curious if we can't just write directly to svgData to chane this value since it's a reference to it
+                // Clearly less readable though - AJP
 
                 // Write results JSON string
                 std::string response;
-                base::JSONWriter::Write(*responseDict, &response);
+                // DictionaryValue was a subclass of Value, but not anymore -- AJP
+                // https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125/base/values.h#164
+                base::JSONWriter::Write(base::Value(std::move(responseDict)), &response);
+
                 std::cout << response << "\n";
 
                 Reload();
@@ -359,8 +378,7 @@ void Kaleido::OnExportComplete(
                 return;
             }
         } else {
-            // Write results json string
-            std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl;
+            std::cout << result->GetResult()->GetValue()->GetString().c_str() << std::endl; // So python processes the JSON? - AJP
             Reload();
             return;
         }
@@ -397,11 +415,10 @@ void Kaleido::OnHeapEvalComplete(std::unique_ptr<headless::runtime::EvaluateResu
     } else {
         std::string responseString = result->GetResult()->GetValue()->GetString();
         absl::optional<base::Value> responseJson = base::JSONReader::Read(responseString);
-        base::DictionaryValue* responseDict;
-        responseJson.value().GetAsDictionary(&responseDict);
+        base::Value::Dict & responseDict = responseJson->GetDict();
 
         // jsHeapSizeLimit
-        responseDict->GetDouble("jsHeapSizeLimit", &jsHeapSizeLimit);
+        responseDict.FindDouble("jsHeapSizeLimit");
 
         ExportNext();
     }
@@ -416,12 +433,17 @@ void Kaleido::OnPDFCreated(
         kaleido::utils::writeJsonMessage(1, error);
     } else {
         absl::optional<base::Value> responseJson = base::JSONReader::Read(responseString);
-        base::DictionaryValue* responseDict;
-        responseJson.value().GetAsDictionary(&responseDict);
+        base::Value::Dict &responseDict = responseJson->GetDict();
 
         // format
-        std::string format;
-        responseDict->GetString("format", &format);
+        std::string *format_maybe = responseDict.FindString("format");
+        if (!format_maybe) {
+            kaleido::utils::writeJsonMessage(1, "Malformed json, missing key 'format', PDF to EPS conversion failed.");
+            Reload();
+            return;
+        }
+        std::string format = *format_maybe;
+
 
         // Initialize empty result
         std::string stringResult;
@@ -458,11 +480,11 @@ void Kaleido::OnPDFCreated(
         }
 
         // Add base64 encoded PDF bytes to result dict
-        responseDict->SetString("result", stringResult);
+        responseDict.Set("result", stringResult);
 
         // Write results JSON string
         std::string response;
-        base::JSONWriter::Write(*responseDict, &response);
+        base::JSONWriter::Write(base::Value(std::move(responseDict)), &response);
         std::cout << response << "\n";
     }
 
