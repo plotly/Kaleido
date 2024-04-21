@@ -2,6 +2,28 @@
 $env:DEPOT_TOOLS_COMMIT="f9f61a9d7c0c76a71dc1db860d1994c53c8aa148"
 $env:CHROMIUM_VERSION_TAG="108.0.5359.125"
 
+$ErrorActionPreference = "Stop"
+
+$original_path = $env:path
+$original_pwd = $pwd | Select -ExpandProperty Path
+function CleanUp {
+	$env:path = "$original_path"
+	cd $original_pwd
+}
+
+trap { CleanUp }
+function CheckLastExitCode {
+    param ([int[]]$SuccessCodes = @(0), [scriptblock]$CleanupScript=$null)
+
+    if ($SuccessCodes -notcontains $LastExitCode) {
+        $msg = @"
+EXE RETURNED EXIT CODE $LastExitCode
+CALLSTACK:$(Get-PSCallStack | Out-String)
+"@
+        throw $msg
+    }
+}
+
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
@@ -11,11 +33,11 @@ cd repos
 # Get depot_tools
 git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 cd depot_tools
-
+CheckLastExitCode
 
 git reset --hard ${env:DEPOT_TOOLS_COMMIT}
 git clean -ffd
-
+CheckLastExitCode
 # GCLIENT_PY3 was experimental when this was configured
 $env:GCLIENT_PY3=0
 
@@ -34,22 +56,27 @@ $env:DEPOT_TOOLS_UPDATE=0
 # which we do need to run! Google design flaw.
 
 cmd.exe /c cipd_bin_setup.bat
+CheckLastExitCode
 cmd.exe /c bootstrap\win_tools.bat
+CheckLastExitCode
 # If you're updating the DEPOT_TOOLS_COMMIT, you should read the skipped bat file to make sure that
 # init steps like this are included here, but don't include any steps to update git. /end TODO
 
 cd ..
 
 cmd.exe /c gclient sync -D --force --reset --no-history --jobs=3 --revision=%CHROMIUM_VERSION_TAG% 
+CheckLastExitCode
 # google wants cmd.exe not powershell
 # cmd not strictly necessary as gclient is a .bat that invokes cmd intrinsically but better safe than sorry
 
 cd src
 # Append kaleido section to headless build file (src\headless\BUILD.gn)
 cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
+CheckLastExitCode
 
 ## Write out credits
 python3 ..\src\tools\licenses\licenses.py credits *> ..\CREDITS.html
+CheckLastExitCode
 
 ## Go back to root directory
 cd ..\..
