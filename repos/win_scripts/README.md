@@ -8,7 +8,7 @@ The `/repos/win_scripts/fetch_chromium.ps1` has two environment variables to set
 
 The same script also include a TODO note you need to read.
 
-Head the advice about patches in the main [BUILD_AND_RELEASE.md](../../BUILD_AND_RELEASE.md).
+Heed the advice about patches in the main [BUILD_AND_RELEASE.md](../../BUILD_AND_RELEASE.md).
 
 Otherwise, best of luck.
 
