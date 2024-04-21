@@ -2,12 +2,6 @@ Read the build notes for whatever version of Chromium you want to build with!
 
 You should have at least 20GB free, compiling takes 6 hours on a 4 core 8GB RAM machine.
 
-## Urgent Todo:
-
-Unlike the rest of the world, windows scripts don't bubble up errors- it is often totally silent.
-The windows `ps1` scripts should be improved by occasionally or at least ultimately checking expclitly for failure and manually throwing an error.
-Furthermore, `make clean` and `--resume` style logic would be appreciated.
-
 ## Preparing a Build
 
 The `/repos/win_scripts/fetch_chromium.ps1` has two environment variables to set the Chromium tag and depot version.
@@ -22,13 +16,13 @@ Otherwise, best of luck.
 
 ### Dependencies:
 
-* Visual Studio 2019+ (community edition is fine)
+* Visual Studio 2019+ (community edition is fine) 
 * nodejs 12
 * Python 3
 
-See https://chromium.googlesource.com/chromium/src/+/master/docs/windows_build_instructions.md for more possibly more update info about chromium dependencies specifically.
+_NB: Go to the chromium repo online, the correct tag, the docs/ folder, and look for winows build instructions for specific version infromation_
 
-
+### Run Scripts:
 ```
 $ /repos/win_scripts/fetch_chromium.ps1
 ```
@@ -41,6 +35,8 @@ $ /repos/win_scripts/build_kaleido.ps1 x64
 $ /repos/win_scripts/build_kaleido.ps1 x86
 ```
 
+You can add `--from-ninja` to resume from a compile error.
+
 The build step will also create the Python wheel under `repos/kaleido/py/dist/`
 
 ## Build Notes
@@ -49,21 +45,15 @@ The build step will also create the Python wheel under `repos/kaleido/py/dist/`
 
 The chromium windows instructions asked for the following for x86 and x86_64 architectures.
 
-```
-$ PATH_TO_INSTALLER.EXE ^
---add Microsoft.VisualStudio.Workload.NativeDesktop ^
---add Microsoft.VisualStudio.Component.VC.ATLMFC ^
---includeRecommended
-```
-I found these in the GUI installer for Visual Studio 2022.
-
 Also asked for was:
 
 * Windows 11 SDK version 10.0.22621.2428. This can be installed separately or by checking the appropriate box in the Visual Studio Installer.
 * (Windows 11) SDK Debugging Tools 10.0.22621.755 or higher 
 
-> You may also have to set variable vs2022_install to your installation path of Visual Studio 2022, like set vs2022_install=C:\Program Files\Microsoft Visual Studio\2022\Professional.
-
-However, since I was intending to install a verison a year older than the date of thos instructions, I had to install windows 10 sdk version 10.0.20348.0. [Microsoft SDK-Archive](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/).
+You can do that through Visual Studio Installer + Windows control panel to activate the debugger, but I find it easier to just install from here using checkboxes: [Microsoft SDK-Archive](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/).
 
 I didn't want to install all the options, but I did have to install the debugging tools and the stuff marked as Desktop Apps. Visual Studio has the option to install it as well but it misses the debugging tools and therefore doesn't work.
+
+### Chromium 88.0.4324.150 on 4/21/2024
+
+In addition to the normal stuff, I had to go to Visual Studio Installer, Build Tools-->Modify, search and install ATL.
