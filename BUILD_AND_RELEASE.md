@@ -8,33 +8,43 @@ While Python is the initial target language for Kaleido, it has been designed to
 
 # Building and Releasing
 
-Kaleido depends on chromium, so building and releasing Kaleido means building chromium. This is a ~18GB download and ultimately ~25GB after build. The compile can take nearly half a day. If the compile throws an error, you can *just find the `ninja` command in the `build_kaleido.[ps1/sh]` script for that platform and resume the compile by running it manually.* This is also a good way to propagate the error that caused the build to fail if the script outputs too much junk after the failure.
+Kaleido depends on building chromium: an ~18GB download, ~25GB after the half-day compile.
 
-**The best strategy is to use a) the last known good build (see below) and if no b) the most updated stable version of chromium.** Old versions of chromium usually need work to build because its own 3rd party dependencies change. That work will have been done for successful builds, but may have become out-of-date. 
+**Good strategies:** 
 
-However, today (4/20/2024) that is not possible as Kaleido depends on [an API that Chromium deleted after version 108](https://source.chromium.org/chromium/chromium/src/+/69dde6480cf45b1ee6cee9d2a091546bba1022cf). Today's compile is that version 108, from 2023.
+1. the latest known good build (see below) OR
+2. the most updated stable version of chromium
+
+Third party dependencies are always in flux and no build is guarenteed to succeed at any point without work.
+
+However, today (4/20/2024) Kaleido uses an [API that Chromium deleted after version 108](https://source.chromium.org/chromium/chromium/src/+/69dde6480cf45b1ee6cee9d2a091546bba1022cf). 
 
 ## How to build
 
-The directories `repos/win_scripts` `repos/mac_scripts` and `repos/linux_scripts` each contain README.md with specific instructions for preparing a build for that platform. The readme also contains historical notes about a particular build was achieved for a particular chromium version on a particular date.
+Refer to:
+
+* [win README.md](repos/win_scripts/README.md)
+* [mac README.md](repos/mac_scripts/README.md)
+* [linux README.md](repos/linux_scripts/README.md)
 
 Here is a summary (since 2024):
 
-| Date      | Chromium Tag   | depot_tools | linux | mac | win | Kaleido Ref |
-| --------  | -----------    | ----------- | ----- | --- | --- | ----------- |
-| 4/20/2024 | 108.0.5359.125 | f9f61a9d7   |   ❓  |  ❓ |  ✅ |             |
-
+| Date      | Chromium Tag          | depot_tools | linux | mac | win | Kaleido Ref | Notes                        |
+| --------  | --------------------- | ----------- | ----- | --- | --  | -----       |  -----------------------------
+| 4/20/2024 | 108.0.5359.125 (docs) | f9f61a9d7   |   ❓  |  ❓ |  ❓ |              | |
+| 4/21/2024 | 88.0.4324.150 (docs)  | f9f61a9d7   |   ❓  |  ❓ |  ❓ |              | Contains a temporary revert of the Kaleido source code to 551875a |
+_only counts if it works with circle CI_
 ### Preparing a Build
 
 #### Picking a specific chromium version
-
+From old README.md/Google:
 > Find a stable chromium version tag from https://chromereleases.googleblog.com/search/label/Desktop%20Update. Look up date of associated tag in GitHub at https://github.com/chromium/chromium/
 E.g. Stable chrome version tag on 05/19/2020: 83.0.4103.61, set `CHROMIUM_TAG="83.0.4103.61"`
 >
 > Search through depot_tools commitlog (https://chromium.googlesource.com/chromium/tools/depot_tools/+log) for commit hash of commit from the same day.
 E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e67e41a`
 
-#### What changes to make
+#### Further Modificaitons
 Also refer to the README for the specific platform.
 
 In `repos/patches` there are folders by chromium tags and patches for that version of chromium. You might want to look at the README.md for the closest version you're trying to install, and if you see the indicated errors, copy the relevant patch 
