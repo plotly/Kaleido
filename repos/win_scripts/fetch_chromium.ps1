@@ -75,7 +75,7 @@ cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
 CheckLastExitCode
 
 ## Write out credits
-python3 ..\src\tools\licenses\licenses.py credits *> ..\CREDITS.html
+python3 $pwd\tools\licenses\licenses.py credits *> ..\CREDITS.html
 CheckLastExitCode
 
 ## Go back to root directory
