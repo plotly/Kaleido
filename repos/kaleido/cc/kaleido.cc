@@ -544,7 +544,6 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         kaleido::utils::writeJsonMessage(1, "No Scope Specified");
         browser->Shutdown();
         exit(EXIT_FAILURE);
-        return;
     }
 
     // Get first command line argument as a std::string using a string stream.
@@ -561,12 +560,10 @@ void OnHeadlessBrowserStarted(headless::HeadlessBrowser* browser) {
         kaleido::utils::writeJsonMessage(1,  base::StringPrintf("Invalid scope: %s", scope_name.c_str()));
         browser->Shutdown();
         exit(EXIT_FAILURE);
-        return;
     } else if (!scope->errorMessage.empty()) {
         kaleido::utils::writeJsonMessage(1,  scope->errorMessage);
         browser->Shutdown();
         exit(EXIT_FAILURE);
-        return;
     }
 
     // Add javascript bundle
