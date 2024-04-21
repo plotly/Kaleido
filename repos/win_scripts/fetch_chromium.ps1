@@ -1,6 +1,6 @@
 # Commits
 $env:DEPOT_TOOLS_COMMIT="f9f61a9d7c0c76a71dc1db860d1994c53c8aa148"
-$env:CHROMIUM_VERSION_TAG="108.0.5359.125"
+$env:CHROMIUM_VERSION_TAG="88.0.4324.150"
 
 $ErrorActionPreference = "Stop"
 
