@@ -7,8 +7,8 @@ $ErrorActionPreference = "Stop"
 $original_path = $env:path
 $original_pwd = $pwd | Select -ExpandProperty Path
 function CleanUp {
-	$env:path = "$original_path"
-	cd $original_pwd
+    $env:path = "$original_path"
+    cd $original_pwd
 }
 
 trap { CleanUp }
@@ -75,9 +75,13 @@ cat ..\win_scripts\build_target.py | Add-Content -Path .\headless\BUILD.gn
 CheckLastExitCode
 
 ## Write out credits
-python $pwd\tools\licenses\licenses.py credits *> ..\CREDITS.html
-echo "If this last command didn't work, maybe google finally updated licenses.py to use Python3?"
-CheckLastExitCode
+
+python3 $pwd\tools\licenses\licenses.py credits *> ..\CREDITS.html
+if ($LASTEXITCODE -ne 0) {
+    python $pwd\tools\licenses\licenses.py credits *> ..\CREDITS.html
+    CheckLastExitCode
+}
+
 
 ## Go back to root directory
 cd ..\..
