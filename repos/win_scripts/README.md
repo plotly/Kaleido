@@ -20,7 +20,7 @@ Otherwise, best of luck.
 * nodejs 12
 * Python 3
 
-_NB: Go to the chromium repo online, the correct tag, the docs/ folder, and look for winows build instructions for specific version infromation_
+_NB: Go to the chromium repo online, the correct tag, the docs/ folder, and look for windows build instructions for specific version information_
 
 ### Run Scripts:
 ```
