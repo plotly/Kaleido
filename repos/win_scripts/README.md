@@ -50,7 +50,7 @@ Docs ask for:
 
 You can do that through Visual Studio Installer + Windows control panel to activate the debugger, but I find it easier to just install from here using checkboxes: [Microsoft SDK-Archive](https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/).
 
-I didn't want to install all the options, but I did have to install the debugging tools and the stuff marked as Desktop Apps. Visual Studio has the option to install it as well but it misses the debugging tools and therefore doesn't work.
+I didn't want to install all the options, but I did have to install the debugging tools and the stuff marked as Desktop Apps. Visual Studio has the option to install it as well but it misses the debugging tools and therefore doesn't work (unless control panel modifications).
 
 ### Chromium 88.0.4324.150 on 4/21/2024
 
