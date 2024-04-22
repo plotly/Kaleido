@@ -1,15 +1,14 @@
-Read the build notes for whatever version of Chromium you want to build with!
+At the bottom there are build notes for specific dates and versions. 
 
-You should have at least 20GB free, compiling takes 6 hours on a 4 core 8GB RAM machine.
+You should have at least 20GB free, compiling takes 3-6 hours on a 4 core 8GB RAM machine.
 
 ## Preparing a Build
 
 ### Files to change:
 The `/repos/win_scripts/fetch_chromium.ps1` has two environmental  variables to set the Chromium tag and depot version.
+The same script also include a TODO note you need to read regarding avoiding update in depot_tools but NOT avoiding init.
+
 The `/repos/win_scripts/build_kaleido.ps1` has one environmental variable to set the cc version.
-
-
-The same script also include a TODO note you need to read.
 
 Heed the advice about patches in the main [BUILD_AND_RELEASE.md](../../BUILD_AND_RELEASE.md).
 
@@ -57,4 +56,4 @@ I didn't want to install all the options, but I did have to install the debuggin
 
 ### Chromium 88.0.4324.150 on 4/21/2024 (cc)
 
-In addition to the normal stuff, I had to go to Visual Studio Installer, Build Tools-->Modify, search and install ATL.
+I also had to install the SDK manually like in 108. In addition, I had to go to Visual Studio Installer, Build Tools-->Modify, search and install ATL, which required a patch, described in the path folder for 88.

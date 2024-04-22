@@ -30,25 +30,27 @@ $env:cpus = 8
 export cpus = 8
 ```
 
-Refer to:
+After reading this, refer to:
 
 * [win README.md](repos/win_scripts/README.md)
 * [mac README.md](repos/mac_scripts/README.md)
 * [linux README.md](repos/linux_scripts/README.md)
 
-Here is a summary (since 2024):
+Bottom line, the operating systems and chromium change over time, and no formerly successful build is guarenteed. You can try running the scripts, but you may end up reading these notes in detail, especially "Preparing a Build". :-).
 
-| Date      | Chromium Tag                                                                                                                                                                                           | depot_tools | linux | mac | win | K. CC  | K. Ref | Notes                          |
+Here is a summary (since 2024) of successes:
+
+| Date      | Chromium Tag                                                                                                                                                                                           | depot_tools | linux | mac | win | K. CC  | Kaleido | Notes                          |
 | --------  | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | ----- | --- | --  |------- | ------ |  ----------------------------- |
 | 4/20/2024 | [108.0.5359.125](https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125) [(docs)](https://chromium.googlesource.com/chromium/src/+/refs/tags/108.0.5359.125/docs/)                  | f9f61a9d7   |   ❓  |  ❓ |  ❓ | cc-1.5 |        |  Runtime errors likely due to old API degredation |
-| 4/21/2024 | [88.0.4324.150](https://chromium.googlesource.com/chromium/src/+/refs/tags/88.0.4324.150) [(docs)](https://chromium.googlesource.com/chromium/src/+/refs/tags/88.0.4324.150/docs/)                     | f9f61a9d7   |   ❓  |  ❓ | ✅* | cc     |        | Contains a temporary revert of the Kaleido source code to 551875a |
+| 4/21/2024 | [88.0.4324.150](https://chromium.googlesource.com/chromium/src/+/refs/tags/88.0.4324.150) [(docs)](https://chromium.googlesource.com/chromium/src/+/refs/tags/88.0.4324.150/docs/)                     | f9f61a9d7   |   ❓  |  ❓ | ✅* | cc     | dfad924 | |
 
 
 _* builds but locally, no circle ci integration_
 
 ### Preparing a Build
 
-Also refer to the README for the specific platform.
+OS-specific README's tell you had to specify a chromium version (and depot tools version).
 
 #### Picking a specific chromium version
 From old README.md/Google:
@@ -59,11 +61,11 @@ E.g. Stable chrome version tag on 05/19/2020: 83.0.4103.61, set `CHROMIUM_TAG="8
 E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e67e41a`
 #### Picking a cc version
 
-The c++ for Kaleido has to be updated sometimes based ont he chromium version. The platform README.md will tell you what variables to change.
+The c++ for Kaleido has to be updated sometimes based ont he chromium version. The platform README.md will tell you what variables to change for that. The `repos/kaleido/REAMDE-CC.md` contains some information about the difference between the versions, so you can cross reference errors and that, maybe. Otherwise you need serious git-fu + code note research to get a handle on Google's unstable API.
 
 #### Patching
 
-In `repos/patches` there are folders by chromium tags and patches for that version of chromium. You might want to look at the README.md for the closest version you're trying to install, and if you see the indicated errors, copy the relevant patch
+In `repos/patches` there are folders by chromium tags and patches for that version of chromium. You might want to look at the README.md for the closest version you're trying to install, and if you see the indicated errors, copy the relevant patch into a folder named after whatever chromium tag you're trying to run.
 
 #### Copying Run-Time Dependencies
 
