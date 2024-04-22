@@ -82,10 +82,37 @@ if ($LASTEXITCODE -ne 0) {
     CheckLastExitCode
 }
 
+# Apply patches
+
+cd ..
+
+# Define the source and destination directories
+$sourceDirectory = "$pwd\patches\$Env:CHROMIUM_VERSION_TAG"
+$destinationDirectory = "$pwd\src"
+
+# Check if the directory exists
+if (Test-Path -Path $sourceDirectory -PathType Container) {
+    $itemsToCopy = Get-ChildItem -Path $sourceDirectory -Recurse -File | Where-Object { $_.Name -ne "README.md" }
+    # Copy each file from the source directory to the destination directory
+    foreach ($item in $itemsToCopy) {
+        Write-Output "LOOP!"
+        $outPath = $destinationDirectory + $item.DirectoryName.Replace($sourceDirectory, "") + "\" + $item.Name
+        Write-Output $relative_file
+        # Ensure the destination directory exists
+        $null = New-Item -Path (Split-Path $outPath) -ItemType Directory -Force
+        
+        # Copy the file to the destination directory
+        Copy-Item -Path $item.FullName -Destination $outPath -Force
+        Write-Output " "
+    }
+} else {
+    Write-Host "No patch directory for $Env:CHROMIUM_VERSION_TAG"
+}
+
+
+# Copy files from the source directory to the destination directory recursively
+
+
 
 ## Go back to root directory
-cd ..\..
-
-
-
-
+cd ..
