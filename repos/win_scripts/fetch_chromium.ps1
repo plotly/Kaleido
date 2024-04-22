@@ -2,6 +2,11 @@
 $env:DEPOT_TOOLS_COMMIT="f9f61a9d7c0c76a71dc1db860d1994c53c8aa148"
 $env:CHROMIUM_VERSION_TAG="88.0.4324.150"
 
+if ($env:cpus -eq $null -or $env:cpus -notmatch '^\d+$') {
+    # Set the cpus environment variable to 4
+    $env:cpus = 4
+}
+
 $ErrorActionPreference = "Stop"
 
 $original_path = $env:path
@@ -64,7 +69,7 @@ CheckLastExitCode
 
 cd ..
 
-cmd.exe /c gclient sync -D --force --reset --no-history --jobs=3 --revision=%CHROMIUM_VERSION_TAG% 
+cmd.exe /c gclient sync -D --force --reset --no-history --jobs=$env:cpus --revision=%CHROMIUM_VERSION_TAG% 
 CheckLastExitCode
 # google wants cmd.exe not powershell
 # cmd not strictly necessary as gclient is a .bat that invokes cmd intrinsically but better safe than sorry

@@ -1,5 +1,10 @@
 $Env:CC_VERSION="cc"
 
+if ($env:cpus -eq $null -or $env:cpus -notmatch '^\d+$') {
+    # Set the cpus environment variable to 4
+    $env:cpus = 4
+}
+
 $ErrorActionPreference = "Stop"
 
 $original_path = $env:path
@@ -96,7 +101,7 @@ if (Test-Path headless\app\scopes) {
 }
 
 Copy-Item ..\kaleido\${env:CC_VERSION}\* -Destination headless\app\ -Recurse # we do this twice to make sure it has ur changes after gn ge
-ninja -C out\Kaleido_win_$arch -j 16 kaleido
+ninja -C out\Kaleido_win_$arch -j $env:cpus kaleido
 CheckLastExitCode
 
 # Copy build files

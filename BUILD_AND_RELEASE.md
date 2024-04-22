@@ -21,6 +21,15 @@ However, today (4/20/2024) Kaleido uses an [API that Chromium deleted after vers
 
 ## How to build
 
+Tip! Set environmental variable cpus! It defaults at 4.
+
+```
+# Powershell
+$env:cpus = 8
+# Bash
+export cpus = 8
+```
+
 Refer to:
 
 * [win README.md](repos/win_scripts/README.md)
