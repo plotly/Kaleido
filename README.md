@@ -1,6 +1,13 @@
 # Overview
 Kaleido is a cross-platform library for generating static images (e.g. png, svg, pdf, etc.) for web-based visualization libraries, with a particular focus on eliminating external dependencies. The project's initial focus is on the export of plotly.js images from Python for use by plotly.py, but it is designed to be relatively straight-forward to extend to other web-based visualization libraries, and other programming languages.  The primary focus of Kaleido (at least initially) is to serve as a dependency of web-based visualization libraries like plotly.py. As such, the focus is on providing a programmatic-friendly, rather than user-friendly, API.
 
+<div align="center">
+  <a href="https://dash.plotly.com/project-maintenance">
+    <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png" width="400px" alt="Maintained by Plotly">
+  </a>
+</div>
+
+
 # Installing Kaleido
 
 The kaleido package can be installed from [PyPI](https://pypi.org/) using pip...
