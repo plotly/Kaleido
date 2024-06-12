@@ -60,7 +60,7 @@ namespace kaleido {
                     }
                 }
             } else {
-                scriptTags.emplace_back("https://cdn.plot.ly/plotly-latest.min.js");
+                scriptTags.emplace_back("https://cdn.plot.ly/plotly-2.0.0.min.js");
             }
 
             // MathJax
