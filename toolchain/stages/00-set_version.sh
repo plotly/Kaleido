@@ -36,7 +36,7 @@ while (( $# )); do
     -h|--help)      printf "%s\n" "${usage[@]}"; exit 0  ;;
     -c|--chromium)  shift; CHROMIUM_VERSION_TAG="$1"     ;;
     -d|--depot)     shift; DEPOT_TOOLS_COMMIT="$1"       ;;
-    -a|--ask)       ASK=true
+    -a|--ask)       ASK=true                             ;;
     *)              printf "%s\n" "${usage[@]}"; exit 1  ;;
   esac
   shift
@@ -53,6 +53,7 @@ elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
     else
       error "Could not find a know configuration for ${CHROMIUM_VERSION_TAG}, see --help"
     fi
+  fi
 elif test -f $MAIN_DIR/.set_version; then
   . $MAIN_DIR/.set_version
 else
@@ -64,11 +65,10 @@ if $ASK; then
   options=($(ls -v $MAIN_DIR/toolchain/version_configurations)) # they say not to ever parse ls, oop
   select opt in "${options[@]}"
   do
-    echo "$REPLY, $opt"
-    if [ "$REPLY" == "c" ] or [ "$REPLY" == "C" ]; then
+    if [ "$REPLY" == "c" ] || [ "$REPLY" == "C" ]; then
       read -p "Chromium version tag (or ref): " CHROMIUM_VERSION_TAG
       read -p "Depot tools commit (or ref): " DEPOT_TOOLS_COMMIT
-    elif [ "$opt" == "" ]; then
+    elif [ "$opt" != "" ]; then
       . $MAIN_DIR/toolchain/version_configurations/$opt
     else
      error "$REPLY not understood"
