@@ -330,6 +330,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - windows_fetch:
           requires:
             - hold
@@ -341,6 +345,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - windows_fetch:
           requires:
             - hold
@@ -352,6 +360,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - mac_fetch:
           requires:
             - hold
@@ -366,6 +378,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - mac_fetch:
           requires:
             - hold
@@ -380,6 +396,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - linux_fetch:
           requires:
             - hold
@@ -397,6 +417,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - linux_fetch:
           requires:
             - hold
@@ -408,6 +432,10 @@ workflows:
     jobs:
       - hold:
           type: approval
+          filters:
+            branches:
+              only:
+                - master
       - linux_fetch:
           requires:
             - hold
