@@ -64,16 +64,16 @@ if $ASK; then
   options=($(ls -v $MAIN_DIR/toolchain/version_configurations)) # they say not to ever parse ls, oop
   select opt in "${options[@]}"
   do
-        echo "$REPLY, $opt"
-        if [ "$REPLY" == "c" ] or [ "$REPLY" == "C" ]; then
-          read -p "Chromium version tag (or ref): " CHROMIUM_VERSION_TAG
-          read -p "Depot tools commit (or ref): " DEPOT_TOOLS_COMMIT
-        elif [ "$opt" == "" ]; then
-          . $MAIN_DIR/toolchain/version_configurations/$opt
-        else
-         error "$REPLY not understood"
-        fi
-        break
+    echo "$REPLY, $opt"
+    if [ "$REPLY" == "c" ] or [ "$REPLY" == "C" ]; then
+      read -p "Chromium version tag (or ref): " CHROMIUM_VERSION_TAG
+      read -p "Depot tools commit (or ref): " DEPOT_TOOLS_COMMIT
+    elif [ "$opt" == "" ]; then
+      . $MAIN_DIR/toolchain/version_configurations/$opt
+    else
+     error "$REPLY not understood"
+    fi
+    break
   done
 fi
 
