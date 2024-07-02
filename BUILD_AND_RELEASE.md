@@ -61,7 +61,7 @@ E.g. Stable chrome version tag on 05/19/2020: 83.0.4103.61, set `CHROMIUM_TAG="8
 E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e67e41a`
 #### Picking a cc version
 
-The c++ for Kaleido has to be updated sometimes based on the chromium version. The platform README.md will tell you what variables to change for that. The (repos/kaleido/REAMDE-CC.md)[repos/kaleido/README-CC.md] contains some information about the difference between the versions, so you can cross reference errors and that, maybe. Otherwise you need serious git-fu + code note research to get a handle on Google's unstable API.
+The c++ for Kaleido has to be updated sometimes based on the chromium version. The platform README.md will tell you what variables to change for that. The [repos/kaleido/REAMDE-CC.md](repos/kaleido/README-CC.md) contains some information about the difference between the versions, so you can cross reference errors and that, maybe. Otherwise you need serious git-fu + code note research to get a handle on Google's unstable API.
 
 #### Patching
 
