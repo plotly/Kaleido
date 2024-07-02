@@ -1,56 +1,108 @@
+$Env:CC_VERSION="cc"
+
+if ($env:cpus -eq $null -or $env:cpus -notmatch '^\d+$') {
+    # Set the cpus environment variable to 4
+    $env:cpus = 4
+}
+
+$ErrorActionPreference = "Stop"
+
+$original_path = $env:path
+$original_pwd = $pwd | Select -ExpandProperty Path
+function CleanUp {
+	$env:path = "$original_path"
+	cd $original_pwd
+}
+
+trap { CleanUp }
+function CheckLastExitCode {
+    param ([int[]]$SuccessCodes = @(0), [scriptblock]$CleanupScript=$null)
+
+    if ($SuccessCodes -notcontains $LastExitCode) {
+        $msg = @"
+EXE RETURNED EXIT CODE $LastExitCode
+CALLSTACK:$(Get-PSCallStack | Out-String)
+"@
+        throw $msg
+    }
+}
+
 $arch = $args[0]
+$ninja = $false
+if ($args[1] -eq "--from-ninja") {
+	$ninja = $true
+} elseif ($args[0] -eq "--from_ninja") {
+	$ninja = $true
+	$arch = $args[1]
+}
 echo $arch
 if (-not ($arch -eq "x86" -or $arch -eq "x64")) {
     throw "Invalid architecture,: must be one of x86 or x64: received $arch"
 }
 
+
+# save current directory
+
 # cd to repos directory
 cd $PSScriptRoot\..
 
-# Update version based on git tag
-python .\version\build_pep440_version.py
-
-# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
-cp ..\README.md .\kaleido\
-cp ..\LICENSE.txt .\kaleido\
-cp .\CREDITS.html .\kaleido\
-
 # Add depot_tools to path
-$original_path = $env:path
-$env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap-3_8_0_chromium_8_bin\python\bin;$env:path"
+$env:path = "$pwd\depot_tools;$pwd\depot_tools\bootstrap;$env:path"
 echo $env:path
-
-$env:GCLIENT_PY3=0
-
-# Check python version
-python --version
-python -c "import sys; print(sys.prefix)"
 
 # Tell gclient not to update depot_tools
 $env:DEPOT_TOOLS_UPDATE=0
 # Tell gclient to use local Vistual Studio install
 $env:DEPOT_TOOLS_WIN_TOOLCHAIN=0
 
+
+$env:GCLIENT_PY3=0
+
+# Write Versions
+if (-not $ninja) {
+
+	# Update version based on git tag
+	python3 .\version\build_pep440_version.py
+	CheckLastExitCode
+
+	# Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
+	cp ..\README.md .\kaleido\
+	cp ..\LICENSE.txt .\kaleido\
+	cp .\CREDITS.html .\kaleido\
+
+	# Check python version
+	python3 --version
+	CheckLastExitCode
+	python3 -c "import sys; print(sys.prefix)"
+	CheckLastExitCode
+}
 # cd to repos/src
 cd src
 
-# Make output directory
-if (-Not (Test-Path out\Kaleido_win_$arch)) {
-    New-Item -Path out\Kaleido_win_$arch -ItemType "directory" -ErrorAction Ignore
-}
+# Prep for Ninja
+if (-not $ninja) {
+	# Make output directory
+	if (-Not (Test-Path out\Kaleido_win_$arch)) {
+	    New-Item -Path out\Kaleido_win_$arch -ItemType "directory" -ErrorAction Ignore
+	}
 
-# Write out/Kaleido_win/args.gn
-Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win_$arch\args.gn
+	# Write out/Kaleido_win/args.gn
+	Copy-Item ..\win_scripts\args_$arch.gn -Destination out\Kaleido_win_$arch\args.gn
+
+
+	# Perform build, result will be out/Kaleido_win/kaleido
+	gn gen out\Kaleido_win_$arch
+	CheckLastExitCode
+}
 
 # Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
 if (Test-Path headless\app\scopes) {
     Remove-Item -Recurse -Force headless\app\scopes
 }
-Copy-Item ..\kaleido\cc\* -Destination headless\app\ -Recurse 
 
-# Perform build, result will be out/Kaleido_win/kaleido
-gn gen out\Kaleido_win_$arch
-ninja -C out\Kaleido_win_$arch -j 16 kaleido
+Copy-Item ..\kaleido\${env:CC_VERSION}\* -Destination headless\app\ -Recurse # we do this twice to make sure it has ur changes after gn ge
+ninja -C out\Kaleido_win_$arch -j $env:cpus kaleido
+CheckLastExitCode
 
 # Copy build files
 if (-Not (Test-Path ..\build\kaleido)) {
@@ -60,6 +112,7 @@ Remove-Item -Recurse -Force ..\build\kaleido\* -ErrorAction Ignore
 New-Item -Path ..\build\kaleido\bin -ItemType "directory"
 
 Copy-Item out\Kaleido_win_$arch\kaleido.exe -Destination ..\build\kaleido\bin -Recurse
+
 Copy-Item out\Kaleido_win_$arch\swiftshader -Destination ..\build\kaleido\bin -Recurse
 
 # version
@@ -85,8 +138,11 @@ if (-Not (Test-Path build)) {
     New-Item -Path build -ItemType "directory"
 }
 npm install
+CheckLastExitCode
 npm run clean
+CheckLastExitCode
 npm run build
+CheckLastExitCode
 
 # Back to src
 cd ..\..\src
@@ -100,9 +156,10 @@ Copy-Item ..\win_scripts\kaleido.cmd -Destination ..\build\kaleido\
 
 # Build python wheel
 $env:path = $original_path
-cd ../kaleido/py
+cd ..\kaleido\py
 $env:KALEIDO_ARCH=$arch
-python setup.py package
+python3 setup.py package
+CheckLastExitCode
 
 # Change up to kaleido/ directory
 cd ..
@@ -111,10 +168,14 @@ cd ..
 if (Test-Path ..\build\kaleido_win.zip) {
     Remove-Item -Recurse -Force ..\build\kaleido_win.zip
 }
-Compress-Archive -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win_$arch.zip
+Compress-Archive -Force -Path ..\build\kaleido -DestinationPath ..\build\kaleido_win_$arch.zip
 
 # Build wheel zip archive
 if (Test-Path ..\kaleido\py\kaleido_wheel.zip) {
     Remove-Item -Recurse -Force ..\kaleido\py\kaleido_wheel.zip
 }
-Compress-Archive -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
+Compress-Archive -Force -Path ..\kaleido\py\dist -DestinationPath ..\kaleido\py\kaleido_wheel.zip
+
+cd ..\..
+
+CleanUp
