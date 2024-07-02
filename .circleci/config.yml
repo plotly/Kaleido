@@ -22,7 +22,7 @@ commands:
           paths:
             - kaleido/py/
             - kaleido/tests/
-  
+
   windows_build:
     parameters:
       arch:
@@ -74,7 +74,7 @@ commands:
             - .gclient_entries
             - kaleido/version
             - CREDITS.html
-          
+
   mac_build:
     parameters:
       arch:
@@ -96,15 +96,15 @@ commands:
           at: ./repos
       - run:
           command: ./repos/mac_scripts/build_kaleido <<parameters.arch>>
-          no_output_timeout: 30m          
+          no_output_timeout: 30m
       - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
       - store_artifacts:
           path: ./repos/kaleido/kaleido_artifacts_mac_<<parameters.arch>>.zip
 
-          
+
 jobs:
   linux_fetch:
-    machine: 
+    machine:
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: large
     steps:
@@ -132,9 +132,9 @@ jobs:
             - .gclient_entries
             - kaleido/version
             - CREDITS.html
-            
+
   linux_build_x64:
-    machine: 
+    machine:
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
     environment:
@@ -144,7 +144,7 @@ jobs:
           arch: "x64"
 
   linux_build_arm64:
-    machine: 
+    machine:
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
     environment:
@@ -154,7 +154,7 @@ jobs:
           arch: "arm64"
 
   linux_build_arm:
-    machine: 
+    machine:
       image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
     resource_class: xlarge
     environment:
@@ -162,7 +162,7 @@ jobs:
     steps:
       - linux_build:
           arch: "arm"
-          
+
   linux_test_37:
     docker:
       - image: continuumio/miniconda3
@@ -183,7 +183,7 @@ jobs:
             pytest -s test_py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
-      
+
   linux_test_27:
     docker:
       - image: continuumio/miniconda2
@@ -203,7 +203,7 @@ jobs:
             pytest -s test_py/
       - store_artifacts:
           path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
-            
+
   mac_fetch:
     macos:  # indicate that we are using the macOS executor
       xcode: 11.1.0 # indicate our selected version of Xcode
@@ -239,7 +239,7 @@ jobs:
             - kaleido/version
             - CREDITS.html
 
-            
+
   mac_build_blink_x64:
     macos:  # indicate that we are using the macOS executor
       xcode: 12.2.0 # indicate our selected version of Xcode
@@ -259,8 +259,8 @@ jobs:
     steps:
       - mac_build_blink:
           arch: "arm64"
-            
-            
+
+
   mac_build_x64:
     macos:  # indicate that we are using the macOS executor
       xcode: 12.2.0 # indicate our selected version of Xcode
@@ -280,8 +280,8 @@ jobs:
     steps:
       - mac_build:
           arch: "arm64"
-            
-          
+
+
   windows_fetch:
     executor:
       name: win/default
@@ -328,21 +328,33 @@ jobs:
 workflows:
   build-windows-x64:
     jobs:
-      - windows_fetch
+      - hold:
+          type: approval
+      - windows_fetch:
+          requires:
+            - hold
       - windows_build_x64:
           requires:
             - windows_fetch
 
   build-windows-x86:
     jobs:
-      - windows_fetch
+      - hold:
+          type: approval
+      - windows_fetch:
+          requires:
+            - hold
       - windows_build_x86:
           requires:
             - windows_fetch
-            
+
   build-mac-x64:
     jobs:
-      - mac_fetch
+      - hold:
+          type: approval
+      - mac_fetch:
+          requires:
+            - hold
       - mac_build_blink_x64:
           requires:
             - mac_fetch
@@ -352,17 +364,25 @@ workflows:
 
   build-mac-arm64:
     jobs:
-      - mac_fetch
+      - hold:
+          type: approval
+      - mac_fetch:
+          requires:
+            - hold
       - mac_build_blink_arm64:
           requires:
             - mac_fetch
       - mac_build_arm64:
           requires:
             - mac_build_blink_arm64
-            
+
   build-linux-x64:
     jobs:
-      - linux_fetch
+      - hold:
+          type: approval
+      - linux_fetch:
+          requires:
+            - hold
       - linux_build_x64:
           requires:
             - linux_fetch
@@ -375,14 +395,22 @@ workflows:
 
   build-linux-arm64:
     jobs:
-      - linux_fetch
+      - hold:
+          type: approval
+      - linux_fetch:
+          requires:
+            - hold
       - linux_build_arm64:
           requires:
             - linux_fetch
 
   build-linux-arm:
     jobs:
-      - linux_fetch
+      - hold:
+          type: approval
+      - linux_fetch:
+          requires:
+            - hold
       - linux_build_arm:
           requires:
             - linux_fetch
