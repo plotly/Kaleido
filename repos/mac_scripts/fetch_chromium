@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Commits
-DEPOT_TOOLS_COMMIT=e342fb1
-CHROMIUM_TAG="88.0.4324.150"
-export DEPOT_TOOLS_UPDATE=0
+DEPOT_TOOLS_COMMIT="" # Can't set a version for Windows, maybe we can for make depending on TODO below, probably won't
+CHROMIUM_TAG="124.0.6367.60"
+export DEPOT_TOOLS_UPDATE=0 # TODO: Don't know if this will work on Mac
 
 # full path to mac_scripts/ directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
@@ -20,17 +20,12 @@ export PATH="$PATH:`pwd`"
 
 # Reset to proper commit
 git reset --hard $DEPOT_TOOLS_COMMIT
+git clean -ffd
 
 # Move back to repos directory
-cd ../
-fetch --nohooks chromium
+cd ../src
 
-# Change to cloned src/ directory
-cd src
-git reset --hard
-git checkout tags/$CHROMIUM_TAG
-gclient sync -D --force --reset
-gclient runhooks
+gclient sync -D --force --reset --no-history --jobs=3 --revision=$CHROMIUM_TAG 
 
 # Write out credits file
 cd ..

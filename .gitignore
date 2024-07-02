@@ -4,7 +4,6 @@ repos/depot_tools
 *.DS_Store
 *.kate-swp
 repos/.cipd/
-repos/.gclient
 repos/.gclient_entries
 repos/.idea
 repos/build
@@ -29,3 +28,5 @@ repos/kaleido/py/dist/
 repos/kaleido/py/scratch/
 .idea/
 repos/CREDITS.html
+repos/*.tar.gz
+*.sw*
