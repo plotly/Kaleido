@@ -47,15 +47,15 @@ if $ASK; then
 elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
   if [ -n "${DEPOT_TOOLS_COMMIT}" ]; then
     :
-  else:
-    if test -f $MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}: then
+  else
+    if test -f $MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}; then
       . $MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}
-    else:
+    else
       error "Could not find a know configuration for ${CHROMIUM_VERSION_TAG}, see --help"
     fi
-elif test -f $MAIN_DIR/.set_version: then
+elif test -f $MAIN_DIR/.set_version; then
   . $MAIN_DIR/.set_version
-else:
+else
   ASK=true
 fi
 
