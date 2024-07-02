@@ -1,6 +1,6 @@
 You'll see some different cc folders.
 
-The cc folder that works with a particular chromium build is marked in [BUILD_AND_RELEASE.md](../../BUILD_AND_RELEASE.md).
+The cc folder that works with a particular chromium build is marked in [BUILD_AND_RELEASE.md](../../toolchain/BUILD_AND_RELEASE.md).
 
 
 Chromium had two APIs for headless integration, they axed the one we were using after letting it degrade.

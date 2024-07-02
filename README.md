@@ -1,9 +1,9 @@
 # Overview
-Kaleido is a cross-platform library for generating static images (e.g. png, svg, pdf, etc.) for web-based visualization libraries. 
+Kaleido is a cross-platform library for generating static images (e.g. png, svg, pdf, etc.) for web-based visualization libraries.
 
 In short: If you `pip install kaleido` you can use `fig.write_image("filename.png")`.
 
-It is designed to be relatively straight-forward to extend to other web-based visualization libraries (and other programming languages)- see [BUILD_AND_RELEASE.md](BUILD_AND_RELEASE.md) for that and other developer questions.
+It is designed to be relatively straight-forward to extend to other web-based visualization libraries (and other programming languages)- see [BUILD_AND_RELEASE.md](toolchain/BUILD_AND_RELEASE.md) for that and other developer questions.
 
 [Here is the historical readme](README-HISTORICAL.md)
 
