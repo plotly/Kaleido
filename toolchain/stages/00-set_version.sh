@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # stolen from stack exchange
-. $SCRIPT_DIR/include/utilities.sh
+. "$SCRIPT_DIR/include/utilities.sh"
 
 usage=(
   "set_version will check to see if the chromium/depot_tools version are set- if not,"
@@ -48,28 +48,28 @@ elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
   if [ -n "${DEPOT_TOOLS_COMMIT}" ]; then
     :
   else
-    if test -f $MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}; then
-      . $MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}
+    if test -f "$MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}"; then
+      . "$MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}"
     else
       error "Could not find a know configuration for ${CHROMIUM_VERSION_TAG}, see --help"
     fi
   fi
-elif test -f $MAIN_DIR/.set_version; then
-  . $MAIN_DIR/.set_version
+elif test -f "$MAIN_DIR/.set_version"; then
+  . "$MAIN_DIR/.set_version"
 else
   ASK=true
 fi
 
 if $ASK; then
   PS3="c) Custom"$'\n'"Select a preset version combination (1, 2, etc), or 'c' to specify your own: "
-  options=($(ls -v $MAIN_DIR/toolchain/version_configurations)) # they say not to ever parse ls, oop
+  options=($(ls -v "$MAIN_DIR/toolchain/version_configurations")) # they say not to ever parse ls, oop
   select opt in "${options[@]}"
   do
     if [ "$REPLY" == "c" ] || [ "$REPLY" == "C" ]; then
       read -p "Chromium version tag (or ref): " CHROMIUM_VERSION_TAG
       read -p "Depot tools commit (or ref): " DEPOT_TOOLS_COMMIT
     elif [ "$opt" != "" ]; then
-      . $MAIN_DIR/toolchain/version_configurations/$opt
+      . "$MAIN_DIR/toolchain/version_configurations/$opt"
     else
      error "$REPLY not understood"
     fi
@@ -77,7 +77,7 @@ if $ASK; then
   done
 fi
 
-echo "CHROMIUM_VERSION_TAG=${CHROMIUM_VERSION_TAG}" > $MAIN_DIR/.set_version
-echo "DEPOT_TOOLS_COMMIT=${DEPOT_TOOLS_COMMIT}" >> $MAIN_DIR/.set_version
+echo "CHROMIUM_VERSION_TAG=${CHROMIUM_VERSION_TAG}" > "$MAIN_DIR/.set_version"
+echo "DEPOT_TOOLS_COMMIT=${DEPOT_TOOLS_COMMIT}" >> "$MAIN_DIR/.set_version"
 
 export_version

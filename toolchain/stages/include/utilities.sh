@@ -10,7 +10,7 @@ error()
 export -f error
 
 export MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
-export PATH=$MAIN_DIR/repos/depot_tools/bootstrap:$PATH
+export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH"
 
 if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
   error "git rev-parse returned an empty directory, are we in a git directory?"
@@ -18,8 +18,8 @@ fi
 
 get_version()
 {
-  if test -f $MAIN_DIR/.set_version; then
-    . $MAIN_DIR/.set_version
+  if test -f "$MAIN_DIR/.set_version"; then
+    . "$MAIN_DIR/.set_version"
   elif [ -z "${DEPO_TOOLS_COMMIT}" ] || [ -z "${CHROMIUM_VERSION_TAG}" ]; then
     error "Couldn't find or set env vars for versions, please run set_version."
   fi
