@@ -80,5 +80,4 @@ fi
 echo "CHROMIUM_VERSION_TAG=${CHROMIUM_VERSION_TAG}" > $MAIN_DIR/.set_version
 echo "DEPOT_TOOLS_COMMIT=${DEPOT_TOOLS_COMMIT}" >> $MAIN_DIR/.set_version
 
-export CHROMIUM_VERSION_TAG
-export DEPOT_TOOLS_COMMIT
+export_version
