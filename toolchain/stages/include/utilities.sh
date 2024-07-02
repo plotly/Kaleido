@@ -10,6 +10,7 @@ error()
 export -f error
 
 export MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
+export PATH=$MAIN_DIR/repos/depot_tools/bootstrap:$PATH
 
 if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
   error "git rev-parse returned an empty directory, are we in a git directory?"
