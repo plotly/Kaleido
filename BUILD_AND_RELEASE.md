@@ -10,7 +10,7 @@ While Python is the initial target language for Kaleido, it has been designed to
 
 Kaleido depends on building chromium: an ~18GB download, ~25GB after the half-day compile.
 
-**Good strategies:** 
+**Good strategies:**
 
 1. the latest known good build (see below) OR
 2. the most updated stable version of chromium
@@ -50,7 +50,7 @@ _* builds but locally, no circle ci integration_
 
 ### Preparing a Build
 
-OS-specific README's tell you had to specify a chromium version (and depot tools version).
+OS-specific README's tell you to specify a chromium version (and depot tools version).
 
 #### Picking a specific chromium version
 From old README.md/Google:
@@ -61,7 +61,7 @@ E.g. Stable chrome version tag on 05/19/2020: 83.0.4103.61, set `CHROMIUM_TAG="8
 E.g. depot_tools commit hash from 05/19/2020: e67e41a, set `DEPOT_TOOLS_COMMIT=e67e41a`
 #### Picking a cc version
 
-The c++ for Kaleido has to be updated sometimes based ont he chromium version. The platform README.md will tell you what variables to change for that. The `repos/kaleido/REAMDE-CC.md` contains some information about the difference between the versions, so you can cross reference errors and that, maybe. Otherwise you need serious git-fu + code note research to get a handle on Google's unstable API.
+The c++ for Kaleido has to be updated sometimes based on the chromium version. The platform README.md will tell you what variables to change for that. The (repos/kaleido/REAMDE-CC.md)[repos/kaleido/README-CC.md] contains some information about the difference between the versions, so you can cross reference errors and that, maybe. Otherwise you need serious git-fu + code note research to get a handle on Google's unstable API.
 
 #### Patching
 
@@ -69,11 +69,11 @@ In `repos/patches` there are folders by chromium tags and patches for that versi
 
 #### Copying Run-Time Dependencies
 
-Hopefully your executable doesn't need any `.dll` or `.so` that weren't compiled in as `.lib` or `.a` respectively. Linux and git bash can use `ldd` to resolve dependencies of an `elf` or `exe`, mac has the less powerful `otool -L`. That should let you know if you need to bring any deps with you into the wheel, but theoretically it could be fooled by a dynamic load...
+Hopefully your executable doesn't need any `.dll` or `.so` that weren't compiled in as `.lib` or `.a` respectively. Linux and git bash can use `ldd` to resolve dependencies of an `elf` or `exe`, mac has the less powerful `otool -L`. That should let you know if you need to bring any deps with you into the wheel, but theoretically it could be fooled by a dynamic load... (and it currently is). This is because headless chromium is dependent on `swiftshader` since for whatever reason it doesn't support GPU rendering.
 
 ## Releasing
 
-Based on how you repaired the build, you may need to make certain modifications to circle-ci.
+Based on how you prepaired the build, you may need to make certain modifications to circle-ci.
 
 ## CMakeLists.txt
 The CMakeLists.txt file in `repos/` is only there to help IDE's like `CLion`/`KDevelop` figure out how to index the chromium source tree. It can't be used to actually build chromium. Using this approach, it's possible to get full completion and code navigation from `repos/kaleido/cc/kaleido.cc` in CLion.
