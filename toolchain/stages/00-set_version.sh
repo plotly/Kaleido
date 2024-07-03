@@ -45,6 +45,7 @@ done
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # stolen from stack exchange
 . "$SCRIPT_DIR/include/utilities.sh"
+
 if $LATEST; then
   $NO_VERBOSE || echo "Getting latest:"
   . "$MAIN_DIR/toolchain/version_configurations/$(ls -v "$MAIN_DIR/toolchain/version_configurations" | tail -1)"

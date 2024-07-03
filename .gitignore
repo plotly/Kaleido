@@ -31,3 +31,4 @@ repos/CREDITS.html
 repos/*.tar.gz
 *.sw*
 .set_version
+bin
