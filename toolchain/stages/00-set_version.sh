@@ -1,8 +1,8 @@
 #!/bin/bash
 
 echo $PWD
-ls
-ls /
+ls -la
+ls / -la
 echo $USER
 
 usage=(
