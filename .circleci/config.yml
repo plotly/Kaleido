@@ -23,6 +23,7 @@ jobs:
   windows-x64:
     executor:
       name: win/default
+    resource_class: medium
     steps:
       - checkout
       # The following actually comes installed already:
@@ -31,6 +32,23 @@ jobs:
 #         command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
       - set_version
 
+  osx:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 15.4.0
+    resource_class: macos.m1.medium.gen1
+    steps:
+      - checkout
+      - run:
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+      - set_version
 
 workflows:
   1-arch-3-os: # this workflow will do mac, linux, and windows without arch xcompile
@@ -41,5 +59,8 @@ workflows:
           requires:
             - hold
       - windows-x64:
+          requires:
+            - hold
+      - osx:
           requires:
             - hold
