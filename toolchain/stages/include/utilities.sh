@@ -34,3 +34,19 @@ util_export_version()
   export DEPOT_TOOLS_COMMIT
 }
 export -f util_export_version
+
+PLATFORM=""
+case "$OSTYPE" in
+  solaris*) PLATFORM="SOLARIS" ;;
+  darwin*)  PLATFORM="OSX" ;;
+  linux*)   PLATFORM="LINUX" ;;
+  bsd*)     PLATFORM="BSD" ;;
+  msys*)    PLATFORM="WINDOWS" ;;
+  cygwin*)  PLATFORM="WRONG_WINDOWS" ;; # our scripts should always return msys
+  *)        PLATFORM="$OSTYPE" ;;
+esac
+
+if ! [[ "$PLATFORM" =~ ^(OSX|LINUX|WINDOWS)$ ]]; then
+  util_error "$PLATFORM is not a supported platform for building."
+fi
+$NO_VERBOSE || echo "Found platform: $PLATFORM"
