@@ -14,11 +14,14 @@ commands: # all jobs/workflows use same commands
 jobs:
   linux-docker: # similiar to the one below us
     docker: # machine specifies a linux vm, can we just use docker for the pull?
-      - image: cimg/python
+      - image: cimg/python:3.12.3
     resource_class: small
     steps:
       - checkout
       - set_version
+      - run:
+          name: check git
+          command: git --version
 
   linux-x64:
     machine:
