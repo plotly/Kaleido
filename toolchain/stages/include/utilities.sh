@@ -7,7 +7,7 @@ util_error()
     echo "Error: $@" >&2
     exit 1
 }
-export -f error
+export -f util_error
 
 export MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
 export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH"
@@ -24,11 +24,11 @@ util_get_version()
     error "Couldn't find or set env vars for versions, please run set_version."
   fi
 }
-export -f get_version
+export -f util_get_version
 
 util_export_version()
 {
   export CHROMIUM_VERSION_TAG
   export DEPOT_TOOLS_COMMIT
 }
-export -f export_version
+export -f util_export_version
