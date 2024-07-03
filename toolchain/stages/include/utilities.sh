@@ -67,7 +67,5 @@ fi
 if [ "$PLATFORM" == "WINDOWS" ]; then
   export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
   $NO_VERBOSE || echo "Modified path to add future boostrap directory"
-else
-  util_error "Non-windows not supported yet"
 fi
 
