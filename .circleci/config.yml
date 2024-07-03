@@ -78,4 +78,4 @@ workflows:
           type: approval
       - linux-docker:
           requires:
-            -hold
+            - hold
