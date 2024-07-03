@@ -19,9 +19,6 @@ jobs:
     steps:
       - checkout
       - set_version
-      - run:
-          name: check git
-          command: git --version
 
   linux-x64:
     machine:
