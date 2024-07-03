@@ -9,9 +9,9 @@ commands: # all jobs/workflows use same commands
           command: ./toolchain/stages/00-set_version.sh --latest --verbose
 jobs:
   linux-x64:
-    machine: # machine specifies a linux vm
+    machine: # machine specifies a linux vm, can we just use docker for the pull?
       image: ubuntu-1604:201903-01
-    resource_class: small
+    resource_class: medium
     steps:
       - set_version
 
