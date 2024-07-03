@@ -26,10 +26,6 @@ usage=(
 )
 ## PROCESS FLAGS
 
-print_usage() {
-  printf "Usage: ..."
-}
-
 ASK=false
 while (( $# )); do
   case $1 in
