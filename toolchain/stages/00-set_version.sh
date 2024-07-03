@@ -13,6 +13,9 @@ usage=(
   "Display this help:"
   "set_version [-h|--h]"
   ""
+  "Just get the latest known configuration:"
+  "set_version [-l|--latest]"
+  ""
   "Specify a known chromium/depot_tools combo (see version_configurations/):"
   "set_version [-c|--chromium] KNOWN_REF"
   ""
@@ -26,12 +29,14 @@ usage=(
 
 ASK=false
 NO_VERBOSE=true
+LATEST=false
 while (( $# )); do
   case $1 in
     -h|--help)      printf "%s\n" "${usage[@]}"; exit 0  ;;
     -c|--chromium)  shift; CHROMIUM_VERSION_TAG="$1"     ;;
     -d|--depot)     shift; DEPOT_TOOLS_COMMIT="$1"       ;;
     -v|--verbose)   NO_VERBOSE=false                     ;;
+    -l|--latest)    LATEST=true                          ;;
     -a|--ask)       ASK=true                             ;;
     *)              printf "%s\n" "${usage[@]}"; exit 1  ;;
   esac
@@ -40,8 +45,12 @@ done
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # stolen from stack exchange
 . "$SCRIPT_DIR/include/utilities.sh"
-
-if $ASK; then
+if $LATEST; then
+  $NO_VERBOSE || echo "Getting latest:"
+  . "$MAIN_DIR/toolchain/version_configurations/$(ls -v "$MAIN_DIR/toolchain/version_configurations" | tail -1)"
+  $NO_VERBOSE || echo "Sourced known configuration:"
+  $NO_VERBOSE || echo "Chromium ref: ${CHROMIUM_VERSION_TAG}, depot_tools ref: ${DEPOT_TOOLS_COMMIT}"
+elif $ASK; then
   $NO_VERBOSE || echo "--ask forced"
 elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
   $NO_VERBOSE || echo "Found chromium ref: ${CHROMIUM_VERSION_TAG}."
