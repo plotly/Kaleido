@@ -1,25 +1,44 @@
 version: 2.1
 
+orbs:
+  win: circleci/windows@5.0
+
 commands: # all jobs/workflows use same commands
+  # can we make an "all" command?
   set_version:
     steps:
-      - checkout
       - run:
           name: set_version
-          command: ./toolchain/stages/00-set_version.sh --latest --verbose
+          command: bash ./toolchain/stages/00-set_version.sh --latest --verbose
+
 jobs:
   linux-x64:
     machine: # machine specifies a linux vm, can we just use docker for the pull?
       image: default # maybe specify an image? circle-ci changes them
     resource_class: medium
     steps:
+      - checkout
       - set_version
 
+  windows-x64:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
+      - set_version
+
+
 workflows:
-  build-basics: # this workflow will do mac, linux, and windows without arch xcompile
+  1-arch-3-os: # this workflow will do mac, linux, and windows without arch xcompile
     jobs:
       - hold:
           type: approval
       - linux-x64:
+          requires:
+            - hold
+      - windows-x64:
           requires:
             - hold
