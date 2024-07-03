@@ -10,7 +10,7 @@ commands: # all jobs/workflows use same commands
 jobs:
   linux-x64:
     machine: # machine specifies a linux vm, can we just use docker for the pull?
-      image: ubuntu-2004:202010-01
+      image: default # maybe specify an image? circle-ci changes them
     resource_class: medium
     steps:
       - set_version
