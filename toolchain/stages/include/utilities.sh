@@ -2,7 +2,7 @@
 
 set -e # exit on any error
 
-error()
+util_error()
 {
     echo "Error: $@" >&2
     exit 1
@@ -16,7 +16,7 @@ if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
   error "git rev-parse returned an empty directory, are we in a git directory?"
 fi
 
-get_version()
+util_get_version()
 {
   if test -f "$MAIN_DIR/.set_version"; then
     . "$MAIN_DIR/.set_version"
@@ -26,7 +26,7 @@ get_version()
 }
 export -f get_version
 
-export_version()
+util_export_version()
 {
   export CHROMIUM_VERSION_TAG
   export DEPOT_TOOLS_COMMIT

@@ -51,7 +51,7 @@ elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
     if test -f "$MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}"; then
       . "$MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}"
     else
-      error "Could not find a know configuration for ${CHROMIUM_VERSION_TAG}, see --help"
+      util_error "Could not find a know configuration for ${CHROMIUM_VERSION_TAG}, see --help"
     fi
   fi
 elif test -f "$MAIN_DIR/.set_version"; then
@@ -71,7 +71,7 @@ if $ASK; then
     elif [ "$opt" != "" ]; then
       . "$MAIN_DIR/toolchain/version_configurations/$opt"
     else
-     error "$REPLY not understood"
+     util_error "$REPLY not understood"
     fi
     break
   done
@@ -80,4 +80,4 @@ fi
 echo "CHROMIUM_VERSION_TAG=${CHROMIUM_VERSION_TAG}" > "$MAIN_DIR/.set_version"
 echo "DEPOT_TOOLS_COMMIT=${DEPOT_TOOLS_COMMIT}" >> "$MAIN_DIR/.set_version"
 
-export_version
+util_export_version
