@@ -1,0 +1,416 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.4.0 # The Windows orb give you everything you need to start using the Windows executor.
+
+commands:
+  linux_build:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./repos
+      - run: ./repos/linux_scripts/build_kaleido <<parameters.arch>>
+      - run: ./repos/linux_scripts/bundle_artifacts <<parameters.arch>>
+      - store_artifacts:
+          path: ./repos/kaleido/kaleido_artifacts_linux_<<parameters.arch>>.zip
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - kaleido/py/
+            - kaleido/tests/
+
+  windows_build:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Update PowerShell.Archive to fix slash direction
+          command: Install-Module Microsoft.PowerShell.Archive -MinimumVersion 1.2.3.0 -Repository PSGallery -Force
+      - run:
+          name: Install Debugging Tools for Windows SDK 10.0.19041.685
+          command: choco install windows-sdk-10-version-2004-windbg
+      - attach_workspace:
+          at: .\repos
+      - run: .\repos\win_scripts\build_kaleido.ps1 <<parameters.arch>>
+      - run: python .\repos\kaleido\py\setup.py bundle_hash_artifacts
+      - store_artifacts:
+          path: ./repos/kaleido/kaleido_artifacts_win_<<parameters.arch>>.zip
+
+  mac_build_blink:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+      - attach_workspace:
+          at: ./repos
+      - run:
+          command: ./repos/mac_scripts/build_blink <<parameters.arch>>
+          no_output_timeout: 30m
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+            - kaleido/version
+            - CREDITS.html
+
+  mac_build:
+    parameters:
+      arch:
+        default: "x64"
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+      - attach_workspace:
+          at: ./repos
+      - run:
+          command: ./repos/mac_scripts/build_kaleido <<parameters.arch>>
+          no_output_timeout: 30m
+      - run: python3 ./repos/kaleido/py/setup.py bundle_hash_artifacts
+      - store_artifacts:
+          path: ./repos/kaleido/kaleido_artifacts_mac_<<parameters.arch>>.zip
+
+
+jobs:
+  linux_fetch:
+    machine:
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: large
+    steps:
+      - checkout
+      - run: docker pull jonmmease/chromium-builder:0.8
+      - run:
+          name: Fetch detpot_tools and chromium source tree
+          command: ./repos/linux_scripts/fetch_chromium
+          no_output_timeout: 30m
+      - run:
+          name: Delete .git directories to save space (skipping angle taken from electron circleci build)
+          command: |
+            cd ./repos/src
+            sudo rm -rf .git
+      - run:
+          name: Open permissions of fetched src directory
+          command: |
+            sudo chmod -R 777 ./repos/src
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+            - kaleido/version
+            - CREDITS.html
+
+  linux_build_x64:
+    machine:
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "x64"
+    steps:
+      - linux_build:
+          arch: "x64"
+
+  linux_build_arm64:
+    machine:
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "arm64"
+    steps:
+      - linux_build:
+          arch: "arm64"
+
+  linux_build_arm:
+    machine:
+      image: ubuntu-1604:201903-01 # the primary container, where your job's commands are run
+    resource_class: xlarge
+    environment:
+      KALEIDO_ARCH: "arm"
+    steps:
+      - linux_build:
+          arch: "arm"
+
+  linux_test_37:
+    docker:
+      - image: continuumio/miniconda3
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./repos
+      - run:
+          name: Install dependencies
+          command: |
+            conda install python=3.7 poppler
+            pip install pytest plotly pandas
+            pip install ./repos/kaleido/py/dist/kaleido-*.whl
+      - run:
+          name: Test Python
+          command: |
+            cd ./repos/kaleido/tests/
+            pytest -s test_py/
+      - store_artifacts:
+          path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
+
+  linux_test_27:
+    docker:
+      - image: continuumio/miniconda2
+    steps:
+      - attach_workspace:
+          at: ./repos
+      - run:
+          name: Install dependencies
+          command: |
+            conda install python=2.7 poppler
+            pip install pytest plotly pandas mock pathlib
+            pip install ./repos/kaleido/py/dist/kaleido-*.whl
+      - run:
+          name: Test Python
+          command: |
+            cd ./repos/kaleido/tests/
+            pytest -s test_py/
+      - store_artifacts:
+          path: ./repos/kaleido/py/tests/baselines/plotly/failed/*
+
+  mac_fetch:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 11.1.0 # indicate our selected version of Xcode
+    resource_class: large
+    steps:
+      - checkout
+      - run:
+          name: Delete simulators and unused platforms to save space
+          command: |
+            sudo rm -rf /Library/Developer/CoreSimulator
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
+            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+      - run:
+          name: Fetch detpot_tools and chromium source tree
+          command: ./repos/mac_scripts/fetch_chromium
+          no_output_timeout: 30m
+      - run:
+          name: Delete .git directories to save space (skipping angle taken from electron circleci build)
+          command: |
+            cd ./repos/src
+            ( find . -type d -name ".git" -not -path "./third_party/angle/*" ) | xargs rm -rf
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+            - kaleido/version
+            - CREDITS.html
+
+
+  mac_build_blink_x64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 12.2.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "x64"
+    steps:
+      - mac_build_blink:
+          arch: "x64"
+
+  mac_build_blink_arm64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 12.2.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "arm64"
+    steps:
+      - mac_build_blink:
+          arch: "arm64"
+
+
+  mac_build_x64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 12.2.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "x64"
+    steps:
+      - mac_build:
+          arch: "x64"
+
+  mac_build_arm64:
+    macos:  # indicate that we are using the macOS executor
+      xcode: 12.2.0 # indicate our selected version of Xcode
+    resource_class: large
+    environment:
+      KALEIDO_ARCH: "arm64"
+    steps:
+      - mac_build:
+          arch: "arm64"
+
+
+  windows_fetch:
+    executor:
+      name: win/default
+      size: "large"
+      shell: powershell.exe
+    steps:
+      - checkout
+      - run: echo $Host.Version
+      - run:
+            command: .\repos\win_scripts\fetch_chromium.ps1
+            no_output_timeout: 30m
+      - persist_to_workspace:
+          root: ./repos
+          paths:
+            - src
+            - depot_tools
+            - .gclient
+            - .gclient_entries
+            - kaleido/version
+            - CREDITS.html
+
+  windows_build_x64:
+    executor:
+      name: win/default
+      size: "xlarge"
+      shell: powershell.exe
+    environment:
+      KALEIDO_ARCH: "x64"
+    steps:
+      - windows_build:
+          arch: "x64"
+
+  windows_build_x86:
+    executor:
+      name: win/default
+      size: "xlarge"
+      shell: powershell.exe
+    environment:
+      KALEIDO_ARCH: "x86"
+    steps:
+      - windows_build:
+          arch: "x86"
+
+workflows:
+  build-windows-x64:
+    jobs:
+      - hold:
+          type: approval
+      - windows_fetch:
+          requires:
+            - hold
+      - windows_build_x64:
+          requires:
+            - windows_fetch
+
+  build-windows-x86:
+    jobs:
+      - hold:
+          type: approval
+      - windows_fetch:
+          requires:
+            - hold
+      - windows_build_x86:
+          requires:
+            - windows_fetch
+
+  build-mac-x64:
+    jobs:
+      - hold:
+          type: approval
+      - mac_fetch:
+          requires:
+            - hold
+      - mac_build_blink_x64:
+          requires:
+            - mac_fetch
+      - mac_build_x64:
+          requires:
+            - mac_build_blink_x64
+
+  build-mac-arm64:
+    jobs:
+      - hold:
+          type: approval
+      - mac_fetch:
+          requires:
+            - hold
+      - mac_build_blink_arm64:
+          requires:
+            - mac_fetch
+      - mac_build_arm64:
+          requires:
+            - mac_build_blink_arm64
+
+  build-linux-x64:
+    jobs:
+      - hold:
+          type: approval
+      - linux_fetch:
+          requires:
+            - hold
+      - linux_build_x64:
+          requires:
+            - linux_fetch
+      - linux_test_37:
+          requires:
+            - linux_build_x64
+      - linux_test_27:
+          requires:
+            - linux_build_x64
+
+  build-linux-arm64:
+    jobs:
+      - hold:
+          type: approval
+      - linux_fetch:
+          requires:
+            - hold
+      - linux_build_arm64:
+          requires:
+            - linux_fetch
+
+  build-linux-arm:
+    jobs:
+      - hold:
+          type: approval
+      - linux_fetch:
+          requires:
+            - hold
+      - linux_build_arm:
+          requires:
+            - linux_fetch
