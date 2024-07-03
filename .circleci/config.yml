@@ -25,9 +25,10 @@ jobs:
       name: win/default
     steps:
       - checkout
-      - run:
-          name: Install Dependencies
-          command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
+      # The following actually comes installed already:
+#     - run:
+#         name: Install Dependencies
+#         command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
       - set_version
 
 
