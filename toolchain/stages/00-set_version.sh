@@ -1,10 +1,5 @@
 #!/bin/bash
 
-echo $PWD
-ls -la
-ls / -la
-echo $USER
-
 usage=(
   "set_version will check to see if the chromium/depot_tools version are set- if not,"
   "set_version helps specify the versions. Choose from a list of known combinations"
