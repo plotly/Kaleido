@@ -1,8 +1,5 @@
 #!/bin/bash
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # stolen from stack exchange
-. "$SCRIPT_DIR/include/utilities.sh"
-
 usage=(
   "set_version will check to see if the chromium/depot_tools version are set- if not,"
   "set_version helps specify the versions. Choose from a list of known combinations"
@@ -11,6 +8,7 @@ usage=(
   "You can also just set flags or environmental variables, and .set_version file will be rewritten."
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
+  "You can always try -v or --verbose"
   ""
   "Display this help:"
   "set_version [-h|--h]"
@@ -27,33 +25,46 @@ usage=(
 ## PROCESS FLAGS
 
 ASK=false
+NO_VERBOSE=true
 while (( $# )); do
   case $1 in
     -h|--help)      printf "%s\n" "${usage[@]}"; exit 0  ;;
     -c|--chromium)  shift; CHROMIUM_VERSION_TAG="$1"     ;;
     -d|--depot)     shift; DEPOT_TOOLS_COMMIT="$1"       ;;
+    -v|--verbose)   NO_VERBOSE=false                     ;;
     -a|--ask)       ASK=true                             ;;
     *)              printf "%s\n" "${usage[@]}"; exit 1  ;;
   esac
   shift
 done
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) # stolen from stack exchange
+. "$SCRIPT_DIR/include/utilities.sh"
+
 if $ASK; then
-  :
+  $NO_VERBOSE || echo "--ask forced"
 elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
+  $NO_VERBOSE || echo "Found chromium ref: ${CHROMIUM_VERSION_TAG}."
   if [ -n "${DEPOT_TOOLS_COMMIT}" ]; then
-    :
+    $NO_VERBOSE || echo "Found depo_tools ref: ${DEPO_TOOLS_COMMIT}."
   else
+    $NO_VERBOSE || echo "No depo_tools ref found, looking for file w/ that chromium tag."
     if test -f "$MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}"; then
       . "$MAIN_DIR/toolchain/version_configurations/${CHROMIUM_VERSION_TAG}"
+      $NO_VERBOSE || echo "Sourced known configuration:"
+      $NO_VERBOSE || echo "Chromium ref: ${CHROMIUM_VERSION_TAG}, depot_tools ref: ${DEPOT_TOOLS_COMMIT}"
     else
       util_error "Could not find a know configuration for ${CHROMIUM_VERSION_TAG}, see --help"
     fi
   fi
 elif test -f "$MAIN_DIR/.set_version"; then
+  $NO_VERBOSE || echo "Found a .set_version file."
   . "$MAIN_DIR/.set_version"
+  $NO_VERBOSE || echo "Sourced known configuration:"
+  $NO_VERBOSE || echo "Chromium ref: ${CHROMIUM_VERSION_TAG}, depot_tools ref: ${DEPOT_TOOLS_COMMIT}"
 else
   ASK=true
+  $NO_VERBOSE || echo "Don't know what you want, will ask."
 fi
 
 if $ASK; then
@@ -66,6 +77,8 @@ if $ASK; then
       read -p "Depot tools commit (or ref): " DEPOT_TOOLS_COMMIT
     elif [ "$opt" != "" ]; then
       . "$MAIN_DIR/toolchain/version_configurations/$opt"
+      $NO_VERBOSE || echo "Sourced known configuration:"
+      $NO_VERBOSE || echo "Chromium ref: ${CHROMIUM_VERSION_TAG}, depot_tools ref: ${DEPOT_TOOLS_COMMIT}."
     else
      util_error "$REPLY not understood"
     fi
@@ -75,5 +88,5 @@ fi
 
 echo "CHROMIUM_VERSION_TAG=${CHROMIUM_VERSION_TAG}" > "$MAIN_DIR/.set_version"
 echo "DEPOT_TOOLS_COMMIT=${DEPOT_TOOLS_COMMIT}" >> "$MAIN_DIR/.set_version"
-
+$NO_VERBOSE || echo "Wrote .set_version."
 util_export_version

@@ -10,7 +10,9 @@ util_error()
 export -f util_error
 
 export MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
-export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH"
+$NO_VERBOSE || echo "Found main dir: ${MAIN_DIR}"
+export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
+$NO_VERBOSE || echo "Modified path to add future boostrap directory"
 
 if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
   util_error "git rev-parse returned an empty directory, are we in a git directory?"
