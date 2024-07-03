@@ -13,7 +13,7 @@ export MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
 export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH"
 
 if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
-  error "git rev-parse returned an empty directory, are we in a git directory?"
+  util_error "git rev-parse returned an empty directory, are we in a git directory?"
 fi
 
 util_get_version()
@@ -21,7 +21,7 @@ util_get_version()
   if test -f "$MAIN_DIR/.set_version"; then
     . "$MAIN_DIR/.set_version"
   elif [ -z "${DEPO_TOOLS_COMMIT}" ] || [ -z "${CHROMIUM_VERSION_TAG}" ]; then
-    error "Couldn't find or set env vars for versions, please run set_version."
+    util_error "Couldn't find or set env vars for versions, please run set_version."
   fi
 }
 export -f util_get_version
