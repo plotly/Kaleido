@@ -37,7 +37,7 @@ jobs:
     resource_class: macos.m1.medium.gen1
     steps:
       - checkout
-			# The following recommended by circle CI, but it takes time, costs money, and may not be necessary
+      # The following recommended by circle CI, but it takes time, costs money, and may not be necessary
 #     - run:
 #         name: Delete simulators and unused platforms to save space
 #         command: |
