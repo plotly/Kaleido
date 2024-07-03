@@ -30,23 +30,24 @@ jobs:
 #         name: Install Dependencies
 #         command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
       - set_version
-
+#
   osx:
     macos:  # indicate that we are using the macOS executor
       xcode: 15.4.0
     resource_class: macos.m1.medium.gen1
     steps:
       - checkout
-      - run:
-          name: Delete simulators and unused platforms to save space
-          command: |
-            sudo rm -rf /Library/Developer/CoreSimulator
-            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform
-            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform
-            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform
-            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform
-            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform
-            sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform
+			# The following recommended by circle CI, but it takes time, costs money, and may not be necessary
+#     - run:
+#         name: Delete simulators and unused platforms to save space
+#         command: |
+#           sudo rm -rf /Library/Developer/CoreSimulator &> /dev/null
+#           sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform &> /dev/null
+#           sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform &> /dev/null
+#           sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchOS.platform &> /dev/null
+#           sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/WatchSimulator.platform &> /dev/null
+#           sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform &> /dev/null
+#           sudo rm -rf /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform &> /dev/null
       - set_version
 
 workflows:
