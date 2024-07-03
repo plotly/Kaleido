@@ -23,7 +23,6 @@ jobs:
   windows-x64:
     executor:
       name: win/default
-    resource_class: medium
     steps:
       - checkout
       # The following actually comes installed already:
