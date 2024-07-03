@@ -50,3 +50,18 @@ if ! [[ "$PLATFORM" =~ ^(OSX|LINUX|WINDOWS)$ ]]; then
   util_error "$PLATFORM is not a supported platform for building."
 fi
 $NO_VERBOSE || echo "Found platform: $PLATFORM"
+
+
+ARCH=$(uname -m)
+if [[ "$ARCH" == x86_64* ]]; then
+  ARCH="x64"
+elif [[ "$ARCH" == i*86 ]]; then
+  ARCH="x32"
+elif  [[ "$ARCH" == arm* ]]; then
+  ARCH="arm"
+fi
+
+if ! [[ "$ARCH" =~ ^(x64|x32|arm)$ ]]; then
+  util_error "$ARCH is not a supported architecture for building."
+fi
+$NO_VERBOSE || echo "Found architecture: $ARCH"
