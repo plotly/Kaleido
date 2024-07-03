@@ -36,3 +36,5 @@ git -C "$MAIN_DIR/repos/depot_tools/" reset --hard ${DEPOT_TOOLS_COMMIT}
 $NO_VERBOSE || echo "Cleaning depot_tools:"
 git -C "$MAIN_DIR/repos/depot_tools/" clean -ffd
 
+$NO_VERBOSE || echo "Deleting depot_tools.git"
+rm -rf "$MAIN_DIR/repos/depot_tools/.git" # oof dangerous
