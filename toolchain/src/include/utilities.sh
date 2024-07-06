@@ -73,15 +73,17 @@ if [[ "$MAIN_DIR" == "" ]] || [[ "$MAIN_DIR" == "/" ]]; then
   util_error "git rev-parse returned an empty directory, are we in a git directory?"
 fi
 
+mkdir -p "$MAIN_DIR"/vendor # probably exists, but maybe not
+
 # This will add depot_tools to our path,
 # It would make sense to put this elsewhere but we need it in every script
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
+  export PATH="$MAIN_DIR/vendor/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
   $NO_VERBOSE || echo "Modified path to add future depot_tools/bootstrap/ directory"
 elif [[ "$PLATFORM" == "LINUX" ]]; then
-  export PATH="$MAIN_DIR/repos/depot_tools/:$PATH"
+  export PATH="$MAIN_DIR/vendor/depot_tools/:$PATH"
   $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
 elif [[ "$PLATFORM" == "OSX" ]]; then
-  export PATH="$MAIN_DIR/repos/depot_tools/:$PATH"
+  export PATH="$MAIN_DIR/vendor/depot_tools/:$PATH"
   $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
 fi
