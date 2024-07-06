@@ -32,4 +32,4 @@ repos/*.tar.gz
 *.sw*
 .set_version
 bin
-toolchain/install-build-deps.sh
+toolchain/tmp/install-build-deps.sh

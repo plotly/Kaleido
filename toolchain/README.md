@@ -43,7 +43,7 @@ They are all numbered by supposed order and have a verbose --help. These must be
 - src/00-set_version.sh
 - src/01-fetch_tools.sh
 
-There are utility scripts:
+There are utility scripts, only guarenteed to work on linux:
 
 - src/xx-make_bin.sh (described below)
 - src/xx-all.sh (will run all stages)
