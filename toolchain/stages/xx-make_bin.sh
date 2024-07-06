@@ -1,5 +1,7 @@
 set -e
-MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
+
+# Lets get main directory
+MAIN_DIR="$(git rev-parse --show-toplevel)"
 if [ "${MAIN_DIR}" == "" ] || [ "${MAIN_DIR}" == "/" ]; then
   echo "We need to be in the git directory." >&2
   exit 1
@@ -26,8 +28,9 @@ bash -c '(
 )'
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  echo "Please source this script, don't execute it." >&2
-  exit 1
+  echo "You may rerun this script using \`source\` to modify your shell's path or, on your command line, run:"
+  echo "export PATH=\"${BIN_DIR}:\$PATH\""
+  exit 0
 fi
 
 export PATH="$BIN_DIR:$PATH"

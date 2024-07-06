@@ -1,14 +1,17 @@
 #!/bin/bash
 
-set -e # exit on any error
+# exit whole script on any error
+set -e
 
-util_error()
+# util_error will take a string as an argument and print it to error, and quit
+util_error() # print error and quit
 {
     echo "Error: $@" >&2
     exit 1
 }
 export -f util_error
 
+# util_get_version will load the version in .set_version or try to find it in env vars
 util_get_version()
 {
   if test -f "$MAIN_DIR/.set_version"; then
@@ -19,6 +22,7 @@ util_get_version()
 }
 export -f util_get_version
 
+# util will simple export the version variables for use in subshells
 util_export_version()
 {
   export CHROMIUM_VERSION_TAG
@@ -26,6 +30,7 @@ util_export_version()
 }
 export -f util_export_version
 
+# The following code tries to determine what operating system we're running
 PLATFORM=""
 case "$OSTYPE" in
   solaris*) PLATFORM="SOLARIS" ;;
@@ -42,7 +47,7 @@ if ! [[ "$PLATFORM" =~ ^(OSX|LINUX|WINDOWS)$ ]]; then
 fi
 $NO_VERBOSE || echo "Found platform: $PLATFORM"
 
-
+# The following code tries to determine what architecture we're running
 ARCH=$(uname -m)
 if [[ "$ARCH" == x86_64* ]]; then
   ARCH="x64"
@@ -57,13 +62,16 @@ if ! [[ "$ARCH" =~ ^(x64|x32|arm)$ ]]; then
 fi
 $NO_VERBOSE || echo "Found architecture: $ARCH"
 
-export MAIN_DIR="$(git rev-parse --show-toplevel)" # let's get base directory
+# Lets find our top level directory
+export MAIN_DIR="$(git rev-parse --show-toplevel)"
 $NO_VERBOSE || echo "Found main dir: ${MAIN_DIR}"
 
 if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
   util_error "git rev-parse returned an empty directory, are we in a git directory?"
 fi
 
+# This will add depot_tools to our path,
+# It would make sense to put this elsewhere but we need it in every script
 if [ "$PLATFORM" == "WINDOWS" ]; then
   export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
   $NO_VERBOSE || echo "Modified path to add future boostrap directory"
