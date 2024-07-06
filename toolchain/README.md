@@ -9,7 +9,7 @@ The files in  `toolchain/version_configuration/` are combinations of chromium/de
 
 # Build Scripts
 
-They are all numbered by supposed order and have a verbose --help.
+They are all numbered by supposed order and have a verbose --help. These must be cross platform!
 
 - stages/00-set_version.sh
 - stages/01-fetch_tools.sh
@@ -19,6 +19,8 @@ There are utility scripts:
 - stages/xx-make_bin.sh (described below)
 - stages/xx-all.sh (will run all stages)
 - stages/xx-template (just a template for writing new stages)
+
+These may or may not work on your OS of choice, they will all work on linux.
 
 As well as well commented `toolchain/stages/include/` folder.
 
