@@ -3,6 +3,9 @@
 # exit whole script on any error
 set -e
 
+# don't allow undefined env var expansion
+set -u
+
 # util_error will take a string as an argument and print it to error, and quit
 util_error() # print error and quit
 {
@@ -16,7 +19,7 @@ util_get_version()
 {
   if test -f "$MAIN_DIR/.set_version"; then
     . "$MAIN_DIR/.set_version"
-  elif [ -z "${DEPO_TOOLS_COMMIT}" ] || [ -z "${CHROMIUM_VERSION_TAG}" ]; then
+  elif [[ -z "${DEPO_TOOLS_COMMIT:-}" ]] || [[ -z "${CHROMIUM_VERSION_TAG:-}" ]]; then
     util_error "Couldn't find or set env vars for versions, please run set_version."
   fi
 }
@@ -48,31 +51,31 @@ fi
 $NO_VERBOSE || echo "Found platform: $PLATFORM"
 
 # The following code tries to determine what architecture we're running
-ARCH=$(uname -m)
-if [[ "$ARCH" == x86_64* ]]; then
-  ARCH="x64"
-elif [[ "$ARCH" == i*86 ]]; then
-  ARCH="x32"
-elif  [[ "$ARCH" == arm* ]]; then
-  ARCH="arm"
+HOST_ARCH=$(uname -m)
+if [[ "$HOST_ARCH" == x86_64* ]]; then
+  HOST_ARCH="x64"
+elif [[ "$HOST_ARCH" == i*86 ]]; then
+  HOST_ARCH="x32"
+elif  [[ "$HOST_ARCH" == arm* ]]; then
+  HOST_ARCH="arm"
 fi
 
-if ! [[ "$ARCH" =~ ^(x64|x32|arm)$ ]]; then
-  util_error "$ARCH is not a supported architecture for building."
+if ! [[ "$HOST_ARCH" =~ ^(x64|x32|arm)$ ]]; then
+  util_error "$HOST_ARCH is not a supported architecture for building."
 fi
-$NO_VERBOSE || echo "Found architecture: $ARCH"
+$NO_VERBOSE || echo "Found architecture: $HOST_ARCH"
 
 # Lets find our top level directory
 export MAIN_DIR="$(git rev-parse --show-toplevel)"
 $NO_VERBOSE || echo "Found main dir: ${MAIN_DIR}"
 
-if [ "$MAIN_DIR" == "" ] || [ "$MAIN_DIR" == "/" ]; then
+if [[ "$MAIN_DIR" == "" ]] || [[ "$MAIN_DIR" == "/" ]]; then
   util_error "git rev-parse returned an empty directory, are we in a git directory?"
 fi
 
 # This will add depot_tools to our path,
 # It would make sense to put this elsewhere but we need it in every script
-if [ "$PLATFORM" == "WINDOWS" ]; then
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
   export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
   $NO_VERBOSE || echo "Modified path to add future boostrap directory"
 fi

@@ -1,15 +1,13 @@
-set -e
-
 # Lets get main directory
 MAIN_DIR="$(git rev-parse --show-toplevel)"
-if [ "${MAIN_DIR}" == "" ] || [ "${MAIN_DIR}" == "/" ]; then
+if [[ "${MAIN_DIR}" == "" ]] || [[ "${MAIN_DIR}" = "/" ]]; then
   echo "We need to be in the git directory." >&2
   exit 1
 fi
 BIN_DIR="$(realpath $MAIN_DIR/bin)"
 bash -c '(
   MAIN_DIR="$(git rev-parse --show-toplevel)"
-  if [ "${MAIN_DIR}" == "" ] || [ "${MAIN_DIR}" == "/" ]; then
+  if [[ "${MAIN_DIR}" == "" ]] || [[ "${MAIN_DIR}" == "/" ]]; then
     echo "We need to be in the git directory." >&2
     exit 1
   fi
@@ -20,11 +18,13 @@ bash -c '(
   {
     name="${1//[0-9]*-/}"
     name=${name%.sh}
+    echo "linking $MAIN_DIR/toolchain/stages/$1 $BIN_DIR/$name"
     ln -fs "$MAIN_DIR/toolchain/stages/$1" "$BIN_DIR/$name"
   }
-
-  make_link 00-set_version.sh
-  make_link 01-fetch_tools.sh
+  shopt -s extglob
+  for script in $MAIN_DIR/toolchain/stages/[0-9]*-*.sh; do
+    make_link "$(basename -- $script)"
+  done
 )'
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then

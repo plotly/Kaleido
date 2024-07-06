@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -u
 
 usage=(
   "set_version will check to see if the chromium/depot_tools version are set- if not,"
@@ -43,7 +45,7 @@ while (( $# )); do
   shift
 done
 
-SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
 if $LATEST; then
@@ -53,9 +55,9 @@ if $LATEST; then
   $NO_VERBOSE || echo "Chromium ref: ${CHROMIUM_VERSION_TAG}, depot_tools ref: ${DEPOT_TOOLS_COMMIT}"
 elif $ASK; then
   $NO_VERBOSE || echo "--ask forced"
-elif [ -n "${CHROMIUM_VERSION_TAG}" ]; then
+elif [ -n "${CHROMIUM_VERSION_TAG:-}" ]; then
   $NO_VERBOSE || echo "Found chromium ref: ${CHROMIUM_VERSION_TAG}."
-  if [ -n "${DEPOT_TOOLS_COMMIT}" ]; then
+  if [ -n "${DEPOT_TOOLS_COMMIT:-}" ]; then
     $NO_VERBOSE || echo "Found depo_tools ref: ${DEPO_TOOLS_COMMIT}."
   else
     $NO_VERBOSE || echo "No depo_tools ref found, looking for file w/ that chromium tag."
@@ -82,10 +84,10 @@ if $ASK; then
   options=($(ls -v "$MAIN_DIR/toolchain/version_configurations")) # they say not to ever parse ls, oop
   select opt in "${options[@]}"
   do
-    if [ "$REPLY" == "c" ] || [ "$REPLY" == "C" ]; then
+    if [[ "$REPLY" == "c" ]] || [[ "$REPLY" == "C" ]]; then
       read -p "Chromium version tag (or ref): " CHROMIUM_VERSION_TAG
       read -p "Depot tools commit (or ref): " DEPOT_TOOLS_COMMIT
-    elif [ "$opt" != "" ]; then
+    elif [[ "$opt" != "" ]]; then
       . "$MAIN_DIR/toolchain/version_configurations/$opt"
       $NO_VERBOSE || echo "Sourced known configuration:"
       $NO_VERBOSE || echo "Chromium ref: ${CHROMIUM_VERSION_TAG}, depot_tools ref: ${DEPOT_TOOLS_COMMIT}."
