@@ -45,6 +45,8 @@ while (( $# )); do
   shift
 done
 
+$NO_VERBOSE || echo "Running 00-set_version.sh"
+
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
