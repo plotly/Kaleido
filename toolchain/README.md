@@ -19,7 +19,7 @@ You can use the same docker image we use in circle-ci, which is their convenienc
 Use our convenience script to pull and boot it:
 
 ```bash
-./toolchain/stage/xx-kdocker.sh
+./toolchain/src/xx-kdocker.sh
 ## see --help for more advanced usage.
 ```
 
@@ -40,19 +40,19 @@ The files in  `toolchain/version_configuration/` are combinations of chromium/de
 
 They are all numbered by supposed order and have a verbose --help. These must be cross platform!
 
-- stages/00-set_version.sh
-- stages/01-fetch_tools.sh
+- src/00-set_version.sh
+- src/01-fetch_tools.sh
 
 There are utility scripts:
 
-- stages/xx-make_bin.sh (described below)
-- stages/xx-all.sh (will run all stages)
-- stages/xx-template (just a template for writing new stages)
-- stages/xx-kdocker.sh (see [above](#linux))
+- src/xx-make_bin.sh (described below)
+- src/xx-all.sh (will run all stages)
+- src/xx-template (just a template for writing new stages)
+- src/xx-kdocker.sh (see [above](#linux))
 
 These may or may not work on your OS of choice, they will all work on linux.
 
-As well as well commented `toolchain/stages/include/` folder.
+As well as well commented `toolchain/src/include/` folder.
 
 ## Adding Scripts to Path
 
@@ -61,4 +61,4 @@ If you want to be able to run build scripts as commands, like
 set_version -c "108.123.01.2" -d "HEAD"
 fetch_tools --verbose --delete-git
 ```
-then you should run `source ./toolschain/stages/xx-make_bin.sh`.
+then you should run `source ./toolschain/src/xx-make_bin.sh`.

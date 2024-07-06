@@ -16,15 +16,17 @@ bash -c '(
 
   make_link()
   {
-    name="${1//[0-9]*-/}"
+    name="${1//[0-9x]*-/}"
     name=${name%.sh}
-    echo "linking $MAIN_DIR/toolchain/stages/$1 $BIN_DIR/$name"
-    ln -fs "$MAIN_DIR/toolchain/stages/$1" "$BIN_DIR/$name"
+    echo "linking $MAIN_DIR/toolchain/src/$1 $BIN_DIR/$name"
+    ln -fs "$MAIN_DIR/toolchain/src/$1" "$BIN_DIR/$name"
   }
   shopt -s extglob
-  for script in $MAIN_DIR/toolchain/stages/[0-9]*-*.sh; do
+  for script in $MAIN_DIR/toolchain/src/[0-9]*-*.sh; do
     make_link "$(basename -- $script)"
   done
+  make_link "xx-kdocker.sh"
+  make_link "xx-all.sh"
 )'
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
