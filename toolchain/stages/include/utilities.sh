@@ -77,6 +77,11 @@ fi
 # It would make sense to put this elsewhere but we need it in every script
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
   export PATH="$MAIN_DIR/repos/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
-  $NO_VERBOSE || echo "Modified path to add future boostrap directory"
+  $NO_VERBOSE || echo "Modified path to add future depot_tools/bootstrap/ directory"
+elif [[ "$PLATFORM" == "LINUX" ]]; then
+  export PATH="$MAIN_DIR/repos/depot_tools/:$PATH"
+  $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
+elif [[ "$PLATFORM" == "OSX" ]]; then
+  export PATH="$MAIN_DIR/repos/depot_tools/:$PATH"
+  $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
 fi
-
