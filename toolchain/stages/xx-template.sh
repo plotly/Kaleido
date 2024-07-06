@@ -4,7 +4,7 @@ set -u
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 usage=(
-  "xx_template s a template: more description."
+  "xx_template is a template: more description."
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"

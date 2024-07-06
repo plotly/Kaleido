@@ -1,3 +1,32 @@
+# Building Locally
+
+Whats your OS?
+
+### Windows
+
+Isolation seems difficult, probably need to install visual studio + windows SDK to your system. Specific versions depend on which version of Chromium you want to install.
+
+TODO: Add specific instructions for version.
+
+### Linux
+
+Chromium expects to be built in Ubuntu (maybe anything with `apt`?). Recommended to use LXC or docker.
+
+#### Building in Docker
+
+You can use the same docker image we use in circle-ci, which is their convenience image `cimg/python:X.X` on [dockerhub](https://hub.docker.com/r/cimg/python).
+
+Use our convenience script to pull and boot it:
+
+```bash
+./toolchain/stage/xx-kdocker.sh
+## see --help for more advanced usage.
+```
+
+### Mac
+
+TODO
+
 # Developing the Toolchain
 
 Bash is dangerous and hard to test, but portable across platforms and flexible, so keep modules as small as possible.
@@ -19,6 +48,7 @@ There are utility scripts:
 - stages/xx-make_bin.sh (described below)
 - stages/xx-all.sh (will run all stages)
 - stages/xx-template (just a template for writing new stages)
+- stages/xx-kdocker.sh (see [above](#linux))
 
 These may or may not work on your OS of choice, they will all work on linux.
 
