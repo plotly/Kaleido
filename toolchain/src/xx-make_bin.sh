@@ -19,7 +19,7 @@ bash -c '(
     name="${1//[0-9x]*-/}"
     name=${name%.sh}
     echo "linking $MAIN_DIR/toolchain/src/$1 $BIN_DIR/$name"
-    ln -fs "$MAIN_DIR/toolchain/src/$1" "$BIN_DIR/$name"
+    ln -fs "../toolchain/src/$1" "$BIN_DIR/$name"
   }
   shopt -s extglob
   for script in $MAIN_DIR/toolchain/src/[0-9]*-*.sh; do
