@@ -35,8 +35,8 @@ usage=(
   "                   will not be cloned over. "
   "                   Hint: Use \`git add -N PATH\` to track files without staging them for commit."
   "                   Hint: Don't work out of the clone ~/kaleido directory."
-  "                   Hint: Use \`refresh\` to re-clone/patch ~/kaleido after changes."
-  "                   Hint: If you use -c (or `refresh`), kaleido build commands (set_version, etc)"
+  "                   Hint: Use \`krefresh\` to re-clone/patch ~/kaleido after changes."
+  "                   Hint: If you use -c (or \`krefresh\`), kaleido build commands (set_version, etc)"
   "                         will always be run from ~/kaleido, not /usr/share/kaleido."
   "Docker tips:"
   "      Ending the first session will always end the docker. \`ctl+d\` will exit bash and session."
@@ -86,10 +86,27 @@ COMMAND+="\
   echo . $TEMP_SCRIPT | $SUDO tee -a $BASH_LOGIN $_OUT; \
   echo 'rm -f $TEMP_SCRIPT' | $SUDO tee -a $BASH_LOGIN $_OUT; \
   echo 'head -n -3 $BASH_LOGIN > $BASH_LOGIN' | $SUDO tee -a $BASH_LOGIN $_OUT; "
+
+REFRESH="\n\
+  FORCE=false; \n\
+  REPLAY=false; \n\
+  if [[ \"\$1\" == \"--force\" ]] || [[ \"\$1\" == \"-f\" ]]; then FORCE=true; fi; \n\
+  if ! \$FORCE; then \n\
+    read -p \"Are you sure? (Y/n)\" -n 1 -r; \n\
+    echo; \n\
+  fi; \n\
+  if \$FORCE || [[ \"\$REPLY\" =~ ^[Yy]$ ]] || [[ \"\$REPLY\" == \"\" ]]; then \n\
+    $SUDO rm -rf /home/$LOCAL_USER/kaleido 2> /dev/null; \n\
+    $SUDO -- git clone /usr/share/kaleido /home/$LOCAL_USER/kaleido; \n\
+    $SUDO git -C /usr/share/kaleido diff -p HEAD | $SUDO tee /home/$LOCAL_USER/.git_patch_1 $_OUT; \n\
+    $SUDO git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1; \n\
+  fi; "
+COMMAND+="echo -e '$REFRESH' | sudo tee /usr/bin/krefresh $_OUT; "
+COMMAND+="sudo chmod o+rx /usr/bin/krefresh; "
+# TODO This also has to do bin
 if $COPY; then
-  COMMAND+="$SUDO -- git clone /usr/share/kaleido /home/$LOCAL_USER/kaleido; \
-    $SUDO git -C /usr/share/kaleido diff -p HEAD | $SUDO tee /home/$LOCAL_USER/.git_patch_1 $_OUT; \
-    $SUDO git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1; "
+  #COMMAND+="krefresh --force; "
+  :
 fi
 COMMAND+="sudo su - $LOCAL_USER"
 
