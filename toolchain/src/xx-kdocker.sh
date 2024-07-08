@@ -67,7 +67,7 @@ done
 LOCAL_UID="$(id -u $LOCAL_USER)"
 
 
-COMMAND="true || sudo apt-get update; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null;"
+COMMAND="sudo apt-get update; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null;"
 USER_COMMAND="export PATH=/home/$LOCAL_USER/kaleido/bin:$PATH; "
 
 $NO_VERBOSE || echo "Running xx-kdocker.sh"
@@ -77,6 +77,9 @@ SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /
 . "$SCRIPT_DIR/include/utilities.sh"
 
 VOLUME="$MAIN_DIR:/usr/share/kaleido"
+APT_CACHE="$MAIN_DIR/toolchain/tmp/apt_cache/"
+mkdir -p $APT_CACHE
+APT_VOLUME="$APT_CACHE:/var/lib/apt/lists/"
 if [[ -n "${@}" ]]; then
   USER_COMMAND+="${@}; "
 fi
@@ -136,4 +139,4 @@ $NO_VERBOSE || echo "Pulling $IMAGE"
 docker pull $IMAGE
 
 $NO_VERBOSE || echo "docker container run -e TERM=$TERM -rm -it$DETACH -v $VOLUME $IMAGE bash -c COMMAND"
-docker container run -e TERM=$TERM --rm -it$DETACH -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"
+docker container run -e TERM=$TERM --rm -it$DETACH -v "$APT_VOLUME" -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"
