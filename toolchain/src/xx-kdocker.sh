@@ -94,7 +94,11 @@ COMMAND+="\
 REFRESH="\n\
   FORCE=false; \n\
   REPLAY=false; \n\
-  if [[ \"\$1\" == \"--force\" ]] || [[ \"\$1\" == \"-f\" ]]; then FORCE=true; fi; \n\
+  if [[ \"\$1\" == \"--force\" ]] || [[ \"\$1\" == \"-f\" ]]; then \n\
+    FORCE=true; \n\
+  elif [[ -n \"\$1\" ]]; then \n\
+    echo krefresh takes one possible argument, --force|-f, to ignore confirmation.; \n\
+  fi; \n\
   echo FORCE=\$FORCE; \n\
   if ! \$FORCE; then \n\
     read -p \"Are you sure? (Y/n)\" -n 1 -r; \n\
