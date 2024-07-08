@@ -38,6 +38,7 @@ usage=(
   "                   Hint: Use \`krefresh\` to re-clone/patch ~/kaleido after changes."
   "                   Hint: If you use -c (or \`krefresh\`), kaleido build commands (set_version, etc)"
   "                         will always be run from ~/kaleido, not /usr/share/kaleido."
+  "                   Hint: Pass --force to \`krefresh\` to skip confirmation."
   "Docker tips:"
   "      Ending the first session will always end the docker. \`ctl+d\` will exit bash and session."
   "     \`ctl+p ctl+q\` (instead of \`ctl+d\`) will leave bash running. You can reattach to (only)"
@@ -64,10 +65,13 @@ while (( $# )); do
   shift
 done
 LOCAL_UID="$(id -u $LOCAL_USER)"
+
+
 COMMAND="true || sudo apt-get update; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null;"
-USER_COMMAND=''
+USER_COMMAND="export PATH=/home/$LOCAL_USER/kaleido/bin:$PATH; "
 
 $NO_VERBOSE || echo "Running xx-kdocker.sh"
+$NO_VERBOSE || echo "User: $LOCAL_USER w/ ID $LOCAL_UID"
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
@@ -91,24 +95,41 @@ REFRESH="\n\
   FORCE=false; \n\
   REPLAY=false; \n\
   if [[ \"\$1\" == \"--force\" ]] || [[ \"\$1\" == \"-f\" ]]; then FORCE=true; fi; \n\
+  echo FORCE=\$FORCE; \n\
   if ! \$FORCE; then \n\
     read -p \"Are you sure? (Y/n)\" -n 1 -r; \n\
     echo; \n\
   fi; \n\
   if \$FORCE || [[ \"\$REPLY\" =~ ^[Yy]$ ]] || [[ \"\$REPLY\" == \"\" ]]; then \n\
+    echo removing current...; \n\
     $SUDO rm -rf /home/$LOCAL_USER/kaleido 2> /dev/null; \n\
+    echo cloning...; \n\
     $SUDO -- git clone /usr/share/kaleido /home/$LOCAL_USER/kaleido; \n\
+    echo calculating diff...; \n\
     $SUDO git -C /usr/share/kaleido diff -p HEAD | $SUDO tee /home/$LOCAL_USER/.git_patch_1 $_OUT; \n\
+    echo patching...; \n\
     $SUDO git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1; \n\
+    $SUDO bash -c \"pwd && echo $USER && cd /home/$USER/kaleido && ./toolchain/src/xx-make_bin.sh -n\"; \n\
   fi; "
 COMMAND+="echo -e '$REFRESH' | sudo tee /usr/bin/krefresh $_OUT; "
 COMMAND+="sudo chmod o+rx /usr/bin/krefresh; "
 # TODO This also has to do bin
 if $COPY; then
-  #COMMAND+="krefresh --force; "
-  :
+  $NO_VERBOSE || echo "Copy set"
+  if $NO_VERBOSE; then
+    COMMAND+="krefresh --force &> /dev/null; "
+  else
+    COMMAND+="krefresh --force; "
+  fi
 fi
 COMMAND+="sudo su - $LOCAL_USER"
 
+$NO_VERBOSE || echo -e "User Command Set:\n$USER_COMMAND"
+$NO_VERBOSE || echo -e "Command Set:\n$COMMAND"
+$NO_VERBOSE || echo -e "Refresh Script:\n$REFRESH"
+
+$NO_VERBOSE || echo "Pulling $IMAGE"
 docker pull $IMAGE
+
+$NO_VERBOSE || echo "docker container run -e TERM=$TERM -rm -it$DETACH -v $VOLUME $IMAGE bash -c COMMAND"
 docker container run -e TERM=$TERM --rm -it$DETACH -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"

@@ -1,4 +1,15 @@
 # Lets get main directory
+
+NO_PATH=false
+if [[ "$1" == "--no-path" ]] || [[ "$1" == "-n" ]]; then
+  NO_PATH=true
+  shift
+fi
+if [[ "$1" != "" ]]; then
+  echo "make_bin takes one optional flag: -n|--no-path to skip setting the path"
+  exit 1;
+fi
+
 MAIN_DIR="$(git rev-parse --show-toplevel)"
 if [[ "${MAIN_DIR}" == "" ]] || [[ "${MAIN_DIR}" = "/" ]]; then
   echo "We need to be in the git directory." >&2
@@ -28,6 +39,8 @@ bash -c '(
   make_link "xx-kdocker.sh"
   make_link "xx-all.sh"
 )'
+
+if $NO_PATH; then exit 0; fi
 
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
   echo "You may rerun this script using \`source\` to modify your shell's path or, on your command line, run:"
