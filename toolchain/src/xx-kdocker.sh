@@ -66,7 +66,7 @@ while (( $# )); do
 done
 LOCAL_UID="$(id -u $LOCAL_USER)"
 
-
+GIT_CONFIG="$(cat /home/$LOCAL_USER/.gitconfig)"
 COMMAND="sudo apt-get update; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null;"
 USER_COMMAND="export PATH=/home/$LOCAL_USER/kaleido/bin:$PATH; "
 
@@ -92,7 +92,8 @@ COMMAND+="\
   echo '$USER_COMMAND' | $SUDO tee -a $TEMP_SCRIPT $_OUT; \
   echo . $TEMP_SCRIPT | $SUDO tee -a $BASH_LOGIN $_OUT; \
   echo 'rm -f $TEMP_SCRIPT' | $SUDO tee -a $BASH_LOGIN $_OUT; \
-  echo 'head -n -3 $BASH_LOGIN > $BASH_LOGIN' | $SUDO tee -a $BASH_LOGIN $_OUT; "
+  echo 'head -n -3 $BASH_LOGIN > $BASH_LOGIN' | $SUDO tee -a $BASH_LOGIN $_OUT; \
+  echo '$GIT_CONFIG' | $SUDO tee -a /home/$LOCAL_USER/.gitconfig $_OUT;"
 
 REFRESH="\n\
   FORCE=false; \n\
