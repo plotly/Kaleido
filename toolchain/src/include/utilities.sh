@@ -1,10 +1,22 @@
 #!/bin/bash
 
-# exit whole script on any error
-set -e
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  echo "To include utilities.sh, don't execute it- source it"
+  exit 1
+fi
 
-# don't allow undefined env var expansion
-set -u
+###
+### SETTING BASH MODES ###
+###
+
+# It's good to put this at the tope of the script anyway
+
+set -e # exit whole script on any error
+set -u # don't allow undefined env var expansion
+
+###
+### DEFINING UTILITY FUNCTIONS ###
+###
 
 # util_error will take a string as an argument and print it to error, and quit
 util_error() # print error and quit
@@ -25,13 +37,17 @@ util_get_version()
 }
 export -f util_get_version
 
-# util will simple export the version variables for use in subshells
+# util_export_version will simple export the version variables for use in subshells
 util_export_version()
 {
   export CHROMIUM_VERSION_TAG
   export DEPOT_TOOLS_COMMIT
 }
 export -f util_export_version
+
+###
+### DETERMING PLATFORM AND OS ###
+###
 
 # The following code tries to determine what operating system we're running
 PLATFORM=""
@@ -65,7 +81,10 @@ if ! [[ "$HOST_ARCH" =~ ^(x64|x32|arm)$ ]]; then
 fi
 $NO_VERBOSE || echo "Found architecture: $HOST_ARCH"
 
-# Lets find our top level directory
+###
+### FIND THE GIT DIRECTORY ###
+###
+
 export MAIN_DIR="$(git rev-parse --show-toplevel)"
 $NO_VERBOSE || echo "Found main dir: ${MAIN_DIR}"
 
@@ -73,17 +92,7 @@ if [[ "$MAIN_DIR" == "" ]] || [[ "$MAIN_DIR" == "/" ]]; then
   util_error "git rev-parse returned an empty directory, are we in a git directory?"
 fi
 
-mkdir -p "$MAIN_DIR"/vendor # probably exists, but maybe not
+mkdir -p "$MAIN_DIR/vendor"
 
-# This will add depot_tools to our path,
-# It would make sense to put this elsewhere but we need it in every script
-if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  export PATH="$MAIN_DIR/vendor/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
-  $NO_VERBOSE || echo "Modified path to add future depot_tools/bootstrap/ directory"
-elif [[ "$PLATFORM" == "LINUX" ]]; then
-  export PATH="$MAIN_DIR/vendor/depot_tools/:$PATH"
-  $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
-elif [[ "$PLATFORM" == "OSX" ]]; then
-  export PATH="$MAIN_DIR/vendor/depot_tools/:$PATH"
-  $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
-fi
+
+. "$MAIN_DIR"/toolchain/src/include/globals

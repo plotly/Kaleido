@@ -1,0 +1,14 @@
+export TARGET_ARCH=${TARGET_ARCH:-x64}
+export CPUS=${CPUS:-1}
+
+# Add depot_tools to our path,
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
+  export PATH="$MAIN_DIR/vendor/depot_tools/bootstrap:$PATH" # TODO TODO WE MAY NOT WANT THIS IN NON-WINDOWS
+  $NO_VERBOSE || echo "Modified path to add future depot_tools/bootstrap/ directory"
+elif [[ "$PLATFORM" == "LINUX" ]]; then
+  export PATH="$MAIN_DIR/vendor/depot_tools:$PATH"
+  $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
+elif [[ "$PLATFORM" == "OSX" ]]; then
+  export PATH="$MAIN_DIR/vendor/depot_tools:$PATH"
+  $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
+fi
