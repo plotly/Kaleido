@@ -74,21 +74,27 @@ if [[ $TWO ]] || [[ $ALL ]]; then
     $SCRIPT_DIR/02-init_tools.sh $(flags_resolve "" ":")
   fi
 fi
-if [[ $THREE]] || [[ $ALL ]]; then
 
+if [[ $THREE ]] || [[ $ALL ]]; then
+  :
 fi
+
 if [[ $FOUR ]] || [[ $ALL ]]; then
-
+  :
 fi
+
 if [[ $FIVE ]] || [[ $ALL ]]; then
-
+  :
 fi
+
 if [[ $SIX ]] || [[ $ALL ]]; then
-
+  :
 fi
+
 if [[ $SEVEN ]] || [[ $ALL ]]; then
-
+  :
 fi
-if [[ $EIGHT ]] || [[ $ALL ]]; then
 
+if [[ $EIGHT ]] || [[ $ALL ]]; then
+  :
 fi
