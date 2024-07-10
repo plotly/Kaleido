@@ -184,7 +184,7 @@ if $COPY; then
   else
     COMMAND+="krefresh --force; "
   fi
-  COMMAND+="echo 'export MAIN_REPO=\"/home/$LOCAL_USER/kaleido\"' | $sudo cat - $bash_login | $sudo tee $bash_login $silence; "
+  COMMAND+="echo 'export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\"' | $sudo cat - $bash_login | $sudo tee $bash_login $silence; "
 fi
 COMMAND+="sudo -E su - $LOCAL_USER"
 
