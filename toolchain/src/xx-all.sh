@@ -49,52 +49,60 @@ EIGHT=$(flags_resolve false "-8:")
 
 NOT_ALL=$ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || false
 ALL=false
-if $NOT_ALL: ALL=true
+if $NOT_ALL; then ALL=true; fi
+
 $NO_VERBOSE || echo "Running xx-all.sh"
+$NO_VERBOSE || echo "Running all? $ALL"
+$NO_VERBOSE || echo "Running 2? $TWO"
 
 # check for something in path before running
 if [[ $ZERO ]] || [[ $ALL ]]; then
+  $NO_VERBOSE || echo "Running 0"
   if $(which set_version &>/dev/null); then
     set_version $(flags_resolve "" ":")
   else
     $SCRIPT_DIR/00-set_version.sh $(flags_resolve "" ":")
   fi
 fi
-if [[ $ONE ]] || [[ $ALL ]]; then
+
+if $ONE || $ALL; then
+  $NO_VERBOSE || echo "Running 1"
   if $(which fetch_tools &>/dev/null); then
     fetch_tools $(flags_resolve "" ":")
   else
     $SCRIPT_DIR/01-fetch_tools.sh $(flags_resolve "" ":")
   fi
 fi
-if [[ $TWO ]] || [[ $ALL ]]; then
-  if $(which init_tools &>/dev/null); then
-    fetch_tools $(flags_resolve "" ":")
+
+if $TWO || $ALL; then
+  $NO_VERBOSE || echo "Running 2"
+  if $(which init_tools &> /dev/null); then
+    init_tools $(flags_resolve "" ":")
   else
     $SCRIPT_DIR/02-init_tools.sh $(flags_resolve "" ":")
   fi
 fi
 
-if [[ $THREE ]] || [[ $ALL ]]; then
+if $THREE || $ALL; then
   :
 fi
 
-if [[ $FOUR ]] || [[ $ALL ]]; then
+if $FOUR || $ALL; then
   :
 fi
 
-if [[ $FIVE ]] || [[ $ALL ]]; then
+if $FIVE || $ALL; then
   :
 fi
 
-if [[ $SIX ]] || [[ $ALL ]]; then
+if $SIX || $ALL; then
   :
 fi
 
-if [[ $SEVEN ]] || [[ $ALL ]]; then
+if $SEVEN || $ALL; then
   :
 fi
 
-if [[ $EIGHT ]] || [[ $ALL ]]; then
+if $EIGHT || $ALL; then
   :
 fi
