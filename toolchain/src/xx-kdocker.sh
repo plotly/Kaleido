@@ -1,10 +1,24 @@
 #!/bin/bash
+# This is a script to help get us into a workable dev-environment inside a docker container
+# ⚠️⚠️⚠️ HERE BE DRAGONS ⚠️⚠️⚠️
+#    \****__              ____
+#      |    *****\_      --/ *\-__
+#      /_          (_    ./ ,/----'
+#           \__         (_./  /
+#              \__           \___----^__
+#               _/   _                  \
+#        |    _/  __/ )\"\ _____         *\
+#        |\__/   /    ^ ^       \____      )
+#         \___--"                    \_____ )
+#
+# ASCII Credit: IronWing
+
 set -e
 set -u
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 
-IMAGE="cimg/python:3.12.3"
+IMAGE="${IMAGE-cimg/python:3.12.3}"
 usage=(
   "kdocker is convenience script to start dockers for building on linux."
   ""
@@ -35,7 +49,7 @@ usage=(
   "                   will not be cloned over. "
   "                   Hint: Use \`git add -N PATH\` to track files without staging them for commit."
   "                   Hint: Don't work out of the clone ~/kaleido directory."
-  "                   Hint: It's easier to push outside of docker."
+  "                   Hint: Its easier to push outside of docker."
   "                   Hint: Use \`krefresh\` to re-clone/patch ~/kaleido after changes."
   "                   Hint: If you use -c (or \`krefresh\`), kaleido build commands (set_version, etc)"
   "                         will always be run from ~/kaleido, not /usr/share/kaleido."
@@ -47,81 +61,115 @@ usage=(
   "     \`docker exec --user \$USER -it CONTAINER_NAME bash\`."
 )
 
-## PROCESS FLAGS
-DETACH=""
-NO_VERBOSE=true
-COPY=false
-LOCAL_USER="$USER"
-while (( $# )); do
-  case $1 in
-    -h|--help)        printf "%s\n" "${usage[@]}"; exit 0  ;;
-    -i|--image)       shift; IMAGE="$1"                    ;;
-    -u|--user)        shift; LOCAL_USER="$1"               ;;
-    -d|--detach)      DETACH="d"                           ;;
-    -v|--verbose)     NO_VERBOSE=false                     ;;
-    -c|--copy)        COPY=true                            ;;
-    *)                break                                ;;
-  esac
-  shift
-done
-LOCAL_UID="$(id -u $LOCAL_USER)"
-
-GIT_CONFIG="$(cat /home/$LOCAL_USER/.gitconfig)"
-COMMAND="sudo apt-get update; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null;"
-USER_COMMAND="export PATH=/home/$LOCAL_USER/kaleido/bin:$PATH; "
-
-$NO_VERBOSE || echo "Running xx-kdocker.sh"
-$NO_VERBOSE || echo "User: $LOCAL_USER w/ ID $LOCAL_UID"
+FLAGS=(":" "-c" "--copy" "-d" "--detach")
+ARGFLAGS=("-i" "--image" "-u" "--user")
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
+$(flags_resolve "false" "-d" "--detach") && DETACH=d || DETACH=""
+$NO_VERBOSE || echo "Detach flag: '$DETACH'"
+
+COPY="$(flags_resolve "false" "-c" "--copy")"
+$NO_VERBOSE || echo "Copy: $COPY"
+
+IMAGE=$(flags_resolve ${IMAGE} -i --image)
+$NO_VERBOSE || echo "Image: $IMAGE"
+
+LOCAL_USER=$(flags_resolve ${USER} -u --user)
+
+$NO_VERBOSE || echo "Running xx-kdocker.sh"
+
+LOCAL_UID="$(id -u $LOCAL_USER)"
+$NO_VERBOSE || echo "User: $LOCAL_USER w/ ID $LOCAL_UID"
+
+# Set up mounting some of our directories into docker
 VOLUME="$MAIN_DIR:/usr/share/kaleido"
+
 APT_CACHE="$MAIN_DIR/toolchain/tmp/apt_cache/"
 mkdir -p $APT_CACHE
 APT_VOLUME="$APT_CACHE:/var/lib/apt/lists/"
-if [[ -n "${@}" ]]; then
-  USER_COMMAND+="${@}; "
-fi
 
-SUDO="sudo sudo -u $LOCAL_USER"
-_OUT="1> /dev/null"
-BASH_LOGIN="/home/$LOCAL_USER/.bash_login"
-TEMP_SCRIPT="/home/$LOCAL_USER/.temp_script.sh"
+
+# COMMAND is what we run to set up the user and do some basics
+COMMAND="sudo apt-get update; echo ok; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null; "
+
+# USER_COMMAND is what we run once we are logged in as the intended user,
+# including the actual user's desired command
+# \$PATH means we don't want to expand path now, but in docker, it makes it to USER_COMMAND as $PATH, literally
+USER_COMMAND="export PATH=/home/$LOCAL_USER/kaleido/bin:\$PATH; "
+
+# ":" is the bash noop, it is also the key for extra user arguments
+# so this prints ":" if it can't find an argument of key ":"
+USER_COMMAND+="$(flags_resolve ":" ":"); " # if the user passed \$VAR, it will make it to USER_COMMAND as $VAR, literally
+
+# Let's grab the users git config so they can use it in docker.
+# We could mount, but we copy
+# They won't have ssh though, so only commit, no push
+gitconfig="$(cat /home/$LOCAL_USER/.gitconfig)"
+
+# Some short cuts to make this less or maybe more readable
+sudo="sudo sudo -u $LOCAL_USER" # will throw background errors in docker, is fine
+silence="1> /dev/null"
+bash_login="/home/$LOCAL_USER/.bash_login"
+temp_script="/home/$LOCAL_USER/.temp_script.sh"
+
+# Understanding bash expansion rules:
+# KEY="value"
+#
+# echo "$KEY"
+# value
+#
+# echo '$KEY'
+# $KEY
+#
+# echo "'$KEY'"
+# 'value'
+#
+# So while $USER_COMMAND is expanded to the bash command,
+# When it is echos, it will be between '', so it will echo literaly to the file
+# Which will later be executed, and then will be expanded
 COMMAND+="\
-  echo '$USER_COMMAND' | $SUDO tee -a $TEMP_SCRIPT $_OUT; \
-  echo . $TEMP_SCRIPT | $SUDO tee -a $BASH_LOGIN $_OUT; \
-  echo 'rm -f $TEMP_SCRIPT' | $SUDO tee -a $BASH_LOGIN $_OUT; \
-  echo 'head -n -3 $BASH_LOGIN > $BASH_LOGIN' | $SUDO tee -a $BASH_LOGIN $_OUT; \
-  echo '$GIT_CONFIG' | $SUDO tee -a /home/$LOCAL_USER/.gitconfig $_OUT;"
+  echo '$USER_COMMAND' | $sudo tee -a $temp_script $silence; \
+  echo . $temp_script | $sudo tee -a $bash_login $silence; \
+  echo 'rm -f $temp_script' | $sudo tee -a $bash_login $silence; \
+  echo 'head -n -3 $bash_login > $bash_login' | $sudo tee -a $bash_login $silence; \
+  echo '$gitconfig' | $sudo tee -a /home/$LOCAL_USER/.gitconfig $silence; "
 
-REFRESH="\n\
-  FORCE=false; \n\
-  REPLAY=false; \n\
-  if [[ \"\$1\" == \"--force\" ]] || [[ \"\$1\" == \"-f\" ]]; then \n\
-    FORCE=true; \n\
-  elif [[ -n \"\$1\" ]]; then \n\
-    echo krefresh takes one possible argument, --force|-f, to ignore confirmation.; \n\
-  fi; \n\
-  echo FORCE=\$FORCE; \n\
-  if ! \$FORCE; then \n\
-    read -p \"Are you sure? (Y/n)\" -n 1 -r; \n\
-    echo; \n\
-  fi; \n\
-  if \$FORCE || [[ \"\$REPLY\" =~ ^[Yy]$ ]] || [[ \"\$REPLY\" == \"\" ]]; then \n\
-    echo removing current...; \n\
-    $SUDO rm -rf /home/$LOCAL_USER/kaleido 2> /dev/null; \n\
-    echo cloning...; \n\
-    $SUDO -- git clone /usr/share/kaleido /home/$LOCAL_USER/kaleido; \n\
-    echo calculating diff...; \n\
-    $SUDO git -C /usr/share/kaleido diff -p HEAD | $SUDO tee /home/$LOCAL_USER/.git_patch_1 $_OUT; \n\
-    echo patching...; \n\
-    $SUDO git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1; \n\
-    $SUDO bash -c \"pwd && echo $USER && cd /home/$USER/kaleido && ./toolchain/src/xx-make_bin.sh -n\"; \n\
-  fi; "
-COMMAND+="echo -e '$REFRESH' | sudo tee /usr/bin/krefresh $_OUT; "
+# Create the krefresh command, kinda awful doing it here
+# read -d '' always exits >0, use `|| true` to evade set -o
+# have to escape $ and |
+read -r -d '' REFRESH << EndOfScript || true
+  FORCE=false
+  REPLAY=false
+  if [[ "\$1" == "--force" ]] || [[ "\$1" == "-f" ]]; then
+    FORCE=true
+  elif [[ -n "\$1" ]]; then
+    echo "krefresh takes one possible argument, --force|-f, to ignore confirmation."
+    echo "Not sure what is '\$1'"
+    exit 1
+  fi
+  echo "Force? \$FORCE"
+  if ! \$FORCE; then
+    read -p "Are you sure? (Y/n)" -n 1 -r
+    echo
+  fi
+  if \$FORCE || [[ "\$REPLY" =~ ^[Yy]$ ]] || [[ "\$REPLY" == "" ]]; then
+    echo "removing current..."
+    $sudo rm -rf /home/$LOCAL_USER/kaleido 2> /dev/null
+    echo "cloning..."
+    $sudo -- git clone /usr/share/kaleido /home/$LOCAL_USER/kaleido
+    echo "calculating diff..."
+    $sudo git -C /usr/share/kaleido diff -p HEAD | $sudo tee /home/$LOCAL_USER/.git_patch_1 $silence
+    echo "patching..."
+    $sudo git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1
+    $sudo bash -c "cd /home/$LOCAL_USER/kaleido && ./toolchain/src/xx-make_bin.sh -n"
+  fi
+EndOfScript
+
+COMMAND+="echo '$REFRESH' | sudo tee /usr/bin/krefresh $silence; "
 COMMAND+="sudo chmod o+rx /usr/bin/krefresh; "
-# TODO This also has to do bin
+
 if $COPY; then
   $NO_VERBOSE || echo "Copy set"
   if $NO_VERBOSE; then
@@ -139,5 +187,5 @@ $NO_VERBOSE || echo -e "Refresh Script:\n$REFRESH"
 $NO_VERBOSE || echo "Pulling $IMAGE"
 docker pull $IMAGE
 
-$NO_VERBOSE || echo "docker container run -e TERM=$TERM -rm -it$DETACH -v $VOLUME $IMAGE bash -c COMMAND"
+$NO_VERBOSE || set -x # to print out the line w/o rewriting it
 docker container run -e TERM=$TERM --rm -it$DETACH -v "$APT_VOLUME" -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"

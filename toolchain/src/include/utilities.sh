@@ -19,12 +19,11 @@ set -u # don't allow undefined env var expansion
 ###
 
 # util_error will take a string as an argument and print it to error, and quit
-util_error() # print error and quit
+util_error()
 {
-    echo "Error: $@" >&2
+    echo -e "Error: $@" >&2
     exit 1
 }
-export -f util_error
 
 # util_get_version will load the version in .set_version or try to find it in env vars
 util_get_version()
@@ -35,7 +34,6 @@ util_get_version()
     util_error "Couldn't find or set env vars for versions, please run set_version."
   fi
 }
-export -f util_get_version
 
 # util_export_version will simple export the version variables for use in subshells
 util_export_version()
@@ -43,7 +41,59 @@ util_export_version()
   export CHROMIUM_VERSION_TAG
   export DEPOT_TOOLS_COMMIT
 }
-export -f util_export_version
+
+###
+### FLAGS
+###
+
+if [[ -z "${usage-}" ]]; then
+  util_error "The script author must create a \`usage\` string-array prior to calling utilities.sh or flags.sh"
+fi
+
+if [[ ! "$(declare -p FLAGS)" =~ "declare -a" ]] || [[ ! "$(declare -p ARGFLAGS)" =~ "declare -a" ]]; then
+  util_error "The script author must at least declare a FLAGS and ARGFLAGS array. FLAGS=(); ARGFLAGS=();"
+fi
+
+declare -A ARGS
+NO_VERBOSE=true
+while (( $# )); do
+  case $1 in
+    -h|--help)      printf "%s\n" "${usage[@]}"; exit 0  ;;
+    -v|--verbose)   NO_VERBOSE=false                     ;;
+    *)
+      if [[ "${1}" == -* ]]; then
+        if [[ " ${FLAGS[*]} " =~ " ${1} " ]]; then
+          ARGS["${1}"]=true
+        elif [[ " ${ARGFLAGS[*]} " =~ " ${1} " ]]; then
+          KEY="${1}"; shift
+          ARGS["$KEY"]="${1}"
+        else
+          util_error "Unknown flag: \"${1}\". See --help."
+        fi
+      elif [[ " ${FLAGS[*]} " =~ " : " ]]; then
+        ARGS[":"]="${@}"
+        break 1
+      else
+        util_error "Unknown argument: ${1}. See --help" || true
+      fi
+      ;;
+  esac
+  shift
+done
+
+# flags_resolve checks several keys and returns the first one that has a value
+flags_resolve()
+{
+  DEFAULT="$1"
+  shift
+  while (( $# )); do
+    [[ -v ARGS["$1"] ]] && echo "${ARGS[$1]}" && break || true
+    shift
+  done
+  echo "$DEFAULT"
+}
+
+$NO_VERBOSE || printf "Flags:\n%s\n" "${!array[@]}" "${array[@]}" | pr -2t
 
 ###
 ### DETERMING PLATFORM AND OS ###

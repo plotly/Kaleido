@@ -1,21 +1,36 @@
+#!/bin/bash
+set -e
+set -u
+
+# Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
+usage=(
+  "xx-make_bin.sh will create shortcuts to the utilties and optionally set the path,"
+  "if its sourced. xx-make_bin.sh doesn't add a shortcut for itself, so always call it here."
+  ""
+  "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
+  "You can always try -v or --verbose"
+  ""
+  "Display this help:"
+  "xx-make_bin [-h|--h]"
+  ""
+  "You can totally skip setting path:"
+  "xx_template [-n|--no-path]"
+)
 # Lets get main directory
 
-NO_PATH=false
-if [[ "$1" == "--no-path" ]] || [[ "$1" == "-n" ]]; then
-  NO_PATH=true
-  shift
-fi
-if [[ "$1" != "" ]]; then
-  echo "make_bin takes one optional flag: -n|--no-path to skip setting the path"
-  exit 1;
-fi
+FLAGS=("-n" "--no-path")
+ARGFLAGS=()
 
-MAIN_DIR="$(git rev-parse --show-toplevel)"
-if [[ "${MAIN_DIR}" == "" ]] || [[ "${MAIN_DIR}" = "/" ]]; then
-  echo "We need to be in the git directory." >&2
-  exit 1
-fi
+SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+. "$SCRIPT_DIR/include/utilities.sh"
+
+NO_PATH="$(flags_resolve false "-n" "--no-path")"
+
+$NO_VERBOSE || echo "Running xx-make_bin.sh"
+
 BIN_DIR="$(realpath $MAIN_DIR/bin)"
+
+# really awful way to make sure this is bash lol
 bash -c '(
   MAIN_DIR="$(git rev-parse --show-toplevel)"
   if [[ "${MAIN_DIR}" == "" ]] || [[ "${MAIN_DIR}" == "/" ]]; then

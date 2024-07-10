@@ -27,28 +27,21 @@ usage=(
   "Force ask:"
   "set_version [-a|--ask]"
 )
-## PROCESS FLAGS
 
-ASK=false
-NO_VERBOSE=true
-LATEST=false
-while (( $# )); do
-  case $1 in
-    -h|--help)      printf "%s\n" "${usage[@]}"; exit 0  ;;
-    -c|--chromium)  shift; CHROMIUM_VERSION_TAG="$1"     ;;
-    -d|--depot)     shift; DEPOT_TOOLS_COMMIT="$1"       ;;
-    -v|--verbose)   NO_VERBOSE=false                     ;;
-    -l|--latest)    LATEST=true                          ;;
-    -a|--ask)       ASK=true                             ;;
-    *)              printf "%s\n" "${usage[@]}"; exit 1  ;;
-  esac
-  shift
-done
-
-$NO_VERBOSE || echo "Running 00-set_version.sh"
+FLAGS=("-l" "--latest" "-a" "--ask")
+ARGFLAGS=("-c" "--chromium" "-d" "--depot")
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
+
+ASK="$(flags_resolve false "-a" "--ask")"
+
+LATEST="$(flags_resolve false "-l" "--latest")"
+
+CHROMIUM_VERSION_TAG=$(flags_resolve ${CHROMIUM_VERSION_TAG-""} -c --chromium)
+DEPOT_TOOLS_COMMIT=$(flags_resolve ${DEPOT_TOOLS_COMMIT-""} -d --depot)
+
+$NO_VERBOSE || echo "Running 00-set_version.sh"
 
 if $LATEST; then
   $NO_VERBOSE || echo "Getting latest:"

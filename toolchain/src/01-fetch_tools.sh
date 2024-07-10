@@ -14,24 +14,17 @@ usage=(
   "Delete .git to save space:"
   "set_version [-d|--delete-git]"
 )
-## PROCESS FLAGS
 
-DELETE_GIT=false
-NO_VERBOSE=true
-while (( $# )); do
-  case $1 in
-    -h|--help)        printf "%s\n" "${usage[@]}"; exit 0  ;;
-    -v|--verbose)     NO_VERBOSE=false                     ;;
-    -d|--delete-git)  DELETE_GIT=true                      ;;
-    *)                printf "%s\n" "${usage[@]}"; exit 1  ;;
-  esac
-  shift
-done
 
-$NO_VERBOSE || echo "Running 01-fetch_tools.sh"
+FLAGS=("-d" "--delete-git")
+ARGFLAGS=()
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
+
+DELETE_GIT="$(flags_resolve false "-d" "--delete-git")" # will resolve true if existing, false if no
+
+$NO_VERBOSE || echo "Running 01-fetch_tools.sh"
 
 util_get_version
 util_export_version

@@ -18,22 +18,15 @@ usage=(
 )
 ## PROCESS FLAGS
 
-SHOW=false
-NO_VERBOSE=true
-while (( $# )); do
-  case $1 in
-    -h|--help)        printf "%s\n" "${usage[@]}"; exit 0  ;;
-    -d|--dry-run)     SHOW=true                            ;;
-    -v|--verbose)     NO_VERBOSE=false                     ;;
-    *)                printf "%s\n" "${usage[@]}"; exit 1  ;;
-  esac
-  shift
-done
-
-$NO_VERBOSE || echo "Running 02-init_tools.sh"
+FLAGS=("-d" "--dry-run")
+ARGFLAGS=()
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
+
+SHOW="$(flags_resolve false "-d" "--dry-run")"
+
+$NO_VERBOSE || echo "Running 02-init_tools.sh"
 
 util_get_version
 util_export_version
