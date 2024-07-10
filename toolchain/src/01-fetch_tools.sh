@@ -9,10 +9,12 @@ usage=(
   "You can always try -v or --verbose"
   ""
   "Display this help:"
-  "set_version [-h|--h]"
+  "fetch_tools [-h|--h]"
   ""
   "Delete .git to save space:"
-  "set_version [-d|--delete-git]"
+  "fetch_tools [-d|--delete-git]"
+  ""
+  ""
 )
 
 

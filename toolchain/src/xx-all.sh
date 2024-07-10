@@ -18,7 +18,7 @@ usage=(
   "set_version --latest"
   ""
   "Or, you can skip the number and everything will be passed to every command."
-  "So, it really only works with --help and --verbose."
+  "So, it really only works with --verbose."
   ""
   "-0: set_version"
   "-1: fetch_tools"
@@ -48,7 +48,8 @@ SEVEN=$(flags_resolve false "-7:")
 EIGHT=$(flags_resolve false "-8:")
 
 NOT_ALL=$ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || false
-
+ALL=false
+if $NOT_ALL: ALL=true
 $NO_VERBOSE || echo "Running xx-all.sh"
 
 # check for something in path before running

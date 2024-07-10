@@ -15,6 +15,8 @@ usage=(
   ""
   "Dry run: just show me the scripts that would be run, don't run them."
   "init_tools [-d|--dry-run]"
+  ""
+  ""
 )
 ## PROCESS FLAGS
 

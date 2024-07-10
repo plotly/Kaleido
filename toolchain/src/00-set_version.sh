@@ -26,6 +26,8 @@ usage=(
   ""
   "Force ask:"
   "set_version [-a|--ask]"
+  ""
+  ""
 )
 
 FLAGS=("-l" "--latest" "-a" "--ask")
