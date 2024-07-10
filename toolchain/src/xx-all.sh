@@ -4,7 +4,7 @@ set -u
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 usage=(
-  "all is a shortcut to running the scripts. If the first argument is a number, -0, -1, -2, it will run that stage."
+  "all is a shortcut to running the scripts. If the first argument is a number, -0:, -1:, -2:, it will run that stage."
   "Anything besides that or after that will be passed to the command or every command run."
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
@@ -14,28 +14,39 @@ usage=(
   "all [-h|--h]"
   ""
   "Example: You can specify a specific stage and its flags. The following are equivalent:"
-  "all -0 --latest"
+  "all -0: --latest"
   "set_version --latest"
-
+  ""
   "Or, you can skip the number and everything will be passed to every command."
-  "So, it really only works with --help, or --verbose."
+  "So, it really only works with --help and --verbose."
+  ""
+  "-0: set_version"
+  "-1: fetch_tools"
+  "-2: init_tools"
+  "-3:"
+  "-4:"
+  "-5:"
+  "-6:"
+  "-7:"
+  "-8:"
 )
 
-FLAGS=(":", "-0", "-1", "-2", "-3", "-4", "-5", "-6", "-7", "-8")
+FLAGS=(":" "-0:" "-1:" "-2:" "-3:" "-4:" "-5:" "-6:" "-7:", "-8:")
 ARGFLAGS=("")
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
-ZERO=$(flags_resolve false "-0")
-ONE=$(flags_resolve false "-1")
-TWO=$(flags_resolve false "-2")
-THREE=$(flags_resolve false "-3")
-FOUR=$(flags_resolve false "-4")
-FIVE=$(flags_resolve false "-5")
-SIX=$(flags_resolve false "-6")
-SEVEN=$(flags_resolve false "-7")
-EIGHT=$(flags_resolve false "-8")
+ZERO=$(flags_resolve false "-0:")
+ONE=$(flags_resolve false "-1:")
+TWO=$(flags_resolve false "-2:")
+THREE=$(flags_resolve false "-3:")
+FOUR=$(flags_resolve false "-4:")
+FIVE=$(flags_resolve false "-5:")
+SIX=$(flags_resolve false "-6:")
+SEVEN=$(flags_resolve false "-7:")
+EIGHT=$(flags_resolve false "-8:")
+
 NOT_ALL=$ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || false
 
 $NO_VERBOSE || echo "Running xx-all.sh"

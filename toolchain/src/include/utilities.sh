@@ -64,6 +64,11 @@ while (( $# )); do
       if [[ "${1}" == -* ]]; then
         if [[ " ${FLAGS[*]} " =~ " ${1} " ]]; then
           ARGS["${1}"]=true
+          if [[ "${1}" == *: ]]; then
+            shift
+            ARGS[":"]="${@}"
+            break 1
+          fi
         elif [[ " ${ARGFLAGS[*]} " =~ " ${1} " ]]; then
           KEY="${1}"; shift
           ARGS["$KEY"]="${1}"
