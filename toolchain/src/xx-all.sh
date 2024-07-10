@@ -47,9 +47,10 @@ SIX=$(flags_resolve false "-6:")
 SEVEN=$(flags_resolve false "-7:")
 EIGHT=$(flags_resolve false "-8:")
 
-NOT_ALL=$ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || false
-ALL=false
-if $NOT_ALL; then ALL=true; fi
+ALL=true
+if $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT; then
+  ALL=false
+fi
 
 $NO_VERBOSE || echo "Running xx-all.sh"
 $NO_VERBOSE || echo "Running all? $ALL"
