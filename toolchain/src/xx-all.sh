@@ -48,7 +48,8 @@ SEVEN=$(flags_resolve false "-7:")
 EIGHT=$(flags_resolve false "-8:")
 
 ALL=true
-if $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT; then
+if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT; then
+  $NO_VERBOSE || echo "Turning off ALL"
   ALL=false
 fi
 
@@ -57,7 +58,7 @@ $NO_VERBOSE || echo "Running all? $ALL"
 $NO_VERBOSE || echo "Running 2? $TWO"
 
 # check for something in path before running
-if [[ $ZERO ]] || [[ $ALL ]]; then
+if $ZERO || $ALL; then
   $NO_VERBOSE || echo "Running 0"
   if $(which set_version &>/dev/null); then
     set_version $(flags_resolve "" ":")
