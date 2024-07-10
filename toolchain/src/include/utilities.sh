@@ -140,7 +140,7 @@ $NO_VERBOSE || echo "Found architecture: $HOST_ARCH"
 ### FIND THE GIT DIRECTORY ###
 ###
 
-export MAIN_DIR="$(git rev-parse --show-toplevel)"
+export MAIN_DIR="${MAIN_DIR-$(git rev-parse --show-toplevel)}"
 $NO_VERBOSE || echo "Found main dir: ${MAIN_DIR}"
 
 if [[ "$MAIN_DIR" == "" ]] || [[ "$MAIN_DIR" == "/" ]]; then

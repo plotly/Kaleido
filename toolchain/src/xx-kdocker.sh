@@ -52,7 +52,8 @@ usage=(
   "                   Hint: Its easier to push outside of docker."
   "                   Hint: Use \`krefresh\` to re-clone/patch ~/kaleido after changes."
   "                   Hint: If you use -c (or \`krefresh\`), kaleido build commands (set_version, etc)"
-  "                         will always be run from ~/kaleido, not /usr/share/kaleido."
+  "                         will always be run from ~/kaleido, not /usr/share/kaleido. So all changes"
+  "                         need to be \`krefresh\`ed." ## TODO: we don't wanna krefresh everytime we change the C
   "Docker tips:"
   "      Ending the first session will always end the docker. \`ctl+d\` will exit bash and session."
   "     \`ctl+p ctl+q\` (instead of \`ctl+d\`) will leave bash running. You can reattach to (only)"
@@ -163,7 +164,13 @@ read -r -d '' REFRESH << EndOfScript || true
     $sudo git -C /usr/share/kaleido diff -p HEAD | $sudo tee /home/$LOCAL_USER/.git_patch_1 $silence
     echo "patching..."
     $sudo git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1
+    if ! $COPY; then
+      echo "       !!!! To set the main github repo to the copy (recommended):"
+      echo "       export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\""
+      echo "       !!!!"
+    fi
     $sudo bash -c "cd /home/$LOCAL_USER/kaleido && ./toolchain/src/xx-make_bin.sh -n"
+    export MAIN_DIR="/home/$LOCAL_USER/kaleido"
   fi
 EndOfScript
 
@@ -177,8 +184,9 @@ if $COPY; then
   else
     COMMAND+="krefresh --force; "
   fi
+  COMMAND+="echo 'export MAIN_REPO=\"/home/$LOCAL_USER/kaleido\"' | $sudo cat - $bash_login | $sudo tee $bash_login $silence; "
 fi
-COMMAND+="sudo su - $LOCAL_USER"
+COMMAND+="sudo -E su - $LOCAL_USER"
 
 $NO_VERBOSE || echo -e "User Command Set:\n$USER_COMMAND"
 $NO_VERBOSE || echo -e "Command Set:\n$COMMAND"
