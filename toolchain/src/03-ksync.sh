@@ -4,7 +4,7 @@ set -u
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 usage=(
-  "ksync will set some env vars and run gclient sync in an OS dependent manner"
+  "ksync will set some env vars and run gclient sync."
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"
@@ -36,12 +36,4 @@ util_export_version
 export DEPOT_TOOLS_UPDATE=0 # otherwise it advances to the tip of branch main
 ## but sometimes it does other necessary things!
 
-
-# This may change with depot tools vesion, and it still needs to be worked out per platform
-if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  $NO_VERBOSE || echo "TODO" # TODO (look at your comment in fetch_chromium)
-elif [[ "$PLATFORM" == "LINUX" ]]; then
-  ( cd $MAIN_DIR/vendor/; gclient sync -D --force --reset --no-history --jobs=$CPUS --revision=$CHROMIUM_VERSION_TAG )
-elif [[ "$PLATFORM" == "OSX" ]]; then
-  $NO_VERBOSE || echo "Did nothing for OSX, we will have to do something, probably the same as linux." # TODO
-fi
+( cd $MAIN_DIR/vendor/; gclient sync -D --force --reset --no-history --jobs=$CPUS --revision=$CHROMIUM_VERSION_TAG )
