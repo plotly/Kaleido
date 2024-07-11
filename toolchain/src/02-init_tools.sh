@@ -35,7 +35,21 @@ util_export_version
 
 # This may change with depot tools vesion, and it still needs to be worked out per platform
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  $NO_VERBOSE || echo "TODO" # TODO (look at your comment in fetch_chromium)
+  if [[ "$CHROMIUM_VERSION_TAG" == "88.0.4324.150" ]]; then
+    util_error "Try to execute the following manually first"
+    # What's the deal with this really though, how do you call this
+    # Do we expect to be in the depot_tools directory?
+    cmd.exe /c cipd_bin_setup.bat
+    cmd.exe /c 'bootstrap\win_tools.bat'
+  elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]]; then
+    util_error "Try to execute the following manually first"
+    # What's the deal with this really though, how do you call this
+    # Do we expect to be in the depot_tools directory?
+    cmd.exe /c cipd_bin_setup.bat
+    cmd.exe /c 'bootstrap\win_tools.bat'
+  else
+    util_error "No elif branch in 02-init_tools.sh for this version $CHROMIUM_VERSION_TAG, as of today, you still have to add the branch manually. You can add an elif statement right where you find this error, so search for it."
+  fi
 elif [[ "$PLATFORM" == "LINUX" ]]; then
   mkdir -p "$MAIN_DIR/toolchain/tmp"
   # I don't love curling this out of something we'll download later but its how they do it and we haven't cloned the repo yet
@@ -68,7 +82,7 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
     DEBIAN_FRONTEND=noninteractive "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
 
   else
-    util-error "Unknown CHROMUM_VERSION_TAG, please create a branch for it in 02-init_tools.sh"
+    util_error "No elif branch in 02-init_tools.sh for this version $CHROMIUM_VERSION_TAG, as of today, you still have to add the branch manually. You can add an elif statement right where you find this error, so search for it."
   fi
   # runhooks? i don't think we need to TODO but mentioned
   $NO_VERBOSE || echo "Downloaded and installed build-deps."
