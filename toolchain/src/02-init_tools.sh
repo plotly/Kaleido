@@ -56,7 +56,7 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
   elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]]; then
     curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
     | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.sh
-    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
+    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.py?format=TEXT \
     | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.py
     if $SHOW; then
       echo -e "\n\nSee file in $MAIN_DIR/toolchain/tmp/install-build-deps.sh"
