@@ -4,8 +4,7 @@ set -u
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 usage=(
-  "xx-make_bin.sh will create shortcuts to the utilties and optionally set the path,"
-  "if its sourced. xx-make_bin.sh doesn't add a shortcut for itself, so always call it here."
+  "xx-make_bin.sh will create shortcuts to the utilties and tell you how to set your path."
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"
@@ -13,7 +12,7 @@ usage=(
   "Display this help:"
   "xx-make_bin [-h|--h]"
   ""
-  "You can totally skip setting path:"
+  "You can skip the path recommendation:"
   "xx_template [-n|--no-path]"
 )
 # Lets get main directory
@@ -21,16 +20,7 @@ usage=(
 FLAGS=("-n" "--no-path")
 ARGFLAGS=()
 
-if [ -n "${BASH_VERSION-""}" ]; then
-  SOURCE="${BASH_SOURCE[0]}"
-elif [ -n "${ZSH_VERSION-""}" ]; then # if sourcing, we may not be in /bin/bash
-  SOURCE="${(%):-%N}"
-else
-  echo "Unknown shell, cannot source" &>2
-  exit 1
-fi
-
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${SOURCE}") )" &> /dev/null && pwd )
+SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
 NO_PATH="$(flags_resolve false "-n" "--no-path")"
@@ -66,10 +56,5 @@ bash -c '(
 
 if $NO_PATH; then exit 0; fi
 
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-  echo "You may rerun this script using \`source\` to modify your shell's path or, on your command line, run:"
-  echo "export PATH=\"${BIN_DIR}:\$PATH\""
-  exit 0
-fi
-
-export PATH="$BIN_DIR:$PATH"
+echo "You should run:"
+echo "export PATH=\"${BIN_DIR}:\$PATH\""
