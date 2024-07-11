@@ -1,6 +1,6 @@
 repos/CREDITS.html
 repos/src
-repos/depot_tools
+vendor/depot_tools
 *.DS_Store
 *.kate-swp
 repos/.cipd/
