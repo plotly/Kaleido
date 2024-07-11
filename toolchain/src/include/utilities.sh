@@ -92,7 +92,7 @@ flags_resolve()
   DEFAULT="$1"
   shift
   while (( $# )); do
-    [[ -v ARGS["$1"] ]] && echo "${ARGS[$1]}" && break || true
+    [[ -v ARGS["$1"] ]] && echo "${ARGS[$1]}" && return || true
     shift
   done
   echo "$DEFAULT"
