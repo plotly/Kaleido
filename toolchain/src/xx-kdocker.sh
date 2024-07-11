@@ -137,60 +137,22 @@ COMMAND+="\
   echo 'head -n -3 $bash_login > $bash_login' | $sudo tee -a $bash_login $silence; \
   echo '$gitconfig' | $sudo tee -a /home/$LOCAL_USER/.gitconfig $silence; "
 
-# Create the krefresh command, kinda awful doing it here
-# read -d '' always exits >0, use `|| true` to evade set -o
-# have to escape $ and |
-read -r -d '' REFRESH << EndOfScript || true
-  FORCE=false
-  REPLAY=false
-  if [[ "\$1" == "--force" ]] || [[ "\$1" == "-f" ]]; then
-    FORCE=true
-  elif [[ -n "\$1" ]]; then
-    echo "krefresh takes one possible argument, --force|-f, to ignore confirmation."
-    echo "Not sure what is '\$1'"
-    exit 1
-  fi
-  echo "Force? \$FORCE"
-  if ! \$FORCE; then
-    read -p "Are you sure? (Y/n)" -n 1 -r
-    echo
-  fi
-  if \$FORCE || [[ "\$REPLY" =~ ^[Yy]$ ]] || [[ "\$REPLY" == "" ]]; then
-    echo "removing current..."
-    $sudo rm -rf /home/$LOCAL_USER/kaleido 2> /dev/null
-    echo "cloning..."
-    $sudo -- git clone /usr/share/kaleido /home/$LOCAL_USER/kaleido
-    echo "calculating diff..."
-    $sudo git -C /usr/share/kaleido diff -p HEAD | $sudo tee /home/$LOCAL_USER/.git_patch_1 $silence
-    echo "patching..."
-    $sudo git -C /home/$LOCAL_USER/kaleido apply /home/$LOCAL_USER/.git_patch_1
-    if ! $COPY; then
-      echo "       !!!! To set the main github repo to the copy (recommended):"
-      echo "       export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\""
-      echo "       !!!!"
-    fi
-    $sudo bash -c "cd /home/$LOCAL_USER/kaleido && ./toolchain/src/xx-make_bin.sh -n"
-    export MAIN_DIR="/home/$LOCAL_USER/kaleido"
-  fi
-EndOfScript
-
-COMMAND+="echo '$REFRESH' | sudo tee /usr/bin/krefresh $silence; "
+COMMAND+="sudo ln -s /usr/share/kaleido/toolchain/src/xx-krefresh.sh /usr/bin/krefresh $silence; "
 COMMAND+="sudo chmod o+rx /usr/bin/krefresh; "
 
 if $COPY; then
   $NO_VERBOSE || echo "Copy set"
-  if $NO_VERBOSE; then
-    COMMAND+="krefresh --force &> /dev/null; "
-  else
-    COMMAND+="krefresh --force; "
-  fi
   COMMAND+="echo 'export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\"' | $sudo cat - $bash_login | $sudo tee $bash_login $silence; "
+  if $NO_VERBOSE; then
+    COMMAND+="$sudo krefresh -q -a --force &> /dev/null; " # TODO CURRENTLY THIS WILL THROW WARNING ABOUT PATH
+  else
+    COMMAND+="$sudo krefresh -q -a --force; "
+  fi
 fi
 COMMAND+="sudo -E su - $LOCAL_USER"
 
 $NO_VERBOSE || echo -e "User Command Set:\n$USER_COMMAND"
 $NO_VERBOSE || echo -e "Command Set:\n$COMMAND"
-$NO_VERBOSE || echo -e "Refresh Script:\n$REFRESH"
 
 $NO_VERBOSE || echo "Pulling $IMAGE"
 docker pull $IMAGE
