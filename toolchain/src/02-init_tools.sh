@@ -35,20 +35,40 @@ util_export_version
 
 # This may change with depot tools vesion, and it still needs to be worked out per platform
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  $NO_VERBOSE || echo "TODO" # TODO
+  $NO_VERBOSE || echo "TODO" # TODO (look at your comment in fetch_chromium)
 elif [[ "$PLATFORM" == "LINUX" ]]; then
   mkdir -p "$MAIN_DIR/toolchain/tmp"
   # I don't love curling this out of something we'll download later but its how they do it and we haven't cloned the repo yet
   # https://issues.chromium.org/issues/40243622
-  curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
-  | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.sh
-  if $SHOW; then
-    cat "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
-    echo -e "\n\nSee file in $MAIN_DIR/toolchain/tmp/install-build-deps.sh"
-    exit 0
+
+  if [[ "$CHROMIUM_VERSION_TAG" == "88.0.4324.150" ]]; then
+    util_error "Script exiting as 88.0.4324.150's build script doesn't seem to function, look at 02-init_tools.sh if important"
+    #### THIS IS WHAT IT WAS:
+
+    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
+    | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.sh
+    if $SHOW; then
+      echo -e "\n\nSee file in $MAIN_DIR/toolchain/tmp/install-build-deps.sh"
+      exit 0
+    fi
+    chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
+    "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
+  elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]]; then
+    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
+    | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.sh
+    curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
+    | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.py
+    if $SHOW; then
+      echo -e "\n\nSee file in $MAIN_DIR/toolchain/tmp/install-build-deps.sh"
+      echo -e "\n\nSee file in $MAIN_DIR/toolchain/tmp/install-build-deps.py"
+      exit 0
+    fi
+    chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
+    "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
+
+  else
+    util-error "Unknown CHROMUM_VERSION_TAG, please create a branch for it in 02-init_tools.sh"
   fi
-  chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
-  "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
   # runhooks? i don't think we need to TODO but mentioned
   $NO_VERBOSE || echo "Downloaded and installed build-deps."
 elif [[ "$PLATFORM" == "OSX" ]]; then
