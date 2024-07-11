@@ -65,7 +65,7 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
     fi
     chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
     chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.py"
-    "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
+    DEBIAN_FRONTEND=noninteractive "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
 
   else
     util-error "Unknown CHROMUM_VERSION_TAG, please create a branch for it in 02-init_tools.sh"
