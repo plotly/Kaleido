@@ -64,6 +64,7 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
       exit 0
     fi
     chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
+    chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.py"
     "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
 
   else
