@@ -21,7 +21,16 @@ usage=(
 FLAGS=("-n" "--no-path")
 ARGFLAGS=()
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+if [ -n "${BASH_VERSION-""}" ]; then
+  SOURCE="${BASH_SOURCE[0]}"
+elif [ -n "${ZSH_VERSION-""}" ]; then # if sourcing, we may not be in /bin/bash
+  SOURCE="${(%):-%N}"
+else
+  echo "Unknown shell, cannot source" &>2
+  exit 1
+fi
+
+SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${SOURCE}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
 NO_PATH="$(flags_resolve false "-n" "--no-path")"
