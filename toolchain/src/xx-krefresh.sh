@@ -69,7 +69,7 @@ fi
   echo "calculating diff..."
   git -C /usr/share/kaleido diff -p HEAD > ${HOME}/.git_patch_1
   echo "patching..."
-  git -C ${HOME}/kaleido apply ${HOME}/.git_patch_1
+  git -C ${HOME}/kaleido apply ${HOME}/.git_patch_1 --allow-empty
   if ! $QUIET && [[ "${MAIN_DIR}" == "/usr/share/kaleido" ]]; then
     echo "       !!!! Set the main github repo to the copy clone!!!!!"
     echo "       All temporary files should be copied there, keep your main clone clean."
