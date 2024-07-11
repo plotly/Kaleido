@@ -78,4 +78,7 @@ fi
     echo "       !!!!"
   fi
   bash -c "cd ${HOME}/kaleido && ./toolchain/src/xx-make_bin.sh -n"
+  echo "The following files were not copied over as they are untracked (git add -N...):"
+  git -C /usr/share/kaleido ls-files --others --exclude-standard
+  echo "/end list"
 )
