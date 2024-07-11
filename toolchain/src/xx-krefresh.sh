@@ -39,36 +39,42 @@ fi
 
   $NO_VERBOSE || echo "Running xx-krefresh.sh"
 
-  echo "Force? $FORCE"
   REPLY='Y'
   if ! $FORCE; then
     read -p "Are you sure? (Y/n)" -n 1 -r
     echo
+  else
+    $NO_VERBOSE || echo "Skipped confirmation"
   fi
+
   if [[ ! "$REPLY" =~ ^[Yy]$ ]] && [[ "$REPLY" != "" ]]; then
+    $NO_VERBOSE || echo "Cancelled"
     exit 0
+  fi
+  if $QUIET; then
+    exec &>/dev/null
   fi
 
   if $ALL; then
-    echo "removing current..."
-    rm -rf ${HOME}/kaleido 2> /dev/null
+    $NO_VERBOSE || echo "Erasing ${HOME}"
+    rm -rf ${HOME}/kaleido
   fi
 
   if test -d ${HOME}/kaleido/.git; then
-    echo "Cleaning.."
+    $NO_VERBOSE || echo "Cleaning.."
     git -C ${HOME}/kaleido/ clean -fdd
-    echo "Restoring..."
+    $NO_VERBOSE || echo "Restoring..."
     git -C ${HOME}/kaleido/ restore .
-    echo "Pulling"
+    $NO_VERBOSE || echo "Pulling"
     git -C ${HOME}/kaleido/ pull
 
   else
-    echo "cloning..."
+    $NO_VERBOSE || echo "cloning..."
     git clone /usr/share/kaleido ${HOME}/kaleido
   fi
-  echo "calculating diff..."
+  $NO_VERBOSE || echo "calculating diff..."
   git -C /usr/share/kaleido diff -p HEAD > ${HOME}/.git_patch_1
-  echo "patching..."
+  $NO_VERBOSE || echo "patching..."
   git -C ${HOME}/kaleido apply ${HOME}/.git_patch_1 --allow-empty
   if ! $QUIET && [[ "${MAIN_DIR}" == "/usr/share/kaleido" ]]; then
     echo "       !!!! Set the main github repo to the copy clone!!!!!"
@@ -77,8 +83,10 @@ fi
     echo "       export MAIN_DIR=\"${HOME}/kaleido\""
     echo "       !!!!"
   fi
-  bash -c "cd ${HOME}/kaleido && ./toolchain/src/xx-make_bin.sh -n"
-  echo "The following files were not copied over as they are untracked (git add -N...):"
-  git -C /usr/share/kaleido ls-files --others --exclude-standard
-  echo "/end list"
+  bash -c "NO_VERBOSE=$NO_VERBOSE cd ${HOME}/kaleido && ./toolchain/src/xx-make_bin.sh -n"
+  if ! $QUIET; then
+    echo "The following files were not copied over as they are untracked (git add -N...):"
+    git -C /usr/share/kaleido ls-files --others --exclude-standard
+    echo "/end list"
+  fi
 )
