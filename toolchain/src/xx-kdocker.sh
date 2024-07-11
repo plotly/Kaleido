@@ -112,6 +112,9 @@ gitconfig="$(cat /home/$LOCAL_USER/.gitconfig)"
 # Some short cuts to make this less or maybe more readable
 sudo="sudo sudo -u $LOCAL_USER" # will throw background errors in docker, is fine
 silence="1> /dev/null"
+if ! $NO_VERBOSE; then
+  silence=""
+fi
 bash_login="/home/$LOCAL_USER/.bash_login"
 temp_script="/home/$LOCAL_USER/.temp_script.sh"
 
@@ -132,9 +135,9 @@ temp_script="/home/$LOCAL_USER/.temp_script.sh"
 # Which will later be executed, and then will be expanded
 COMMAND+="\
   echo '$USER_COMMAND' | $sudo tee -a $temp_script $silence; \
-  echo . $temp_script | $sudo tee -a $bash_login $silence; \
-  echo 'rm -f $temp_script' | $sudo tee -a $bash_login $silence; \
-  echo 'head -n -3 $bash_login > $bash_login' | $sudo tee -a $bash_login $silence; \
+  echo 'touch $temp_script' | $sudo tee -a $bash_login $silence; \
+  echo '. $temp_script' | $sudo tee -a $bash_login $silence; \
+  echo 'rm -f $temp_script &> /dev/null' | $sudo tee -a $bash_login $silence; \
   echo '$gitconfig' | $sudo tee -a /home/$LOCAL_USER/.gitconfig $silence; "
 
 COMMAND+="sudo ln -s /usr/share/kaleido/toolchain/src/xx-krefresh.sh /usr/bin/krefresh $silence; "
@@ -142,14 +145,18 @@ COMMAND+="sudo chmod o+rx /usr/bin/krefresh; "
 
 if $COPY; then
   $NO_VERBOSE || echo "Copy set"
-  COMMAND+="echo 'export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\"' | $sudo cat - $bash_login | $sudo tee $bash_login $silence; "
+  COMMAND+="echo 'export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\"' | $sudo tee -a $bash_login $silence; "
   if $NO_VERBOSE; then
     COMMAND+="$sudo krefresh -q -a --force &> /dev/null; "
   else
     COMMAND+="$sudo krefresh -q -a --force; "
   fi
 fi
-COMMAND+="sudo -E su - $LOCAL_USER"
+COMMAND+="\
+  $sudo cp $bash_login ${HOME}/.bash_login.log; \
+  $sudo cp $temp_script ${HOME}/.temp_script.sh.log; "
+
+COMMAND+="sleep 1; sudo -E su - $LOCAL_USER; "
 
 $NO_VERBOSE || echo -e "User Command Set:\n$USER_COMMAND"
 $NO_VERBOSE || echo -e "Command Set:\n$COMMAND"
