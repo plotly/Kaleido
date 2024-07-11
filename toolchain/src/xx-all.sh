@@ -23,7 +23,7 @@ usage=(
   "-0: set_version"
   "-1: fetch_tools"
   "-2: init_tools"
-  "-3:"
+  "-3: ksync"
   "-4:"
   "-5:"
   "-6:"
@@ -86,7 +86,12 @@ if $TWO || $ALL; then
 fi
 
 if $THREE || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 3"
+  if $(which ksync &> /dev/null); then
+    ksync $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/03-ksync.sh $(flags_resolve "" ":")
+  fi
 fi
 
 if $FOUR || $ALL; then
