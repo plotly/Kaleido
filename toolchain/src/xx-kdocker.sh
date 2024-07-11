@@ -144,7 +144,7 @@ if $COPY; then
   $NO_VERBOSE || echo "Copy set"
   COMMAND+="echo 'export MAIN_DIR=\"/home/$LOCAL_USER/kaleido\"' | $sudo cat - $bash_login | $sudo tee $bash_login $silence; "
   if $NO_VERBOSE; then
-    COMMAND+="$sudo krefresh -q -a --force &> /dev/null; " # TODO CURRENTLY THIS WILL THROW WARNING ABOUT PATH
+    COMMAND+="$sudo krefresh -q -a --force &> /dev/null; "
   else
     COMMAND+="$sudo krefresh -q -a --force; "
   fi
