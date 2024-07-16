@@ -104,7 +104,12 @@ if $FOUR || $ALL; then
 fi
 
 if $FIVE || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 5"
+  if $(which gen_preamble &> /dev/null); then
+    gen_preamble $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/05-gen_preamble.sh $(flags_resolve "" ":")
+  fi
 fi
 
 if $SIX || $ALL; then
