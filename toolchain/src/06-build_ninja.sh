@@ -70,4 +70,4 @@ fi
 $NO_VERBOSE || echo "Args file:"
 $NO_VERBOSE || cat ${ARGS_FILE}
 
-gn gen $OUTDIR
+( cd $MAIN_DIR/vendor/src && gn gen $OUTDIR )
