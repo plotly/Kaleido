@@ -26,7 +26,7 @@ util_get_version
 util_export_version
 
 # old versions may not work with python3, so do || python
-python3 $MAIN_DIR\vendor\src\tools\licenses\licenses.py credits > $MAIN_DIR\CREDITS.html || python $MAIN_DIR\vendor\src\tools\licenses\licenses.py credits > $MAIN_DIR\CREDITS.html
+python3 $MAIN_DIR/vendor/src/tools/licenses/licenses.py credits > $MAIN_DIR/CREDITS.html || python $MAIN_DIR/vendor/src/tools/licenses/licenses.py credits > $MAIN_DIR/CREDITS.html
 
 cp $MAIN_DIR\README.md $MAIN_DIR/src/kaleido/
 cp $MAIN_DIR\LICENSE.txt $MAIN_DIR/src/kaleido/
