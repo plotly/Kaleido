@@ -17,8 +17,9 @@ usage=(
   "Updating timestamp will prompt a rebuild of lots of libraries you otherwise don't need to rebuild, so"
   "do this at the end."
   "build_ninja [-f|--final]"
+
 )
-## PROCESS FLAGS
+#TODO: add list
 
 FLAGS=("-f" "--final")
 ARGFLAGS=()
@@ -37,7 +38,7 @@ $NO_VERBOSE || echo "Dev build: $DEV"
 util_get_version
 util_export_version
 
-PATCH="$MAIN_DIR/toolschain/gn_append.patch"
+PATCH="$MAIN_DIR/toolschain/gn_fragments/gn_append.patch"
 
 echo "THIS NEEDS TO BE INSPECTED. IS IT NECESSARY? WHY ONLY ON WINDOWS?"
 echo "What if we remove it from windows?"
@@ -53,7 +54,7 @@ $NO_VERBOSE || echo "Create build directory and placing build arguments inside o
 
 OUTDIR="${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}"
 ARGS_FILE="${OUTDIR}/args.gn"
-TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_args.gn.template"
+TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/gn_args.gn.template"
 
 mkdir -p ${OUTDIR}
 
