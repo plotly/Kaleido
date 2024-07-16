@@ -16,10 +16,18 @@ usage=(
   "Updating timestamp will prompt a rebuild of lots of libraries you otherwise don't need to rebuild, so"
   "do this at the end."
   "build_ninja [-f|--final]"
-
+  ""
+  "Show: show will just let you know if you last did a development build or not"
+  "build_ninja [-s|--show]"
+  ""
+  "List: list is a shortcut for gn args --list, which must be run after running build_ninja once and will show"
+  "will show you all possible arguments."
+  "build_ninja [-l|--list]"
 )
 
-FLAGS=("-f" "--final")
+# todo args --list
+# todo show
+FLAGS=("-f" "--final" "-s" "--show" "-l" "--list")
 ARGFLAGS=()
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
@@ -27,6 +35,11 @@ SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /
 
 FINAL="$(flags_resolve false "-f" "--final")"
 $FINAL && DEV=false || DEV=true
+
+SHOW="$(flags_resolve false "-s" "--show")"
+LIST="$(flags_resolve false "-l" "--list")"
+
+
 
 $NO_VERBOSE || echo "Running 06-build_ninja.sh"
 
@@ -36,22 +49,43 @@ $NO_VERBOSE || echo "Dev build: $DEV"
 util_get_version
 util_export_version
 
-PATCH="$MAIN_DIR/toolchain/gn_fragments/gn_append.patch"
+BUILD_SUFFIX="$MAIN_DIR/toolchain/gn_fragments/BUILD.gn"
+TARGET="$MAIN_DIR/vendor/src/headless/BUILD.gn"
+OUTDIR="${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}"
+ARGS_FILE="${OUTDIR}/args.gn"
+TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/args.gn"
 
+if [[ $SHOW ]]; then
+  if [[ -f "${ARGS_FILE}" ]]; then
+    cat "${ARGS_FILE}"
+  else
+    echo "Script never run, nothing to show"
+  fi
+  exit 0
+fi
+
+if [[ $LIST ]]; then
+  if [[ -f "${ARGS_FILE}" ]]; then
+    ( cd $MAIN_DIR/vendor/src && gn args --list $OUTDIR )
+  else
+    echo "You haven't run the main script yet, that needs to happen once before this will work"
+  fi
+  exit 0
+fi
+
+LINE_NO=$(grep "$TARGET" -ne "### FOR KALEIDO ###" | cut -f1 -d:)
+if [[ -n "$LINE_NO" ]]; then
+  head "$TARGET" -n $(($LINE_NO - 1)) > "$TARGET"
+fi
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
-git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" || git -C $MAIN_DIR/vendor/src apply "$PATCH"
+cat "$BUILD_SUFFIX" >> "$TARGET"
 
 $NO_VERBOSE || echo "Create build directory and placing build arguments inside of it, and running gn gen"
 
-OUTDIR="${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}"
-ARGS_FILE="${OUTDIR}/args.gn"
-TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/gn_args.gn.template"
 
 mkdir -p ${OUTDIR}
 
-# can't do is_official_build w/o more work, prob shouldn't do it
-# but is till want an accurate timestamp? look src/build/compute_timestamp.py (or something like that)
-# TODO
+# note- this will make timestamp not accurate for chromium, but best choice rn, see build/compute_build_timestamp.py
 SUFFIX="
 is_component_build=$DEV
 is_official_build=false
