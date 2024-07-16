@@ -20,6 +20,9 @@ ARGFLAGS=()
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
+util_get_version
+util_export_version
+
 $NO_VERBOSE || echo "Running 04-patch_chromium"
 
 PATCH_DIR="$MAIN_DIR/patches/chromium/$CHROMIUM_VERSION_TAG"
