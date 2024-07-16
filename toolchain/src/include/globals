@@ -1,4 +1,6 @@
 export TARGET_ARCH=${TARGET_ARCH:-x64}
+# could add verification here for x64. arm64, and arm (linux only... arm w/o 64 is beyond unlikely)
+
 export CPUS=${CPUS:-1}
 
 # Add depot_tools to our path,
