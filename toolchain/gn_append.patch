@@ -1,0 +1,17 @@
+diff --git a/headless/BUILD.gn b/headless/BUILD.gn
+index 3792e09b13..29dd004e5c 100644
+--- a/headless/BUILD.gn
++++ b/headless/BUILD.gn
+@@ -899,3 +899,12 @@ executable("headless_shell") {
+     "//build/config/compiler:wexit_time_destructors",
+   ]
+ }
++
++executable("kaleido") {
++  sources = [ "app/kaleido.cc" ]
++
++  deps = [
++    ":headless_shell_lib",
++    "//skia",
++  ]
++}

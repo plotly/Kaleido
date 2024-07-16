@@ -26,6 +26,7 @@ util_export_version
 $NO_VERBOSE || echo "Running 04-patch_chromium"
 
 PATCH_DIR="$MAIN_DIR/patches/chromium/$CHROMIUM_VERSION_TAG"
+
 if [ -d "$PATCH_DIR" ]; then
     git -C $MAIN_DIR/vendor/src/ apply $PATCH_DIR/*.patch
 else

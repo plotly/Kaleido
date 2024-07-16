@@ -26,7 +26,7 @@ usage=(
   "-3: ksync            - downloads chromium"
   "-4: patch_chromium   - patches chromium w/ our patches"
   "-5: gen_preamble     - copies readme, licenses, etc"
-  "-6:"
+  "-6: append_gn        - appends a build directive to gn"
   "-7:"
   "-8:"
 )
