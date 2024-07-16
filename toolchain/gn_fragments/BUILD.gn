@@ -1,13 +1,15 @@
 ### FOR KALEIDO ###
+
+# certain portions commented because a) they will always resolve false and b) they fail anyway
 executable("kaleido") {
   configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
   configs += [ "//build/config/compiler:thinlto_optimize_max" ]
   sources = [ "app/kaleido.cc" ]
   defines = []
   deps = [ ":headless_shell_lib" ]
-  if (proprietary_codecs) {
-    deps += [ ":generate_headless_shell_license_file" ]
-  }
+#  if (proprietary_codecs) {
+#    deps += [ ":generate_headless_shell_license_file" ]
+#  }
   if (!headless_use_embedded_resources) {
     data = [
       "$root_out_dir/headless_lib_data.pak",
@@ -24,9 +26,9 @@ executable("kaleido") {
   if (is_mac) {
     deps += [ "//sandbox/mac:seatbelt" ]
   }
-  if (bundle_hyphen_data) {
-    deps += [ "//third_party/hyphenation-patterns:bundle_hyphen_data" ]
-  }
+#  if (bundle_hyphen_data) {
+#    deps += [ "//third_party/hyphenation-patterns:bundle_hyphen_data" ]
+3  }
   configs += [
     ":headless_defines_config",
     "//build/config/compiler:wexit_time_destructors",
