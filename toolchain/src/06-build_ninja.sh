@@ -49,9 +49,12 @@ TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/gn_args.gn.template"
 
 mkdir -p ${OUTDIR}
 
+# can't do is_official_build w/o more work, prob shouldn't do it
+# but is till want an accurate timestamp? look src/build/compute_timestamp.py (or something like that)
+# TODO
 SUFFIX="
 is_component_build=$DEV
-is_official_build=$FINAL
+is_official_build=false
 target_cpu=\"${TARGET_ARCH}\""
 
 if [[ ! -f "${ARGS_FILE}" ]] || [[ $(diff $ARGS_FILE <(cat $TEMPLATE_FILE <(echo $SUFFIX))) ]]; then
