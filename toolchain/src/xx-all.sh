@@ -28,8 +28,8 @@ usage=(
   "-5: gen_preamble     - copies readme, licenses, etc"
   "-6: build_ninja      - prepares gn and runs gn gen to build ninja"
   "-7: write_kversion   - writes a version text file for kaleido"
-  "-8: sync_cpp"        - will sync kaleido c++ do chromium src
-  "-9:" # build
+  "-8: sync_cpp         - will sync kaleido c++ do chromium src"
+  "-9: build_kaleido    - builds kaleido's c++"
   "-10:" # package
   # what about javascript
   # what about python
@@ -145,11 +145,15 @@ if $EIGHT || $ALL; then
   else
     $SCRIPT_DIR/08-sync_cpp.sh $(flags_resolve "" ":")
   fi
-  :
 fi
 
 if $NINE || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 9"
+  if $(which build_kaleido &> /dev/null); then
+    build_kaleido $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/09-build_kaleido.sh $(flags_resolve "" ":")
+  fi
 fi
 
 if $TEN || $ALL; then
