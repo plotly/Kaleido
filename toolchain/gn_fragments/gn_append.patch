@@ -2,16 +2,41 @@ diff --git a/headless/BUILD.gn b/headless/BUILD.gn
 index 3792e09b13..29dd004e5c 100644
 --- a/headless/BUILD.gn
 +++ b/headless/BUILD.gn
-@@ -899,3 +899,12 @@ executable("headless_shell") {
+@@ -899,3 +899,37 @@ executable("headless_shell") {
      "//build/config/compiler:wexit_time_destructors",
    ]
  }
 +
 +executable("kaleido") {
++  configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
++  configs += [ "//build/config/compiler:thinlto_optimize_max" ]
 +  sources = [ "app/kaleido.cc" ]
-+
-+  deps = []
-+
-+
-+
++  defines = []
++  deps = [ ":headless_shell_lib" ]
++  if (proprietary_codecs) {
++    deps += [ ":generate_headless_shell_license_file" ]
++  }
++  if (!headless_use_embedded_resources) {
++    data = [
++      "$root_out_dir/headless_lib_data.pak",
++      "$root_out_dir/headless_lib_strings.pak",
++    ]
++  }
++  if (is_win) {
++    deps += [
++      "//build/win:default_exe_manifest",
++      "//content/public/app",
++    ]
++    configs += [ "//build/config/win:delayloads" ]
++  }
++  if (is_mac) {
++    deps += [ "//sandbox/mac:seatbelt" ]
++  }
++  if (bundle_hyphen_data) {
++    deps += [ "//third_party/hyphenation-patterns:bundle_hyphen_data" ]
++  }
++  configs += [
++    ":headless_defines_config",
++    "//build/config/compiler:wexit_time_destructors",
++  ]
 +}
