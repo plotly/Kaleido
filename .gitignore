@@ -1,37 +1,28 @@
+# Py build stuff
+*.pyc
+*.egg-info/
+
+# Text editor stuff
+*.DS_Store
+*.kate-swp
 *.sw*
+
+# Old, don't know
+.idea/
+
+# Toolchain artifacts
 .set_version
 bin
 toolchain/tmp/
+
+# Vendor repos
 vendor/src
 vendor/depot_tools
-*.DS_Store
-*.kate-swp
-*.pyc
-*.egg-info/
-.idea/
 
-repos/CREDITS.html
-repos/.cipd/
-repos/.gclient_entries
-repos/.idea
-repos/build
-repos/cmake-build-debug
-repos/kaleido/js/node_modules
-repos/kaleido/js/build
-repos/kaleido/version
-repos/kaleido/LICENSE.txt
-repos/kaleido/README.md
-repos/kaleido/py/LICENSE.txt
-repos/kaleido/py/README.md
-repos/kaleido/py/tests/baselines/plotly/failed
-repos/kaleido/artifacts
-repos/kaleido/kaleido_artifacts*.zip
-win_toolchain/*.zip
-repos/kaleido/py/kaleido/executable
-repos/kaleido/py/kaleido/_version.py
-repos/kaleido/py/build/
-repos/kaleido/py/dist/
-repos/kaleido/py/scratch/
-repos/CREDITS.html
-repos/*.tar.gz
+# Build artifacts
+src/kaleido/LICENSE.txt
+src/kaleido/README.md
+src/kaleido/CREDITS.html
+CREDTS.html
+
 
