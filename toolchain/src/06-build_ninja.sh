@@ -55,7 +55,7 @@ OUTDIR="${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}"
 ARGS_FILE="${OUTDIR}/args.gn"
 TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/args.gn"
 
-if [[ $SHOW ]]; then
+if $SHOW; then
   if [[ -f "${ARGS_FILE}" ]]; then
     cat "${ARGS_FILE}"
   else
@@ -64,7 +64,7 @@ if [[ $SHOW ]]; then
   exit 0
 fi
 
-if [[ $LIST ]]; then
+if $LIST; then
   if [[ -f "${ARGS_FILE}" ]]; then
     ( cd $MAIN_DIR/vendor/src && gn args --list $OUTDIR )
   else
