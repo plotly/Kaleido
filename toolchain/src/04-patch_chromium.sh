@@ -25,11 +25,11 @@ util_export_version
 
 $NO_VERBOSE || echo "Running 04-patch_chromium"
 
-PATCH_DIR="$MAIN_DIR/patches/chromium/$CHROMIUM_VERSION_TAG"
+PATCH_DIR="$MAIN_DIR/src/vendor-patches/chromium/$CHROMIUM_VERSION_TAG"
 
 if [ -d "$PATCH_DIR" ]; then
     git -C $MAIN_DIR/vendor/src/ apply $PATCH_DIR/*.patch
 else
-  mkdir -p "$MAIN_DIR/patches/chromium/$CHROMIUM_VERSION_TAG"
+  mkdir -p "$PATCH_DIR"
   $NO_VERBOSE || echo "No patches found for $CHROMIUM_VERSION_TAG, creating directory."
 fi
