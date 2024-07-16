@@ -28,5 +28,8 @@ util_export_version
 
 PATCH="$MAIN_DIR/toolschain/gn_append.patch"
 
-git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" && exit 0 || true
-git -C $MAIN_DIR/vendor/src apply "$PATCH"
+echo "THIS NEEDS TO BE INSPECTED. IS IT NECESSARY? WHY ONLY ON WINDOWS?"
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
+  git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" && exit 0 || true
+  git -C $MAIN_DIR/vendor/src apply "$PATCH"
+fi
