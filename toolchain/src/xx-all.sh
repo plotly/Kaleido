@@ -24,7 +24,7 @@ usage=(
   "-1: fetch_tools"
   "-2: init_tools"
   "-3: ksync"
-  "-4:"
+  "-4: patch_chromium"
   "-5:"
   "-6:"
   "-7:"
@@ -95,7 +95,12 @@ if $THREE || $ALL; then
 fi
 
 if $FOUR || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 4"
+  if $(which patch_chromium &> /dev/null); then
+    patch_chromium $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/04-patch_chromium.sh $(flags_resolve "" ":")
+  fi
 fi
 
 if $FIVE || $ALL; then
