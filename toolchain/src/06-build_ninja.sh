@@ -38,15 +38,9 @@ util_export_version
 
 PATCH="$MAIN_DIR/toolschain/gn_fragments/gn_append.patch"
 
-echo "THIS NEEDS TO BE INSPECTED. IS IT NECESSARY? WHY ONLY ON WINDOWS?"
-echo "What if we remove it from windows?"
-echo "What if we add it to linux, to mac?"
-
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
-if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" && exit 0 || true
-  git -C $MAIN_DIR/vendor/src apply "$PATCH" || util_error "Could not apply gn_append.patch, please inspect"
-fi
+git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" && exit 0 || true
+git -C $MAIN_DIR/vendor/src apply "$PATCH" || util_error "Could not apply gn_append.patch, please inspect"
 
 $NO_VERBOSE || echo "Create build directory and placing build arguments inside of it, and running gn gen"
 
