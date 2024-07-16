@@ -23,9 +23,6 @@ def git_pep440_version(path):
 
 
 if __name__ == "__main__":
-    repo_path = os.path.dirname(
-        os.path.dirname(
-            os.path.dirname(os.path.realpath(__file__))))
-    eprint(repo_path)
+    repo_path = os.path.realpath(__file__) # this will resolve to kaleido/toolchain, which is fine
     version = git_pep440_version(repo_path)
     print(version)
