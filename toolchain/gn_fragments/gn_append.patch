@@ -11,7 +11,7 @@ index 3792e09b13..29dd004e5c 100644
 +  sources = [ "app/kaleido.cc" ]
 +
 +  deps = [
-+    ":headless_shell_lib",
-+    "//skia",
+#+    ":headless_shell_lib", # not sure we really need these, we'll see, cruft from examples
+#+    "//skia",
 +  ]
 +}
