@@ -121,21 +121,6 @@ if ! [[ "$PLATFORM" =~ ^(OSX|LINUX|WINDOWS)$ ]]; then
 fi
 $NO_VERBOSE || echo "Found platform: $PLATFORM"
 
-# The following code tries to determine what architecture we're running
-HOST_ARCH=$(uname -m)
-if [[ "$HOST_ARCH" == x86_64* ]]; then
-  HOST_ARCH="x64"
-elif [[ "$HOST_ARCH" == i*86 ]]; then
-  HOST_ARCH="x32"
-elif  [[ "$HOST_ARCH" == arm* ]]; then
-  HOST_ARCH="arm"
-fi
-
-if ! [[ "$HOST_ARCH" =~ ^(x64|x32|arm)$ ]]; then
-  util_error "$HOST_ARCH is not a supported architecture for building."
-fi
-$NO_VERBOSE || echo "Found architecture: $HOST_ARCH"
-
 ###
 ### FIND THE GIT DIRECTORY ###
 ###
