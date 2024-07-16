@@ -60,7 +60,7 @@ mkdir -p ${OUTDIR}
 SUFFIX="
 is_component_build=$DEV
 is_official_build=$FINAL
-target_cpu=${TARGET_ARCH}"
+target_cpu=\"${TARGET_ARCH}\""
 
 if [[ ! -f "${ARGS_FILE}" ]] || [[ $(diff $ARGS_FILE <(cat $TEMPLATE_FILE <(echo $SUFFIX))) ]]; then
     cp "${TEMPLATE_FILE}" "${ARGS_FILE}"
