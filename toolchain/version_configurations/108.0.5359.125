@@ -1,2 +1,5 @@
 CHROMIUM_VERSION_TAG="108.0.5359.125"
 DEPOT_TOOLS_COMMIT="f9f61a9d"
+
+# used to be required for old versions
+GCLIENT_PY3=0
