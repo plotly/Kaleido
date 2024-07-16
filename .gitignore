@@ -1,5 +1,5 @@
 repos/CREDITS.html
-repos/src
+vendor/src
 vendor/depot_tools
 *.DS_Store
 *.kate-swp
