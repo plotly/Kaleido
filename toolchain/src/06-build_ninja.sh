@@ -36,7 +36,7 @@ $NO_VERBOSE || echo "Dev build: $DEV"
 util_get_version
 util_export_version
 
-PATCH="$MAIN_DIR/toolschain/gn_fragments/gn_append.patch"
+PATCH="$MAIN_DIR/toolchain/gn_fragments/gn_append.patch"
 
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
 git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" && exit 0 || true
