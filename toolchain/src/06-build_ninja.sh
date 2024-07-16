@@ -39,7 +39,7 @@ util_export_version
 PATCH="$MAIN_DIR/toolchain/gn_fragments/gn_append.patch"
 
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
-git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" || git -C $MAIN_DIR/vendor/src apply "$PATCH" || util_error "Could not apply gn_append.patch, please inspect"
+git -C $MAIN_DIR/vendor/src apply --check --reverse "$PATCH" && echo "Patch seems to be already applied" || git -C $MAIN_DIR/vendor/src apply "$PATCH"
 
 $NO_VERBOSE || echo "Create build directory and placing build arguments inside of it, and running gn gen"
 
