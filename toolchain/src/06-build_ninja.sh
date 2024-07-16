@@ -11,7 +11,6 @@ usage=(
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"
   ""
-  "TODO: add check, list, etc"
 
   "Final: this will generate a release build, meaning longer compile, faster startup, perfect timestamp."
   "Updating timestamp will prompt a rebuild of lots of libraries you otherwise don't need to rebuild, so"
@@ -63,7 +62,7 @@ is_component_build=$DEV
 is_official_build=$FINAL
 target_cpu=${TARGET_ARCH}"
 
-if [[ ! -f "${ARGS_FILE}" ]] or [[ $(diff $ARGS_FILE <(cat $TEMPLATE_FILE <(echo $SUFFIX))) ]]; then
+if [[ ! -f "${ARGS_FILE}" ]] || [[ $(diff $ARGS_FILE <(cat $TEMPLATE_FILE <(echo $SUFFIX))) ]]; then
     cp "${TEMPLATE_FILE}" "${ARGS_FILE}"
     echo "$SUFFIX" >> "${ARGS_FILE}"
 fi
