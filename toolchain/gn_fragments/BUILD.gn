@@ -1,6 +1,5 @@
 ### FOR KALEIDO ###
 
-# certain portions commented because a) they will always resolve false and b) they fail anyway
 executable("kaleido") {
   configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
   configs += [ "//build/config/compiler:thinlto_optimize_max" ]
@@ -25,9 +24,6 @@ executable("kaleido") {
   }
   if (is_mac) {
     deps += [ "//sandbox/mac:seatbelt" ]
-  }
-  if (bundle_hyphen_data) {
-    deps += [ "//third_party/hyphenation-patterns:bundle_hyphen_data" ]
   }
   configs += [
     ":headless_defines_config",
