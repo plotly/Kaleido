@@ -1,6 +1,9 @@
 import subprocess
 import os
+import sys
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs),
 
 def git_pep440_version(path):
     def git_command(args):
@@ -23,5 +26,6 @@ if __name__ == "__main__":
     repo_path = os.path.dirname(
         os.path.dirname(
             os.path.dirname(os.path.realpath(__file__))))
+    eprint(repo_path)
     version = git_pep440_version(repo_path)
     print(version)
