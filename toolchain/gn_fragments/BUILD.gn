@@ -28,7 +28,7 @@ executable("kaleido") {
   }
 #  if (bundle_hyphen_data) {
 #    deps += [ "//third_party/hyphenation-patterns:bundle_hyphen_data" ]
-3  }
+#  }
   configs += [
     ":headless_defines_config",
     "//build/config/compiler:wexit_time_destructors",
