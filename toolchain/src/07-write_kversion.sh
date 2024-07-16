@@ -19,9 +19,6 @@ ARGFLAGS=()
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
 . "$SCRIPT_DIR/include/utilities.sh"
 
-FINAL="$(flags_resolve false "-f" "--final")"
-$FINAL && DEV=false || DEV=true
-
 $NO_VERBOSE || echo "Running 07-write_kversion"
 
 util_get_version
