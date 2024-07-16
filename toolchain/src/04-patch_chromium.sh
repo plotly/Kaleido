@@ -24,9 +24,7 @@ $NO_VERBOSE || echo "Running 04-patch_chromium"
 
 PATCH_DIR="$MAIN_DIR/patches/chromium/$CHROMIUM_VERSION_TAG"
 if [ -d "" ]; then
-  for patch in $(find $PATCH_DIR -name '*.patch'); do
-    git apply $patch
-  done
+    git -C $MAIN_DIR/vendor/src/ apply *.$patch
 else
   mkdir -p "$MAIN_DIR/patches/chromium/$CHROMIUM_VERSION_TAG"
   $NO_VERBOSE || echo "No patches found for $CHROMIUM_VERSION_TAG, creating directory."
