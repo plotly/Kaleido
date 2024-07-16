@@ -2,8 +2,6 @@
 set -e
 set -u
 
-# TODO: add --check and --stat, and defaults
-
 usage=(
   "gen_preamble will generate a license file, etc."
   "It copies some stuff into the src/kaleido directory, not sure why."

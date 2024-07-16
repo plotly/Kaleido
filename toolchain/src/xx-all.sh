@@ -26,7 +26,7 @@ usage=(
   "-3: ksync            - downloads chromium"
   "-4: patch_chromium   - patches chromium w/ our patches"
   "-5: gen_preamble     - copies readme, licenses, etc"
-  "-6: append_gn        - appends a build directive to gn"
+  "-6: build_ninja      - prepares gn and runs gn gen to build ninja"
   "-7:"
   "-8:"
 )
@@ -113,7 +113,12 @@ if $FIVE || $ALL; then
 fi
 
 if $SIX || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 6"
+  if $(which buil_ninja &> /dev/null); then
+    build_ninja $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/06-build_ninja.sh $(flags_resolve "" ":")
+  fi
 fi
 
 if $SEVEN || $ALL; then

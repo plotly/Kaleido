@@ -3,7 +3,7 @@ export CPUS=${CPUS:-1}
 
 # Add depot_tools to our path,
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  export PATH="$MAIN_DIR/vendor/depot_tools/bootstrap:$PATH"
+  export PATH="$MAIN_DIR/vendor/depot_tools/bootstrap:$MAIN_DIR/vendor/depot_tools/:$PATH"
   $NO_VERBOSE || echo "Modified path to add future depot_tools/bootstrap/ directory"
 elif [[ "$PLATFORM" == "LINUX" ]]; then
   export PATH="$MAIN_DIR/vendor/depot_tools:$PATH"
@@ -12,3 +12,6 @@ elif [[ "$PLATFORM" == "OSX" ]]; then
   export PATH="$MAIN_DIR/vendor/depot_tools:$PATH"
   $NO_VERBOSE || echo "Modified path to add future depot_tools/ directory"
 fi
+
+export DEPOT_TOOLS_UPDATE=0 # don't automatically checkout main when sync'ing depot_tools
+export DEPOT_TOOLS_WIN_TOOLCHAIN=0 # we install our windows sdk's manually (automatic is for googlers only)
