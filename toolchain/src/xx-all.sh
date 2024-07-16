@@ -28,10 +28,16 @@ usage=(
   "-5: gen_preamble     - copies readme, licenses, etc"
   "-6: build_ninja      - prepares gn and runs gn gen to build ninja"
   "-7: write_kversion   - writes a version text file for kaleido"
-  "-8:"
+  "-8: sync_cpp"        - will sync kaleido c++ do chromium src
+  "-9:" # build
+  "-10:" # package
+  # what about javascript
+  # what about python
+  # ugh
 )
+## TODO, quit with the -999: dumbness
 
-FLAGS=(":" "-0:" "-1:" "-2:" "-3:" "-4:" "-5:" "-6:" "-7:" "-8:")
+FLAGS=(":" "-0:" "-1:" "-2:" "-3:" "-4:" "-5:" "-6:" "-7:" "-8:" "-9:" "-10:")
 ARGFLAGS=("")
 
 SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
@@ -46,9 +52,11 @@ FIVE=$(flags_resolve false "-5:")
 SIX=$(flags_resolve false "-6:")
 SEVEN=$(flags_resolve false "-7:")
 EIGHT=$(flags_resolve false "-8:")
+NINE=$(flags_resolve false "-9:")
+TEN=$(flags_resolve false "-10:")
 
 ALL=true
-if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT; then
+if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN; then
   $NO_VERBOSE || echo "Turning off ALL"
   ALL=false
 fi
@@ -131,5 +139,19 @@ if $SEVEN || $ALL; then
 fi
 
 if $EIGHT || $ALL; then
+  $NO_VERBOSE || echo "Running 8"
+  if $(which sync_cpp &> /dev/null); then
+    sync_cpp $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/08-sync_cpp.sh $(flags_resolve "" ":")
+  fi
+  :
+fi
+
+if $NINE || $ALL; then
+  :
+fi
+
+if $TEN || $ALL; then
   :
 fi
