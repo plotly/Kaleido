@@ -18,7 +18,6 @@ usage=(
   "build_ninja [-f|--final]"
 
 )
-#TODO: add list
 
 FLAGS=("-f" "--final")
 ARGFLAGS=()

@@ -114,7 +114,7 @@ fi
 
 if $SIX || $ALL; then
   $NO_VERBOSE || echo "Running 6"
-  if $(which buil_ninja &> /dev/null); then
+  if $(which build_ninja &> /dev/null); then
     build_ninja $(flags_resolve "" ":")
   else
     $SCRIPT_DIR/06-build_ninja.sh $(flags_resolve "" ":")
@@ -122,7 +122,12 @@ if $SIX || $ALL; then
 fi
 
 if $SEVEN || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 7"
+  if $(which write_kversion &> /dev/null); then
+    write_kversion $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/07-write_kversion.sh $(flags_resolve "" ":")
+  fi
 fi
 
 if $EIGHT || $ALL; then
