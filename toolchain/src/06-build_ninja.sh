@@ -80,6 +80,8 @@ fi
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
 cat "$BUILD_SUFFIX" >> "$TARGET"
 
+$NO_VERBOSE || cat $TARGET
+
 $NO_VERBOSE || echo "Create build directory and placing build arguments inside of it, and running gn gen"
 
 
