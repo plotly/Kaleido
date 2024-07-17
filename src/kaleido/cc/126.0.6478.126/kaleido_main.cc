@@ -45,24 +45,47 @@
 //
 namespace kaleido {
 
-int KaleidoMain(int argc, const char** argv) {
-  content::ContentMainParams params(nullptr); // TODO  WHAT IS THIS REALLY FOR
+namespace {
+  void buildSandbox(content::ContentMainParams);
+  void processCommandLine(content::ContentMainParams, int argc, const char** argv);
+}
 
-// LETS CONSTRUCT SANDBOX THAT WE THEN DISABLE
-#if BUILDFLAG(IS_WIN)
-  sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
-  content::InitializeSandboxInfo(&sandbox_info);
-  // Sandbox info has to be set and initialized.
-  params.sandbox_info = &sandbox_info;
-#if BUILDFLAG(IS_MAC)
-  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
-      sandbox::SeatbeltExecServer::CreateFromArguments(
-          argv[0], argc, const_cast<char**>(argv));
-  if (seatbelt.sandbox_required) {
-    CHECK(seatbelt.server->InitializeSandbox());
-  }
-#endif  // BUILDFLAG(IS_MAC)
-#endif  // BUILDFLAG(IS_WIN)
+
+int KaleidoMain(int argc, const char** argv) {
+  content::ContentMainParams params(nullptr);
+  buildSandbox(std::move(params));
+  processCommandLine(std::move(params), argc, argv);
+
+  // Now we're going to start the browser
+  Kaleido kmanager;
+  auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
+      base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(&kmanager)));
+  headless::HeadlessContentMainDelegate delegate(std::move(browser));
+  params.delegate = &delegate;
+  return content::ContentMain(std::move(params));
+  // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
+}
+
+namespace {
+
+void buildSandbox(content::ContentMainParams) {
+  #if BUILDFLAG(IS_WIN)
+    sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
+    content::InitializeSandboxInfo(&sandbox_info);
+    // Sandbox info has to be set and initialized.
+    params.sandbox_info = &sandbox_info;
+    #if BUILDFLAG(IS_MAC)
+      sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+          sandbox::SeatbeltExecServer::CreateFromArguments(
+              argv[0], argc, const_cast<char**>(argv));
+      if (seatbelt.sandbox_required) {
+        CHECK(seatbelt.server->InitializeSandbox());
+      }
+    #endif  // BUILDFLAG(IS_MAC)
+  #endif  // BUILDFLAG(IS_WIN)
+}
+
+void processCommandLine(content::ContentMainParams params, int argc, const char** argv) {
 
 #if BUILDFLAG(IS_WIN)
   base::CommandLine::Init(0, nullptr);
@@ -111,16 +134,7 @@ int KaleidoMain(int argc, const char** argv) {
 #if BUILDFLAG(IS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
-
-
-  // Now we're going to start the browser
-  Kaleido kmanager;
-  auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
-      base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(&kmanager)));
-  headless::HeadlessContentMainDelegate delegate(std::move(browser));
-  params.delegate = &delegate;
-  return content::ContentMain(std::move(params));
-  // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
 
+} // namespace
 } // namespace kaleido
