@@ -74,11 +74,6 @@ int KaleidoMain(int argc, const char** argv) {
   }
 #endif  // defined(HEADLESS_USE_CRASHPAD)
 
-  if (!process_type.empty()) {
-    HeadlessChildMain(std::move(params));
-    NOTREACHED();
-  }
-
 #if BUILDFLAG(IS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
