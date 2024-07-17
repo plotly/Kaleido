@@ -12,6 +12,5 @@ namespace kaleido {
 int HeadlessShellMain(const content::ContentMainParams params);
 
 }
-
-#endif  // KALEIDO_H_
 */
+#endif  // KALEIDO_H_
