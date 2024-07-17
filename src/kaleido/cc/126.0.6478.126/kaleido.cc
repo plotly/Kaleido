@@ -4,71 +4,41 @@
 //    * start up the tab manager
 //    * start up the IO thread
 
+#include <iostream>
 #include "headless/app/kaleido.h"
 
 // Fundamental chromium includes
 #include "content/public/app/content_main.h"
 #include "headless/lib/headless_content_main_delegate.h"
 
-// Fundamental utilities
-#include "base/logging.h"
-#include "base/files/file_util.h"
-
-#include "build/build_config.h" // IS_WIN and stuff like that
-
-// Sandbox Includes
-#if BUILDFLAG(IS_WIN)
-#include "content/public/app/sandbox_helper_win.h"
-#include "sandbox/win/src/sandbox_types.h"  // nogncheck
-#elif BUILDFLAG(IS_MAC)
-#include "base/check.h"
-#include "sandbox/mac/seatbelt_exec.h"
-#endif
-
-// CLI includes, not sure if using all
-#include "base/command_line.h"
-#include "base/base_switches.h"
-#include "content/public/common/content_switches.h"
-#include "headless/public/switches.h"
-#if BUILDFLAG(IS_MAC)
-#include "components/os_crypt/sync/os_crypt_switches.h"  // nogncheck
-#endif
-
 // Browser Includes
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/public/headless_browser.h"
 
-#if BUILDFLAG(IS_WIN)
-#include "base/strings/utf_string_conversions.h"
-#include "components/crash/core/app/crash_switches.h"  // nogncheck
-#include "components/crash/core/app/run_as_crashpad_handler_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif
-
-// Can you clear up deps in build?
+#include "base/functional/bind.h"
 
 namespace kaleido {
 
-// Kaleido manages a browser and its tabs
-class Kaleido {
- public:
-  Kaleido() = default;
+// This is here because we can't put headless_content_main_delegate.h in app.cc,
+// something breaks, probs misconfigured BUILD.gn
+void ChildProcess(content::ContentMainParams params) {
+    headless::HeadlessContentMainDelegate delegate(nullptr);
+    params.delegate = &delegate;
+    int rc = content::ContentMain(std::move(params));
+    base::Process::TerminateCurrentProcessImmediately(rc);
+    NOTREACHED_IN_MIGRATION();
+}
 
-  Kaleido(const Kaleido&) = delete;
-  Kaleido& operator=(const Kaleido&) = delete;
-
-  ~Kaleido() = default;
-
-  void OnBrowserStart(headless::HeadlessBrowser* browser);
-
- private:
-  void ShutdownSoon();
-  void Shutdown();
-  raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
-};
+Kaleido::Kaleido(content::ContentMainParams params) {
+  auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
+      base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(this)));
+  headless::HeadlessContentMainDelegate delegate(std::move(browser));
+  params.delegate = &delegate;
+}
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
+  std::cout << "We made it!" << std::endl;
   ShutdownSoon();
 }
 
@@ -105,7 +75,6 @@ void Kaleido::Shutdown() {
 /*
 #include <memory>
 
-#include "base/functional/bind.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
