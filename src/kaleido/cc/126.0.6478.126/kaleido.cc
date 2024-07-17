@@ -9,7 +9,10 @@
 // Fundamental chromium includes
 #include "content/public/app/content_main.h"
 #include "headless/lib/headless_content_main_delegate.h"
+
+// Fundamental utilities
 #include "base/logging.h"
+#include "base/files/file_util.h"
 
 #include "build/build_config.h" // IS_WIN and stuff like that
 
@@ -34,6 +37,13 @@
 // Browser Includes
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/public/headless_browser.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "base/strings/utf_string_conversions.h"
+#include "components/crash/core/app/crash_switches.h"  // nogncheck
+#include "components/crash/core/app/run_as_crashpad_handler_win.h"
+#include "sandbox/win/src/sandbox_types.h"
+#endif
 
 // Can you clear up deps in build?
 
@@ -71,6 +81,11 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 //
 //  It is better not to pass whatever chromium flag into kaleido,
 //  unless there was a flag specifically for that "--chromium_flags="--whatever=23,-f," etc
+//  This function will be called several times as several processes are started by the main process
+//  with a variety of command line flags.
+//  Filtering out flags may not be reasonable in this case, and some of the switches deleted may be necessary:
+//  HeadlessChildMain
+//  HEADLESS_USE_CRASHPAD -> kCrashpadHandler
 int KaleidoMain(int argc, const char** argv) {
   content::ContentMainParams params(nullptr); // TODO  WHAT IS THIS REALLY FOR
 
@@ -90,17 +105,26 @@ int KaleidoMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
 
-  base::CommandLine::Init(0, nullptr);
+  //base::CommandLine::Init(0, nullptr);
   // It's a good way to process CommandLine, but is windows really not capable of using it?
   // Above was on windows only, below was all else
-/*#else
-  base::CommandLine::Init(argc, argv);
+/*#else*/
+  base::CommandLine::Init(argc, argv);/*
 #endif  // BUILDFLAG(IS_WIN)*/
   // GetSwitches, RemoveSwitch, Nothing to do about arguments, they are there
 
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
+  std::string process_type = command_line.GetSwitchValueASCII(::switches::kProcessType);
+  LOG(INFO) << "Process type: " << process_type;
   // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
 
+#if defined(HEADLESS_USE_CRASHPAD)
+  if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    return crash_reporter::RunAsCrashpadHandler(
+        *base::CommandLine::ForCurrentProcess(), base::FilePath(),
+        ::switches::kProcessType, switches::kUserDataDir);
+  }
+#endif  // defined(HEADLESS_USE_CRASHPAD)
 
 // BELOW IS A TEMPORARY MUST-REMOVE TEST
 #if BUILDFLAG(IS_WIN)
@@ -110,7 +134,17 @@ int KaleidoMain(int argc, const char** argv) {
   LOG(FATAL) << "we can get rid of all crashpad" << std::endl;
 #endif
 #endif
-
+  if (!process_type.empty()) {
+    headless::HeadlessContentMainDelegate delegate(nullptr);
+    params.delegate = &delegate;
+    int rc = content::ContentMain(std::move(params));
+    // Note that exiting from here means that base::AtExitManager objects will not
+    // have a chance to be destroyed (typically in main/WinMain).
+    // Use TerminateCurrentProcessImmediately instead of exit to avoid shutdown
+    // crashes and slowdowns on shutdown.
+    base::Process::TerminateCurrentProcessImmediately(rc);
+    NOTREACHED_IN_MIGRATION();
+  }
 // EXAMPLE SAYS WE (MAC USERS) NEED THIS
 #if BUILDFLAG(IS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
@@ -139,7 +173,6 @@ int KaleidoMain(int argc, const char** argv) {
 /*
 #include <memory>
 
-#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
@@ -152,12 +185,6 @@ int KaleidoMain(int argc, const char** argv) {
 #include "url/gurl.h"
 
 
-#if BUILDFLAG(IS_WIN)
-#include "base/strings/utf_string_conversions.h"
-#include "components/crash/core/app/crash_switches.h"  // nogncheck
-#include "components/crash/core/app/run_as_crashpad_handler_win.h"
-#include "sandbox/win/src/sandbox_types.h"
-#endif
 
 namespace kaleido {
 
