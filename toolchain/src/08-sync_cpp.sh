@@ -23,6 +23,9 @@ SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> 
 
 $NO_VERBOSE || echo "Running 08-sync_cpp.sh"
 
+util_get_version
+util_export_version
+
 CC_DIR="${MAIN_DIR}/src/kaleido/cc/$CHROMIUM_VERSION_TAG"
 if [ ! -d "$CC_DIR" ] && $TRY; then
   CC_DIR="${MAIN_DIR}/src/kaleido/cc/$(ls "${MAIN_DIR}/src/kaleido/cc/" -vt | head -1)"
@@ -31,9 +34,6 @@ elif [ -d "$CC_DIR" ]; then
 else
   util_error "No cc dir for $CHROMIUM_VERSION_TAG, look at --try or make your own"
 fi
-
-util_get_version
-util_export_version
 
 
 rsync -av --delete "${CC_DIR}/" "${MAIN_DIR}/vendor/src/headless/app"
