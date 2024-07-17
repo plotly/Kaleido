@@ -61,7 +61,7 @@ util_export_version
 GN_FRAG_DIR="${MAIN_DIR}/toolchain/gn_fragments/$CHROMIUM_VERSION_TAG"
 if [ ! -d "$GN_FRAG_DIR" ] && $TRY; then
   GN_FRAG_DIR="${MAIN_DIR}/toolchain/gn_fragments/$(ls "${MAIN_DIR}/src/vendor-patches/chromium" -vt | head -1)"
-elif [ ! -d "$GN_FRAG_DIR" ]; then
+elif [ -d "$GN_FRAG_DIR" ]; then
   : # optimistic path
 else
   util_error "No gn_fragment dir for $CHROMIUM_VERSION_TAG, look at --try or make your own"
