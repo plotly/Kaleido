@@ -87,40 +87,35 @@ void buildSandbox(content::ContentMainParams) {
 
 void processCommandLine(content::ContentMainParams params, int argc, const char** argv) {
 
-#if BUILDFLAG(IS_WIN)
-  base::CommandLine::Init(0, nullptr);
-  // It's a good way to process CommandLine, but is windows really not capable of using it?
-#else
-  base::CommandLine::Init(argc, argv);
-#endif  // BUILDFLAG(IS_WIN)
+  #if BUILDFLAG(IS_WIN)
+    base::CommandLine::Init(0, nullptr);
+  #else
+    base::CommandLine::Init(argc, argv);
+  #endif  // BUILDFLAG(IS_WIN)
 
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
-  std::string process_type = command_line.GetSwitchValueASCII(::switches::kProcessType);
-  LOG(INFO) << "Process type: " << process_type;
   // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
+  // could be used to always put on essential switches
 
-#if defined(HEADLESS_USE_CRASHPAD)
-  if (process_type == crash_reporter::switches::kCrashpadHandler) {
-    return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess(), base::FilePath(),
-        ::switches::kProcessType, switches::kUserDataDir);
-  }
-#endif  // defined(HEADLESS_USE_CRASHPAD)
-
-// BELOW IS A TEMPORARY MUST-REMOVE TEST
-#if BUILDFLAG(IS_WIN)
-#if defined(HEADLESS_USE_CRASHPAD)
-  LOG(FATAL) << "crashpad IS used on windows, reactivate comments. Need command_line boilerplate." << std::endl;
-#else
-  LOG(FATAL) << "we can get rid of all crashpad" << std::endl;
-#endif
-#endif
-  // Some Logging
   LOG(INFO) << "Original command: " << command_line.GetArgumentsString();
   LOG(INFO) << "Args size: " << command_line.GetArgs().size();
   for (const auto &piece : command_line.GetArgs()) {
     LOG(INFO) << piece << std::endl;
   }
+
+
+  std::string process_type = command_line.GetSwitchValueASCII(::switches::kProcessType);
+  LOG(INFO) << "Process type: " << process_type;
+
+  #if defined(HEADLESS_USE_CRASHPAD)
+    if (process_type == crash_reporter::switches::kCrashpadHandler) {
+      return crash_reporter::RunAsCrashpadHandler(
+          *base::CommandLine::ForCurrentProcess(), base::FilePath(),
+          ::switches::kProcessType, switches::kUserDataDir);
+    }
+  #endif  // defined(HEADLESS_USE_CRASHPAD)
+
+  // Chromium starts child processes, and we need this to catch them and their flags
   if (!process_type.empty()) {
     headless::HeadlessContentMainDelegate delegate(nullptr);
     params.delegate = &delegate;
@@ -130,10 +125,9 @@ void processCommandLine(content::ContentMainParams params, int argc, const char*
   }
   // So we must be the main process...
 
-// EXAMPLE SAYS WE (MAC USERS) NEED THIS
-#if BUILDFLAG(IS_MAC)
-  command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
-#endif
+  #if BUILDFLAG(IS_MAC)
+    command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
+  #endif
 }
 
 } // namespace
