@@ -6,9 +6,47 @@
 
 
 #include "headless/app/kaleido.h"
+#include "content/public/app/content_main.h"
 
-#include <memory>
+#include "build/build_config.h" // IS_WIN and stuff like that
+#if BUILDFLAG(IS_WIN)
+#include "content/public/app/sandbox_helper_win.h"
+#include "sandbox/win/src/sandbox_types.h"  // nogncheck
+#elif BUILDFLAG(IS_MAC)
+#include "base/check.h"
+#include "sandbox/mac/seatbelt_exec.h"
+#endif
+
+namespace kaleido {
+
+int KaleidoMain(int argc, const char** argv) {
+  content::ContentMainParams params(nullptr);
+#if BUILDFLAG(IS_WIN)
+  sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
+  content::InitializeSandboxInfo(&sandbox_info);
+  // Sandbox info has to be set and initialized.
+  params.sandbox_info = &sandbox_info;
+#else
+  params.argc = argc;
+  params.argv = argv;
+#if BUILDFLAG(IS_MAC)
+  sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+      sandbox::SeatbeltExecServer::CreateFromArguments(
+          argv[0], argc, const_cast<char**>(argv));
+  if (seatbelt.sandbox_required) {
+    CHECK(seatbelt.server->InitializeSandbox());
+  }
+#endif  // BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_WIN)
+  return 0;
+  // return kaleido::HeadlessShellMain(std::move(params));
+}
+
+}
+
 /*
+#include <memory>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
