@@ -2,7 +2,11 @@
 //  goals:
 //    Almost none. We just start up the main kaleido process, see kaleido.cc.
 //  Much of app.cc is boilerplate taking from headless/app/ example:
-//  - it starts sandboxes
+//  - it starts sandboxes, which may be pointless, but our flags are chaos
+//      - init_tools flags no sandbox
+//      - here we initialize it
+//      - python then turns it off again
+//      - it is not really necessary
 //  - it, depending on platform, moves argc and argv towards a HeadlessBrowser instance
 //
 //  It is better not to pass whatever chromium flag into kaleido,
