@@ -19,11 +19,14 @@
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
 
-// CLI includes
-#include "base/base_switches.h"
-#include "headless/public/switches.h"
+// CLI includes, not sure if using all
 #include "base/command_line.h"
+#include "base/base_switches.h"
 #include "content/public/common/content_switches.h"
+#include "headless/public/switches.h"
+#if BUILDFLAG(IS_MAC)
+#include "components/os_crypt/sync/os_crypt_switches.h"  // nogncheck
+#endif
 
 namespace kaleido {
 
@@ -59,13 +62,7 @@ int KaleidoMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
 
-// BUILD A COMMAND LINE SO WE CAN CONTROL IT
-#if BUILDFLAG(IS_WIN)
   base::CommandLine::Init(0, nullptr);
-#else
-  base::CommandLine::Init(params.argc, params.argv);
-#endif  // BUILDFLAG(IS_WIN)
-
 
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
@@ -80,23 +77,29 @@ int KaleidoMain(int argc, const char** argv) {
 #endif
 #endif
 
-// EXAMPLE SAYS WE NEED THIS
+// EXAMPLE SAYS WE (MAC USERS) NEED THIS
 #if BUILDFLAG(IS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
+
+  // Some Logging
   LOG(INFO) << "Original command: " << command_line.GetArgumentsString();
   LOG(INFO) << "Args size: " << command_line.GetArgs().size();
   for (const auto &piece : command_line.GetArgs()) {
     LOG(INFO) << piece << std::endl;
   }
 
-  //  return EXIT_FAILURE;
-  return 0;
-  // return HeadlessBrowserMain(std::move(params));
-  // return kaleido::HeadlessShellMain(std::move(params));
+  // Now we're going to start the browser
+  HeadlessShell shell;
+  auto browser = std::make_unique<HeadlessBrowserImpl>(
+      base::BindOnce(&HeadlessShell::OnBrowserStart, base::Unretained(&shell)));
+  HeadlessContentMainDelegate delegate(std::move(browser));
+  params.delegate = &delegate;
+  return content::ContentMain(std::move(params));
+  // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
 
-}
+} // namespace kaleido
 
 /*
 #include <memory>
@@ -117,9 +120,6 @@ int KaleidoMain(int argc, const char** argv) {
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(IS_MAC)
-#include "components/os_crypt/sync/os_crypt_switches.h"  // nogncheck
-#endif
 
 #if BUILDFLAG(IS_WIN)
 #include "base/strings/utf_string_conversions.h"
@@ -285,35 +285,6 @@ void HeadlessChildMain(content::ContentMainParams params) {
 }
 
 int HeadlessBrowserMain(content::ContentMainParams params) {
-#if DCHECK_IS_ON()
-  // The browser can only be initialized once.
-  static bool browser_was_initialized;
-  DCHECK(!browser_was_initialized);
-  browser_was_initialized = true;
-
-  // Child processes should not end up here.
-  DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ::switches::kProcessType));
-#endif
-#if defined(HEADLESS_ENABLE_COMMANDS)
-  base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  if (HeadlessCommandHandler::HasHeadlessCommandSwitches(command_line)) {
-    if (command_line.HasSwitch(::switches::kRemoteDebuggingPort) ||
-        command_line.HasSwitch(::switches::kRemoteDebuggingPipe)) {
-      LOG(ERROR)
-          << "Headless commands are not compatible with remote debugging.";
-      return EXIT_FAILURE;
-    }
-    command_line.AppendSwitch(switches::kDisableLazyLoading);
-  }
-#endif
-
-  HeadlessShell shell;
-  auto browser = std::make_unique<HeadlessBrowserImpl>(
-      base::BindOnce(&HeadlessShell::OnBrowserStart, base::Unretained(&shell)));
-  HeadlessContentMainDelegate delegate(std::move(browser));
-  params.delegate = &delegate;
-  return content::ContentMain(std::move(params));
 }
 
 }  // namespace
