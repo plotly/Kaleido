@@ -114,6 +114,7 @@ int KaleidoMain(int argc, const char** argv) {
 // Kaleido manages a browser and its tabs
 class Kaleido {
  public:
+  using headless::HeadlessBrowser;
   Kaleido() = default;
 
   Kaleido(const Kaleido&) = delete;
