@@ -57,6 +57,10 @@ class Kaleido {
   raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
 };
 
+void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
+  browser_ = browser;
+}
+
 //  Much of KaleidoMain is boilerplate taking from headless/app/ example:
 //  - it starts sandboxes, which may be pointless, but our flags are chaos
 //      - init_tools flags no sandbox
@@ -168,8 +172,6 @@ const char kAboutBlank[] = "about:blank";
 
 };
 
-void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
-  browser_ = browser;
 
   HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();
