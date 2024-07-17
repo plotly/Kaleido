@@ -73,7 +73,9 @@ if $LIST; then
   exit 0
 fi
 
-LINE_NO=$(grep "$TARGET" -ne $(head -n 1 $BUILD_SUFFIX) | cut -f1 -d:)
+LINE_NO=$(grep "$TARGET" -ne "$(head -n 1 $BUILD_SUFFIX)" | cut -f1 -d:)
+$NO_VERBOSE || echo "$(head -n 1 $BUILD_SUFFIX)"
+$NO_VERBOSE || echo "$LINE_NO"
 if [[ -n "$LINE_NO" ]]; then
   head "$TARGET" -n $(($LINE_NO - 1)) > "${TARGET}.TEMP"
   mv "${TARGET}.TEMP" $TARGET
