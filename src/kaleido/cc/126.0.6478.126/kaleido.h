@@ -3,6 +3,6 @@
 
 
 namespace kaleido {
-  class Kaleido;
+  int KaleidoMain(int argc, const char** argv);
 }
 #endif  // KALEIDO_H_
