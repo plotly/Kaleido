@@ -24,6 +24,8 @@ SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> 
 CC_DIR="${MAIN_DIR}/src/kaleido/cc/$CHROMIUM_VERSION_TAG"
 if [ ! -d "$CC_DIR" ] && $TRY; then
   CC_DIR="${MAIN_DIR}/src/kaleido/cc/$(ls "${MAIN_DIR}/src/kaleido/cc/" -vt | head -1)"
+elif [ -d "$CC_DIR" ]; then
+  : # optimistic path
 else
   util_error "No cc dir for $CHROMIUM_VERSION_TAG, look at --try or make your own"
 fi
