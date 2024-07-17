@@ -2,6 +2,7 @@
 static_library("kaleido_lib") {
   sources = [
     "app/kaleido.cc",
+    "app/kaleido_main.cc",
     "app/kaleido.h",
   ]
   defines = []
