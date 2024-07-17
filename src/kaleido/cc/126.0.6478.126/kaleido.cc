@@ -64,6 +64,11 @@ int KaleidoMain(int argc, const char** argv) {
 
   base::CommandLine::Init(0, nullptr);
 
+  // It's a good way to process CommandLine, but is windows really not capable of using it?
+/*#else
+  base::CommandLine::Init(params.argc, params.argv);
+#endif  // BUILDFLAG(IS_WIN)*/
+
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
 
@@ -90,13 +95,15 @@ int KaleidoMain(int argc, const char** argv) {
   }
 
   // Now we're going to start the browser
+  /*
   HeadlessShell shell;
   auto browser = std::make_unique<HeadlessBrowserImpl>(
       base::BindOnce(&HeadlessShell::OnBrowserStart, base::Unretained(&shell)));
   HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(std::move(params));
-  // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
+  */
+  return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
 
 } // namespace kaleido
