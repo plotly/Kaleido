@@ -70,7 +70,7 @@ executable("kaleido") {
   configs += [ "//build/config/compiler:thinlto_optimize_max" ]
   sources = [ "app/app.cc" ]
   defines = []
-#  deps = [ ":kaleido_lib" ]
+  deps = [ ":kaleido_lib" ]
   if (proprietary_codecs) {
     deps += [ ":generate_headless_shell_license_file" ]
   }
