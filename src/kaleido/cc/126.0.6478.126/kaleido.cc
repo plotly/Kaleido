@@ -68,6 +68,9 @@ int KaleidoMain(int argc, const char** argv) {
 /*#else
   base::CommandLine::Init(params.argc, params.argv);
 #endif  // BUILDFLAG(IS_WIN)*/
+  // GetSwitches
+  // RemoveSwitch
+  // Nothing to do about arguments, they are there
 
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
