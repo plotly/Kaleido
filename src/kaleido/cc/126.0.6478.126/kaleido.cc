@@ -69,6 +69,17 @@ class Kaleido {
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
+  ShutdownSoon();
+}
+
+void Kaleido::ShutdownSoon() {
+  browser_->BrowserMainThread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Kaleido::Shutdown, base::Unretained(this)));
+}
+
+void Kaleido::Shutdown() {
+  browser_.ExtractAsDangling()->Shutdown();
 }
 
 //  Much of KaleidoMain is boilerplate taking from headless/app/ example:
@@ -134,28 +145,26 @@ int KaleidoMain(int argc, const char** argv) {
   LOG(FATAL) << "we can get rid of all crashpad" << std::endl;
 #endif
 #endif
-  if (!process_type.empty()) {
-    headless::HeadlessContentMainDelegate delegate(nullptr);
-    params.delegate = &delegate;
-    int rc = content::ContentMain(std::move(params));
-    // Note that exiting from here means that base::AtExitManager objects will not
-    // have a chance to be destroyed (typically in main/WinMain).
-    // Use TerminateCurrentProcessImmediately instead of exit to avoid shutdown
-    // crashes and slowdowns on shutdown.
-    base::Process::TerminateCurrentProcessImmediately(rc);
-    NOTREACHED_IN_MIGRATION();
-  }
-// EXAMPLE SAYS WE (MAC USERS) NEED THIS
-#if BUILDFLAG(IS_MAC)
-  command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
-#endif
-
   // Some Logging
   LOG(INFO) << "Original command: " << command_line.GetArgumentsString();
   LOG(INFO) << "Args size: " << command_line.GetArgs().size();
   for (const auto &piece : command_line.GetArgs()) {
     LOG(INFO) << piece << std::endl;
   }
+  if (!process_type.empty()) {
+    headless::HeadlessContentMainDelegate delegate(nullptr);
+    params.delegate = &delegate;
+    int rc = content::ContentMain(std::move(params));
+    base::Process::TerminateCurrentProcessImmediately(rc);
+    NOTREACHED_IN_MIGRATION();
+  }
+  // So we must be the main process...
+
+// EXAMPLE SAYS WE (MAC USERS) NEED THIS
+#if BUILDFLAG(IS_MAC)
+  command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
+#endif
+
 
   // Now we're going to start the browser
   Kaleido kmanager;
@@ -245,15 +254,6 @@ const char kAboutBlank[] = "about:blank";
     return;
   }
 
-void HeadlessShell::ShutdownSoon() {
-  browser_->BrowserMainThread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HeadlessShell::Shutdown, base::Unretained(this)));
-}
-
-void HeadlessShell::Shutdown() {
-  browser_.ExtractAsDangling()->Shutdown();
-}
 
 }  // namespace
 
