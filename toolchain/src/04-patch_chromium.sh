@@ -33,6 +33,8 @@ $NO_VERBOSE || echo "Running 04-patch_chromium"
 PATCH_DIR="$MAIN_DIR/src/vendor-patches/chromium/$CHROMIUM_VERSION_TAG"
 if [ ! -d "$PATCH_DIR" ] && $TRY; then
   PATCH_DIR="$MAIN_DIR/src/vendor-patches/chromium/$(ls $MAIN_DIR/src/vendor-patches/chromium -vt | head -1)"
+elif [ -d "$PATCH_DIR" ]; then
+  : # optimistic path
 else
   util_error "No chromium patch dir for $CHROMIUM_VERSION_TAG, look at --try or make your own"
 fi
