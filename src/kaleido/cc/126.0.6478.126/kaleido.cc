@@ -97,6 +97,7 @@ void Kaleido::Shutdown() {
 //  Filtering out flags may not be reasonable in this case, and some of the switches deleted may be necessary:
 //  HeadlessChildMain
 //  HEADLESS_USE_CRASHPAD -> kCrashpadHandler
+
 int KaleidoMain(int argc, const char** argv) {
   content::ContentMainParams params(nullptr); // TODO  WHAT IS THIS REALLY FOR
 
@@ -116,13 +117,12 @@ int KaleidoMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
 
-  //base::CommandLine::Init(0, nullptr);
+if BUILDFLAG(IS_WIN)
+  base::CommandLine::Init(0, nullptr);
   // It's a good way to process CommandLine, but is windows really not capable of using it?
-  // Above was on windows only, below was all else
-/*#else*/
-  base::CommandLine::Init(argc, argv);/*
-#endif  // BUILDFLAG(IS_WIN)*/
-  // GetSwitches, RemoveSwitch, Nothing to do about arguments, they are there
+#else
+  base::CommandLine::Init(argc, argv);
+#endif  // BUILDFLAG(IS_WIN)
 
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   std::string process_type = command_line.GetSwitchValueASCII(::switches::kProcessType);
