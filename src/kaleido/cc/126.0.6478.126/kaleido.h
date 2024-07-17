@@ -1,9 +1,9 @@
-/*
+
 #ifndef KALEIDO_H_
 #define KALEIDO_H_
 
 #include "content/public/app/content_main.h"
-
+/*
 namespace kaleido {
 
 // Start the headless shell applications.

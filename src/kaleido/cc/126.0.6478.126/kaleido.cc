@@ -4,11 +4,11 @@
 //    * start up the tab manager
 //    * start up the IO thread
 
-/*
+
 #include "headless/app/kaleido.h"
 
 #include <memory>
-
+/*
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"

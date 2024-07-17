@@ -9,7 +9,7 @@
 //  unless there was a flag specifically for that "--chromium_flags="--whatever=23,-f," etc
 
 #include "build/build_config.h"
-// #include "headless/app/kaleido.h"
+#include "headless/app/kaleido.h"
 
 #if BUILDFLAG(IS_WIN)
 #include "content/public/app/sandbox_helper_win.h"
