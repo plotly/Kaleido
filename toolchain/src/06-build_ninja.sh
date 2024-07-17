@@ -73,9 +73,9 @@ if $LIST; then
   exit 0
 fi
 
-LINE_NO=$(grep "$TARGET" -ne "### FOR KALEIDO ###" | cut -f1 -d:)
+LINE_NO=$(grep "$TARGET" -ne $(head -n 1 $BUILD_SUFFIX) | cut -f1 -d:)
 if [[ -n "$LINE_NO" ]]; then
-  head "$TARGET" -n $(($LINE_NO - 1)) > "$TARGET"
+  cat <(head "$TARGET" -n $(($LINE_NO - 1))) > "$TARGET"
 fi
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
 cat "$BUILD_SUFFIX" >> "$TARGET"
