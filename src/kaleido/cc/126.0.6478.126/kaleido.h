@@ -10,7 +10,7 @@ namespace kaleido {
   // Kaleido manages a browser and its tabs
   class Kaleido {
    public:
-    Kaleido() = default;
+    Kaleido();
 
     Kaleido(const Kaleido&) = delete;
     Kaleido& operator=(const Kaleido&) = delete;
@@ -20,9 +20,15 @@ namespace kaleido {
     void OnBrowserStart(headless::HeadlessBrowser* browser);
 
    private:
-    void ShutdownSoon();
-    void Shutdown();
+    void ShutdownSoon(); // shut down browser (it will post it as a task)
+    void Shutdown(); // shut down
+    void Listen(); // read stdin
+    void PostListen(); // post Listen as a task
+    void PostEcho(const std::string&); // echo something out
+    void ReadJSON(std::string&); // try to turn message into json object
+
     raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
+    scoped_refptr<SequencedTaskRunner> output_sequence();
   };
 }
 #endif  // KALEIDO_H_
