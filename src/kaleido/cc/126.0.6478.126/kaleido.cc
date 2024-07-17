@@ -4,7 +4,6 @@
 //    * start up the tab manager
 //    * start up the IO thread
 
-
 #include "headless/app/kaleido.h"
 
 // fundamental chromium includes
@@ -85,14 +84,13 @@ int KaleidoMain(int argc, const char** argv) {
 #if BUILDFLAG(IS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
-
+  LOG(INFO) << "Original command: " << command_line.GetArgumentsString();
+  LOG(INFO) << "Args size: " << command_line.GetArgs().size();
   for (const auto &piece : command_line.GetArgs()) {
-    std::cout << piece << std::endl;
+    LOG(INFO) << piece << std::endl;
   }
-  if (command_line.GetArgs().size() > 1) {
-    LOG(ERROR) << "Multiple targets are not supported.";
-    return EXIT_FAILURE;
-  }
+
+  //  return EXIT_FAILURE;
   return 0;
   // return HeadlessBrowserMain(std::move(params));
   // return kaleido::HeadlessShellMain(std::move(params));
