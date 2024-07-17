@@ -6,7 +6,10 @@
 
 
 #include "headless/app/kaleido.h"
+
+// fundamental chromium includes
 #include "content/public/app/content_main.h"
+#include "base/logging.h"
 
 #include "build/build_config.h" // IS_WIN and stuff like that
 #if BUILDFLAG(IS_WIN)
@@ -21,6 +24,7 @@
 #include "base/base_switches.h"
 #include "headless/public/switches.h"
 #include "base/command_line.h"
+#include "content/public/common/content_switches.h"
 
 namespace kaleido {
 
@@ -100,12 +104,10 @@ int KaleidoMain(int argc, const char** argv) {
 
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/logging.h"
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
-#include "content/public/common/content_switches.h"
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
