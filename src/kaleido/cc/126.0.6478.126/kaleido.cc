@@ -148,19 +148,6 @@ const wchar_t kAboutBlank[] = L"about:blank";
 const char kAboutBlank[] = "about:blank";
 #endif
 
-GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
-#if BUILDFLAG(IS_WIN)
-  GURL url(base::WideToUTF8(arg));
-#else
-  GURL url(arg);
-#endif
-  if (url.is_valid() && url.has_scheme())
-    return url;
-
-  return net::FilePathToFileURL(
-      base::MakeAbsoluteFilePath(base::FilePath(arg)));
-}
-
 // An application which implements a simple headless browser.
 class HeadlessShell {
  public:
