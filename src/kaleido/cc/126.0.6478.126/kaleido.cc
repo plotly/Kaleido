@@ -28,6 +28,13 @@
 #include "components/os_crypt/sync/os_crypt_switches.h"  // nogncheck
 #endif
 
+// Browser Includes
+#include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/public/headless_browser.h"
+
+
+// Can you clear up deps in build?
+
 namespace kaleido {
 
 //  Much of KaleidoMain is boilerplate taking from headless/app/ example:
@@ -133,10 +140,8 @@ class Kaleido {
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "content/public/app/content_main.h"
-#include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
 #include "headless/lib/headless_content_main_delegate.h"
-#include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_web_contents.h"
 
