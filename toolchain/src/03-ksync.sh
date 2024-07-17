@@ -35,5 +35,8 @@ util_export_version
 export DEPOT_TOOLS_UPDATE=0 # otherwise it advances to the tip of branch main
 ## but sometimes it skips other necessary things! Thats why we had init_tools
 V_FLAG=""
-$NO_VERBOSE || V_FLAG=" --verbose"
-( cd "$MAIN_DIR/vendor/"; gclient sync -D --force"${V_FLAG}" --reset --no-history --jobs=$CPUS --revision="$CHROMIUM_VERSION_TAG" )
+if ! $NO_VERBOSE; then
+  ( cd "$MAIN_DIR/vendor/"; gclient sync -D --force --verbose --reset --no-history --jobs=$CPUS --revision="$CHROMIUM_VERSION_TAG" )
+else
+  ( cd "$MAIN_DIR/vendor/"; gclient sync -D --force --reset --no-history --jobs=$CPUS --revision="$CHROMIUM_VERSION_TAG" )
+fi
