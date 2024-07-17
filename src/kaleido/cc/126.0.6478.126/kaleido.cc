@@ -104,6 +104,24 @@ int KaleidoMain(int argc, const char** argv) {
   return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
 
+// Kaleido manages a browser and its tabs
+class Kaleido {
+ public:
+  Kaleido() = default;
+
+  Kaleido(const Kaleido&) = delete;
+  Kaleido& operator=(const Kaleido&) = delete;
+
+  ~Kaleido() = default;
+
+  void OnBrowserStart(HeadlessBrowser* browser);
+
+ private:
+  void ShutdownSoon();
+  void Shutdown();
+  raw_ptr<HeadlessBrowser> browser_ = nullptr;
+};
+
 } // namespace kaleido
 
 /*
@@ -143,22 +161,7 @@ const wchar_t kAboutBlank[] = L"about:blank";
 const char kAboutBlank[] = "about:blank";
 #endif
 
-// An application which implements a simple headless browser.
-class HeadlessShell {
- public:
-  HeadlessShell() = default;
 
-  HeadlessShell(const HeadlessShell&) = delete;
-  HeadlessShell& operator=(const HeadlessShell&) = delete;
-
-  ~HeadlessShell() = default;
-
-  void OnBrowserStart(HeadlessBrowser* browser);
-
- private:
-  void ShutdownSoon();
-  void Shutdown();
-  raw_ptr<HeadlessBrowser> browser_ = nullptr;
 };
 
 void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
