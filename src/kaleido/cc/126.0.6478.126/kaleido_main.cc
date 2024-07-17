@@ -43,20 +43,19 @@
 
 // Can you clear up deps in build?
 //
-namespace kaleido {
-
 namespace {
   void buildSandbox(content::ContentMainParams);
   void processCommandLine(content::ContentMainParams, int argc, const char** argv);
 }
 
 
-int KaleidoMain(int argc, const char** argv) {
+int main(int argc, const char** argv) {
   content::ContentMainParams params(nullptr);
   buildSandbox(std::move(params));
   processCommandLine(std::move(params), argc, argv);
 
   // Now we're going to start the browser
+  using kaleido::Kaleido;
   Kaleido kmanager;
   auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
       base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(&kmanager)));
@@ -65,6 +64,7 @@ int KaleidoMain(int argc, const char** argv) {
   return content::ContentMain(std::move(params));
   // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
+
 
 namespace {
 
@@ -137,4 +137,3 @@ void processCommandLine(content::ContentMainParams params, int argc, const char*
 }
 
 } // namespace
-} // namespace kaleido

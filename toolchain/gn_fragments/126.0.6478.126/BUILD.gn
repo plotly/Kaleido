@@ -1,5 +1,5 @@
 ### FOR KALEIDO ###
-static_library("kaleido_lib") {
+executable("kaleido") {
   sources = [
     "app/kaleido.cc",
     "app/kaleido_main.cc",
@@ -11,6 +11,9 @@ static_library("kaleido_lib") {
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
+  }
+  if (proprietary_codecs) {
+    deps += [ ":generate_headless_shell_license_file" ]
   }
   deps = [
     "//build:branding_buildflags",
@@ -52,47 +55,23 @@ static_library("kaleido_lib") {
       "//components/crash/core/app:run_as_crashpad_handler",
       "//content:sandbox_helper_win",
       "//sandbox",
-    ]
-  }
-  if (is_mac) {
-    deps += [ "//components/os_crypt/sync" ]
-  }
-  if (is_win || (is_posix && !is_mac)) {
-    deps += [ "//components/crash/core/app" ]
-  }
-  configs += [
-    ":headless_defines_config",
-    "//build/config/compiler:wexit_time_destructors",
-  ]
-}
-
-executable("kaleido") {
-  configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
-  configs += [ "//build/config/compiler:thinlto_optimize_max" ]
-  sources = [ "app/app.cc" ]
-  defines = []
-  deps = [ ":kaleido_lib" ]
-  if (proprietary_codecs) {
-    deps += [ ":generate_headless_shell_license_file" ]
-  }
-  if (!headless_use_embedded_resources) {
-    data = [
-      "$root_out_dir/headless_lib_data.pak",
-      "$root_out_dir/headless_lib_strings.pak",
-    ]
-  }
-  if (is_win) {
-    deps += [
       "//build/win:default_exe_manifest",
       "//content/public/app",
     ]
     configs += [ "//build/config/win:delayloads" ]
   }
   if (is_mac) {
-    deps += [ "//sandbox/mac:seatbelt" ]
+    deps += [ "//components/os_crypt/sync" ,
+              "//sandbox/mac:seatbelt" ]
   }
+  if (is_win || (is_posix && !is_mac)) {
+    deps += [ "//components/crash/core/app" ]
+  }
+  configs -= [ "//build/config/compiler:thinlto_optimize_default" ]
   configs += [
     ":headless_defines_config",
     "//build/config/compiler:wexit_time_destructors",
+    "//build/config/compiler:thinlto_optimize_max",
   ]
+  assert(headless_use_embedded_resources)
 }
