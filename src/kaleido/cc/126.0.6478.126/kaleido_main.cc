@@ -55,10 +55,11 @@ int main(int argc, const char** argv) {
   processCommandLine(std::move(params), argc, argv);
 
   // Now we're going to start the browser
-  using kaleido::Kaleido;
-  Kaleido kmanager;
+  // Would love to do this inside the constructor but
+  // ... chromium just hates it.
+  kaleido::Kaleido kbrowser;
   auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
-      base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(&kmanager)));
+      base::BindOnce(&kaleido::Kaleido::OnBrowserStart, base::Unretained(&kbrowser)));
   headless::HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(std::move(params));
