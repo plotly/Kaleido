@@ -35,7 +35,6 @@ usage=(
   # what about python
   # ugh
 )
-## TODO, quit with the -999: dumbness
 
 FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10")
 ARGFLAGS=("")

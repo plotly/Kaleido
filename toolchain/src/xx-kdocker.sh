@@ -53,7 +53,7 @@ usage=(
   "                   Hint: Use \`krefresh\` to re-clone/patch ~/kaleido after changes."
   "                   Hint: If you use -c (or \`krefresh\`), kaleido build commands (set_version, etc)"
   "                         will always be run from ~/kaleido, not /usr/share/kaleido. So all changes"
-  "                         need to be \`krefresh\`ed." ## TODO: we don't wanna krefresh everytime we change the C
+  "                         need to be \`krefresh\`ed."
   "Docker tips:"
   "      Ending the first session will always end the docker. \`ctl+d\` will exit bash and session."
   "     \`ctl+p ctl+q\` (instead of \`ctl+d\`) will leave bash running. You can reattach to (only)"
