@@ -158,26 +158,13 @@ class HeadlessShell {
   void OnBrowserStart(HeadlessBrowser* browser);
 
  private:
-#if defined(HEADLESS_ENABLE_COMMANDS)
-  void OnProcessCommandsDone(HeadlessCommandHandler::Result result);
-#endif
   void ShutdownSoon();
   void Shutdown();
-
   raw_ptr<HeadlessBrowser> browser_ = nullptr;
 };
 
 void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
   browser_ = browser;
-
-#if defined(HEADLESS_USE_POLICY)
-  if (HeadlessModePolicy::IsHeadlessModeDisabled(
-          static_cast<HeadlessBrowserImpl*>(browser)->GetPrefs())) {
-    LOG(ERROR) << "Headless mode is disallowed by the system admin.";
-    ShutdownSoon();
-    return;
-  }
-#endif
 
   HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();
@@ -223,38 +210,6 @@ void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
     }
     return;
   }
-
-  // Otherwise instantiate headless shell command handler that will
-  // execute the commands against the target page.
-#if defined(HEADLESS_ENABLE_COMMANDS)
-  GURL handler_url = HeadlessCommandHandler::GetHandlerUrl();
-  HeadlessWebContents* web_contents =
-      builder.SetInitialURL(handler_url).Build();
-  if (!web_contents) {
-    LOG(ERROR) << "Navigation to " << handler_url << " failed.";
-    ShutdownSoon();
-    return;
-  }
-
-  HeadlessCommandHandler::ProcessCommands(
-      HeadlessWebContentsImpl::From(web_contents)->web_contents(),
-      std::move(target_url),
-      base::BindOnce(&HeadlessShell::OnProcessCommandsDone,
-                     base::Unretained(this)));
-#endif
-}
-
-#if defined(HEADLESS_ENABLE_COMMANDS)
-void HeadlessShell::OnProcessCommandsDone(
-    HeadlessCommandHandler::Result result) {
-  if (result != HeadlessCommandHandler::Result::kSuccess) {
-    static_cast<HeadlessBrowserImpl*>(browser_)->ShutdownWithExitCode(
-        static_cast<int>(result));
-    return;
-  }
-  Shutdown();
-}
-#endif
 
 void HeadlessShell::ShutdownSoon() {
   browser_->BrowserMainThread()->PostTask(
