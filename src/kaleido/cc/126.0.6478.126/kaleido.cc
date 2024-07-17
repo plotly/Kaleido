@@ -49,9 +49,6 @@ int KaleidoMain(int argc, const char** argv) {
   content::InitializeSandboxInfo(&sandbox_info);
   // Sandbox info has to be set and initialized.
   params.sandbox_info = &sandbox_info;
-#else
-  params.argc = argc;
-  params.argv = argv;
 #if BUILDFLAG(IS_MAC)
   sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
       sandbox::SeatbeltExecServer::CreateFromArguments(
@@ -63,10 +60,10 @@ int KaleidoMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(IS_WIN)
 
   base::CommandLine::Init(0, nullptr);
-
   // It's a good way to process CommandLine, but is windows really not capable of using it?
+  // Above was on windows only
 /*#else
-  base::CommandLine::Init(params.argc, params.argv);
+  base::CommandLine::Init(argc, argv);
 #endif  // BUILDFLAG(IS_WIN)*/
   // GetSwitches
   // RemoveSwitch
@@ -267,21 +264,6 @@ void HeadlessShell::ShutdownSoon() {
 
 void HeadlessShell::Shutdown() {
   browser_.ExtractAsDangling()->Shutdown();
-}
-
-void HeadlessChildMain(content::ContentMainParams params) {
-  HeadlessContentMainDelegate delegate(nullptr);
-  params.delegate = &delegate;
-  int rc = content::ContentMain(std::move(params));
-
-  // Note that exiting from here means that base::AtExitManager objects will not
-  // have a chance to be destroyed (typically in main/WinMain).
-  // Use TerminateCurrentProcessImmediately instead of exit to avoid shutdown
-  // crashes and slowdowns on shutdown.
-  base::Process::TerminateCurrentProcessImmediately(rc);
-}
-
-int HeadlessBrowserMain(content::ContentMainParams params) {
 }
 
 }  // namespace
