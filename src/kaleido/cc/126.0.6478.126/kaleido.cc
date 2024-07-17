@@ -19,6 +19,16 @@
 
 namespace kaleido {
 
+//  Much of KaleidoMain is boilerplate taking from headless/app/ example:
+//  - it starts sandboxes, which may be pointless, but our flags are chaos
+//      - init_tools flags no sandbox
+//      - here we initialize it
+//      - python then turns it off again
+//      - it is not really necessary
+//  - it, depending on platform, moves argc and argv towards a HeadlessBrowser instance
+//
+//  It is better not to pass whatever chromium flag into kaleido,
+//  unless there was a flag specifically for that "--chromium_flags="--whatever=23,-f," etc
 int KaleidoMain(int argc, const char** argv) {
   content::ContentMainParams params(nullptr);
 #if BUILDFLAG(IS_WIN)
@@ -38,7 +48,43 @@ int KaleidoMain(int argc, const char** argv) {
   }
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_WIN)
+  base::CommandLine::Init(0, nullptr);
+#else
+  base::CommandLine::Init(params.argc, params.argv);
+#endif  // BUILDFLAG(IS_WIN)
+  base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
+  std::string process_type =
+      command_line.GetSwitchValueASCII(::switches::kProcessType);
+#if defined(HEADLESS_USE_CRASHPAD)
+  if (process_type == crash_reporter::switches::kCrashpadHandler) {
+    return crash_reporter::RunAsCrashpadHandler(
+        *base::CommandLine::ForCurrentProcess(), base::FilePath(),
+        ::switches::kProcessType, switches::kUserDataDir);
+  }
+#endif  // defined(HEADLESS_USE_CRASHPAD)
+
+  if (!process_type.empty()) {
+    HeadlessChildMain(std::move(params));
+    NOTREACHED();
+  }
+
+#if BUILDFLAG(IS_MAC)
+  command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
+#endif
+
+#if BUILDFLAG(IS_FUCHSIA)
+  // TODO(fuchsia): Remove this when GPU accelerated compositing is ready.
+  command_line.AppendSwitch(::switches::kDisableGpu);
+#endif
+
+  if (command_line.GetArgs().size() > 1) {
+    LOG(ERROR) << "Multiple targets are not supported.";
+    return EXIT_FAILURE;
+  }
   return 0;
+  // return HeadlessBrowserMain(std::move(params));
   // return kaleido::HeadlessShellMain(std::move(params));
 }
 
@@ -269,44 +315,5 @@ int HeadlessBrowserMain(content::ContentMainParams params) {
 
 }  // namespace
 
-int HeadlessShellMain(content::ContentMainParams params) {
-#if BUILDFLAG(IS_WIN)
-  base::CommandLine::Init(0, nullptr);
-#else
-  base::CommandLine::Init(params.argc, params.argv);
-#endif  // BUILDFLAG(IS_WIN)
-  base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
-  std::string process_type =
-      command_line.GetSwitchValueASCII(::switches::kProcessType);
-#if defined(HEADLESS_USE_CRASHPAD)
-  if (process_type == crash_reporter::switches::kCrashpadHandler) {
-    return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess(), base::FilePath(),
-        ::switches::kProcessType, switches::kUserDataDir);
-  }
-#endif  // defined(HEADLESS_USE_CRASHPAD)
-
-  if (!process_type.empty()) {
-    HeadlessChildMain(std::move(params));
-    NOTREACHED();
-  }
-
-#if BUILDFLAG(IS_MAC)
-  command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
-#endif
-
-#if BUILDFLAG(IS_FUCHSIA)
-  // TODO(fuchsia): Remove this when GPU accelerated compositing is ready.
-  command_line.AppendSwitch(::switches::kDisableGpu);
-#endif
-
-  if (command_line.GetArgs().size() > 1) {
-    LOG(ERROR) << "Multiple targets are not supported.";
-    return EXIT_FAILURE;
-  }
-
-  return HeadlessBrowserMain(std::move(params));
-}
-
-}  // namespace headless\
+}  // namespace headless
 */
