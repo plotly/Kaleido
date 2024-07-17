@@ -49,11 +49,11 @@ $NO_VERBOSE || echo "Dev build: $DEV"
 util_get_version
 util_export_version
 
-BUILD_SUFFIX="$MAIN_DIR/toolchain/gn_fragments/BUILD.gn"
+BUILD_SUFFIX="$MAIN_DIR/toolchain/gn_fragments/$CHROMIUM_VERSION_TAG/BUILD.gn"
 TARGET="$MAIN_DIR/vendor/src/headless/BUILD.gn"
 OUTDIR="${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}"
 ARGS_FILE="${OUTDIR}/args.gn"
-TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/args.gn"
+TEMPLATE_FILE="${MAIN_DIR}/toolchain/gn_fragments/$CHROMIUM_VERSION_TAG/args.gn"
 
 if $SHOW; then
   if [[ -f "${ARGS_FILE}" ]]; then
@@ -71,6 +71,10 @@ if $LIST; then
     echo "You haven't run the main script yet, that needs to happen once before this will work"
   fi
   exit 0
+fi
+
+if [[ ! -d "${MAIN_DIR}/toolchain/gn_fragments/$CHROMIUM_VERSION_TAG" ]]; then
+  util_error "Couldn't find a toolchain/gn_fragments folder for $CHROMIUM_VERSION_TAG"
 fi
 
 LINE_NO=$(grep "$TARGET" -ne "$(head -n 1 $BUILD_SUFFIX)" | cut -f1 -d:)
