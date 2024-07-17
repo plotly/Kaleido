@@ -39,7 +39,9 @@ namespace kaleido {
 //  It is better not to pass whatever chromium flag into kaleido,
 //  unless there was a flag specifically for that "--chromium_flags="--whatever=23,-f," etc
 int KaleidoMain(int argc, const char** argv) {
-  content::ContentMainParams params(nullptr);
+  content::ContentMainParams params(nullptr); // TODO  WHAT IS THIS REALLY FOR
+
+// LETS CONSTRUCT SANDBOX THAT WE THEN DISABLE
 #if BUILDFLAG(IS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
   content::InitializeSandboxInfo(&sandbox_info);
@@ -58,32 +60,35 @@ int KaleidoMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
 
+// BUILD A COMMAND LINE SO WE CAN CONTROL IT
 #if BUILDFLAG(IS_WIN)
   base::CommandLine::Init(0, nullptr);
 #else
   base::CommandLine::Init(params.argc, params.argv);
 #endif  // BUILDFLAG(IS_WIN)
-  base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
-  std::string process_type =
-      command_line.GetSwitchValueASCII(::switches::kProcessType);
-#if defined(HEADLESS_USE_CRASHPAD) // basically IS_WIN
-  return 1;
-  if (process_type == crash_reporter::switches::kCrashpadHandler) {
-    return crash_reporter::RunAsCrashpadHandler(
-        *base::CommandLine::ForCurrentProcess(), base::FilePath(),
-        ::switches::kProcessType, switches::kUserDataDir);
-  }
-#endif  // defined(HEADLESS_USE_CRASHPAD)
 
+
+  base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
+  // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
+
+
+// BELOW IS A TEMPORARY MUST-REMOVE TEST
+#if BUILDFLAG(IS_WIN)
+#if defined(HEADLESS_USE_CRASHPAD)
+  LOG(FATAL) << "crashpad IS used on windows, reactivate comments. Need command_line boilerplate." << std::endl;
+#else
+  LOG(FATAL) << "we can get rid of all crashpad" << std::endl;
+#endif
+#endif
+
+// EXAMPLE SAYS WE NEED THIS
 #if BUILDFLAG(IS_MAC)
   command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
 #endif
 
-#if BUILDFLAG(IS_FUCHSIA)
-  // TODO(fuchsia): Remove this when GPU accelerated compositing is ready.
-  command_line.AppendSwitch(::switches::kDisableGpu);
-#endif
-
+  for (const auto &piece : command_line.GetArgs()) {
+    std::cout << piece << std::endl;
+  }
   if (command_line.GetArgs().size() > 1) {
     LOG(ERROR) << "Multiple targets are not supported.";
     return EXIT_FAILURE;
