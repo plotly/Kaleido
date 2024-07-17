@@ -114,7 +114,6 @@ int KaleidoMain(int argc, const char** argv) {
 // Kaleido manages a browser and its tabs
 class Kaleido {
  public:
-  using headless::HeadlessBrowser;
   Kaleido() = default;
 
   Kaleido(const Kaleido&) = delete;
@@ -122,12 +121,12 @@ class Kaleido {
 
   ~Kaleido() = default;
 
-  void OnBrowserStart(HeadlessBrowser* browser);
+  void OnBrowserStart(headless::HeadlessBrowser* browser);
 
  private:
   void ShutdownSoon();
   void Shutdown();
-  raw_ptr<HeadlessBrowser> browser_ = nullptr;
+  raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
 };
 
 } // namespace kaleido
