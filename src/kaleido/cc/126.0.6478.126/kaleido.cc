@@ -102,9 +102,9 @@ int KaleidoMain(int argc, const char** argv) {
   }
 
   // Now we're going to start the browser
-  kaleido kmanager;
+  Kaleido kmanager;
   auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
-      base::BindOnce(&kaleido::OnBrowserStart, base::Unretained(&kmanager)));
+      base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(&kmanager)));
   headless::HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(std::move(params));
