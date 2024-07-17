@@ -6,11 +6,14 @@
 
 #include "headless/app/kaleido.h"
 
-// fundamental chromium includes
+// Fundamental chromium includes
 #include "content/public/app/content_main.h"
+#include "headless/lib/headless_content_main_delegate.h"
 #include "base/logging.h"
 
 #include "build/build_config.h" // IS_WIN and stuff like that
+
+// Sandbox Includes
 #if BUILDFLAG(IS_WIN)
 #include "content/public/app/sandbox_helper_win.h"
 #include "sandbox/win/src/sandbox_types.h"  // nogncheck
@@ -31,7 +34,6 @@
 // Browser Includes
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/public/headless_browser.h"
-
 
 // Can you clear up deps in build?
 
@@ -100,15 +102,13 @@ int KaleidoMain(int argc, const char** argv) {
   }
 
   // Now we're going to start the browser
-  /*
-  HeadlessShell shell;
-  auto browser = std::make_unique<HeadlessBrowserImpl>(
-      base::BindOnce(&HeadlessShell::OnBrowserStart, base::Unretained(&shell)));
-  HeadlessContentMainDelegate delegate(std::move(browser));
+  Kaleido kmanager;
+  auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
+      base::BindOnce(&Kaleido::OnBrowserStart, base::Unretained(&kmanager)));
+  headless::HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(std::move(params));
-  */
-  return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
+  // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
 
 // Kaleido manages a browser and its tabs
@@ -139,9 +139,7 @@ class Kaleido {
 #include "base/task/thread_pool.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
-#include "content/public/app/content_main.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
-#include "headless/lib/headless_content_main_delegate.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_web_contents.h"
 
