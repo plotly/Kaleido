@@ -17,12 +17,11 @@ usage=(
   ""
   ""
 )
-## PROCESS FLAGS
 
 FLAGS=()
 ARGFLAGS=("-c" "--cpus")
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 CPUS="$(flags_resolve ${CPUS:-1} "-c" "--cpus")"
@@ -37,4 +36,4 @@ export DEPOT_TOOLS_UPDATE=0 # otherwise it advances to the tip of branch main
 ## but sometimes it skips other necessary things! Thats why we had init_tools
 V_FLAG=""
 $NO_VERBOSE || V_FLAG="--verbose"
-( cd $MAIN_DIR/vendor/; gclient sync -D --force "${V_FLAG}" --reset --no-history --jobs=$CPUS --revision=$CHROMIUM_VERSION_TAG )
+( cd "$MAIN_DIR/vendor/"; gclient sync -D --force "${V_FLAG}" --reset --no-history --jobs=$CPUS --revision=$CHROMIUM_VERSION_TAG )

@@ -14,46 +14,46 @@ usage=(
   "all [-h|--h]"
   ""
   "Example: You can specify a specific stage and its flags. The following are equivalent:"
-  "all -0: --latest"
+  "all -0 -- --latest"
   "set_version --latest"
   ""
   "Or, you can skip the number and everything will be passed to every command."
   "So, it really only works with --verbose."
   ""
-  "-0: set_version      - just sets some env vars for versions"
-  "-1: fetch_tools      - clones depot_tools"
-  "-2: init_tools       - runs whatever depot_tools downloads it wants"
-  "-3: ksync            - downloads chromium"
-  "-4: patch_chromium   - patches chromium w/ our patches"
-  "-5: gen_preamble     - copies readme, licenses, etc"
-  "-6: build_ninja      - prepares gn and runs gn gen to build ninja"
-  "-7: write_kversion   - writes a version text file for kaleido"
-  "-8: sync_cpp         - will sync kaleido c++ do chromium src"
-  "-9: build_kaleido    - builds kaleido's c++"
-  "-10:" # package
+  "-0  set_version      - just sets some env vars for versions"
+  "-1  fetch_tools      - clones depot_tools"
+  "-2  init_tools       - runs whatever depot_tools downloads it wants"
+  "-3  ksync            - downloads chromium"
+  "-4  patch_chromium   - patches chromium w/ our patches"
+  "-5  gen_preamble     - copies readme, licenses, etc"
+  "-6  build_ninja      - prepares gn and runs gn gen to build ninja"
+  "-7  write_kversion   - writes a version text file for kaleido"
+  "-8  sync_cpp         - will sync kaleido c++ do chromium src"
+  "-9  build_kaleido    - builds kaleido's c++"
+  "-10 " # package
   # what about javascript
   # what about python
   # ugh
 )
 ## TODO, quit with the -999: dumbness
 
-FLAGS=(":" "-0:" "-1:" "-2:" "-3:" "-4:" "-5:" "-6:" "-7:" "-8:" "-9:" "-10:")
+FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10")
 ARGFLAGS=("")
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
-ZERO=$(flags_resolve false "-0:")
-ONE=$(flags_resolve false "-1:")
-TWO=$(flags_resolve false "-2:")
-THREE=$(flags_resolve false "-3:")
-FOUR=$(flags_resolve false "-4:")
-FIVE=$(flags_resolve false "-5:")
-SIX=$(flags_resolve false "-6:")
-SEVEN=$(flags_resolve false "-7:")
-EIGHT=$(flags_resolve false "-8:")
-NINE=$(flags_resolve false "-9:")
-TEN=$(flags_resolve false "-10:")
+ZERO=$(flags_resolve false "-0")
+ONE=$(flags_resolve false "-1")
+TWO=$(flags_resolve false "-2")
+THREE=$(flags_resolve false "-3")
+FOUR=$(flags_resolve false "-4")
+FIVE=$(flags_resolve false "-5")
+SIX=$(flags_resolve false "-6")
+SEVEN=$(flags_resolve false "-7")
+EIGHT=$(flags_resolve false "-8")
+NINE=$(flags_resolve false "-9")
+TEN=$(flags_resolve false "-10")
 
 ALL=true
 if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN; then
@@ -63,7 +63,6 @@ fi
 
 $NO_VERBOSE || echo "Running xx-all.sh"
 $NO_VERBOSE || echo "Running all? $ALL"
-$NO_VERBOSE || echo "Running 2? $TWO"
 
 # check for something in path before running
 if $ZERO || $ALL; then

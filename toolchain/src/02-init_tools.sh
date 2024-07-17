@@ -17,16 +17,19 @@ usage=(
   "init_tools [-d|--dry-run]"
   ""
   ""
+  "Try: if it can find a matching version to the one select, use the latest"
+  "init_tools [-t|--try]"
 )
 ## PROCESS FLAGS
 
-FLAGS=("-d" "--dry-run")
+FLAGS=("-d" "--dry-run" "-t" "--try")
 ARGFLAGS=()
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 SHOW="$(flags_resolve false "-d" "--dry-run")"
+TRY="$(flags_resolve false "-t" "--try")"
 
 $NO_VERBOSE || echo "Running 02-init_tools.sh"
 
@@ -41,7 +44,7 @@ if [[ "$PLATFORM" == "WINDOWS" ]]; then
     # Do we expect to be in the depot_tools directory?
     cmd.exe /c cipd_bin_setup.bat
     cmd.exe /c 'bootstrap\win_tools.bat'
-  elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]]; then
+  elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]] || $TRY; then
     util_error "Try to execute the following manually first"
     # What's the deal with this really though, how do you call this
     # Do we expect to be in the depot_tools directory?
@@ -67,7 +70,7 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
     fi
     chmod +x "$MAIN_DIR/toolchain/tmp/install-build-deps.sh"
     "$MAIN_DIR/toolchain/tmp/install-build-deps.sh" --no-syms --no-arm --no-chromeos-fonts --no-nacl --no-prompt
-  elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]]; then
+  elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]] || $TRY; then
     curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.sh?format=TEXT \
     | base64 -d > $MAIN_DIR/toolchain/tmp/install-build-deps.sh
     curl -s https://chromium.googlesource.com/chromium/src/+/$CHROMIUM_VERSION_TAG/build/install-build-deps.py?format=TEXT \

@@ -20,7 +20,7 @@ usage=(
 FLAGS=("-n" "--no-path")
 ARGFLAGS=()
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 NO_PATH="$(flags_resolve false "-n" "--no-path")"

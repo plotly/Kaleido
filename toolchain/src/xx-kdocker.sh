@@ -65,7 +65,7 @@ usage=(
 FLAGS=(":" "-c" "--copy" "-d" "--detach")
 ARGFLAGS=("-i" "--image" "-u" "--user")
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 $(flags_resolve "false" "-d" "--detach") && DETACH=d || DETACH=""
@@ -74,21 +74,21 @@ $NO_VERBOSE || echo "Detach flag: '$DETACH'"
 COPY="$(flags_resolve "false" "-c" "--copy")"
 $NO_VERBOSE || echo "Copy: $COPY"
 
-IMAGE=$(flags_resolve ${IMAGE} -i --image)
+IMAGE=$(flags_resolve "${IMAGE}" -i --image)
 $NO_VERBOSE || echo "Image: $IMAGE"
 
-LOCAL_USER=$(flags_resolve ${USER} -u --user)
+LOCAL_USER=$(flags_resolve "${USER}" -u --user)
 
 $NO_VERBOSE || echo "Running xx-kdocker.sh"
 
-LOCAL_UID="$(id -u $LOCAL_USER)"
+LOCAL_UID="$(id -u "$LOCAL_USER")"
 $NO_VERBOSE || echo "User: $LOCAL_USER w/ ID $LOCAL_UID"
 
 # Set up mounting some of our directories into docker
 VOLUME="$MAIN_DIR:/usr/share/kaleido"
 
 APT_CACHE="$MAIN_DIR/toolchain/tmp/apt_cache/"
-mkdir -p $APT_CACHE
+mkdir -p "$APT_CACHE"
 APT_VOLUME="$APT_CACHE:/var/lib/apt/lists/"
 
 
@@ -162,7 +162,7 @@ $NO_VERBOSE || echo -e "User Command Set:\n$USER_COMMAND"
 $NO_VERBOSE || echo -e "Command Set:\n$COMMAND"
 
 $NO_VERBOSE || echo "Pulling $IMAGE"
-docker pull $IMAGE
+docker pull "$IMAGE"
 
 $NO_VERBOSE || set -x # to print out the line w/o rewriting it
-docker container run -e TERM=$TERM --rm -it$DETACH -v "$APT_VOLUME" -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"
+docker container run -e "TERM=$TERM" --rm -it$DETACH -v "$APT_VOLUME" -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"

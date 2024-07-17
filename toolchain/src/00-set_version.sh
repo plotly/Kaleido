@@ -33,15 +33,15 @@ usage=(
 FLAGS=("-l" "--latest" "-a" "--ask")
 ARGFLAGS=("-c" "--chromium" "-d" "--depot")
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 ASK="$(flags_resolve false "-a" "--ask")"
 
 LATEST="$(flags_resolve false "-l" "--latest")"
 
-CHROMIUM_VERSION_TAG=$(flags_resolve ${CHROMIUM_VERSION_TAG-""} -c --chromium)
-DEPOT_TOOLS_COMMIT=$(flags_resolve ${DEPOT_TOOLS_COMMIT-""} -d --depot)
+CHROMIUM_VERSION_TAG="$(flags_resolve ${CHROMIUM_VERSION_TAG-""} -c --chromium)"
+DEPOT_TOOLS_COMMIT="$(flags_resolve ${DEPOT_TOOLS_COMMIT-""} -d --depot)"
 
 $NO_VERBOSE || echo "Running 00-set_version.sh"
 

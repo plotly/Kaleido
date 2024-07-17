@@ -19,12 +19,12 @@ usage=(
 FLAGS=("-l" "--long" "-f" "--full") # add ":" to accept variable arguments after flags
 ARGFLAGS=("-t" "--target") # arg flags will take the following word as an argument
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 LONG="$(flags_resolve false "-l" "--long")" # will resolve true if existing, false if no
 FULL="$(flags_resolve false "-f" "--full")"
-TARGET=$(flags_resolve ${TARGET-""} -t --target) # set double-layer default
+TARGET="$(flags_resolve ${TARGET-""} -t --target)" # set double-layer default
 
 $NO_VERBOSE || echo "Running xx-template.sh"
 

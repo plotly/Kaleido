@@ -16,7 +16,7 @@ usage=(
 FLAGS=()
 ARGFLAGS=()
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 $NO_VERBOSE || echo "Running 07-write_kversion"
@@ -24,6 +24,6 @@ $NO_VERBOSE || echo "Running 07-write_kversion"
 util_get_version
 util_export_version
 
-version=$(python3 ${MAIN_DIR}/toolchain/build_pep440_version.py)
+version="$(python3 "${MAIN_DIR}/toolchain/build_pep440_version.py")"
 $NO_VERBOSE || echo "Version: $version"
-echo -n $version > ${MAIN_DIR}/src/kaleido/version
+echo -n "$version" > "${MAIN_DIR}/src/kaleido/version"

@@ -21,7 +21,7 @@ usage=(
 FLAGS=("-d" "--delete-git")
 ARGFLAGS=()
 
-SCRIPT_DIR=$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )
+SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
 DELETE_GIT="$(flags_resolve false "-d" "--delete-git")" # will resolve true if existing, false if no
