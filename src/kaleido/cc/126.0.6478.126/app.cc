@@ -38,6 +38,6 @@ int main(int argc, const char** argv) {
   }
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
-  return 0
+  return 0;
   //return headless::HeadlessShellMain(std::move(params));
 }
