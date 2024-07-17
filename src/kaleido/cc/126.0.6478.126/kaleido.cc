@@ -57,7 +57,7 @@ class Kaleido {
   raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
 };
 
-void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
+void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
 }
 
