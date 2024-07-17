@@ -61,13 +61,11 @@ int KaleidoMain(int argc, const char** argv) {
 
   base::CommandLine::Init(0, nullptr);
   // It's a good way to process CommandLine, but is windows really not capable of using it?
-  // Above was on windows only
+  // Above was on windows only, below was all else
 /*#else
   base::CommandLine::Init(argc, argv);
 #endif  // BUILDFLAG(IS_WIN)*/
-  // GetSwitches
-  // RemoveSwitch
-  // Nothing to do about arguments, they are there
+  // GetSwitches, RemoveSwitch, Nothing to do about arguments, they are there
 
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
