@@ -75,7 +75,7 @@ fi
 
 LINE_NO=$(grep "$TARGET" -ne $(head -n 1 $BUILD_SUFFIX) | cut -f1 -d:)
 if [[ -n "$LINE_NO" ]]; then
-  cat <(head "$TARGET" -n $(($LINE_NO - 1))) > "$TARGET"
+  sed -i "$(($LINE_NO - 1)),\$d" "$TARGET"
 fi
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
 cat "$BUILD_SUFFIX" >> "$TARGET"
