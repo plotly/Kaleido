@@ -66,7 +66,8 @@ int KaleidoMain(int argc, const char** argv) {
   base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
   std::string process_type =
       command_line.GetSwitchValueASCII(::switches::kProcessType);
-#if defined(HEADLESS_USE_CRASHPAD)
+#if defined(HEADLESS_USE_CRASHPAD) // basically IS_WIN
+  return 1;
   if (process_type == crash_reporter::switches::kCrashpadHandler) {
     return crash_reporter::RunAsCrashpadHandler(
         *base::CommandLine::ForCurrentProcess(), base::FilePath(),
