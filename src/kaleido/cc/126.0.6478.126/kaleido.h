@@ -4,6 +4,5 @@
 
 namespace kaleido {
   int KaleidoMain(int argc, const char** argv);
-  class Kaleido;
 }
 #endif  // KALEIDO_H_

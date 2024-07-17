@@ -39,6 +39,24 @@
 
 namespace kaleido {
 
+// Kaleido manages a browser and its tabs
+class Kaleido {
+ public:
+  Kaleido() = default;
+
+  Kaleido(const Kaleido&) = delete;
+  Kaleido& operator=(const Kaleido&) = delete;
+
+  ~Kaleido() = default;
+
+  void OnBrowserStart(headless::HeadlessBrowser* browser);
+
+ private:
+  void ShutdownSoon();
+  void Shutdown();
+  raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
+};
+
 //  Much of KaleidoMain is boilerplate taking from headless/app/ example:
 //  - it starts sandboxes, which may be pointless, but our flags are chaos
 //      - init_tools flags no sandbox
@@ -111,23 +129,6 @@ int KaleidoMain(int argc, const char** argv) {
   // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
 }
 
-// Kaleido manages a browser and its tabs
-class Kaleido {
- public:
-  Kaleido() = default;
-
-  Kaleido(const Kaleido&) = delete;
-  Kaleido& operator=(const Kaleido&) = delete;
-
-  ~Kaleido() = default;
-
-  void OnBrowserStart(headless::HeadlessBrowser* browser);
-
- private:
-  void ShutdownSoon();
-  void Shutdown();
-  raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
-};
 
 } // namespace kaleido
 
