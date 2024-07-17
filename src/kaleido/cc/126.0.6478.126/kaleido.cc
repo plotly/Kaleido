@@ -17,6 +17,11 @@
 #include "sandbox/mac/seatbelt_exec.h"
 #endif
 
+// CLI includes
+#include "base/base_switches.h"
+#include "headless/public/switches.h"
+#include "base/command_line.h"
+
 namespace kaleido {
 
 //  Much of KaleidoMain is boilerplate taking from headless/app/ example:
@@ -93,8 +98,6 @@ int KaleidoMain(int argc, const char** argv) {
 /*
 #include <memory>
 
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
@@ -109,7 +112,6 @@ int KaleidoMain(int argc, const char** argv) {
 #include "headless/public/headless_browser.h"
 #include "headless/public/headless_browser_context.h"
 #include "headless/public/headless_web_contents.h"
-#include "headless/public/switches.h"
 
 #include "net/base/filename_util.h"
 #include "url/gurl.h"
