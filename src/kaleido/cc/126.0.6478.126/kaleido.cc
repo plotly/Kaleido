@@ -117,7 +117,7 @@ int KaleidoMain(int argc, const char** argv) {
 #endif  // BUILDFLAG(IS_MAC)
 #endif  // BUILDFLAG(IS_WIN)
 
-if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN)
   base::CommandLine::Init(0, nullptr);
   // It's a good way to process CommandLine, but is windows really not capable of using it?
 #else
