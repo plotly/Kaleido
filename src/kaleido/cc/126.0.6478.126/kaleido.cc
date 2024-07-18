@@ -23,7 +23,6 @@
 #include <iostream>
 #include "base/json/json_reader.h"
 
-#include "components/devtools/simple_devtools_protocol_client/simple_devtools_protocol_client.h"
 
 namespace kaleido {
 

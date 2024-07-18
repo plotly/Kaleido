@@ -4,6 +4,7 @@
 // Browser Includes
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/public/headless_browser.h"
+#include "components/devtools/simple_devtools_protocol_client/simple_devtools_protocol_client.h"
 
 #include <atomic>
 namespace kaleido {
