@@ -82,7 +82,7 @@ void Kaleido::PostListen() {
 
 void Kaleido::PostEcho(const std::string &msg) {
   auto echo = [](const std::string &msg){ std::cout << msg << std::endl; }
-  output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg))
+  output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg));
 }
 
 
