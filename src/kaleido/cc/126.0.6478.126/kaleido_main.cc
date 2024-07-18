@@ -1,4 +1,4 @@
-
+// kaleido_main.cc runs main() and includes a lot of google boilerplate.
 #include "headless/app/kaleido.h"
 
 // Fundamental chromium includes
@@ -51,7 +51,9 @@ namespace {
 
 int main(int argc, const char** argv) {
   content::ContentMainParams params(nullptr);
+
   buildSandbox(std::move(params));
+
   processCommandLine(std::move(params), argc, argv);
 
   // Now we're going to start the browser
