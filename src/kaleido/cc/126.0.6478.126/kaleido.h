@@ -36,7 +36,7 @@ namespace kaleido {
     raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
 
     // a thread, essentially, for output
-    scoped_refptr<base::SequencedTaskRunner> output_sequence();
+    scoped_refptr<base::SequencedTaskRunner> output_sequence;
 
     // a devtools client for the _whole_ browser process (not a tab)
     simple_devtools_protocol_client::SimpleDevToolsProtocolClient browser_devtools_client_;

@@ -35,13 +35,13 @@ inline Kaleido::~Kaleido() = default; // style guide wont let me do it in .h
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
 
-  HeadlessBrowserContext::Builder context_builder =
+  headless::HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();
 
   // Create browser context and set it as the default. The default browser
   // context is used by the Target.createTarget() DevTools command when no other
   // context is given. -- from original example
-  HeadlessBrowserContext* browser_context = context_builder.Build();
+  headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
 
   // We can do the same thing with a WebContentsBuilder to create a tab, but maybe we can do it directly with dev tools?
