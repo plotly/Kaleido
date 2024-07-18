@@ -38,7 +38,7 @@ namespace kaleido {
     scoped_refptr<base::SequencedTaskRunner> output_sequence();
 
     // a devtools client for the _whole_ browser process (not a tab)
-    simple_dev_tools_protocol_client::SimpleDevToolsProtocolClient browser_devtools_client_;
+    simple_devtools_protocol_client::SimpleDevToolsProtocolClient browser_devtools_client_;
   };
 }
 #endif  // KALEIDO_H_
