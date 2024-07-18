@@ -14,11 +14,11 @@ namespace kaleido {
   class Kaleido {
     public:
       Kaleido();
+      ~Kaleido();
 
       Kaleido(const Kaleido&) = delete;
       Kaleido& operator=(const Kaleido&) = delete;
 
-      ~Kaleido() = default;
 
       void OnBrowserStart(headless::HeadlessBrowser* browser); // this is basically a "main" function
       // it's called when chromium is done with all its init stuff

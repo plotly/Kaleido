@@ -27,9 +27,10 @@
 namespace kaleido {
 
 // Constructor will initialize our threads
-void Kaleido::Kaleido() {
-  output_sequence = base::ThreadPool::CreateSequencedTaskRunner();
+Kaleido::Kaleido() {
+  output_sequence = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::USER_VISIBLE});
 }
+inline Kaleido::~Kaleido() = default; // style guide wont let me do it in .h
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
