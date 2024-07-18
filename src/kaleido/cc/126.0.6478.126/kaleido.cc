@@ -58,26 +58,29 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   //ShutdownSoon();
 }
 
+// this is the task, we'd like it to be lambda
+// chromium's bind only supports non-capture lambdas
+// which wouldn't have access to `this`
+void Kaleido::listen() {
+  std::string in;
+  if (!std::getline(std::cin, in).good()) {
+    LOG(INFO) << in << ": "
+      << (std::cin.eof() ? "EOF | " : "")
+      << (std::cin.eof() ? "BAD | " : "GOOD | ")
+      << (std::cin.eof() ? "FAIL" : "SUCCESS");
+    // TODO: post end to controller, we're shutting down, just let it go....
+    return;
+  };
+  ReadJSON(in);
+  PostListen();
+}
+
 void Kaleido::PostListen() {
   if(listening.test_and_set(std::memory_order_relaxed)) return;
-  auto listen = [](){
-    std::string in;
-    if (!std::getline(std::cin, in).good()) {
-      LOG(INFO) << in << ": "
-        << std::cin.eof() ? "EOF | " : ""
-        << std::cin.eof() ? "BAD | " : "GOOD | "
-        << std::cin.eof() ? "FAIL" : "SUCCESS";
-      // TODO: post end to controller, we're shutting down, just let it go....
-      return;
-    };
-    ReadJSON(in);
-    PostListen();
-  }
   base::ThreadPool::PostTask(
     FROM_HERE,
     {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-    base::BindOnce(&listen)
-  );
+    base::BindOnce(&Kaleido::listen, base::Unretained(this)));
 }
 
 void Kaleido::PostEcho(const std::string &msg) {

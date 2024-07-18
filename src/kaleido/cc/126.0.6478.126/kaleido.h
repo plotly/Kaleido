@@ -26,6 +26,7 @@ namespace kaleido {
   private:
 
     void PostListen(); // read stdin on a task
+    void listen(); // see note in .cc, or ignore this
     std::atomic_flag listening = ATOMIC_FLAG_INIT;
     void PostEcho(const std::string&); // echo something out
     void ReadJSON(std::string&); // try to turn message into json object
