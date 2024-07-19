@@ -59,18 +59,12 @@ int main(int argc, const char** argv) {
   // Now we're going to start the browser
   // Would love to do this inside the constructor but
   // ... chromium just hates it.
-  kaleido::Kaleido kbrowser;
   auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
-      base::BindOnce(&kaleido::Kaleido::OnBrowserStart, base::Unretained(&kbrowser)));
+      base::BindOnce(&kaleido::Kaleido::OnBrowserStart, base::Unretained(new kaleido::Kaleido())));
+      // Should be a lambda that starts a Kaleido, not a function in Kaleido
   headless::HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(std::move(params));
-  // My main problem is that I don't know how to properly end this processes and all of its children.
-  // Are we making zombies? Does chrome keep on running?
-  // I very much like "ending parent process ends all spawned processes"
-  // And I'm not sure I'll get that here.
-  // Shutting down the browser shuts down everything though, so I should trap SIGTERM at least.
-  // But can't without making kaleido a singleton
 }
 
 

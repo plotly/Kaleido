@@ -6,6 +6,7 @@
 
 #include <signal.h>
 #include <cstdio>
+#include <string>
 
 #include "headless/app/kaleido.h"
 
@@ -30,7 +31,18 @@
 namespace kaleido {
 
 Kaleido::Kaleido() = default; // Redefine here or else chromium complains.
-Kaleido::~Kaleido() = default;
+
+// Control Flow, declare here
+void Kaleido::ShutdownSoon() {
+  browser_->BrowserMainThread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Kaleido::ShutdownTask, base::Unretained(this)));
+}
+void Kaleido::ShutdownTask() {
+  LOG(INFO) << "Calling shutdown on browser";
+  dispatch->Release(); // Fine to destruct what we have here.
+  browser_.ExtractAsDangling()->Shutdown();
+}
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser; // global by another name
@@ -101,7 +113,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
     return true;
   }
   base::Value::Dict &jsonDict = json->GetDict();
-  absl::optional<unsigned int> id = jsonDict.FindInt("id");
+  absl::optional<int> id = jsonDict.FindInt("id");
   std::string *operation = jsonDict.FindString("operation");
   // The only operation we handle here. We're shutting down.
   // Trust chromium to handle it all when the browser exits
@@ -111,15 +123,15 @@ bool Kaleido::ReadJSON(std::string &msg) {
     return false; // breaks stdin loop
   }
   if (!operation || !id) {
-    Api_ErrorMissingBasicFields();
+    Api_ErrorMissingBasicFields(id);
     return true;
   }
   if (*id < 0) {
-    Api_ErrorNegativeId();
+    Api_ErrorNegativeId(*id);
     return true;
   }
   if (messageIds.find(*id) != messageIds.end()) {
-    Api_ErrorDuplicateId();
+    Api_ErrorDuplicateId(*id);
     return true;
   }
 
@@ -127,8 +139,8 @@ bool Kaleido::ReadJSON(std::string &msg) {
       browser_->BrowserMainThread()->PostTask(
           FROM_HERE,
           base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, ""));
-  } else {
-    Api_ErrorUnknownOperation(*operation);
+  } else if (*operation == "noop") {} else {
+    Api_ErrorUnknownOperation(*id, *operation);
     return true;
   }
 
@@ -137,24 +149,54 @@ bool Kaleido::ReadJSON(std::string &msg) {
   return true;
 }
 
+void Kaleido::ReportOperation(int id, bool success, base::Value::Dict msg) {
+  if (!success && id < 0) {
+    LOG(ERROR) << "Failure of internal dev tools operation id "
+      << std::to_string(id)
+      << " and msg: "
+      << msg;
+    return;
+  }
+  PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"success":)"+std::to_string(success)+R"(, "msg":)"+msg.DebugString()+R"(})");
+}
+void Kaleido::ReportFailure(int id, const std::string& msg) {
+  if (id < 0) {
+    LOG(ERROR) << "Failure of internal dev tools operation id "
+      << std::to_string(id)
+      << " and msg: "
+      << msg;
+    return;
+  }
+  PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"success":false, "msg":")"+msg+R"("})");
+}
+
+void Kaleido::ReportSuccess(int id) {
+  if (id < 0) return;
+  PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"success":true})");
+}
+
 void Kaleido::Api_ErrorInvalidJSON() {
-  Kaleido::PostEchoTask(R"({"error":"malformed JSON string"})");
+  PostEchoTask(R"({"error":"malformed JSON string"})");
 }
 
-void Kaleido::Api_ErrorMissingBasicFields() {
-  Kaleido::PostEchoTask(R"({"error":"all messages must contain an 'id' integer and an 'operation' string"})");
+void Kaleido::Api_ErrorMissingBasicFields(absl::optional<int> id) {
+  if (id) {
+    PostEchoTask(R"({"id":)"+std::to_string(*id)+R"(,"error":"all messages must contain an 'id' integer and an 'operation' string"})");
+  } else {
+    PostEchoTask(R"({"error":"all messages must contain an 'id' integer and an 'operation' string"})");
+  }
 }
 
-void Kaleido::Api_ErrorDuplicateId() {
-  Kaleido::PostEchoTask(R"({"error":"message using already-used 'id' integer"})");
+void Kaleido::Api_ErrorDuplicateId(int id) {
+  PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"error":"message using already-used 'id' integer"})");
 }
 
-void Kaleido::Api_ErrorNegativeId() {
-  Kaleido::PostEchoTask(R"({"error":"must use 'id' integer >=0"})");
+void Kaleido::Api_ErrorNegativeId(int id) {
+  PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"error":"must use 'id' integer >=0"})");
 }
 
-void Kaleido::Api_ErrorUnknownOperation(const std::string& op) {
-  Kaleido::PostEchoTask(R"({"error":"Unknown operation:)"+op+R"("})");
+void Kaleido::Api_ErrorUnknownOperation(int id, const std::string& op) {
+  PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"error":"Unknown operation:)"+op+R"("})");
 }
 
 } // namespace kaleido

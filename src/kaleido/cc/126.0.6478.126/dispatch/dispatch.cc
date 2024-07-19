@@ -18,11 +18,6 @@ namespace kaleido {
         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
 
-  void Dispatch::Release() {
-    browser_devtools_client_.DetachClient();
-    // All subclients will also detach automatically.
-  }
-
   void Dispatch::createTab1_createTarget(int id, const std::string &url) {
     base::Value::Dict params;
     params.Set("url", url);
@@ -77,7 +72,8 @@ namespace kaleido {
     // We could run one command here to see if it is valid, it should be valid!
     // At some point we need to concern ourselves with failure paths.
     tabs.push(std::move(newTab));
-    LOG(INFO) << "Targed stored.";
+    parent_->ReportSuccess(id);
   }
+
 
 }

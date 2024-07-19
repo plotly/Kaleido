@@ -3,6 +3,7 @@
 
 #include <unordered_map>
 #include <atomic>
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Browser Includes
 #include "headless/lib/browser/headless_browser_impl.h"
@@ -14,7 +15,7 @@
 #include "base/task/thread_pool.h"
 
 namespace kaleido {
-
+  class Dispatch;
   // Kaleido is our app, basically.
   // Should be singleton, but non-trivial work
   // SIGINT and SIGTERM would be nice
@@ -22,7 +23,7 @@ namespace kaleido {
   class Kaleido {
     public:
       Kaleido();
-      ~Kaleido();
+      ~Kaleido() = delete;
 
       Kaleido(const Kaleido&) = delete;
       Kaleido& operator=(const Kaleido&) = delete;
@@ -32,6 +33,9 @@ namespace kaleido {
 
       // Dispatch uses this to let us know how things went
       void ReportOperation(int id, bool success, base::Value::Dict msg);
+      void ReportSuccess(int id);
+      void ReportFailure(int id, const std::string& msg);
+
 
   private:
 
@@ -56,23 +60,14 @@ namespace kaleido {
 
     // JSON Helper functions for creating common messages to user
     void Api_ErrorInvalidJSON();
-    void Api_ErrorMissingBasicFields();
-    void Api_ErrorDuplicateId();
-    void Api_ErrorNegativeId();
-    void Api_ErrorUnknownOperation(const std::string& op);
+    void Api_ErrorMissingBasicFields(absl::optional<int>);
+    void Api_ErrorDuplicateId(int);
+    void Api_ErrorNegativeId(int);
+    void Api_ErrorUnknownOperation(int id, const std::string& op);
 
-
-    // Control Flow, declare here
-    void ShutdownSoon() {
-      browser_->BrowserMainThread()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&Kaleido::ShutdownTask, base::Unretained(this)));
-    }
-    void ShutdownTask() {
-      LOG(INFO) << "Calling shutdown on browser";
-      dispatch->Release(); // Fine to destruct what we have here.
-      browser_.ExtractAsDangling()->Shutdown();
-    }
+    void ShutdownSoon();
+    void ShutdownTask();
   };
 }
 #endif  // KALEIDO_H_
+

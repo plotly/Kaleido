@@ -6,6 +6,7 @@
 #include "components/devtools/simple_devtools_protocol_client/simple_devtools_protocol_client.h"
 
 #include "base/task/sequenced_task_runner.h"
+#include "headless/app/kaleido.h"
 
 namespace kaleido {
   class Kaleido;
@@ -32,7 +33,7 @@ namespace kaleido {
       Dispatch& operator=(const Dispatch&) = delete;
       void CreateTab(int id, const std::string &url) { createTab1_createTarget(id, url); }
 
-      void Release();
+      void Release() { browser_devtools_client_.DetachClient(); } // subclients go with it
 
     private:
       raw_ptr<Kaleido> parent_;
@@ -58,12 +59,13 @@ namespace kaleido {
   // [x] Create Tab (needs to check for jobs)
   // [x] Link JSON to shutdown
   // [x] Link JSON to create tab
-  // [ ] How to handles errors in callback chain to user
-  // [ ] Get Status
-  // [ ] Link JSON to Status
+  // [x] How to handles errors in callback chain to user
+  // [ ] Change over to printf
   // [ ] Queue Job (needs to check for jobs)
   // [ ] Check for jobs
-  // [ ] Handle better the signals (besides don't use stdin)
+  // [ ] Get Status
+  // [ ] Link JSON to Status
+
 
 
 
