@@ -8,7 +8,25 @@
 #include "base/task/sequenced_task_runner.h"
 
 namespace kaleido {
-  // probably should be a singleton
+  using namespace simple_devtools_protocol_client;
+  // probably should be a singleton, could use static, make_unique, etc
+
+  // This class interacts with several child processes, and all dispatching 
+  // must occur one after another to maintain memory consistency among several objects.
+  // Therefore, public members are just inline wrappers to post the proper task 
+  // onto the one thread (job_line). E.g. CreateTab() posts createTab() onto job_line.
+  // Concurrency management becomes an implementation detail while the public API is 
+  // guarenteed to be executed in call-order, but results can come in out-of-order 
+  // as tasks are done in parallel and some finish early. 
+  // Sadly, callback hell persists in google's chromium. 
+  // DevTools is an asynchronous IPC messaging platform, their internal API uses callbacks,
+  // not pubsub, nor blockable coroutines- just callbacks without async/await to linearize
+  // the architecture. So how do we make it easier to read? I can't use lambda functions because 
+  // lambda functions + class methods don't mix w/ google's callback utilities.
+  // A full state machine that manages callbacks as subroutines would 
+  // be absurdly out of scope, as would mixing in a pubsub structure.
+  //
+  // Ergo, patterns like createTab1, createTab2, ...3, clarify the chain of a single concept.
   class Dispatch {
     public:
       Dispatch();
@@ -16,15 +34,17 @@ namespace kaleido {
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
-      inline void CreateTab() { job_line->PostTask(FROM_HERE, base::BindOnce(&Dispatch::createTab, base::Unretained(this))); }
+      inline void CreateTab(const std::string &url = "") { job_line->PostTask(FROM_HERE,
+          base::BindOnce(&Dispatch::createTab1, base::Unretained(this), url)); }
 
     private:
       // a devtools client for the _whole_ browser process (not a tab)
-      simple_devtools_protocol_client::SimpleDevToolsProtocolClient browser_devtools_client_;
+      SimpleDevToolsProtocolClient browser_devtools_client_;
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
-      std::queue<void *> tabs;
-      void createTab();
+      std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
+      void createTab1(const std::string &url);
+      void createTab2(base::Value::Dict);
   };
 }
   // What do we need to initialize with the browser? (look at python)

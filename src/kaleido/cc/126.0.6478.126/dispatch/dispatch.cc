@@ -16,7 +16,18 @@ namespace kaleido {
   }
   Dispatch::~Dispatch() = default;
 
-  void Dispatch::createTab() {
-    //
+  void Dispatch::createTab1(const std::string &url) {
+      base::Value::Dict params;
+      params.Set("url", url);
+      browser_devtools_client_.SendCommand("Target.createTarget",
+          std::move(params),
+          base::BindOnce(&Dispatch::createTab2, base::Unretained(this)));
+      // Note: You may think "good place for BindRepeating, we can reuse that instead of calling BindOnce everytime!"
+      // Yes, but the time saved at runtime is trivial and negative^2 impact on readability.
+
+      //new unique_ptr to simpleDevtoolsClient  browser_devtools_client_.CreateSession(sId);
+  }
+  void Dispatch::createTab2(base::Value::Dict result) {
+
   }
 }
