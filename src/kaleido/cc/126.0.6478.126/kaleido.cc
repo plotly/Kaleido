@@ -5,6 +5,7 @@
 //    * start up the IO thread
 
 #include <signal.h>
+#include <cstdio>
 
 #include "headless/app/kaleido.h"
 
@@ -39,7 +40,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
       {base::TaskPriority::BEST_EFFORT, base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}
     ); // Can't do this before OnBrowserStart!
 
-  dispatch = std::make_unique<Dispatch>(this); // Tab manager
+  dispatch = new Dispatch(this); // Tab manager
 
   // Create browser context and set it as the default. The default browser
   // context is used by the Target.createTarget() DevTools command when no other
@@ -50,7 +51,10 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_->SetDefaultBrowserContext(browser_context);
 
   // Run
-  dispatch->CreateTab(-1); // Negative numbers indicate our orders, + user orders
+  browser_->BrowserMainThread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, ""));
+
   StartListen();
 }
 
@@ -104,19 +108,33 @@ bool Kaleido::ReadJSON(std::string &msg) {
   // Doesn't need id, no return
   if (operation && *operation == "shutdown") {
     ShutdownSoon();
-    return false;
+    return false; // breaks stdin loop
   }
   if (!operation || !id) {
     Api_ErrorMissingBasicFields();
+    return true;
+  }
+  if (*id < 0) {
+    Api_ErrorNegativeId();
     return true;
   }
   if (messageIds.find(*id) != messageIds.end()) {
     Api_ErrorDuplicateId();
     return true;
   }
+
+  if (*operation == "create_tab") {
+      browser_->BrowserMainThread()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, ""));
+  } else {
+    Api_ErrorUnknownOperation(*operation);
+    return true;
+  }
+
+
   messageIds.emplace(*id, *operation);
   return true;
-
 }
 
 void Kaleido::Api_ErrorInvalidJSON() {
@@ -129,6 +147,14 @@ void Kaleido::Api_ErrorMissingBasicFields() {
 
 void Kaleido::Api_ErrorDuplicateId() {
   Kaleido::PostEchoTask(R"({"error":"message using already-used 'id' integer"})");
+}
+
+void Kaleido::Api_ErrorNegativeId() {
+  Kaleido::PostEchoTask(R"({"error":"must use 'id' integer >=0"})");
+}
+
+void Kaleido::Api_ErrorUnknownOperation(const std::string& op) {
+  Kaleido::PostEchoTask(R"({"error":"Unknown operation:)"+op+R"("})");
 }
 
 } // namespace kaleido

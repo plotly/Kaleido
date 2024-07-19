@@ -52,12 +52,14 @@ namespace kaleido {
     scoped_refptr<base::SequencedTaskRunner> output_sequence;
 
     // our tab dispatch, our actual browser controller
-    std::unique_ptr<Dispatch> dispatch = nullptr;
+    raw_ptr<Dispatch> dispatch;
 
     // JSON Helper functions for creating common messages to user
     void Api_ErrorInvalidJSON();
     void Api_ErrorMissingBasicFields();
     void Api_ErrorDuplicateId();
+    void Api_ErrorNegativeId();
+    void Api_ErrorUnknownOperation(const std::string& op);
 
 
     // Control Flow, declare here
@@ -68,7 +70,7 @@ namespace kaleido {
     }
     void ShutdownTask() {
       LOG(INFO) << "Calling shutdown on browser";
-      dispatch.reset(); // Fine to destruct what we have here.
+      dispatch->Release(); // Fine to destruct what we have here.
       browser_.ExtractAsDangling()->Shutdown();
     }
   };

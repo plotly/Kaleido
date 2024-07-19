@@ -17,7 +17,8 @@ namespace kaleido {
         base::TaskPriority::BEST_EFFORT,
         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
-  Dispatch::~Dispatch() {
+
+  void Dispatch::Release() {
     browser_devtools_client_.DetachClient();
     // All subclients will also detach automatically.
   }

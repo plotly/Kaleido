@@ -26,12 +26,13 @@ namespace kaleido {
   class Dispatch {
     public:
       Dispatch(raw_ptr<Kaleido> parent_);
-      ~Dispatch();
+      ~Dispatch() = delete;
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
-      inline void CreateTab(int id, const std::string &url = "") { createTab1_createTarget(id, url); }
+      void CreateTab(int id, const std::string &url) { createTab1_createTarget(id, url); }
 
+      void Release();
 
     private:
       raw_ptr<Kaleido> parent_;
