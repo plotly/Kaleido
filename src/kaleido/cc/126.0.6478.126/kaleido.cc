@@ -53,6 +53,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
 
+  dispatch->CreateTab();
   PostListen();
   //ShutdownSoon();
 }

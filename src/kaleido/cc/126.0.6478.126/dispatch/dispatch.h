@@ -26,7 +26,7 @@ namespace kaleido {
   // A full state machine that manages callbacks as subroutines would 
   // be absurdly out of scope, as would mixing in a pubsub structure.
   //
-  // Ergo, patterns like createTab1, createTab2, ...3, clarify the chain of a single concept.
+  // Ergo, patterns like createTab1_description, createTab2_description clarify the concepts.
   class Dispatch {
     public:
       Dispatch();
@@ -34,8 +34,9 @@ namespace kaleido {
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
-      inline void CreateTab(const std::string &url = "") { job_line->PostTask(FROM_HERE,
-          base::BindOnce(&Dispatch::createTab1, base::Unretained(this), url)); }
+      inline void CreateTab(const std::string &url = "") {
+        job_line->PostTask(FROM_HERE, base::BindOnce(
+              &Dispatch::createTab1_createTarget, base::Unretained(this), url)); }
 
     private:
       // a devtools client for the _whole_ browser process (not a tab)
@@ -43,8 +44,9 @@ namespace kaleido {
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
       std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
-      void createTab1(const std::string &url);
-      void createTab2(base::Value::Dict);
+      void createTab1_createTarget(const std::string &url);
+      void createTab2_attachTarget(base::Value::Dict);
+      void createTab3_storeSession(base::Value::Dict);
   };
 }
   // What do we need to initialize with the browser? (look at python)
