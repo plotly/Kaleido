@@ -28,12 +28,19 @@ namespace kaleido {
 
 // Constructor will initialize our threads
 Kaleido::Kaleido() {
-  output_sequence = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::USER_VISIBLE});
+  // Fake constructor
+  // We have to build a Browser and ContentMain, both from chromium,
+  // before we can use any of their APIs more or less.
+  // And we can do either of those things there because Chromium
+  // gets v angry.
 }
 
-Kaleido::~Kaleido() {} // style guide wont let me do it in .h
+Kaleido::~Kaleido() = default; // compiler enforced style guide wont let me do it in .h
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
+  output_sequence = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::USER_VISIBLE}
+    );
   browser_ = browser;
   dispatch = std::make_unique<Dispatch>();
   headless::HeadlessBrowserContext::Builder context_builder =

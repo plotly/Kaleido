@@ -65,7 +65,11 @@ int main(int argc, const char** argv) {
   headless::HeadlessContentMainDelegate delegate(std::move(browser));
   params.delegate = &delegate;
   return content::ContentMain(std::move(params));
-  // return EXIT_FAILURE; // save for future use, where does EXIT_FAILURE come from?
+  // My main problem is that I don't know how to properly end this processes and all of its children.
+  // Are we making zombies? Does chrome keep on running?
+  // I very much like "ending parent process ends all spawned processes"
+  // And I'm not sure I'll get that here.
+  // Shutting down the browser shuts down everything though, so I should trap SIGTERM at least.
 }
 
 
