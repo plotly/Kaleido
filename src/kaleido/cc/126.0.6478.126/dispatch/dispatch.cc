@@ -18,7 +18,6 @@ namespace kaleido {
   Dispatch::~Dispatch() = default;
 
   void Dispatch::createTab1_createTarget(const std::string &url) {
-    LOG(INFO) << "Creating target.";
     base::Value::Dict params;
     params.Set("url", url);
     auto cb = base::BindOnce(&Dispatch::createTab2_attachTarget, base::Unretained(this));
@@ -29,21 +28,35 @@ namespace kaleido {
     // Yes, but the time saved at runtime is trivial and negative^2 impact on readability.
 
   }
-  void Dispatch::createTab2_attachTarget(base::Value::Dict result) {
-    LOG(INFO) << "Reading Target.createTarget response";
-    std::string *targetId = result.FindString("targetId");
-    if (targetId) {
-      LOG(INFO) << "Created target.";
-    } else {
-      if (result.FindString("error")) {
-        LOG(INFO) << "Found error";
+  void Dispatch::createTab2_attachTarget(base::Value::Dict msg) {
+    base::Value::Dict *result = msg.FindDict("result");
+    if (result) {
+      std::string *tId = result->FindString("targetId");
+      if (tId) {
+        base::Value::Dict params;
+        params.Set("flatten", true);
+        params.Set("targetId", *tId);
+        auto cb = base::BindOnce(&Dispatch::createTab3_storeSession, base::Unretained(this));
+        browser_devtools_client_.SendCommand("Target.attachToTarget",
+            std::move(params),
+            std::move(cb));
+        return;
       }
-      LOG(INFO) << "Failed to create target.";
     }
+    LOG(ERROR) << "Failure to create target";
   }
 
-  void Dispatch::createTab3_storeSession(base::Value::Dict result) {
-    // get targetid and attach
+  void Dispatch::createTab3_storeSession(base::Value::Dict msg) {
+    base::Value::Dict *result = msg.FindDict("result");
+    if (result) {
+      std::string *sId = result->FindString("sessionId");
+      if (sId) {
+        LOG(INFO) << "Created.";
+        tabs.push(browser_devtools_client_.CreateSession(*sId)); // Todo get it pushed
+        return;
+      }
+    }
+    LOG(ERROR) << "Failure to create target";
   }
 
   // createTarget
