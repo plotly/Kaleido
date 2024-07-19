@@ -97,7 +97,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
     return true;
   }
   base::Value::Dict &jsonDict = json->GetDict();
-  absl::optional<int> id = jsonDict.FindInt("id");
+  absl::optional<unsigned int> id = jsonDict.FindInt("id");
   std::string *operation = jsonDict.FindString("operation");
   // The only operation we handle here. We're shutting down.
   // Trust chromium to handle it all when the browser exits
@@ -110,10 +110,11 @@ bool Kaleido::ReadJSON(std::string &msg) {
     Api_ErrorMissingBasicFields();
     return true;
   }
-  if (!messageIds.insert(*id).second) {
+  if (messageIds.find(*id) != messageIds.end()) {
     Api_ErrorDuplicateId();
     return true;
   }
+  messageIds.emplace(*id, *operation);
   return true;
 
 }
@@ -127,7 +128,7 @@ void Kaleido::Api_ErrorMissingBasicFields() {
 }
 
 void Kaleido::Api_ErrorDuplicateId() {
-  Kaleido::PostEchoTask(R"({"error":"all messages must contain a unique 'id' integer for the entire session."})");
+  Kaleido::PostEchoTask(R"({"error":"message using already-used 'id' integer"})");
 }
 
 } // namespace kaleido

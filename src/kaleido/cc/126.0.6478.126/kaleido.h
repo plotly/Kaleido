@@ -1,7 +1,7 @@
 #ifndef KALEIDO_H_
 #define KALEIDO_H_
 
-#include <unordered_set>
+#include <unordered_map>
 #include <atomic>
 
 // Browser Includes
@@ -30,6 +30,8 @@ namespace kaleido {
       // This is basically a singleton. Could we pass the constructor instead of on browser start?
       void OnBrowserStart(headless::HeadlessBrowser* browser);
 
+      // Dispatch uses this to let us know how things went
+      void ReportOperation(int id, bool success, base::Value::Dict msg);
 
   private:
 
@@ -43,7 +45,7 @@ namespace kaleido {
     std::atomic_flag listening = ATOMIC_FLAG_INIT; // to only call postListenTask() once
     void PostEchoTask(const std::string&); // echo something out
 
-    std::unordered_set<int> messageIds; // every message must have a unique id
+    std::unordered_map<int, const std::string&> messageIds; // every message must have a unique id
     bool ReadJSON(std::string&); // try to turn message into json object
 
     // a thread, for making sure output is orderer and messages aren't mixed

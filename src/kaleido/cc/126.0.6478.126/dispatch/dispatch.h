@@ -33,7 +33,6 @@ namespace kaleido {
 
 
     private:
-      raw_ptr<Kaleido> parent_;
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
 
