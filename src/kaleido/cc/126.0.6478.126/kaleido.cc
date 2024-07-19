@@ -50,7 +50,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_->SetDefaultBrowserContext(browser_context);
 
   // Run
-  dispatch->CreateTab();
+  dispatch->CreateTab(-1); // Negative numbers indicate our orders, + user orders
   StartListen();
 }
 

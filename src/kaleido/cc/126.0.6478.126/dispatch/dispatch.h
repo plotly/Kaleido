@@ -29,10 +29,11 @@ namespace kaleido {
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
-      inline void CreateTab(const std::string &url = "") { createTab1_createTarget(url); }
+      inline void CreateTab(int id, const std::string &url = "") { createTab1_createTarget(id, url); }
 
 
     private:
+      raw_ptr<Kaleido> parent_;
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
 
@@ -43,25 +44,24 @@ namespace kaleido {
       // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
-      void createTab1_createTarget(const std::string &url);
-      void createTab2_attachTarget(base::Value::Dict);
-      void createTab3_startSession(base::Value::Dict);
-      void createTab4_storeSession(std::unique_ptr<SimpleDevToolsProtocolClient>); // This is a task
+      void createTab1_createTarget(int id, const std::string &url);
+      void createTab2_attachTarget(int id, base::Value::Dict);
+      void createTab3_startSession(int id, base::Value::Dict);
+      void createTab4_storeSession(int id, std::unique_ptr<SimpleDevToolsProtocolClient>); // This is a task
   };
 }
 
 #endif  // DISPATCH_H_
 
   // [x] Create Tab (needs to check for jobs)
-  // [ ] Link JSON to shutdown
-  // [ ] Handle better the signals
+  // [x] Link JSON to shutdown
+  // [x] Link JSON to create tab
   // [ ] How to handles errors in callback chain to user
-  // [ ] How to handle dispatch shut down during callback chain
-  // [ ] Link JSON to create tab
   // [ ] Get Status
   // [ ] Link JSON to Status
   // [ ] Queue Job (needs to check for jobs)
   // [ ] Check for jobs
+  // [ ] Handle better the signals (besides don't use stdin)
 
 
 

@@ -18,13 +18,14 @@ namespace kaleido {
         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
   Dispatch::~Dispatch() {
-    browser_devtools_client_.DetachClient();  // How can I ensure it is not in a chain of callbacks to do this
+    browser_devtools_client_.DetachClient();
+    // All subclients will also detach automatically.
   }
 
-  void Dispatch::createTab1_createTarget(const std::string &url) {
+  void Dispatch::createTab1_createTarget(int id, const std::string &url) {
     base::Value::Dict params;
     params.Set("url", url);
-    auto cb = base::BindOnce(&Dispatch::createTab2_attachTarget, base::Unretained(this));
+    auto cb = base::BindOnce(&Dispatch::createTab2_attachTarget, base::Unretained(this), id);
     browser_devtools_client_.SendCommand("Target.createTarget",
         std::move(params),
         std::move(cb));
@@ -32,7 +33,7 @@ namespace kaleido {
     // Yes, but the time saved at runtime is trivial and negative^2 impact on readability.
 
   }
-  void Dispatch::createTab2_attachTarget(base::Value::Dict msg) {
+  void Dispatch::createTab2_attachTarget(int id, base::Value::Dict msg) {
     base::Value::Dict *result = msg.FindDict("result");
     if (result) {
       std::string *tId = result->FindString("targetId");
@@ -40,7 +41,7 @@ namespace kaleido {
         base::Value::Dict params;
         params.Set("flatten", true);
         params.Set("targetId", *tId);
-        auto cb = base::BindOnce(&Dispatch::createTab3_startSession, base::Unretained(this));
+        auto cb = base::BindOnce(&Dispatch::createTab3_startSession, base::Unretained(this), id);
         browser_devtools_client_.SendCommand("Target.attachToTarget",
             std::move(params),
             std::move(cb));
@@ -50,7 +51,7 @@ namespace kaleido {
     LOG(ERROR) << "Failure to create target.";
   }
 
-  void Dispatch::createTab3_startSession(base::Value::Dict msg) {
+  void Dispatch::createTab3_startSession(int id, base::Value::Dict msg) {
     base::Value::Dict *result = msg.FindDict("result");
     if (result) {
       std::string *sId = result->FindString("sessionId");
@@ -61,6 +62,7 @@ namespace kaleido {
           base::BindOnce(
             &Dispatch::createTab4_storeSession,
             base::Unretained(this),
+            id,
             browser_devtools_client_.CreateSession(*sId)
           )
         );
@@ -70,7 +72,7 @@ namespace kaleido {
     LOG(ERROR) << "Failure to create target.";
   }
 
-  void Dispatch::createTab4_storeSession(std::unique_ptr<SimpleDevToolsProtocolClient> newTab) {
+  void Dispatch::createTab4_storeSession(int id, std::unique_ptr<SimpleDevToolsProtocolClient> newTab) {
     // We could run one command here to see if it is valid, it should be valid!
     // At some point we need to concern ourselves with failure paths.
     tabs.push(std::move(newTab));
