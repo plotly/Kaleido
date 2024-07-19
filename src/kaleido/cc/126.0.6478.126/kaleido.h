@@ -13,7 +13,8 @@ namespace kaleido {
 
   // Kaleido manages several threads, basically.
   // a) it starts a thread for standard out, so all calls are guarenteed to be ordered
-  // probably should be a singleton
+  // probably should be a singleton, non-trivial work, would allows catching SIGINT and SIGTERM
+  // could also do global browser..
   class Kaleido {
     public:
       Kaleido();
@@ -36,7 +37,7 @@ namespace kaleido {
     void Shutdown(); // shut down
 
     // a browser
-    raw_ptr<headless::HeadlessBrowser> browser_ = nullptr;
+    raw_ptr<headless::HeadlessBrowser> browser_;
 
     // a thread, essentially, for output
     scoped_refptr<base::SequencedTaskRunner> output_sequence;

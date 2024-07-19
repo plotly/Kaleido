@@ -4,6 +4,8 @@
 //    * start up the tab manager
 //    * start up the IO thread
 
+#include <signal.h>
+
 #include "headless/app/kaleido.h"
 
 // Browser stuff
@@ -25,7 +27,6 @@
 
 
 namespace kaleido {
-
 // Constructor will initialize our threads
 Kaleido::Kaleido() {
   // Fake constructor

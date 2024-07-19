@@ -70,6 +70,7 @@ int main(int argc, const char** argv) {
   // I very much like "ending parent process ends all spawned processes"
   // And I'm not sure I'll get that here.
   // Shutting down the browser shuts down everything though, so I should trap SIGTERM at least.
+  // But can't without making kaleido a singleton
 }
 
 
