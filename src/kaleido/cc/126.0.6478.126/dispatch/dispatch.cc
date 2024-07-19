@@ -15,4 +15,8 @@ namespace kaleido {
     job_line = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::USER_VISIBLE});
   }
   Dispatch::~Dispatch() = default;
+
+  void Dispatch::createTab() {
+    //
+  }
 }
