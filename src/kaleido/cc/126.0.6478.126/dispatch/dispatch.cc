@@ -24,7 +24,7 @@ namespace kaleido {
     auto cb = base::BindOnce(&Dispatch::createTab2_attachTarget, base::Unretained(this));
     browser_devtools_client_.SendCommand("Target.createTarget",
         std::move(params),
-        base::BindPostTask(job_line, std::move(cb)));
+        std::move(cb));
     // Note: You may think "good place for BindRepeating, we can reuse that instead of calling BindOnce everytime!"
     // Yes, but the time saved at runtime is trivial and negative^2 impact on readability.
 
@@ -35,6 +35,9 @@ namespace kaleido {
     if (targetId) {
       LOG(INFO) << "Created target.";
     } else {
+      if (result.FindString("error")) {
+        LOG(INFO) << "Found error";
+      }
       LOG(INFO) << "Failed to create target.";
     }
   }
