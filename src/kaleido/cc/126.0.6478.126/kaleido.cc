@@ -27,44 +27,35 @@
 
 
 namespace kaleido {
-// Constructor will initialize our threads
-Kaleido::Kaleido() {
-  // Fake constructor
-  // We have to build a Browser and ContentMain, both from chromium,
-  // before we can use any of their APIs more or less.
-  // And we can do either of those things there because Chromium
-  // gets v angry.
-}
-
-Kaleido::~Kaleido() = default; // compiler enforced style guide wont let me do it in .h
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
+  browser_ = browser; // Global by another name
+
+  // Actual constructor duties, init stuff
   output_sequence = base::ThreadPool::CreateSequencedTaskRunner(
       {base::TaskPriority::USER_VISIBLE}
-    );
-  browser_ = browser;
-  dispatch = std::make_unique<Dispatch>();
-  headless::HeadlessBrowserContext::Builder context_builder =
-      browser_->CreateBrowserContextBuilder();
+    ); // Can't do this before OnBrowserStart!
+
+  dispatch = std::make_unique<Dispatch>(); // Tab manager
 
   // Create browser context and set it as the default. The default browser
   // context is used by the Target.createTarget() DevTools command when no other
-  // context is given. -- from original example
+  // context is given.
+  headless::HeadlessBrowserContext::Builder context_builder =
+      browser_->CreateBrowserContextBuilder();
   headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
 
+  // Run
   dispatch->CreateTab();
   PostListen();
-  //ShutdownSoon();
 }
 
-// this is the task, we'd like it to be lambda
-// chromium's bind only supports non-capture lambdas
-// which wouldn't have access to `this`
-void Kaleido::listen() {
+// Wish this were a lambda (as in PostEcho) but would have no access to private vars
+void Kaleido::listenTask() {
   std::string in;
   if (!std::getline(std::cin, in).good()) {
-    LOG(INFO) << in << ": "
+    LOG(WARNING) << in << ": "
       << (std::cin.eof() ? "EOF | " : "")
       << (std::cin.eof() ? "BAD | " : "GOOD | ")
       << (std::cin.eof() ? "FAIL" : "SUCCESS");
@@ -92,30 +83,34 @@ void Kaleido::PostEcho(const std::string &msg) {
 void Kaleido::ReadJSON(std::string &msg) {
   absl::optional<base::Value> json = base::JSONReader::Read(msg);
   if (!json.has_value()) {
-    PostEcho("This wasn't valid JSON:\n  " + msg);
+    LOG(WARNING) << "Recieved invalid JSON from client connected to Kaleido:";
+    LOG(WARNING) << json.DumpString();
+    Api_ErrorInvalidJSON();
     return;
   }
-  PostEcho("Thanks for the JSON:\n  " + msg);
   base::Value::Dict &jsonDict = json->GetDict();
-
+  std::string *id = jsonDict.FindInt("id");
   std::string *operation = jsonDict.FindString("operation");
-  if (operation) {
-    PostEcho("Found operation: " + *operation); // Are all these concates copies?
-  } else {
-    PostEcho("No operation.");
+  if !(operation && id) {
+    Api_ErrorMissingBasicFields();
+    return;
   }
-  // Really no arbitrary strings to PostEcho TODO
-
+  if  (!messageIds.insert(*id).second) {
+    Api_ErrorDuplicateId();
+    return;
+  }
 }
 
-void Kaleido::ShutdownSoon() {
-  browser_->BrowserMainThread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Kaleido::Shutdown, base::Unretained(this)));
+void Kaleido::Api_ErrorInvalidJSON() {
+  Kaleido::PostEcho(R"({"error":"malformed JSON string"})");
 }
 
-void Kaleido::Shutdown() {
-  browser_.ExtractAsDangling()->Shutdown();
+void Kaleido::Api_ErrorMissingBasicFields() {
+  Kaleido::PostEcho(R"({"error":"all messages must contain an 'id' integer and an 'operation' string"})");
+}
+
+void Kaleido::Api_ErrorDepulicateId() {
+  Kaleido::PostEcho(R"({"error":"all messages must contain a unique 'id' integer for the entire session."})");
 }
 
 } // namespace kaleido
