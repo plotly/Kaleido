@@ -39,7 +39,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
       {base::TaskPriority::BEST_EFFORT, base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}
     ); // Can't do this before OnBrowserStart!
 
-  dispatch = std::make_unique<Dispatch>(); // Tab manager
+  dispatch = std::make_unique<Dispatch>(this); // Tab manager
 
   // Create browser context and set it as the default. The default browser
   // context is used by the Target.createTarget() DevTools command when no other

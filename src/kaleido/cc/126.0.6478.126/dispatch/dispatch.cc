@@ -11,7 +11,7 @@
 
 namespace kaleido {
 
-  Dispatch::Dispatch() {
+  Dispatch::Dispatch(raw_ptr<Kaleido> parent_): parent_(parent_) {
     browser_devtools_client_.AttachToBrowser();
     job_line = base::ThreadPool::CreateSequencedTaskRunner({
         base::TaskPriority::BEST_EFFORT,

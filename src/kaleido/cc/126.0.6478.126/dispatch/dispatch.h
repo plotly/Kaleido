@@ -8,6 +8,7 @@
 #include "base/task/sequenced_task_runner.h"
 
 namespace kaleido {
+  class Kaleido;
   using namespace simple_devtools_protocol_client;
   // probably should be a singleton, could use static, make_unique, etc
 
@@ -24,7 +25,7 @@ namespace kaleido {
   // 
   class Dispatch {
     public:
-      Dispatch();
+      Dispatch(raw_ptr<Kaleido> parent_);
       ~Dispatch();
 
       Dispatch(const Dispatch&) = delete;
@@ -33,6 +34,7 @@ namespace kaleido {
 
 
     private:
+      raw_ptr<Kaleido> parent_;
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
 
