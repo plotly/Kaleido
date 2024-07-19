@@ -32,11 +32,11 @@ Kaleido::Kaleido() = default; // Redefine here or else chromium complains.
 Kaleido::~Kaleido() = default;
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
-  browser_ = browser; // Global by another name
+  browser_ = browser; // global by another name
 
   // Actual constructor duties, init stuff
   output_sequence = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::BEST_EFFORT}
+      {base::TaskPriority::BEST_EFFORT, base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}
     ); // Can't do this before OnBrowserStart!
 
   dispatch = std::make_unique<Dispatch>(); // Tab manager
@@ -44,8 +44,8 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // Create browser context and set it as the default. The default browser
   // context is used by the Target.createTarget() DevTools command when no other
   // context is given.
-  headless::HeadlessBrowserContext::Builder context_builder =
-      browser_->CreateBrowserContextBuilder();
+  // This stuff has weird side effects and I'm not sure its necessary.
+  headless::HeadlessBrowserContext::Builder context_builder = browser_->CreateBrowserContextBuilder();
   headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
 
@@ -65,10 +65,18 @@ void Kaleido::listenTask() {
     // TODO: post end to controller, we're shutting down, just let it go....
     return;
   };
-  ReadJSON(in);
-  postListenTask();
+  if (ReadJSON(in)) postListenTask();
 }
 
+void Kaleido::postListenTask() {
+  base::ThreadPool::PostTask(
+    FROM_HERE, {
+      base::TaskPriority::BEST_EFFORT,
+      base::MayBlock(),
+      base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+    base::BindOnce(&Kaleido::listenTask, base::Unretained(this))
+    );
+}
 void Kaleido::StartListen() {
   if(listening.test_and_set(std::memory_order_relaxed)) return;
   postListenTask();
@@ -80,27 +88,34 @@ void Kaleido::PostEchoTask(const std::string &msg) {
 }
 
 
-void Kaleido::ReadJSON(std::string &msg) {
+bool Kaleido::ReadJSON(std::string &msg) {
   absl::optional<base::Value> json = base::JSONReader::Read(msg);
   if (!json) {
     LOG(WARNING) << "Recieved invalid JSON from client connected to Kaleido:";
     LOG(WARNING) << msg;
     Api_ErrorInvalidJSON();
-    return;
+    return true;
   }
   base::Value::Dict &jsonDict = json->GetDict();
   absl::optional<int> id = jsonDict.FindInt("id");
   std::string *operation = jsonDict.FindString("operation");
+  // The only operation we handle here. We're shutting down.
+  // Trust chromium to handle it all when the browser exits
+  // Doesn't need id, no return
+  if (operation && *operation == "shutdown") {
+    ShutdownSoon();
+    return false;
+  }
   if (!operation || !id) {
     Api_ErrorMissingBasicFields();
-    return;
+    return true;
   }
   if (!messageIds.insert(*id).second) {
     Api_ErrorDuplicateId();
-    return;
+    return true;
   }
+  return true;
 
-  // Now 
 }
 
 void Kaleido::Api_ErrorInvalidJSON() {

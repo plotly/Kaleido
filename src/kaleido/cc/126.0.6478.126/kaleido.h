@@ -27,8 +27,9 @@ namespace kaleido {
       Kaleido(const Kaleido&) = delete;
       Kaleido& operator=(const Kaleido&) = delete;
 
-      void OnBrowserStart(headless::HeadlessBrowser* browser); // this is basically a "main" function
-      // it's called when chromium is done with all its init stuff
+      // This is basically a singleton. Could we pass the constructor instead of on browser start?
+      void OnBrowserStart(headless::HeadlessBrowser* browser);
+
 
   private:
 
@@ -38,14 +39,12 @@ namespace kaleido {
     // User IO stuff for main
     void StartListen(); // continually reads stdin on parallel task
     void listenTask();
-    inline void postListenTask() { base::ThreadPool::PostTask(
-        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-        base::BindOnce(&Kaleido::listenTask, base::Unretained(this)));}
+    void postListenTask();
     std::atomic_flag listening = ATOMIC_FLAG_INIT; // to only call postListenTask() once
     void PostEchoTask(const std::string&); // echo something out
 
     std::unordered_set<int> messageIds; // every message must have a unique id
-    void ReadJSON(std::string&); // try to turn message into json object
+    bool ReadJSON(std::string&); // try to turn message into json object
 
     // a thread, for making sure output is orderer and messages aren't mixed
     scoped_refptr<base::SequencedTaskRunner> output_sequence;
@@ -66,6 +65,8 @@ namespace kaleido {
           base::BindOnce(&Kaleido::ShutdownTask, base::Unretained(this)));
     }
     void ShutdownTask() {
+      LOG(INFO) << "Calling shutdown on browser";
+      dispatch.reset(); // Fine to destruct what we have here.
       browser_.ExtractAsDangling()->Shutdown();
     }
   };

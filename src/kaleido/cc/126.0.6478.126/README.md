@@ -27,6 +27,7 @@ Chromium uses callbacks and allows posting tasks to protothreads (`Sequence`s).
 You can start your own sequences with various `TaskTraits`- pooled, parallel, ordered, etc.
 Callbacks registered from `Sequence`s are perilous (point A), and limited tools are provided to
 ensure they pass chromium's own race condition checks. `BindPostTask` doesn't always work.
+Maybe try again but BindPostTask a non nestable task? Maybe never use chromium again.
 
 Chromium highly discourages use of concurrency primitives (spinlocks, mutexes, etc).
 It provides no safe messaging interface between tasks or sequences (like

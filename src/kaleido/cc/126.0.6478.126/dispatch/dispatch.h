@@ -53,6 +53,10 @@ namespace kaleido {
 #endif  // DISPATCH_H_
 
   // [x] Create Tab (needs to check for jobs)
+  // [ ] Link JSON to shutdown
+  // [ ] Handle better the signals
+  // [ ] How to handles errors in callback chain to user
+  // [ ] How to handle dispatch shut down during callback chain
   // [ ] Link JSON to create tab
   // [ ] Get Status
   // [ ] Link JSON to Status

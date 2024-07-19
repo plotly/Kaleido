@@ -13,9 +13,13 @@ namespace kaleido {
 
   Dispatch::Dispatch() {
     browser_devtools_client_.AttachToBrowser();
-    job_line = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::BEST_EFFORT});
+    job_line = base::ThreadPool::CreateSequencedTaskRunner({
+        base::TaskPriority::BEST_EFFORT,
+        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   }
-  Dispatch::~Dispatch() = default;
+  Dispatch::~Dispatch() {
+    browser_devtools_client_.DetachClient();  // How can I ensure it is not in a chain of callbacks to do this
+  }
 
   void Dispatch::createTab1_createTarget(const std::string &url) {
     base::Value::Dict params;
@@ -43,7 +47,7 @@ namespace kaleido {
         return;
       }
     }
-    LOG(ERROR) << "Failure to create target";
+    LOG(ERROR) << "Failure to create target.";
   }
 
   void Dispatch::createTab3_startSession(base::Value::Dict msg) {
@@ -51,7 +55,7 @@ namespace kaleido {
     if (result) {
       std::string *sId = result->FindString("sessionId");
       if (sId) {
-        LOG(INFO) << "Created.";
+        LOG(INFO) << "Target created.";
         job_line->PostTask(
           FROM_HERE,
           base::BindOnce(
@@ -63,13 +67,14 @@ namespace kaleido {
         return;
       }
     }
-    LOG(ERROR) << "Failure to create target";
+    LOG(ERROR) << "Failure to create target.";
   }
 
   void Dispatch::createTab4_storeSession(std::unique_ptr<SimpleDevToolsProtocolClient> newTab) {
     // We could run one command here to see if it is valid, it should be valid!
     // At some point we need to concern ourselves with failure paths.
     tabs.push(std::move(newTab));
+    LOG(INFO) << "Targed stored.";
   }
 
 }
