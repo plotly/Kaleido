@@ -35,7 +35,7 @@ Kaleido::~Kaleido() {} // style guide wont let me do it in .h
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
-
+  dispatch = std::make_unique<Dispatch>();
   headless::HeadlessBrowserContext::Builder context_builder =
       browser_->CreateBrowserContextBuilder();
 
@@ -44,16 +44,6 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // context is given. -- from original example
   headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
-
-  // We can do the same thing with a WebContentsBuilder to create a tab, but maybe we can do it directly with dev tools?
-  browser_devtools_client_.AttachToBrowser();
-  // Okay, lets get the ID browser_devtools_client_.GetTargetId()
-  // Target.createTarget
-  // Target.getTargets
-  // event Target.targetCreated
-  // Target.closeTarget
-  // Target.attachToTarget
-  // Lets try to open a new tab
 
   PostListen();
   //ShutdownSoon();
@@ -105,6 +95,8 @@ void Kaleido::ReadJSON(std::string &msg) {
   } else {
     PostEcho("No operation.");
   }
+  // Really no arbitrary strings to PostEcho TODO
+
 }
 
 void Kaleido::ShutdownSoon() {

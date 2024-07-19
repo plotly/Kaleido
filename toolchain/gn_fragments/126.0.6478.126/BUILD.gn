@@ -1,9 +1,32 @@
 ### FOR KALEIDO ###
+
+# probably shouldn't be in app/
+# but kaleido should not be in headless/
+# if we're organized to OCD levels
+# but this is intuitive, so its fine
+static_library("dispatch") {
+  sources = [
+    "app/dispatch/dispatch.cc",
+    "app/dispatch/dispatch.h",
+  ]
+  defines = []
+  deps = [
+    "//components/devtools/simple_devtools_protocol_client",
+  ]
+
+  public_deps = [
+    "//base",
+  ]
+}
+
 executable("kaleido") {
   sources = [
     "app/kaleido.cc",
     "app/kaleido_main.cc",
     "app/kaleido.h",
+  ]
+  deps = [
+    ":dispatch",
   ]
   defines = []
   if (!is_component_build) {
@@ -12,12 +35,8 @@ executable("kaleido") {
       "lib/utility/headless_content_utility_client.h",
     ]
   }
-  if (proprietary_codecs) {
-    deps += [ ":generate_headless_shell_license_file" ]
-  }
-  deps = [
+  deps += [
     "//build:branding_buildflags",
-    "//components/devtools/simple_devtools_protocol_client",
     "//components/embedder_support",
     "//components/policy/content",
     "//components/security_state/content",
@@ -29,6 +48,9 @@ executable("kaleido") {
     "//content/public/utility",
     "//printing/buildflags",
   ]
+  if (proprietary_codecs) {
+    deps += [ ":generate_headless_shell_license_file" ]
+  }
   public_deps = [
     ":headless_non_renderer",
     "//base",

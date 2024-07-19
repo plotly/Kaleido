@@ -1,16 +1,19 @@
 #ifndef KALEIDO_H_
 #define KALEIDO_H_
 
+#include <atomic>
 // Browser Includes
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/public/headless_browser.h"
-#include "components/devtools/simple_devtools_protocol_client/simple_devtools_protocol_client.h"
 
-#include <atomic>
+#include "base/task/sequenced_task_runner.h"
+#include "headless/app/dispatch/dispatch.h"
+
 namespace kaleido {
 
   // Kaleido manages several threads, basically.
   // a) it starts a thread for standard out, so all calls are guarenteed to be ordered
+  // probably should be a singleton
   class Kaleido {
     public:
       Kaleido();
@@ -18,7 +21,6 @@ namespace kaleido {
 
       Kaleido(const Kaleido&) = delete;
       Kaleido& operator=(const Kaleido&) = delete;
-
 
       void OnBrowserStart(headless::HeadlessBrowser* browser); // this is basically a "main" function
       // it's called when chromium is done with all its init stuff
@@ -39,8 +41,9 @@ namespace kaleido {
     // a thread, essentially, for output
     scoped_refptr<base::SequencedTaskRunner> output_sequence;
 
-    // a devtools client for the _whole_ browser process (not a tab)
-    simple_devtools_protocol_client::SimpleDevToolsProtocolClient browser_devtools_client_;
+    // our tab dispatch, our actual browser controller
+    std::unique_ptr<Dispatch> dispatch = nullptr;
+
   };
 }
 #endif  // KALEIDO_H_
