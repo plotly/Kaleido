@@ -11,6 +11,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "headless/app/dispatch/dispatch.h"
 
+#include "base/task/thread_pool.h"
+
 namespace kaleido {
 
   // Kaleido is our app, basically.
@@ -19,8 +21,8 @@ namespace kaleido {
   // TODO: For now, they can catch and write a message to shutdown to its own stdin
   class Kaleido {
     public:
-      Kaleido() = default; // OnBrowserStart is the real constructor
-      ~Kaleido() = default;
+      Kaleido();
+      ~Kaleido();
 
       Kaleido(const Kaleido&) = delete;
       Kaleido& operator=(const Kaleido&) = delete;
@@ -34,10 +36,13 @@ namespace kaleido {
     raw_ptr<headless::HeadlessBrowser> browser_;
 
     // User IO stuff for main
-    void PostListen(); // continually reads stdin on parallel task
-    void listenTask(); // see note in .cc, or ignore this
-    std::atomic_flag listening = ATOMIC_FLAG_INIT; // to only call PostListen() once
-    void PostEcho(const std::string&); // echo something out
+    void StartListen(); // continually reads stdin on parallel task
+    void listenTask();
+    inline void postListenTask() { base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+        base::BindOnce(&Kaleido::listenTask, base::Unretained(this)));}
+    std::atomic_flag listening = ATOMIC_FLAG_INIT; // to only call postListenTask() once
+    void PostEchoTask(const std::string&); // echo something out
 
     std::unordered_set<int> messageIds; // every message must have a unique id
     void ReadJSON(std::string&); // try to turn message into json object
@@ -51,7 +56,7 @@ namespace kaleido {
     // JSON Helper functions for creating common messages to user
     void Api_ErrorInvalidJSON();
     void Api_ErrorMissingBasicFields();
-    void Api_ErrorDepulicateId();
+    void Api_ErrorDuplicateId();
 
 
     // Control Flow, declare here

@@ -28,12 +28,15 @@
 
 namespace kaleido {
 
+Kaleido::Kaleido() = default; // Redefine here or else chromium complains.
+Kaleido::~Kaleido() = default;
+
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser; // Global by another name
 
   // Actual constructor duties, init stuff
   output_sequence = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::USER_VISIBLE}
+      {base::TaskPriority::BEST_EFFORT}
     ); // Can't do this before OnBrowserStart!
 
   dispatch = std::make_unique<Dispatch>(); // Tab manager
@@ -48,7 +51,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   // Run
   dispatch->CreateTab();
-  PostListen();
+  StartListen();
 }
 
 // Wish this were a lambda (as in PostEcho) but would have no access to private vars
@@ -63,18 +66,15 @@ void Kaleido::listenTask() {
     return;
   };
   ReadJSON(in);
-  PostListen();
+  postListenTask();
 }
 
-void Kaleido::PostListen() {
+void Kaleido::StartListen() {
   if(listening.test_and_set(std::memory_order_relaxed)) return;
-  base::ThreadPool::PostTask(
-    FROM_HERE,
-    {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-    base::BindOnce(&Kaleido::listen, base::Unretained(this)));
+  postListenTask();
 }
 
-void Kaleido::PostEcho(const std::string &msg) {
+void Kaleido::PostEchoTask(const std::string &msg) {
   auto echo = [](const std::string &msg){ std::cout << msg << std::endl; };
   output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg));
 }
@@ -82,35 +82,37 @@ void Kaleido::PostEcho(const std::string &msg) {
 
 void Kaleido::ReadJSON(std::string &msg) {
   absl::optional<base::Value> json = base::JSONReader::Read(msg);
-  if (!json.has_value()) {
+  if (!json) {
     LOG(WARNING) << "Recieved invalid JSON from client connected to Kaleido:";
-    LOG(WARNING) << json.DumpString();
+    LOG(WARNING) << msg;
     Api_ErrorInvalidJSON();
     return;
   }
   base::Value::Dict &jsonDict = json->GetDict();
-  std::string *id = jsonDict.FindInt("id");
+  absl::optional<int> id = jsonDict.FindInt("id");
   std::string *operation = jsonDict.FindString("operation");
-  if !(operation && id) {
+  if (!operation || !id) {
     Api_ErrorMissingBasicFields();
     return;
   }
-  if  (!messageIds.insert(*id).second) {
+  if (!messageIds.insert(*id).second) {
     Api_ErrorDuplicateId();
     return;
   }
+
+  // Now 
 }
 
 void Kaleido::Api_ErrorInvalidJSON() {
-  Kaleido::PostEcho(R"({"error":"malformed JSON string"})");
+  Kaleido::PostEchoTask(R"({"error":"malformed JSON string"})");
 }
 
 void Kaleido::Api_ErrorMissingBasicFields() {
-  Kaleido::PostEcho(R"({"error":"all messages must contain an 'id' integer and an 'operation' string"})");
+  Kaleido::PostEchoTask(R"({"error":"all messages must contain an 'id' integer and an 'operation' string"})");
 }
 
-void Kaleido::Api_ErrorDepulicateId() {
-  Kaleido::PostEcho(R"({"error":"all messages must contain a unique 'id' integer for the entire session."})");
+void Kaleido::Api_ErrorDuplicateId() {
+  Kaleido::PostEchoTask(R"({"error":"all messages must contain a unique 'id' integer for the entire session."})");
 }
 
 } // namespace kaleido

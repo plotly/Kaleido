@@ -13,7 +13,7 @@ namespace kaleido {
 
   Dispatch::Dispatch() {
     browser_devtools_client_.AttachToBrowser();
-    job_line = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::USER_VISIBLE});
+    job_line = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::BEST_EFFORT});
   }
   Dispatch::~Dispatch() = default;
 
@@ -36,7 +36,7 @@ namespace kaleido {
         base::Value::Dict params;
         params.Set("flatten", true);
         params.Set("targetId", *tId);
-        auto cb = base::BindOnce(&Dispatch::createTab3_storeSession, base::Unretained(this));
+        auto cb = base::BindOnce(&Dispatch::createTab3_startSession, base::Unretained(this));
         browser_devtools_client_.SendCommand("Target.attachToTarget",
             std::move(params),
             std::move(cb));
@@ -54,13 +54,12 @@ namespace kaleido {
         LOG(INFO) << "Created.";
         job_line->PostTask(
           FROM_HERE,
-          {base::TaskPriority::BEST_EFFORT},
           base::BindOnce(
-            &Kaleido::createTab4_storeSession,
+            &Dispatch::createTab4_storeSession,
             base::Unretained(this),
-            std::move(browser_devtools_client_.CreateSession(*sId));
-        ));
-        tabs.push(browser_devtools_client_.CreateSession(*sId));
+            browser_devtools_client_.CreateSession(*sId)
+          )
+        );
         return;
       }
     }
@@ -70,7 +69,7 @@ namespace kaleido {
   void Dispatch::createTab4_storeSession(std::unique_ptr<SimpleDevToolsProtocolClient> newTab) {
     // We could run one command here to see if it is valid, it should be valid!
     // At some point we need to concern ourselves with failure paths.
-    tabs.push(newTab);
+    tabs.push(std::move(newTab));
   }
 
 }
