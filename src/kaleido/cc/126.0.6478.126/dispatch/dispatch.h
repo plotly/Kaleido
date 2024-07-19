@@ -27,7 +27,6 @@ namespace kaleido {
   // be absurdly out of scope, as would mixing in a pubsub structure.
   //
   // Ergo, patterns like createTab1_description, createTab2_description clarify the concepts.
-  // 
   class Dispatch {
     public:
       Dispatch();
@@ -35,8 +34,9 @@ namespace kaleido {
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
-      inline void CreateTab(const std::string &url = "") { createTab1_createTarget(url); }
-
+      inline void CreateTab(const std::string &url = "") {
+        job_line->PostTask(FROM_HERE, base::BindOnce(
+              &Dispatch::createTab1_createTarget, base::Unretained(this), url)); }
 
     private:
       // a devtools client for the _whole_ browser process (not a tab)
