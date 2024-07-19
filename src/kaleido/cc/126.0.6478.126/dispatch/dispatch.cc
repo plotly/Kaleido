@@ -46,19 +46,31 @@ namespace kaleido {
     LOG(ERROR) << "Failure to create target";
   }
 
-  void Dispatch::createTab3_storeSession(base::Value::Dict msg) {
+  void Dispatch::createTab3_startSession(base::Value::Dict msg) {
     base::Value::Dict *result = msg.FindDict("result");
     if (result) {
       std::string *sId = result->FindString("sessionId");
       if (sId) {
         LOG(INFO) << "Created.";
-        tabs.push(browser_devtools_client_.CreateSession(*sId)); // Todo get it pushed
+        job_line->PostTask(
+          FROM_HERE,
+          {base::TaskPriority::BEST_EFFORT},
+          base::BindOnce(
+            &Kaleido::createTab4_storeSession,
+            base::Unretained(this),
+            std::move(browser_devtools_client_.CreateSession(*sId));
+        ));
+        tabs.push(browser_devtools_client_.CreateSession(*sId));
         return;
       }
     }
     LOG(ERROR) << "Failure to create target";
   }
 
-  // createTarget
-  // attachToTarget
+  void Dispatch::createTab4_storeSession(std::unique_ptr<SimpleDevToolsProtocolClient> newTab) {
+    // We could run one command here to see if it is valid, it should be valid!
+    // At some point we need to concern ourselves with failure paths.
+    tabs.push(newTab);
+  }
+
 }

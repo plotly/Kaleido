@@ -19,7 +19,8 @@ namespace kaleido {
   // A full state machine that manages callbacks as subroutines would 
   // be absurdly out of scope.
   //
-  // Ergo, patterns like createTab1_description, createTab2_description clarify the concepts.
+  // Ergo, patterns like createTab1_desc(), createTab2_desc() clarify the concepts,
+  // the process started by a CreateTab() public call.
   // 
   class Dispatch {
     public:
@@ -34,37 +35,29 @@ namespace kaleido {
     private:
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
+
+      // Represent connections to a tab
+      std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
+
+      // All queue operations happen on a SequencedTaskRunner for memory safety
+      // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
-      std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
       void createTab1_createTarget(const std::string &url);
       void createTab2_attachTarget(base::Value::Dict);
-      void createTab3_storeSession(base::Value::Dict);
+      void createTab3_startSession(base::Value::Dict);
+      void createTab4_storeSession(std::unique_ptr<SimpleDevToolsProtocolClient>); // This is a task
   };
 }
-  // What do we need to initialize with the browser? (look at python)
-  // What does it manage for us?
-
-  // We need to create at least one tab right away. SessionId MessageId?
-  // We need to put that tab on the not busy Q
-  // We can, if we want, run CheckForWork which looks for jobs and free tabs.
-  // We have no concept of jobs and free tabs yet tho.
-  // We probably at this point need to finish the rest of the build
 
 #endif  // DISPATCH_H_
-  // We need to some manual devtools client stuff just to see how stuff is different
-  // --> Create Tab
-  // --> Queue Job
-  // --> Get Status
-  /*
-  TabDispatch {
-    freeTabs
-    busyTabs
-    QueuedJobs (jobs should also be an object)
-    Sequence
-    AddTab
-    AddJob
-    */
+
+  // [x] Create Tab (needs to check for jobs)
+  // [ ] Link JSON to create tab
+  // [ ] Get Status
+  // [ ] Link JSON to Status
+  // [ ] Queue Job (needs to check for jobs)
+  // [ ] Check for jobs
 
 
 
