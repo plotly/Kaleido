@@ -30,7 +30,8 @@ namespace kaleido {
 Kaleido::Kaleido() {
   output_sequence = base::ThreadPool::CreateSequencedTaskRunner({base::TaskPriority::USER_VISIBLE});
 }
-inline Kaleido::~Kaleido() = default; // style guide wont let me do it in .h
+
+Kaleido::~Kaleido() {} // style guide wont let me do it in .h
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   browser_ = browser;
