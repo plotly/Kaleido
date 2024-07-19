@@ -10,7 +10,7 @@ namespace kaleido {
   class Dispatch {
     public:
       Dispatch();
-      ~Dispatch() = default;
+      ~Dispatch();
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
@@ -18,6 +18,7 @@ namespace kaleido {
     private:
       // a devtools client for the _whole_ browser process (not a tab)
       simple_devtools_protocol_client::SimpleDevToolsProtocolClient browser_devtools_client_;
+      scoped_refptr<base::SequencedTaskRunner> job_line;
   };
 }
 
