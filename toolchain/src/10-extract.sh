@@ -97,10 +97,10 @@ if [[ "$PLATFORM" == "LINUX" ]]; then
       mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_"
     done
 
-    # just making sure to litter these files everywhere at every step
   fi
 fi
 
+# just making sure to litter these files everywhere at every step
 cp "${MAIN_DIR}/src/kaleido/version" "${MAIN_DIR}/src/kaleido/LICENSE.txt" "${MAIN_DIR}/src/kaleido/CREDITS.html" "${BUILD_DIR}" || echo "Missing some meta files, ignoring issue"
 
 mkdir "${BUILD_DIR}/etc"
