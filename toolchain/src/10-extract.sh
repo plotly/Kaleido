@@ -94,7 +94,6 @@ if [[ "$PLATFORM" == "LINUX" ]]; then
     FILES=$(echo -e "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=False, annotate=False, relative=True)")")
     for f in $FILES; do
       mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_"
-      echo Brrrr: $f
     done
   fi
 fi
