@@ -20,9 +20,9 @@ vendor/src
 vendor/depot_tools
 
 # Build artifacts
+build/
 src/kaleido/LICENSE.txt
 src/kaleido/README.md
 src/kaleido/CREDITS.html
+src/kaleido/version
 CREDITS.html
-
-
