@@ -30,7 +30,7 @@ util_get_version()
 {
   if test -f "$MAIN_DIR/.set_version"; then
     . "$MAIN_DIR/.set_version"
-  elif [[ -z "${DEPO_TOOLS_COMMIT:-}" ]] || [[ -z "${CHROMIUM_VERSION_TAG:-}" ]]; then
+  elif [[ -z "${DEPOT_TOOLS_COMMIT:-}" ]] || [[ -z "${CHROMIUM_VERSION_TAG:-}" ]]; then
     util_error "Couldn't find or set env vars for versions, please run set_version."
   fi
 }
