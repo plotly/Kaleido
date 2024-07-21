@@ -30,7 +30,7 @@ usage=(
   "-7  write_kversion   - writes a version text file for kaleido"
   "-8  sync_cpp         - will sync kaleido c++ do chromium src"
   "-9  build_kaleido    - builds kaleido's c++"
-  "-10 " # package
+  "-10 extract          - attempts to extract our build from chromium src folder"
   # what about javascript
   # what about python
   # ugh
@@ -155,5 +155,10 @@ if $NINE || $ALL; then
 fi
 
 if $TEN || $ALL; then
-  :
+  $NO_VERBOSE || echo "Running 10"
+  if $(which extract &> /dev/null); then
+    extract $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/10-extract.sh $(flags_resolve "" ":")
+  fi
 fi
