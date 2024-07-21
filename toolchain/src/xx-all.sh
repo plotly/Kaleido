@@ -32,12 +32,13 @@ usage=(
   "-9  build_kaleido    - builds kaleido's c++"
   "-10 extract          - attempts to extract our build from chromium src folder"
   "-11 build_js         - uses npm to build js and move to build folder"
+  "-12 roll_wheel       - build python wheel
   # what about javascript
   # what about python
   # ugh
 )
 
-FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10" "-11")
+FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10" "-11" "-12")
 ARGFLAGS=("")
 
 SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
@@ -55,9 +56,10 @@ EIGHT=$(flags_resolve false "-8")
 NINE=$(flags_resolve false "-9")
 TEN=$(flags_resolve false "-10")
 ELEVEN=$(flags_resolve false "-11")
+ELEVEN=$(flags_resolve false "-12")
 
 ALL=true
-if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN || $ELEVEN; then
+if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN || $ELEVEN || $TWELVE; then
   $NO_VERBOSE || echo "Turning off ALL"
   ALL=false
 fi
@@ -171,5 +173,14 @@ if $ELEVEN || $ALL; then
     build_js $(flags_resolve "" ":")
   else
     $SCRIPT_DIR/11-build_js.sh $(flags_resolve "" ":")
+  fi
+fi
+
+if $TWELVE || $ALL; then
+  $NO_VERBOSE || echo "Running 12"
+  if $(which roll_wheel &> /dev/null); then
+    roll_wheel $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/12-roll_wheel.sh $(flags_resolve "" ":")
   fi
 fi

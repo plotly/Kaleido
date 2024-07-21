@@ -106,4 +106,4 @@ cp "${MAIN_DIR}/src/kaleido/version" "${MAIN_DIR}/src/kaleido/LICENSE.txt" "${MA
 
 mkdir -p "${BUILD_DIR}/etc"
 
-cp "${MAIN_DIR}/vendor/mathjax/Mathjax*.zip" "${BUILD_DIR}/etc/mathjax"
+cp "${MAIN_DIR}/vendor/mathjax/"*.zip "${BUILD_DIR}/etc/mathjax"

@@ -6,8 +6,7 @@ set -u
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 usage=(
-  "build_js will run npm build commands in the js src repo and copy the build artifacts"
-  "into our build directory."
+  "roll_wheel runs setup.py and creates the python wheel. You made it!"
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"
@@ -27,22 +26,13 @@ SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> 
 util_get_version
 util_export_version
 
-$NO_VERBOSE || echo "Running 11-build_js.sh"
+$NO_VERBOSE || echo "Running 12-roll_wheel.sh"
 
-export BUILD_DIR="${MAIN_DIR}/build/js/"
-if [[ ! -d "$BUILD_DIR" ]]; then
-	mkdir -p "$BUILD_DIR"
-else
-  rm -rf "${MAIN_DIR}/build/js/*" # rm rf, spell it out to prevent rm -rf accidents
-fi
-
-export SRC_DIR="${MAIN_DIR}/src/kaleido/js/"
-
-pushd "${SRC_DIR}"
-mkdir -p build/
-npm install
-npm run clean
-npm run build
+pushd "${MAIN_DIR}/src/kaleido/py"
+python3 setup.py package
 popd
+rm "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}" || true
+zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.zip" "${MAIN_DIR}/build/cc/*"
 
-cp -r "${SRC_DIR}/build/"* "${BUILD_DIR}"
+rm "${MAIN_DIR}/build/kaleido.whl" || true
+zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.whl" "${MAIN_DIR}/src/kaleido/py/dist/*"
