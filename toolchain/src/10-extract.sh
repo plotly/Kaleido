@@ -43,6 +43,7 @@ if [[ ! -d "$BUILD_DIR" ]]; then
 	mkdir -p "$BUILD_DIR"
 else
   rm -rf "${MAIN_DIR}/build/cc/*" # rm rf, spell it out to prevent rm -rf accidents
+  rm -rf "${MAIN_DIR}/build/etc/"
 fi
 
 # mainly reexported, but making sure the python script has it
@@ -103,6 +104,6 @@ fi
 # just making sure to litter these files everywhere at every step
 cp "${MAIN_DIR}/src/kaleido/version" "${MAIN_DIR}/src/kaleido/LICENSE.txt" "${MAIN_DIR}/src/kaleido/CREDITS.html" "${BUILD_DIR}" || echo "Missing some meta files, ignoring issue"
 
-mkdir "${BUILD_DIR}/etc"
+mkdir -p "${BUILD_DIR}/etc"
 
 cp "${MAIN_DIR}/vendor/mathjax/Mathjax*.zip" "${BUILD_DIR}/etc/mathjax"
