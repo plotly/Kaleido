@@ -9,6 +9,7 @@ usage=(
   "extract will attempt to pull all runtime dependencies, including the executable,"
   "out of chromium's build directory into a build/ folder. It compares a chromium zip builder"
   "to a list of what was built what we have and then pulls out what agrees to our build folder."
+  "It also pulls out some other stuff."
   ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"
@@ -95,6 +96,13 @@ if [[ "$PLATFORM" == "LINUX" ]]; then
     for f in $FILES; do
       mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_"
     done
+
+    # just making sure to litter these files everywhere at every step
   fi
 fi
 
+cp "${MAIN_DIR}/src/kaleido/version" "${MAIN_DIR}/src/kaleido/LICENSE.txt" "${MAIN_DIR}/src/kaleido/CREDITS.html" "${BUILD_DIR}" || echo "Missing some meta files, ignoring issue"
+
+mkdir "${BUILD_DIR}/etc"
+
+cp "${MAIN_DIR}/vendor/MathJax*.zip" "${BUILD_DIR}/etc/mathjax"
