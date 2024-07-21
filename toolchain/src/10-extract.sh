@@ -71,7 +71,7 @@ fi
 export PYTHONPATH="${MAIN_DIR}/toolchain/src/:${PYTHONPATH-""}" 
 
 if $ASSESS; then
-  echo -e "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=True, annotate=True)")"
+  echo -e "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=True, annotate=True, relative=False)")"
   exit 0
 fi
 
@@ -80,6 +80,7 @@ exit 0
 
 if [[ "$PLATFORM" == "LINUX" ]]; then
  if [[ "${CHROMIUM_VERSION_TAG}" == "126.0.6478.126" ]] || $TRY; then
+   # fix as to not always put full path there, so we can use it
   cp "${SRC_DIR}/kaleido" "${BUILD_DIR}"
   fi
 fi

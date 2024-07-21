@@ -43,7 +43,7 @@ def get_files_and_dirs_full_path(archive, src_dir):
     dirs = [ src_dir + "/" + d for d in dirs ]
     return files, dirs
 
-def match_json_to_directory(config_file, src_dir, exists=True, missing=False, annotate=False):
+def match_json_to_directory(config_file, src_dir, relative=True, exists=True, missing=False, annotate=False):
   data = None
   with open(config_file) as f:
     data = json.load(f)
@@ -52,15 +52,19 @@ def match_json_to_directory(config_file, src_dir, exists=True, missing=False, an
   for archive in data['archive_datas']:
     title = find_archive_name(archive)
     if not title: title = "unamed"
-    print("    " + title)
+    if annotate: print("    " + title)
     files, dirs = get_files_and_dirs_full_path(archive, src_dir)
     for f in itertools.chain(files, dirs):
       if (os.path.exists(f) and exists):
+        if relative:
+          f = f.removeprefix(src_dir)
         if annotate:
           print(f"exists: {f}")
         else:
           print(f)
       if (not os.path.exists(f) and missing):
+        if relative:
+          f = f.removeprefix(src_dir)
         if annotate:
           print(f"missing: {f}")
         else:
