@@ -31,12 +31,13 @@ usage=(
   "-8  sync_cpp         - will sync kaleido c++ do chromium src"
   "-9  build_kaleido    - builds kaleido's c++"
   "-10 extract          - attempts to extract our build from chromium src folder"
+  "-11 build_js         - uses npm to build js and move to build folder"
   # what about javascript
   # what about python
   # ugh
 )
 
-FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10")
+FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10" "-11")
 ARGFLAGS=("")
 
 SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
@@ -53,9 +54,10 @@ SEVEN=$(flags_resolve false "-7")
 EIGHT=$(flags_resolve false "-8")
 NINE=$(flags_resolve false "-9")
 TEN=$(flags_resolve false "-10")
+ELEVEN=$(flags_resolve false "-11")
 
 ALL=true
-if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN; then
+if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN || $ELEVEN; then
   $NO_VERBOSE || echo "Turning off ALL"
   ALL=false
 fi
@@ -160,5 +162,14 @@ if $TEN || $ALL; then
     extract $(flags_resolve "" ":")
   else
     $SCRIPT_DIR/10-extract.sh $(flags_resolve "" ":")
+  fi
+fi
+
+if $ELEVEN || $ALL; then
+  $NO_VERBOSE || echo "Running 11"
+  if $(which build_js &> /dev/null); then
+    build_js $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/11-build_js.sh $(flags_resolve "" ":")
   fi
 fi

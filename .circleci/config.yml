@@ -19,7 +19,7 @@ jobs:
       - checkout
       - run:
         name: Install Dependencies
-        command: sudo apt-get update && sudo apt-get install rsync
+        command: sudo apt-get update && sudo apt-get install rsync npm nodejs
       - set_version
 
   linux-x64:

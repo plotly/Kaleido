@@ -93,7 +93,7 @@ APT_VOLUME="$APT_CACHE:/var/lib/apt/lists/"
 
 
 # COMMAND is what we run to set up the user and do some basics
-COMMAND="sudo apt-get update; sudo apt-get install rsync; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null; "
+COMMAND="sudo apt-get update; sudo apt-get install npm nodejs rsync; sudo useradd --uid=$LOCAL_UID --shell /bin/bash --create-home $LOCAL_USER; echo '$LOCAL_USER ALL=NOPASSWD: ALL' | sudo tee -a /etc/sudoers.d/50-circleci &> /dev/null; "
 
 # USER_COMMAND is what we run once we are logged in as the intended user,
 # including the actual user's desired command
