@@ -35,10 +35,7 @@ popd
 
 # command, after package
 
-rm "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}" || true
-zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.zip" "${MAIN_DIR}/build/cc/*"
-
-rm "${MAIN_DIR}/build/kaleido.whl" || true
-zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.whl" "${MAIN_DIR}/src/kaleido/py/dist/*"
+rm "${MAIN_DIR}/build/kaleido.zip" || true
+zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.zip" "${MAIN_DIR}/src/kaleido/py/dist/*"
 
 # linux called bundle_hash_artifacts

@@ -36,7 +36,7 @@ usage=(
   "-13 roll_wheel       - build python wheel"
 )
 
-FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10" "-11" "-12")
+FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10" "-11" "-12" "-13")
 ARGFLAGS=("")
 
 SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
