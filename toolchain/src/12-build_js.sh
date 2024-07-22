@@ -28,13 +28,6 @@ util_export_version
 
 $NO_VERBOSE || echo "Running 12-build_js.sh"
 
-export BUILD_DIR="${MAIN_DIR}/build/js/"
-if [[ ! -d "$BUILD_DIR" ]]; then
-	mkdir -p "$BUILD_DIR"
-else
-  rm -rf "${MAIN_DIR}/build/js/*" # rm rf, spell it out to prevent rm -rf accidents
-fi
-
 export SRC_DIR="${MAIN_DIR}/src/kaleido/js/"
 
 pushd "${SRC_DIR}"
