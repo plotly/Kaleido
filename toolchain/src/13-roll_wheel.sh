@@ -27,8 +27,8 @@ util_export_version
 
 $NO_VERBOSE || echo "Running 12-roll_wheel.sh"
 
-
-# what about ARCH TODO
+python3 -m pip install setuptools
+export KALEIDO_ARCH="$TARGET_ARCH"
 pushd "${MAIN_DIR}/src/kaleido/py"
 python3 setup.py package
 popd

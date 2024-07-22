@@ -33,7 +33,7 @@ def list_dir_flat(directory):
     return paths
 
 
-executable_files = list_dir_flat(os.path.join("build") # list of relative-to-root files to include
+executable_files = list_dir_flat(os.path.join("build")) # list of relative-to-root files to include
 
 
 class CleanCommand(Command):
