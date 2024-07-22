@@ -42,7 +42,9 @@ ASSESS="$(flags_resolve false "-s" "--assess")"
 
 # build dir is now in include/globals
 mkdir -p "$BUILD_DIR"
-globals_clean_build_dir()
+globals_clean_build_dir
+
+$NO_VERBOSE || echo "We are extracnig to $BUILD_DIR"
 
 # mainly reexported, but making sure the python script has it
 export MAIN_DIR
