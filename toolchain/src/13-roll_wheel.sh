@@ -27,11 +27,18 @@ util_export_version
 
 $NO_VERBOSE || echo "Running 12-roll_wheel.sh"
 
+
+# what about ARCH TODO
 pushd "${MAIN_DIR}/src/kaleido/py"
 python3 setup.py package
 popd
+
+# command, after package
+
 rm "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}" || true
 zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.zip" "${MAIN_DIR}/build/cc/*"
 
 rm "${MAIN_DIR}/build/kaleido.whl" || true
 zip "${MAIN_DIR}/build/kaleido_${PLATFORM}_${TARGET_ARCH}.whl" "${MAIN_DIR}/src/kaleido/py/dist/*"
+
+# linux called bundle_hash_artifacts

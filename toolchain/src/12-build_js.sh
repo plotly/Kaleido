@@ -26,7 +26,7 @@ SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> 
 util_get_version
 util_export_version
 
-$NO_VERBOSE || echo "Running 11-build_js.sh"
+$NO_VERBOSE || echo "Running 12-build_js.sh"
 
 export BUILD_DIR="${MAIN_DIR}/build/js/"
 if [[ ! -d "$BUILD_DIR" ]]; then
@@ -44,4 +44,5 @@ npm run clean
 npm run build
 popd
 
-cp -r "${SRC_DIR}/build/"* "${BUILD_DIR}"
+mkdir "${BUILD_DIR}/js/"
+cp -r "${SRC_DIR}/build/"*.js "${BUILD_DIR}/js/"

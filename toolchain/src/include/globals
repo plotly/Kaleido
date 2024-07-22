@@ -17,3 +17,14 @@ fi
 
 export DEPOT_TOOLS_UPDATE=0 # don't automatically checkout main when sync'ing depot_tools
 export DEPOT_TOOLS_WIN_TOOLCHAIN=0 # we install our windows sdk's manually (automatic is for googlers only)
+
+export BUILD_DIR="${MAIN_DIR}/src/kaleido/py/build/"
+
+globals_clean_build_dir()
+{
+  if [[ ! -d "$BUILD_DIR" ]]; then
+    mkdir -p "$BUILD_DIR"
+  else
+    rm -rf "${MAIN_DIR}/src/kaleido/build/"* || echo "Nothing to remove?"
+  fi
+}

@@ -11,6 +11,8 @@ usage=(
   "to a list of what was built what we have and then pulls out what agrees to our build folder."
   "It also pulls out some other stuff."
   ""
+  "If you run 10 will clean everything in build put there by later scripts."
+  ""
   "Usage (DO NOT USE --long-flags=something, just --long-flag something):"
   "You can always try -v or --verbose"
   ""
@@ -38,13 +40,9 @@ $NO_VERBOSE || echo "Running 10-extract.sh"
 TRY="$(flags_resolve false "-t" "--try")"
 ASSESS="$(flags_resolve false "-s" "--assess")"
 
-BUILD_DIR="${MAIN_DIR}/build/cc/"
-if [[ ! -d "$BUILD_DIR" ]]; then
-	mkdir -p "$BUILD_DIR"
-else
-  rm -rf "${MAIN_DIR}/build/cc/*" # rm rf, spell it out to prevent rm -rf accidents
-  rm -rf "${MAIN_DIR}/build/etc/"
-fi
+# build dir is now in include/globals
+mkdir -p "$BUILD_DIR"
+globals_clean_build_dir()
 
 # mainly reexported, but making sure the python script has it
 export MAIN_DIR
@@ -88,12 +86,17 @@ fi
 
 # echo -e "$($PYTHON -c "$IMPORT; extract.hello_world()")"
 
-
+# may not need to have platform/version branches here if we use different ${CONFIG} each time
 if [[ "$PLATFORM" == "LINUX" ]]; then
   if [[ "${CHROMIUM_VERSION_TAG}" == "126.0.6478.126" ]] || $TRY; then
-     # fix as to not always put full path there, so we can use it
+ 
     cp "${SRC_DIR}/kaleido" "${BUILD_DIR}/kaleido"
-    FILES=$(echo -e "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=False, annotate=False, relative=True)")")
+    chmod +x "${BUILD_DIR}/kaleido"
+    FILES=$(echo -e "$($PYTHON -c "$IMPORT; \
+extract.match_json_to_directory('\
+${CONFIG}-original', \
+'$SRC_DIR', \
+missing=False, annotate=False, relative=True)")")
     for f in $FILES; do
       mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_"
     done
@@ -101,11 +104,33 @@ if [[ "$PLATFORM" == "LINUX" ]]; then
   fi
 fi
 
-# just making sure to litter these files everywhere at every step
-cp "${MAIN_DIR}/src/kaleido/version" "${MAIN_DIR}/src/kaleido/LICENSE.txt" "${MAIN_DIR}/src/kaleido/CREDITS.html" "${BUILD_DIR}" || echo "Missing some meta files, ignoring issue"
+# Ignoring this for now, do we really want
+comment='
+if [ $KALEIDO_ARCH == "x64" ]; then
+  # /usr/lib/x86_64-linux-gnu/
+  for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
+  do
+    cp /usr/lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+  done
 
-mkdir -p "${BUILD_DIR}/etc"
+  # /usr/lib/x86_64-linux-gnu/nss
+  cp /usr/lib/x86_64-linux-gnu/nss/* /repos/build/kaleido/lib/
 
-cp "${MAIN_DIR}/vendor/mathjax/"*.zip "${BUILD_DIR}/etc/mathjax" 
-# TODO unzip not copy, also copy fonts and libs? depends on whether or not is minimal
--- fix this now, compare to other scripts
+  # /lib/x86_64-linux-gnu/
+  for SO_FILE in libexpat.so.1 # libdl.so.2 libpthread.so.0 librt.so.1 libm.so.6 libgcc_s.so.1 libc.so.6
+  do
+    cp /lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+  done
+
+elif [ $KALEIDO_ARCH == "arm64" ]; then
+    # /usr/lib/aarch64-linux-gnu/
+  for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
+  do
+    cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
+  done
+
+  # /usr/lib/aarch64-linux-gnu/nss
+  cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/nss/* /repos/build/kaleido/lib/
+
+fi
+'
