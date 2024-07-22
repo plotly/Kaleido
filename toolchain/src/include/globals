@@ -18,7 +18,7 @@ fi
 export DEPOT_TOOLS_UPDATE=0 # don't automatically checkout main when sync'ing depot_tools
 export DEPOT_TOOLS_WIN_TOOLCHAIN=0 # we install our windows sdk's manually (automatic is for googlers only)
 
-export BUILD_DIR="${MAIN_DIR}/src/kaleido/py/executable/"
+export BUILD_DIR="${MAIN_DIR}/src/kaleido/py/kaleido/executable/"
 # don't call it build it conflicts with python's machinery
 
 globals_clean_build_dir()
