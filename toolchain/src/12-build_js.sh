@@ -2,7 +2,6 @@
 set -e
 set -u
 
-# Detect if component build is true, and if so, exit TODO
 
 # Please do your flags first so that utilities uses $NO_VERBOSE, otherwise failure!
 usage=(

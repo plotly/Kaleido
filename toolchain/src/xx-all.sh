@@ -31,11 +31,9 @@ usage=(
   "-8  sync_cpp         - will sync kaleido c++ do chromium src"
   "-9  build_kaleido    - builds kaleido's c++"
   "-10 extract          - attempts to extract our build from chromium src folder"
-  "-11 build_js         - uses npm to build js and move to build folder"
-  "-12 roll_wheel       - build python wheel
-  # what about javascript
-  # what about python
-  # ugh
+  "-11 extract_etc      - moves extraneous, extra, and vendor deps into the build folder"
+  "-12 build_js         - uses npm to build js and move to build folder"
+  "-13 roll_wheel       - build python wheel"
 )
 
 FLAGS=(":" "-0" "-1" "-2" "-3" "-4" "-5" "-6" "-7" "-8" "-9" "-10" "-11" "-12")
@@ -56,10 +54,11 @@ EIGHT=$(flags_resolve false "-8")
 NINE=$(flags_resolve false "-9")
 TEN=$(flags_resolve false "-10")
 ELEVEN=$(flags_resolve false "-11")
-ELEVEN=$(flags_resolve false "-12")
+TWELVE=$(flags_resolve false "-12")
+THIRTEEN=$(flags_resolve false "-13")
 
 ALL=true
-if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN || $ELEVEN || $TWELVE; then
+if $ZERO || $ONE || $TWO || $THREE || $FOUR || $FIVE || $SIX || $SEVEN || $EIGHT || $NINE || $TEN || $ELEVEN || $TWELVE || $THIRTEEN; then
   $NO_VERBOSE || echo "Turning off ALL"
   ALL=false
 fi
@@ -169,18 +168,27 @@ fi
 
 if $ELEVEN || $ALL; then
   $NO_VERBOSE || echo "Running 11"
-  if $(which build_js &> /dev/null); then
-    build_js $(flags_resolve "" ":")
+  if $(which extract_etc &> /dev/null); then
+    extract_etc $(flags_resolve "" ":")
   else
-    $SCRIPT_DIR/11-build_js.sh $(flags_resolve "" ":")
+    $SCRIPT_DIR/11-extract_etc.sh $(flags_resolve "" ":")
   fi
 fi
 
 if $TWELVE || $ALL; then
   $NO_VERBOSE || echo "Running 12"
+  if $(which build_js &> /dev/null); then
+    build_js $(flags_resolve "" ":")
+  else
+    $SCRIPT_DIR/12-build_js.sh $(flags_resolve "" ":")
+  fi
+fi
+
+if $THIRTEEN || $ALL; then
+  $NO_VERBOSE || echo "Running 13"
   if $(which roll_wheel &> /dev/null); then
     roll_wheel $(flags_resolve "" ":")
   else
-    $SCRIPT_DIR/12-roll_wheel.sh $(flags_resolve "" ":")
+    $SCRIPT_DIR/13-roll_wheel.sh $(flags_resolve "" ":")
   fi
 fi
