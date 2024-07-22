@@ -37,7 +37,7 @@ mv "${BUILD_DIR}/etc/Mathjax-"* "${BUILD_DIR}/etc/mathjax/"
 # linux copies a bunch of other stuff -- truly not sure how necessary this is
 if [[ "$PLATFORM" == "LINUX" ]]; then
   mkdir -p ${BUILD_DIR}/etc/
-  cp -r /etc/fonts/ ${BUILD_DIR}/fonts
+  cp -r /etc/fonts/ ${BUILD_DIR}/etc/fonts
   mkdir -p ${BUILD_DIR}/xdg
   cp -r /usr/share/fonts/ ${BUILD_DIR}/xdg/
 fi
