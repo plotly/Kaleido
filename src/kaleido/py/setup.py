@@ -29,12 +29,11 @@ def list_dir_flat(directory):
     paths = []
     for (path, directories, filenames) in os.walk(directory):
         for filename in filenames:
-            paths.append(os.path.join(path, filename))
+            paths.append(os.path.relpath(os.path.join(path, filename), "kaleido"))
     return paths
 
 
-executable_files = list_dir_flat("kaleido/executable") # list of relative-to-root files to include
-print("\n".join(executable_files))
+executable_files = list_dir_flat(os.path.join("kaleido","executable")) # list of relative-to-root files to include
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
@@ -150,6 +149,10 @@ class PackageWheel(Command):
                 cmd_obj.plat_name = "macosx-11.0-arm64"
 
         cmd_obj.python_tag = 'py2.py3'
+
+        package_data={
+            'kaleido': executable_files,
+        },
         self.run_command("bdist_wheel")
 
 setup(
