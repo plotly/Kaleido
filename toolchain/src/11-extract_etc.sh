@@ -29,7 +29,7 @@ $NO_VERBOSE || echo "Running 11-extract.sh"
 cp "${MAIN_DIR}/src/kaleido/version" "${MAIN_DIR}/src/kaleido/LICENSE.txt" "${MAIN_DIR}/src/kaleido/CREDITS.html" "${BUILD_DIR}" || echo "Missing some meta files, ignoring issue"
 
 mkdir -p "${BUILD_DIR}/etc"
-unzip "${MAIN_DIR}/vendor/Mathjax-"*.zip -d "${BUILD_DIR}/etc/"
+unzip "${MAIN_DIR}/vendor/mathjax/"*.zip -d "${BUILD_DIR}/etc/"
 mv "${BUILD_DIR}/etc/Mathjax-"* "${BUILD_DIR}/etc/mathjax/"
 
 
