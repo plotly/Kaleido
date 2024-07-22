@@ -176,6 +176,5 @@ setup(
         write_version=WriteVersion,
         copy_license=CopyLicenseAndReadme,
         package=PackageWheel,
-        bundle_hash_artifacts=HashBundleArtifacts,
     )
 )
