@@ -29,12 +29,12 @@ def list_dir_flat(directory):
     paths = []
     for (path, directories, filenames) in os.walk(directory):
         for filename in filenames:
-            paths.append(os.path.join('.', path, filename))
+            paths.append(os.path.join(path, filename))
     return paths
 
 
-executable_files = list_dir_flat(os.path.join("build")) # list of relative-to-root files to include
-
+executable_files = list_dir_flat("kaleido/executable") # list of relative-to-root files to include
+print("\n".join(executable_files))
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""

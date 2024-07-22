@@ -26,6 +26,6 @@ globals_clean_build_dir()
   if [[ ! -d "$BUILD_DIR" ]]; then
     mkdir -p "$BUILD_DIR"
   else
-    rm -rf "${MAIN_DIR}/src/kaleido/py/executable/"* || echo "Nothing to remove?"
+    rm -rf "${MAIN_DIR}/src/kaleido/py/kaleido/executable/"* || echo "Nothing to remove?"
   fi
 }
