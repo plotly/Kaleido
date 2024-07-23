@@ -59,6 +59,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // context is given.
   // This stuff has weird side effects and I'm not sure its necessary.
   headless::HeadlessBrowserContext::Builder context_builder = browser_->CreateBrowserContextBuilder();
+  context_builder.SetIncognitoMode(true);
   headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
 
