@@ -4,7 +4,7 @@
 // Created by jmmease on 6/17/20.
 //
 #include "Base.h"
-#include "base/bind.h"
+#include "base/functional/bind.h"
 #include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

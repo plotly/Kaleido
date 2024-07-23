@@ -27,10 +27,12 @@
 #include <iostream>
 #include "base/json/json_reader.h"
 
+#include "headless/app/scopes/Factory.h"
 // For copy 1
 #include "base/command_line.h"
 
 /// COPY 2
+#include "base/files/file_util.h"
 #include "base/strings/stringprintf.h"
 #include <iostream>
 #include <fstream>
@@ -124,24 +126,24 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   std::string scope_name = scope_stringstream.str();
 
   // Instantiate renderer scope
-  kaleido::scopes::BaseScope *scope = LoadScope(scope_name);
+  kaleido::scopes::BaseScope *scope_ptr = LoadScope(scope_name);
 
-  if (!scope) {
+  if (!scope_ptr) {
       // Invalid scope name
       kaleido::utils::writeJsonMessage(1,  base::StringPrintf("Invalid scope: %s", scope_name.c_str()));
       browser->Shutdown();
       exit(EXIT_FAILURE);
-  } else if (!scope->errorMessage.empty()) {
-      kaleido::utils::writeJsonMessage(1,  scope->errorMessage);
+  } else if (!scope_ptr->errorMessage.empty()) {
+      kaleido::utils::writeJsonMessage(1,  scope_ptr->errorMessage);
       browser->Shutdown();
       exit(EXIT_FAILURE);
   }
 
   // Add javascript bundle
-  scope->localScriptFiles.emplace_back("./js/kaleido_scopes.js");
+  scope_ptr->localScriptFiles.emplace_back("./js/kaleido_scopes.js");
 
   // Build initial HTML file
-  std::list<std::string> scriptTags = scope->ScriptTags();
+  std::list<std::string> scriptTags = scope_ptr->ScriptTags();
   std::stringstream htmlStringStream;
   htmlStringStream << "<html><head><meta charset=\"UTF-8\"><style id=\"head-style\"></style>";
 
@@ -176,19 +178,24 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   // END COPY 1
   // TODO, we need to store stuff here, but we'll come back as we use them
-  auto scope_ptr = scope;
+
   // Run
   browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
-      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, url));
+      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, ""));
   // PART OF copy 1
   for (std::string const &s: scope_ptr->LocalScriptFiles()) {
-      localScriptFiles.push_back(s);
+    localScriptFiles.push_back(s);
   }
   base::GetCurrentDirectory(&cwd);
   // END THAT
   // We need to get here from the compiler, we probably need to see if we can package and use it.
- 
+  // Lets see how far we get if we load it manually with plotly scope (that's an argument)
+  // Then lets see how we actually call it from python and what python gives us back, if it accepts our cusotm messages
+  // If not, silence them, or modify python to allow it (would probably be helpful)
+  // Check out what happens if we reponse differently (1, "Failure")
+  // check out if we can get done reloading events
+
   // We don't need to use exactly their process for loading files.
   // We can create an export job that reloads a page, wait for an event, does whatever this thing was already gonna do, and then goes forward.
   StartListen();

@@ -51,7 +51,7 @@ namespace kaleido {
       void createTab2_attachTarget(int id, base::Value::Dict);
       void createTab3_startSession(int id, base::Value::Dict);
       void createTab4_storeSession(int id, std::unique_ptr<SimpleDevToolsProtocolClient>); // This is a task
-      void primeTab(std::unique_ptr<SimpelDevToolsProtocolClient>);
+      inline void primeTab(const std::unique_ptr<SimpleDevToolsProtocolClient>&);
   };
 }
 

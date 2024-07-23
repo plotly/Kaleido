@@ -14,7 +14,6 @@
 
 #include "base/task/thread_pool.h"
 
-#include "headless/app/scopes/Factory.h"
 
 namespace kaleido {
   class Dispatch;
@@ -69,6 +68,10 @@ namespace kaleido {
 
     void ShutdownSoon();
     void ShutdownTask();
+
+    // FROM PREVIOUS STRUCTURE
+    base::FilePath cwd;
+    std::vector<std::string> localScriptFiles;
   };
 }
 

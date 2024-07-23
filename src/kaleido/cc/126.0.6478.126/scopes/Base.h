@@ -4,6 +4,7 @@
 //
 
 #include "base/strings/string_util.h"
+#include "base/command_line.h"
 
 #include <list>
 #include <vector>
@@ -21,7 +22,7 @@ namespace kaleido {
                 virtual ~BaseScope();
 
                 virtual std::string ScopeName() = 0;
-                void BuildCallArguments();
+                virtual void BuildCallArguments();
                 std::list<std::string> ScriptTags();
                 std::list<std::string> LocalScriptFiles();
                 std::string GetCommandLineSwitch(std::string name);
@@ -32,7 +33,7 @@ namespace kaleido {
             public:
                 std::list<std::string> scriptTags;
                 std::list<std::string> localScriptFiles;
-                const BaseScope *plugin;
+                const base::raw_ptr<BaseScope> plugin;
         };
 
         BaseScope::BaseScope(): errorMessage(), scriptTags(), localScriptFiles() {}
@@ -45,7 +46,7 @@ namespace kaleido {
             delete plugin;
         }
 
-        BaseScope::BuildCallArguments() {
+        void BaseScope::BuildCallArguments() {
             return;
         }
 

@@ -76,11 +76,12 @@ namespace kaleido {
     tabs.push(std::move(newTab));
   }
 
-  void Dispatch::primeTab(const std::unique_ptr<SimpleDevToolsProtocolClient> &tab) {
-    base::Value::Dict params;
+  inline void Dispatch::primeTab(const std::unique_ptr<SimpleDevToolsProtocolClient> &tab) {
+    /*base::Value::Dict params;
     params.Set("msg", "load event fired");
     tab->AddEventHandler("Page.loadEventFired", base::BindRepeating(&Kaleido::ReportOperation, parent_, -1, true, params));
     tab->SendCommand("Page.enable");
-    tab->SendCommand("Page.reload");
+    tab->SendCommand("Page.reload");*/
+    return;
   }
 }
