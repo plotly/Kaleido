@@ -71,15 +71,16 @@ namespace kaleido {
   void Dispatch::createTab4_storeSession(int id, std::unique_ptr<SimpleDevToolsProtocolClient> newTab) {
     // We could run one command here to see if it is valid, it should be valid!
     // At some point we need to concern ourselves with failure paths.
-    tabs.push(std::move(newTab));
     parent_->ReportSuccess(id);
+    primeTab(newTab);
+    tabs.push(std::move(newTab));
   }
 
-  void Dispatch::primeTab(std::unique_ptr<SimpleDevToolsProtocolClient> tab) {
+  void Dispatch::primeTab(const std::unique_ptr<SimpleDevToolsProtocolClient> &tab) {
     base::Value::Dict params;
     params.Set("msg", "load event fired");
-    tab.AddEventHandler("Page.loadEventFired", base::BindRepeating(&Kaleido::ReportOperation, parent,-1, true, params));
-    tab.SendCommand("Page.enable");
-    tab.SendCommand("Page.reload");
+    tab->AddEventHandler("Page.loadEventFired", base::BindRepeating(&Kaleido::ReportOperation, parent_, -1, true, params));
+    tab->SendCommand("Page.enable");
+    tab->SendCommand("Page.reload");
   }
 }
