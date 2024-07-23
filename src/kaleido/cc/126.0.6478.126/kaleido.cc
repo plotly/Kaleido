@@ -161,12 +161,8 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   kaleido::utils::writeJsonMessage(0, "Initilization Success");
 
   // END COPY 1
-
-
   // Run
-  browser_->BrowserMainThread()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, url));
+  dispatch->CreateTab(-1, url);
   // PART OF copy 1
   for (std::string const &s: scope_ptr->LocalScriptFiles()) {
     localScriptFiles.push_back(s);
@@ -245,9 +241,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
   }
 
   if (*operation == "create_tab") {
-      browser_->BrowserMainThread()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, GURL(std::string("file://") + tmpFileName)));
+          dispatch->CreateTab(*id, GURL(std::string("file://") + tmpFileName));
   } else if (*operation == "noop") {} else {
     Api_ErrorUnknownOperation(*id, *operation);
     return true;

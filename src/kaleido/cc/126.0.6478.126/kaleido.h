@@ -37,7 +37,8 @@ namespace kaleido {
       void ReportSuccess(int id);
       void ReportFailure(int id, const std::string& msg);
 
-      // a browser, global basically
+      // a browser, global basically,
+      // this is needed for anything that does anything on thread control
       raw_ptr<headless::HeadlessBrowser> browser_;
 
   private:

@@ -40,16 +40,17 @@ namespace kaleido {
       raw_ptr<Kaleido> parent_;
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
-      SimpleDevToolsProtocolClient tab; // this goes on the queue
 
       base::raw_ptr<headless::HeadlessWebContents> web_contents;
       // Represent connections to a tab
       std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
+      std::queue<std::string> jobs;
 
       // All queue operations happen on a SequencedTaskRunner for memory safety
       // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
+      void sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab);
       void dumpEvent(const base::Value::Dict& msg);
       void dumpResponse(base::Value::Dict msg);
   };
