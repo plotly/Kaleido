@@ -24,6 +24,9 @@ executable("kaleido") {
     "app/kaleido.cc",
     "app/kaleido_main.cc",
     "app/kaleido.h",
+    "app/scopes/Factory.h",
+    "app/scopes/Plotly.h",
+    "app/scopes/Base.h"
   ]
   deps = [
     ":dispatch",
