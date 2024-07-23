@@ -49,7 +49,6 @@ class BaseScope(object):
             self,
             disable_gpu=True,
             chromium_args=True,
-            stderr=subprocess.DEVNULL,
     ):
         if chromium_args is True:
             chromium_args = self.default_chromium_args()
@@ -62,13 +61,15 @@ class BaseScope(object):
             chromium_args = [arg for arg in chromium_args if arg != "--disable-gpu"]
 
         self._chromium_args = tuple(chromium_args)
-        # Communication stuff, everything above was picking args
+
         # Internal Properties
+        self._std_error = io.BytesIO()
+        self._std_error_thread = None
         self._proc = None
         self._proc_lock = Lock()
 
     def __del__(self):
-        self._shutdown_kaleido() # i honestly dont know when this called or what this does
+        self._shutdown_kaleido()
 
     @classmethod
     def executable_path(cls):
@@ -137,18 +138,36 @@ Searched for executable 'kaleido' on the following system PATH:
 
         return proc_args
 
+    def _collect_standard_error(self):
+        """
+        Write standard-error of subprocess to the _std_error StringIO buffer.
+        Intended to be called once in a background thread
+        """
+        while True:
+            # Usually there should aways be a process
+            if self._proc is not None:
+                val = self._proc.stderr.readline()
+                self._std_error.write(val)
+            else:
+                # Due to concurrency the process may be killed while this loop is still running
+                # in this case break the loop
+                return
+
     def _ensure_kaleido(self):
         """
         Launch the kaleido subprocess if it is not already running and in a good state
         """
         # Use double-check locking to make sure we only initialize the process
-        # from a single thread # we are only initializing it from one thread.
+        # from a single thread
         if self._proc is None or self._proc.poll() is not None:
             with self._proc_lock:
                 if self._proc is None or self._proc.poll() is not None:
                     # Wait on process if crashed to prevent zombies
                     if self._proc is not None:
                         self._proc.wait()
+
+                    # Reset _std_error buffer
+                    self._std_error = io.BytesIO()
 
                     # Launch kaleido subprocess
                     # Note: shell=True seems to be needed on Windows to handle executable path with
@@ -159,9 +178,15 @@ Searched for executable 'kaleido' on the following system PATH:
                         proc_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
-                        stderr=stderr,
+                        stderr=subprocess.PIPE,
                         shell=sys.platform == "win32"
                     )
+
+                    # Set up thread to asynchronously collect standard error stream
+                    if self._std_error_thread is None or not self._std_error_thread.is_alive():
+                        self._std_error_thread = Thread(target=self._collect_standard_error)
+                        self._std_error_thread.daemon = True
+                        self._std_error_thread.start()
 
                     # Read startup message and check for errors
                     startup_response_string = self._proc.stdout.readline().decode('utf-8')
@@ -176,6 +201,29 @@ Searched for executable 'kaleido' on the following system PATH:
                         if startup_response.get("code", 0) != 0:
                             self._proc.wait()
                             raise ValueError(startup_response.get("message", "Failed to start Kaleido subprocess"))
+
+    def _get_decoded_std_error(self):
+        """
+        Attempt to decode standard error bytes stream to a string
+        """
+        std_err_str = None
+        try:
+            encoding = sys.stderr.encoding
+            std_err_str = self._std_error.getvalue().decode(encoding)
+        except Exception:
+            pass
+
+        if std_err_str is None:
+            try:
+                encoding = locale.getpreferredencoding(False)
+                std_err_str = self._std_error.getvalue().decode(encoding)
+            except Exception:
+                pass
+
+        if std_err_str is None:
+            std_err_str = "Failed to decode Chromium's standard error stream"
+
+        return std_err_str
 
     def _shutdown_kaleido(self):
         """
