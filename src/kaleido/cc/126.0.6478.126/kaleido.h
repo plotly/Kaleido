@@ -72,6 +72,7 @@ namespace kaleido {
     // FROM PREVIOUS STRUCTURE
     base::FilePath cwd;
     std::vector<std::string> localScriptFiles;
+    std::string tmpFileName;
   };
 }
 

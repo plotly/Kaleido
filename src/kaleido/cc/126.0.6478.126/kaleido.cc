@@ -94,24 +94,8 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   headless::HeadlessBrowserContext* browser_context = context_builder.Build();
   browser_->SetDefaultBrowserContext(browser_context);
 
-  // A note about this strategy:
-    // I don't see the point of accepting information on the commandline and on stdin, but I think
-    // it came from not really knowing how to build a messaging interface on stdin. IPC on one channel,
-    // unless you have a good reason. There is no good reason here, its just a switch.
-    // Either way, the whole concepts of scopes is wildly overengineered and should be entirely eliminated.
-    // It is essentially a plugin system created for the sake of having a "kaleido" which accepts "scopes" as 
-    // a project description.
-    // A very nice sounding structure, but expensive work for the sake of some catch phrases when a much simpler
-    // solution would get the job done.
-    // The scopes should be eliminated, and we should not accept pull requests for third parties integrating their work
-    // if it generates work for us (bug fixes are fine but don't invite plugins to review)
-    // Kaleido should open browser tabs to an arbitrary file and send javascript fragments to
-    // the browser tab which generate and download the image. This structure would be more flexible, allow people use to kaleido
-    // as an import for their own project, and eliminate 3 entire files and another 200 lines of code.
-    // I would love to do that, but I feel this project is so tied to its advertising with its fancy name, that I left in all this
-    // extremely overengineerd, counterproductive boilerplate.
   // BEGIN COPY 1
-  // Get the URL from the command line.
+  // Get the scope from the command line.
   base::CommandLine::StringVector args =
           base::CommandLine::ForCurrentProcess()->GetArgs();
   if (args.empty()) {
@@ -164,7 +148,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
   // Write html to temp file
-  std::string tmpFileName = std::tmpnam(nullptr) + std::string(".html");
+  tmpFileName = std::tmpnam(nullptr) + std::string(".html");
   std::ofstream htmlFile;
   htmlFile.open(tmpFileName, std::ios::out);
   htmlFile << htmlStringStream.str();
@@ -177,27 +161,19 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   kaleido::utils::writeJsonMessage(0, "Initilization Success");
 
   // END COPY 1
-  // TODO, we need to store stuff here, but we'll come back as we use them
+
 
   // Run
   browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
-      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, url)); // TODO make this not a blank url, string GURL
+      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, url));
   // PART OF copy 1
   for (std::string const &s: scope_ptr->LocalScriptFiles()) {
     localScriptFiles.push_back(s);
   }
   base::GetCurrentDirectory(&cwd);
   // END THAT
-  // We need to get here from the compiler, we probably need to see if we can package and use it.
-  // Lets see how far we get if we load it manually with plotly scope (that's an argument)
-  // Then lets see how we actually call it from python and what python gives us back, if it accepts our cusotm messages
-  // If not, silence them, or modify python to allow it (would probably be helpful)
-  // Check out what happens if we reponse differently (1, "Failure")
-  // check out if we can get done reloading events
 
-  // We don't need to use exactly their process for loading files.
-  // We can create an export job that reloads a page, wait for an event, does whatever this thing was already gonna do, and then goes forward.
   StartListen();
   // TODO Destructor, temp files not destroyed
 
@@ -269,11 +245,9 @@ bool Kaleido::ReadJSON(std::string &msg) {
   }
 
   if (*operation == "create_tab") {
-      /*browser_->BrowserMainThread()->PostTask(
+      browser_->BrowserMainThread()->PostTask(
           FROM_HERE,
-          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, ""));*/
-      // don't let them do this yet
-      // No url :-(
+          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, GURL(std::string("file://") + tmpFileName)));
   } else if (*operation == "noop") {} else {
     Api_ErrorUnknownOperation(*id, *operation);
     return true;
