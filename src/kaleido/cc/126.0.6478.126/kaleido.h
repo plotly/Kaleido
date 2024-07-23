@@ -14,6 +14,8 @@
 
 #include "base/task/thread_pool.h"
 
+#include "headless/app/scopes/Factory.h"
+
 namespace kaleido {
   class Dispatch;
   // Kaleido is our app, basically.
@@ -69,5 +71,7 @@ namespace kaleido {
     void ShutdownTask();
   };
 }
+
+
 #endif  // KALEIDO_H_
 
