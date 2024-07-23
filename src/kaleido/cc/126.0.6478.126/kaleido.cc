@@ -174,7 +174,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   GURL url = GURL(std::string("file://") + tmpFileName);
 
   // Initialization succeeded
-  kaleido::utils::writeJsonMessage(0, "Success");
+  kaleido::utils::writeJsonMessage(0, "Initilization Success");
 
   // END COPY 1
   // TODO, we need to store stuff here, but we'll come back as we use them
@@ -182,7 +182,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // Run
   browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
-      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, ""));
+      base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), -1, url)); // TODO make this not a blank url, string GURL
   // PART OF copy 1
   for (std::string const &s: scope_ptr->LocalScriptFiles()) {
     localScriptFiles.push_back(s);
@@ -199,6 +199,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // We don't need to use exactly their process for loading files.
   // We can create an export job that reloads a page, wait for an event, does whatever this thing was already gonna do, and then goes forward.
   StartListen();
+  // TODO Destructor, temp files not destroyed
 
 }
 
@@ -268,9 +269,11 @@ bool Kaleido::ReadJSON(std::string &msg) {
   }
 
   if (*operation == "create_tab") {
-      browser_->BrowserMainThread()->PostTask(
+      /*browser_->BrowserMainThread()->PostTask(
           FROM_HERE,
-          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, ""));
+          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, ""));*/
+      // don't let them do this yet
+      // No url :-(
   } else if (*operation == "noop") {} else {
     Api_ErrorUnknownOperation(*id, *operation);
     return true;
@@ -281,9 +284,15 @@ bool Kaleido::ReadJSON(std::string &msg) {
   return true;
 }
 
-void Kaleido::ReportOperation(int id, bool success, base::Value::Dict msg) {
+void Kaleido::ReportOperation(int id, bool success, const base::Value::Dict &msg) {
   if (!success && id < 0) {
     LOG(ERROR) << "Failure of internal dev tools operation id "
+      << std::to_string(id)
+      << " and msg: "
+      << msg;
+    return;
+  } else if (success && id < 0) {
+    LOG(INFO) << "Success of internal dev tools operation id "
       << std::to_string(id)
       << " and msg: "
       << msg;
@@ -303,7 +312,10 @@ void Kaleido::ReportFailure(int id, const std::string& msg) {
 }
 
 void Kaleido::ReportSuccess(int id) {
-  if (id < 0) return;
+  if (id < 0) {
+    LOG(INFO) << "Success of message with id " << std::to_string(id);
+    return;
+  }
   PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"success":true})");
 }
 

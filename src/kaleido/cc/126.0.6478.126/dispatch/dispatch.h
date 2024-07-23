@@ -31,15 +31,18 @@ namespace kaleido {
 
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
-      void CreateTab(int id, const std::string &url) { createTab1_createTarget(id, url); }
+      void CreateTab(int id, const GURL &url);
 
       void Release() { browser_devtools_client_.DetachClient(); } // subclients go with it
+
 
     private:
       raw_ptr<Kaleido> parent_;
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
+      SimpleDevToolsProtocolClient tab;
 
+      base::raw_ptr<headless::HeadlessWebContents> web_contents;
       // Represent connections to a tab
       std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
 
@@ -47,27 +50,14 @@ namespace kaleido {
       // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
-      void createTab1_createTarget(int id, const std::string &url);
-      void createTab2_attachTarget(int id, base::Value::Dict);
-      void createTab3_startSession(int id, base::Value::Dict);
-      void createTab4_storeSession(int id, std::unique_ptr<SimpleDevToolsProtocolClient>); // This is a task
-      inline void primeTab(const std::unique_ptr<SimpleDevToolsProtocolClient>&);
+      //void createTab1_createTarget(int id, const std::string &url);
+      //void createTab2_attachTarget(int id, base::Value::Dict);
+      //void createTab3_startSession(int id, base::Value::Dict);
+      //void createTab4_primeTab(int id, const std::unique_ptr<SimpleDevToolsProtocolClient>, base::Value::Dict);
+      //void createTab5_storeSession(int id, std::unique_ptr<SimpleDevToolsProtocolClient>); // This is a task
+      void dumpEvent(const base::Value::Dict& msg);
+      void dumpResponse(base::Value::Dict msg);
   };
 }
 
 #endif  // DISPATCH_H_
-
-  // [x] Create Tab (needs to check for jobs)
-  // [x] Link JSON to shutdown
-  // [x] Link JSON to create tab
-  // [x] How to handles errors in callback chain to user
-  // [ ] Change over to printf
-  // [ ] Queue Job (needs to check for jobs)
-  // [ ] Check for jobs
-  // [ ] Get Status
-  // [ ] Link JSON to Status
-
-
-
-
-

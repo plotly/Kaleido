@@ -33,15 +33,15 @@ namespace kaleido {
       void OnBrowserStart(headless::HeadlessBrowser* browser);
 
       // Dispatch uses this to let us know how things went
-      void ReportOperation(int id, bool success, base::Value::Dict msg);
+      void ReportOperation(int id, bool success, const base::Value::Dict &msg);
       void ReportSuccess(int id);
       void ReportFailure(int id, const std::string& msg);
 
+      // a browser, global basically
+      raw_ptr<headless::HeadlessBrowser> browser_;
 
   private:
 
-    // a browser, global basically
-    raw_ptr<headless::HeadlessBrowser> browser_;
 
     // User IO stuff for main
     void StartListen(); // continually reads stdin on parallel task
