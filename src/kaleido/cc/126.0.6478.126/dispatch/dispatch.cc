@@ -75,5 +75,11 @@ namespace kaleido {
     parent_->ReportSuccess(id);
   }
 
-
+  void Dispatch::primeTab(std::unique_ptr<SimpleDevToolsProtocolClient> tab) {
+    base::Value::Dict params;
+    params.Set("msg", "load event fired");
+    tab.AddEventHandler("Page.loadEventFired", base::BindRepeating(&Kaleido::ReportOperation, parent,-1, true, params));
+    tab.SendCommand("Page.enable");
+    tab.SendCommand("Page.reload");
+  }
 }
