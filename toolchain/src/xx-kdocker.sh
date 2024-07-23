@@ -162,7 +162,7 @@ $NO_VERBOSE || echo -e "User Command Set:\n$USER_COMMAND"
 $NO_VERBOSE || echo -e "Command Set:\n$COMMAND"
 
 $NO_VERBOSE || echo "Pulling $IMAGE"
-docker pull "$IMAGE"
+docker pull "$IMAGE" || echo "Error, but maybe it's a local image"
 
 $NO_VERBOSE || set -x # to print out the line w/o rewriting it
 docker container run -e "TERM=$TERM" --rm -it$DETACH -v "$APT_VOLUME" -v "$VOLUME" "$IMAGE" bash -c "$COMMAND"
