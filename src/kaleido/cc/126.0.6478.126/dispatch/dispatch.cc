@@ -39,10 +39,11 @@ namespace kaleido {
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
-    // There is a possible race condition here
+    // There is a possible danglng pointer here
     // If the browser shuts down right after calling create tab
+    // Then the unique pointer was be present queue to be destroyed properly
     // Would need to create tab on the browser thread and put it in active jobs
-    // To solve
+    // Basically, protect which threads access which queues
     auto tab = std::make_unique<Tab>();
     headless::HeadlessWebContents::Builder builder(
       parent_->browser_->GetDefaultBrowserContext()->CreateWebContentsBuilder());
@@ -86,10 +87,10 @@ namespace kaleido {
     }
   }
 
-  // Memory TODO
+  // Memory TODO, singletons etc
 
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
-    // reace condition, all of the below should happen on the browser task
+    // all of the below should happen on the browser task
     int job_id = job_number++;
     job->currentTab = std::move(tab);
     activeJobs[job_id] = std::move(job);
