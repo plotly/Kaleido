@@ -4,6 +4,7 @@ from threading import Lock, Thread
 import io
 import os
 import sys
+import time
 import locale
 import platform
 
@@ -185,7 +186,7 @@ Searched for executable 'kaleido' on the following system PATH:
                     )
 
                     # Set up thread to asynchronously collect standard error stream
-                    if self._std_error_thread is None or not self._std_error_thread.is_alive() and not self.debug:
+                    if not self.debug and (self._std_error_thread is None or not self._std_error_thread.is_alive()):
                         self._std_error_thread = Thread(target=self._collect_standard_error)
                         self._std_error_thread.daemon = True
                         self._std_error_thread.start()
@@ -240,6 +241,7 @@ Searched for executable 'kaleido' on the following system PATH:
                     if self._proc.poll() is None:
                         # Process still running, close stdin to tell kaleido
                         # to shut down gracefully
+                        self._proc.stdin.write('{"operation":"shutdown"}\n'.encode('utf-8')); 
                         self._proc.stdin.close()
 
                     # wait for process to terminate if it was running.
@@ -248,6 +250,7 @@ Searched for executable 'kaleido' on the following system PATH:
                     try:
                         self._proc.wait(timeout=2.0)
                     except:
+                        self._proc.kill()
                         # We tried to wait! Moving on...
                         pass
 
@@ -312,7 +315,16 @@ Searched for executable 'kaleido' on the following system PATH:
                 response = self._proc.stdout.readline()
                 if self.debug: print(str(response), file=sys.stderr)
             except BaseException:  # allows to catch KeyboardInterrupt = CTRL+C
-                print("Error stream:\n", self._get_decoded_std_error())
+                # no need to decode_std_err, honestly get rid of all this
+                # and ctl+c should be clean
+                if not self.debug: print("Error stream:\n", self._get_decoded_std_error())
+                self._proc.stdin.write('{"operation":"shutdown"}\n'.encode('utf-8')); 
+                self._proc.stdin.close()
+                try:
+                    self._proc.wait(timeout=2.0)
+                except:
+                    # We tried to wait! Moving on...
+                    self._proc.kill()
                 raise
 
         response_string = response.decode('utf-8')
