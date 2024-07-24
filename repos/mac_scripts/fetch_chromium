@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Commits
 DEPOT_TOOLS_COMMIT="" # Can't set a version for Windows, maybe we can for make depending on TODO below, probably won't
