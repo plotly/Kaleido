@@ -37,6 +37,38 @@
 #include <iostream>
 #include <fstream>
 
+namespace base {
+    // Chromium doens't provide and implementation of ExecutableExistsInPath on Windows, so we add one here
+    bool ExecutableExistsInPath(Environment* env,
+        const std::string& executable) {
+        std::string path;
+        if (!env->GetVar("PATH", &path)) {
+            LOG(ERROR) << "No $PATH variable. Assuming no " << executable << ".";
+            return false;
+        }
+
+        for (const StringPiece& cur_path:
+            SplitStringPiece(path, ";", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
+
+            // Build wide strings using wstringstreams
+            std::wstringstream wpath_ss;
+            wpath_ss << std::string(cur_path).c_str();
+
+            std::wstringstream wexecutable_ss;
+            wexecutable_ss << executable.c_str() << ".exe";
+
+            std::wstring wpath_ss_as_string = wpath_ss.str();
+            FilePath::StringPieceType w_cur_path(wpath_ss_as_string);
+            FilePath file(w_cur_path);
+
+            if (PathExists(file.Append(wexecutable_ss.str()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
 // This is from the original kaleido
 namespace kaleido {
     namespace utils {
@@ -61,7 +93,11 @@ namespace kaleido {
 /// END COPY 2
 namespace kaleido {
 
-Kaleido::Kaleido() = default; // Define here or else chromium complains.
+Kaleido::Kaleido()
+  : env(base::Environment::Create()),
+    popplerAvailable(base::ExecutableExistsInPath(env.get(), "pdftops")),
+    inkscapeAvailable(base::ExecutableExistsInPath(env.get(), "inkscape")) {
+};
 
 // Control Flow, declare here
 void Kaleido::ShutdownSoon() {

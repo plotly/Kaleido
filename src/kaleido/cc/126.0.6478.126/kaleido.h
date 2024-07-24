@@ -13,6 +13,7 @@
 #include "headless/app/dispatch/dispatch.h"
 
 #include "base/task/thread_pool.h"
+#include "base/environment.h"
 
 namespace kaleido {
     namespace scopes {
@@ -77,6 +78,9 @@ namespace kaleido {
     std::vector<std::string> localScriptFiles;
     std::string tmpFileName;
     base::raw_ptr<scopes::BaseScope> scope_ptr;
+    bool popplerAvailable;
+    bool inkscapeAvailable;
+    std::unique_ptr<base::Environment> env;
   };
 }
 

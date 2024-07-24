@@ -46,6 +46,7 @@ namespace kaleido {
 
       void Release() {
         browser_devtools_client_.DetachClient();
+        //delete web_contents;
       } // subclients go with it... not anymore
 
 
