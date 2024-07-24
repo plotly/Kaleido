@@ -1,6 +1,7 @@
 from __future__ import unicode_literals, print_function
 import os
 import shutil
+import setuptools
 from setuptools import setup, Command
 import glob
 import distutils.util
