@@ -251,6 +251,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
   // Trust chromium to handle it all when the browser exits
   // Doesn't need id, no return
   if (operation && *operation == "shutdown") {
+    LOG(INFO) << "Shutdown clean";
     ShutdownSoon();
     return false; // breaks stdin loop
   }
@@ -260,12 +261,11 @@ bool Kaleido::ReadJSON(std::string &msg) {
       LOG(INFO) << "It seems like we're using the old protocol.";
       LOG(INFO) << jsonDict.DebugString();
       old=true;
-      std::unique_ptr<Job> job = std::make_unique<Job>();
+      std::unique_ptr<Job> job = std::make_unique<Job>(msg);
       job->version = 0;
       job->id = -2;
       job->format = *maybe_format;
       job->scope = scope_ptr->ScopeName().c_str();
-      job->spec = std::move(jsonDict);
       dispatch->PostJob(std::move(job));
       return true;
     } else {

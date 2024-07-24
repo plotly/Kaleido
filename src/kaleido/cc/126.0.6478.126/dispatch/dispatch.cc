@@ -22,7 +22,7 @@ namespace kaleido {
     client_->DetachClient();
     web_contents_.ExtractAsDangling()->Close();
   }
-  Job::Job() {}
+  Job::Job(std::string& spec): spec(spec) {}
   Job::~Job() {
     if (currentTab) currentTab.reset();
   }
@@ -120,7 +120,8 @@ namespace kaleido {
         "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     activeJobs[job_id]->scriptItr = parent_->localScriptFiles.begin();
-
+    LOG(INFO) << msg.DebugString();
+    activeJobs[job_id]->executionId = *msg.FindDict("params")->FindDict("context")->FindInt("id");
     base::Value::Dict empty;
     runJob4_loadNextScript(job_id, std::move(empty));
 
@@ -129,7 +130,28 @@ namespace kaleido {
   void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
-      // now we export next?
+      // spec is activeJobs[spec]
+      // get console.loging
+        /*std::string exportFunction = base::StringPrintf(
+            "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
+            scope->ScopeName().c_str());
+
+        std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args = scope->BuildCallArguments();*/
+      std::string exportFunction = base::StringPrintf(
+          "function(arggy) { return arggy }");
+      // Params
+      base::Value::Dict spec;
+      spec.Set("value", activeJobs[job_id]->spec);
+      base::Value::List args;
+      args.Append(std::move(spec));
+      base::Value::Dict params;
+      params.Set("functionDeclaration", exportFunction);
+      params.Set("arguments", std::move(args));
+      params.Set("returnByValue", false);
+      params.Set("userGesture", true);
+      params.Set("executionContextId", activeJobs[job_id]->executionId);
+      LOG(INFO) << params.DebugString();
+      activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.callFunctionOn", std::move(params), base::BindOnce(&Dispatch::dumpResponse, base::Unretained(this)));
       return;
     }
     std::string scriptPath(*activeJobs[job_id]->scriptItr);
