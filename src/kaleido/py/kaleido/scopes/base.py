@@ -49,7 +49,9 @@ class BaseScope(object):
             self,
             disable_gpu=True,
             chromium_args=True,
+            debug=False
     ):
+        self.debug=True if os.environ.get('DEBUG') else debug
         if chromium_args is True:
             chromium_args = self.default_chromium_args()
         elif chromium_args is False:
@@ -178,7 +180,7 @@ Searched for executable 'kaleido' on the following system PATH:
                         proc_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
+                        stderr=None if self.debug else subprocess.PIPE,
                         shell=sys.platform == "win32"
                     )
 
@@ -307,6 +309,7 @@ Searched for executable 'kaleido' on the following system PATH:
             self._proc.stdin.flush()
             try:
                 response = self._proc.stdout.readline()
+                if self.debug: print(str(response), file=sys.stderr)
             except BaseException:  # allows to catch KeyboardInterrupt = CTRL+C
                 print("Error stream:\n", self._get_decoded_std_error())
                 raise
