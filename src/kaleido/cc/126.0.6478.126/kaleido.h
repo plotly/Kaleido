@@ -13,7 +13,6 @@
 #include "headless/app/dispatch/dispatch.h"
 
 #include "base/task/thread_pool.h"
-#include "base/environment.h"
 
 namespace kaleido {
     namespace scopes {
@@ -39,6 +38,13 @@ namespace kaleido {
       void ReportOperation(int id, bool success, const base::Value::Dict &msg);
       void ReportSuccess(int id);
       void ReportFailure(int id, const std::string& msg);
+      void Api_OldMsg(int code, std::string message);
+      // JSON Helper functions for creating common messages to user
+      void Api_ErrorInvalidJSON();
+      void Api_ErrorMissingBasicFields(absl::optional<int>);
+      void Api_ErrorDuplicateId(int);
+      void Api_ErrorNegativeId(int);
+      void Api_ErrorUnknownOperation(int id, const std::string& op);
 
       // a browser, global basically,
       // this is needed for anything that does anything on thread control
@@ -46,13 +52,14 @@ namespace kaleido {
 
   private:
 
-
+    bool old = false;
     // User IO stuff for main
     void StartListen(); // continually reads stdin on parallel task
     void listenTask();
     void postListenTask();
     std::atomic_flag listening = ATOMIC_FLAG_INIT; // to only call postListenTask() once
     void PostEchoTask(const std::string&); // echo something out
+    void PostEchoTaskOld(const std::string&);
 
     std::unordered_map<int, const std::string&> messageIds; // every message must have a unique id
     bool ReadJSON(std::string&); // try to turn message into json object
@@ -63,12 +70,6 @@ namespace kaleido {
     // our tab dispatch, our actual browser controller
     raw_ptr<Dispatch> dispatch;
 
-    // JSON Helper functions for creating common messages to user
-    void Api_ErrorInvalidJSON();
-    void Api_ErrorMissingBasicFields(absl::optional<int>);
-    void Api_ErrorDuplicateId(int);
-    void Api_ErrorNegativeId(int);
-    void Api_ErrorUnknownOperation(int id, const std::string& op);
 
     void ShutdownSoon();
     void ShutdownTask();
@@ -78,9 +79,6 @@ namespace kaleido {
     std::vector<std::string> localScriptFiles;
     std::string tmpFileName;
     base::raw_ptr<scopes::BaseScope> scope_ptr;
-    bool popplerAvailable;
-    bool inkscapeAvailable;
-    std::unique_ptr<base::Environment> env;
   };
 }
 

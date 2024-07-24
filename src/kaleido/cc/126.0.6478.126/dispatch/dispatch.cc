@@ -19,6 +19,9 @@ namespace kaleido {
     job_line = base::ThreadPool::CreateSequencedTaskRunner({
         base::TaskPriority::BEST_EFFORT,
         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    env = base::Environment::Create();
+    popplerAvailable = base::ExecutableExistsInPath(env.get(), "pdftops");
+    inkscapeAvailable = base::ExecutableExistsInPath(env.get(), "inkscape");
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
@@ -54,35 +57,40 @@ namespace kaleido {
 
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, tab_t tab) {
     int job_id = job_number++;
-    browser_->BrowserMainThread()->PostTask(
+    parent_->browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
       base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), std::move(job), std::move(tab), job_id));
     return;
   }
 
-  // DELCARE ALL TODO
+  // Pure call back structure --> central manager structure TODO
+  // Memory TODO
+  // WebContents TODO
+  // Reunify output
 
-  void Dispatch::runJob1_resetTab(std::unique_ptr<Job> job, tab_t tab, int job_id) {
+  void Dispatch::runJob1_resetTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id) {
     tab->SendCommand("Page.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), std::move(job), std::move(tab), job_id));
   }
 
-  void Dispatch::runJob2_reloadTab(std::unique_ptr<Job> job, tab_t tab, base::Value::Dict msg, int job_id) {
-    auto cb = base::BindRepeating(&Dispatch::runJob3_configureTab, base::Unretained(this), std::move(job), std::move(tab), job_id);
+  void Dispatch::runJob2_reloadTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, base::Value::Dict msg) {
+    LOG(INFO) << "CAUGHT ENABLE";
+    LOG(INFO) << msg.DebugString();
+    /*auto cb = base::BindRepeating(&Dispatch::runJob3_configureTab, base::Unretained(this), std::move(job), std::move(tab), job_id);
     job_events[job_id] = cb.get();
     tab->AddEventHandler("Page.loadEventFired", std::move(cb));
-    tab->SendCommand("Page.reload");
+    tab->SendCommand("Page.reload");*/
   }
-  void Dispatch::runJob3_configureTab(std::unique_ptr<Job> job, tab_t tab, const base::Value::Dict& msg, int job_id) {
-    LOG(INFO) << "CAUGHT PAGE RELOAD";
+
+  void Dispatch::runJob3_configureTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, const base::Value::Dict& msg) {
+    LOG(INFO) << "CAUGHT PAGE RELOAD";/*
     tab->RemoveEventHandler("Page.loadEventFired", *job_events[job_id]);
-    job_events.erase(job_id);
+    job_events.erase(job_id);*/
     // Theoretically, we've reloaded the page, and we're good to go. Theoretically.
   }
 
-
   void Dispatch::PostJob(std::unique_ptr<Job> job) {
-    if (job->format == "eps" && !parent_->popplerAvailable) {
-        utils::writeJsonMessage(
+    if (job->format == "eps" && !popplerAvailable) {
+        parent_->Api_OldMsg(
                 530,
                 "Exporting to EPS format requires the pdftops command "
                 "which is provided by the poppler library. "
@@ -92,8 +100,8 @@ namespace kaleido {
     }
 
     // Validate inkscape installed if format is emf
-    if (job->format == "emf" && !parent_->inkscapeAvailable) {
-        utils::writeJsonMessage(
+    if (job->format == "emf" && !inkscapeAvailable) {
+        parent_->Api_OldMsg(
                 530,
                 "Exporting to EMF format requires inkscape. "
                 "Please install inkscape and make sure it is available on the PATH");

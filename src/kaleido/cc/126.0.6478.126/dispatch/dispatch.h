@@ -8,6 +8,8 @@
 #include "base/task/sequenced_task_runner.h"
 #include "headless/app/kaleido.h"
 #include <unordered_map>
+#include "base/environment.h"
+#include "base/files/file_util.h"
 
 namespace kaleido {
   using namespace simple_devtools_protocol_client;
@@ -65,17 +67,25 @@ namespace kaleido {
       std::queue<std::unique_ptr<Job>> jobs;
       int job_number = 0;
 
-      unordered_map<int, SimpleDevToolsProtocolClient::EventCallback> job_events;
+      std::unordered_map<int, SimpleDevToolsProtocolClient::EventCallback> job_events;
 
       // All queue operations happen on a SequencedTaskRunner for memory safety
       // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
+
+      void runJob1_resetTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id);
+      void runJob2_reloadTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, base::Value::Dict msg);
+      void runJob3_configureTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, const base::Value::Dict& msg);
 
       void sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab); // task
       void sortJob(std::unique_ptr<Job>); // task
       void dispatchJob(std::unique_ptr<Job> job, tab_t tab);
       void dumpEvent(const base::Value::Dict& msg);
       void dumpResponse(base::Value::Dict msg);
+
+      bool popplerAvailable;
+      bool inkscapeAvailable;
+      std::unique_ptr<base::Environment> env;
   };
 }
 

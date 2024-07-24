@@ -37,6 +37,7 @@
 #include <iostream>
 #include <fstream>
 
+#if defined(OS_WIN)
 namespace base {
     // Chromium doens't provide and implementation of ExecutableExistsInPath on Windows, so we add one here
     bool ExecutableExistsInPath(Environment* env,
@@ -68,36 +69,13 @@ namespace base {
         return false;
     }
 }
-
-// This is from the original kaleido
-namespace kaleido {
-    namespace utils {
-        // Load version string
-
-        void writeJsonMessage(int code, std::string message) {
-            static std::string *version = nullptr;
-            if (!version) {
-                std::ifstream verStream("version");
-                version = new std::string((
-                            std::istreambuf_iterator<char>(verStream)),std::istreambuf_iterator<char>());
-            }
-            std::string error = base::StringPrintf(
-                    "{\"code\": %d, \"message\": \"%s\", \"result\": null, \"version\": \"%s\"}\n",
-                    code, message.c_str(), version->c_str());
-            std::cout << error;
-        }
-    }
-}
-
+#endif
 
 /// END COPY 2
 namespace kaleido {
 
-Kaleido::Kaleido()
-  : env(base::Environment::Create()),
-    popplerAvailable(base::ExecutableExistsInPath(env.get(), "pdftops")),
-    inkscapeAvailable(base::ExecutableExistsInPath(env.get(), "inkscape")) {
-};
+Kaleido::Kaleido() = default;
+
 
 // Control Flow, declare here
 void Kaleido::ShutdownSoon() {
@@ -136,7 +114,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   base::CommandLine::StringVector args =
           base::CommandLine::ForCurrentProcess()->GetArgs();
   if (args.empty()) {
-      kaleido::utils::writeJsonMessage(1, "No Scope Specified");
+      Api_OldMsg(1, "No Scope Specified");
       browser->Shutdown();
       exit(EXIT_FAILURE);
   }
@@ -151,11 +129,11 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   if (!scope_ptr) {
       // Invalid scope name
-      kaleido::utils::writeJsonMessage(1,  base::StringPrintf("Invalid scope: %s", scope_name.c_str()));
+      Api_OldMsg(1,  base::StringPrintf("Invalid scope: %s", scope_name.c_str()));
       browser->Shutdown();
       exit(EXIT_FAILURE);
   } else if (!scope_ptr->errorMessage.empty()) {
-      kaleido::utils::writeJsonMessage(1,  scope_ptr->errorMessage);
+      Api_OldMsg(1,  scope_ptr->errorMessage);
       browser->Shutdown();
       exit(EXIT_FAILURE);
   }
@@ -195,7 +173,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   GURL url = GURL(std::string("file://") + tmpFileName);
 
   // Initialization succeeded
-  kaleido::utils::writeJsonMessage(0, "Initilization Success");
+  Api_OldMsg(0, "Initilization Success");
 
   // END COPY 1
   // Run
@@ -241,6 +219,14 @@ void Kaleido::StartListen() {
 }
 
 void Kaleido::PostEchoTask(const std::string &msg) {
+  if (old) {
+    LOG(INFO) << msg;
+    return;
+  }
+  auto echo = [](const std::string &msg){ std::cout << msg << std::endl; };
+  output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg));
+}
+void Kaleido::PostEchoTaskOld(const std::string &msg) {
   auto echo = [](const std::string &msg){ std::cout << msg << std::endl; };
   output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg));
 }
@@ -265,7 +251,6 @@ bool Kaleido::ReadJSON(std::string &msg) {
     ShutdownSoon();
     return false; // breaks stdin loop
   }
-  bool old=false;
   if (!operation || !id) {
     // we are likely using the old protocol, which for now is all we accept
     if (maybe_format) {
@@ -276,7 +261,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
       job->id = -2;
       if (!maybe_format) {
         std::string error = base::StringPrintf("Malformed Export JSON: format key not found.");
-        utils::writeJsonMessage(1, error);
+        Api_OldMsg(1, error);
         return true;
       }
       job->format = *maybe_format;
@@ -369,5 +354,19 @@ void Kaleido::Api_ErrorUnknownOperation(int id, const std::string& op) {
   PostEchoTask(R"({"id":)"+std::to_string(id)+R"(,"error":"Unknown operation:)"+op+R"("})");
 }
 
-} // namespace kaleido
+void Kaleido::Api_OldMsg(int code, std::string message) {
+    static std::string *version = nullptr;
+    if (!version) {
+        std::ifstream verStream("version");
+        version = new std::string((
+                    std::istreambuf_iterator<char>(verStream)),std::istreambuf_iterator<char>());
+    }
+    std::string error = base::StringPrintf(
+            "{\"code\": %d, \"message\": \"%s\", \"result\": null, \"version\": \"%s\"}\n",
+            code, message.c_str(), version->c_str());
+    PostEchoTaskOld(error);
 
+    // TODO SOME WAY FOR POST ECHO TASK TO KNOW
+}
+
+} // namespace kaleido
