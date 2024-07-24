@@ -220,6 +220,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
   base::Value::Dict &jsonDict = json->GetDict();
   absl::optional<int> id = jsonDict.FindInt("id");
   std::string *operation = jsonDict.FindString("operation");
+  std::string *maybe_format = jsonDict.FindString("format");
   // The only operation we handle here. We're shutting down.
   // Trust chromium to handle it all when the browser exits
   // Doesn't need id, no return
@@ -227,14 +228,15 @@ bool Kaleido::ReadJSON(std::string &msg) {
     ShutdownSoon();
     return false; // breaks stdin loop
   }
+  bool old=false;
   if (!operation || !id) {
     // we are likely using the old protocol, which for now is all we accept
-    if (operation && (*operation == "export")) {
+    if (maybe_format) {
       LOG(INFO) << "It seems like we're using the old protocol.";
+      old=true;
       std::unique_ptr<Job> job = std::make_unique<Job>();
       job->version = 0;
       job->id = -2;
-      std::string *maybe_format = jsonDict.FindString("format");
       if (!maybe_format) {
         std::string error = base::StringPrintf("Malformed Export JSON: format key not found.");
         utils::writeJsonMessage(1, error);
@@ -243,30 +245,32 @@ bool Kaleido::ReadJSON(std::string &msg) {
       job->format = *maybe_format;
       job->scope = scope_ptr->ScopeName().c_str();
       std::string error = base::StringPrintf("Perfect. %s %s", job->format.c_str(), job->scope.c_str());
-      utils::writeJsonMessage(1, error);
+      utils::writeJsonMessage(1, error); // We are getting here
+      return true;
     } else {
       Api_ErrorMissingBasicFields(id);
       return true;
     }
   }
-  if (*id < 0) {
-    Api_ErrorNegativeId(*id);
-    return true;
+  if (!old) {
+    if (*id < 0) {
+      Api_ErrorNegativeId(*id);
+      return true;
+    }
+    if (messageIds.find(*id) != messageIds.end()) {
+      Api_ErrorDuplicateId(*id);
+      return true;
+    }
   }
-  if (messageIds.find(*id) != messageIds.end()) {
-    Api_ErrorDuplicateId(*id);
-    return true;
-  }
-
-  if (*operation == "create_tab") {
+  if (operation && *operation == "create_tab") {
           dispatch->CreateTab(*id, GURL(std::string("file://") + tmpFileName));
-  } else if (*operation == "noop") {} else {
+  } else if (operation && *operation == "noop") {} else {
     Api_ErrorUnknownOperation(*id, *operation);
     return true;
   }
 
 
-  messageIds.emplace(*id, *operation);
+  if (!old) messageIds.emplace(*id, *operation);
   return true;
 }
 
