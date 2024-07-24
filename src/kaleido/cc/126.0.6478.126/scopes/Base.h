@@ -3,6 +3,8 @@
 // Created by jmmease on 6/17/20.
 //
 
+#ifndef CHROMIUM_BASESCOPE_H
+#define CHROMIUM_BASESCOPE_H
 #include "base/strings/string_util.h"
 #include "base/command_line.h"
 
@@ -10,8 +12,6 @@
 #include <vector>
 #include <string>
 
-#ifndef CHROMIUM_BASESCOPE_H
-#define CHROMIUM_BASESCOPE_H
 
 namespace kaleido {
     namespace scopes {

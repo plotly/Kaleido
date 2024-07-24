@@ -110,7 +110,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   std::string scope_name = scope_stringstream.str();
 
   // Instantiate renderer scope
-  kaleido::scopes::BaseScope *scope_ptr = LoadScope(scope_name);
+  scope_ptr = LoadScope(scope_name);
 
   if (!scope_ptr) {
       // Invalid scope name
@@ -228,8 +228,26 @@ bool Kaleido::ReadJSON(std::string &msg) {
     return false; // breaks stdin loop
   }
   if (!operation || !id) {
-    Api_ErrorMissingBasicFields(id);
-    return true;
+    // we are likely using the old protocol, which for now is all we accept
+    if (operation && (*operation == "export")) {
+      LOG(INFO) << "It seems like we're using the old protocol.";
+      std::unique_ptr<Job> job = std::make_unique<Job>();
+      job->version = 0;
+      job->id = -2;
+      std::string *maybe_format = jsonDict.FindString("format");
+      if (!maybe_format) {
+        std::string error = base::StringPrintf("Malformed Export JSON: format key not found.");
+        utils::writeJsonMessage(1, error);
+        return true;
+      }
+      job->format = *maybe_format;
+      job->scope = scope_ptr->ScopeName().c_str();
+      std::string error = base::StringPrintf("Perfect. %s %s", job->format.c_str(), job->scope.c_str());
+      utils::writeJsonMessage(1, error);
+    } else {
+      Api_ErrorMissingBasicFields(id);
+      return true;
+    }
   }
   if (*id < 0) {
     Api_ErrorNegativeId(*id);

@@ -3,6 +3,8 @@
 //
 // Created by jmmease on 6/17/20.
 //
+#ifndef CHROMIUM_PLOTLYSCOPE_H
+#define CHROMIUM_PLOTLYSCOPE_H
 #include "Base.h"
 #include "base/functional/bind.h"
 #include "base/command_line.h"
@@ -14,8 +16,6 @@
 #include <iostream>
 #include <fstream>
 
-#ifndef CHROMIUM_PLOTLYSCOPE_H
-#define CHROMIUM_PLOTLYSCOPE_H
 
 namespace kaleido {
     namespace scopes {

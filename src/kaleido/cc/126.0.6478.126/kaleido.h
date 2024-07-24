@@ -14,8 +14,10 @@
 
 #include "base/task/thread_pool.h"
 
-
 namespace kaleido {
+    namespace scopes {
+        class BaseScope;
+    }
   class Dispatch;
   // Kaleido is our app, basically.
   // Should be singleton, but non-trivial work
@@ -74,6 +76,7 @@ namespace kaleido {
     base::FilePath cwd;
     std::vector<std::string> localScriptFiles;
     std::string tmpFileName;
+    base::raw_ptr<scopes::BaseScope> scope_ptr;
   };
 }
 

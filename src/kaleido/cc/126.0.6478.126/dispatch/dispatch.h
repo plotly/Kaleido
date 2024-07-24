@@ -8,9 +8,17 @@
 #include "base/task/sequenced_task_runner.h"
 #include "headless/app/kaleido.h"
 
+
 namespace kaleido {
-  class Kaleido;
   using namespace simple_devtools_protocol_client;
+  class Kaleido;
+
+  struct Job {
+    int version;
+    int id;
+    std::string format;
+    std::string scope;
+  };
   // probably should be a singleton, could use static, make_unique, etc
 
   // Sadly, callback hell persists in google's chromium. 
@@ -44,7 +52,7 @@ namespace kaleido {
       base::raw_ptr<headless::HeadlessWebContents> web_contents;
       // Represent connections to a tab
       std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
-      std::queue<std::string> jobs;
+      std::queue<std::unique_ptr<Job>> jobs;
 
       // All queue operations happen on a SequencedTaskRunner for memory safety
       // Note: no callbacks allowed from within the SequencedTaskRunner
