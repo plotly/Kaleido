@@ -44,7 +44,9 @@ namespace kaleido {
       void CreateTab(int id, const GURL &url);
       void PostJob(std::unique_ptr<Job>);
 
-      void Release() { browser_devtools_client_.DetachClient(); } // subclients go with it
+      void Release() {
+        browser_devtools_client_.DetachClient();
+      } // subclients go with it... not anymore
 
 
     private:
