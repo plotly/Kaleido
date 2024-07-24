@@ -20,8 +20,7 @@ namespace kaleido {
   Tab::~Tab() {
     // TODO calling this destructor on shutdown would be V good, otherwise we complain
     client_->DetachClient();
-    client_.reset();
-    web_contents_->Close();
+    web_contents_.ExtractAsDangling()->Close();
   }
   Job::Job() {}
   Job::~Job() {

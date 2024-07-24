@@ -71,6 +71,11 @@ namespace kaleido {
           activeJobs[it.first].reset();
           activeJobs.erase(it.first);
         }
+        while (tabs.size()) {
+          tabs.front().reset();
+          tabs.pop();
+        }
+        parent_ = nullptr;
         // go through tab and active jobs, maybe have to cancel stuff
       }
 

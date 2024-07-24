@@ -79,6 +79,7 @@ Kaleido::Kaleido() = default;
 
 // Control Flow, declare here
 void Kaleido::ShutdownSoon() {
+  scope_ptr = nullptr;
   browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
       base::BindOnce(&Kaleido::ShutdownTask, base::Unretained(this)));
@@ -87,6 +88,7 @@ void Kaleido::ShutdownTask() {
   LOG(INFO) << "Calling shutdown on browser";
   if (tmpFileName.size()) std::remove(tmpFileName.c_str());
   dispatch->Release(); // Fine to destruct what we have here.
+  dispatch = nullptr;
   browser_.ExtractAsDangling()->Shutdown();
 }
 
