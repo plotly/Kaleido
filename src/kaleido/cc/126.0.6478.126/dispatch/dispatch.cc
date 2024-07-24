@@ -1,4 +1,6 @@
 
+#include <fstream>
+
 #include "base/logging.h"
 #include "base/functional/bind.h"
 #include "headless/app/dispatch/dispatch.h"
@@ -97,21 +99,67 @@ namespace kaleido {
   }
 
   void Dispatch::runJob1_resetTab(const int &job_id) {
-    activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), job_id));
+    activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable");
+    activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), job_id));
   }
 
   void Dispatch::runJob2_reloadTab(const int &job_id, base::Value::Dict msg) {
-    auto cb = base::BindRepeating(&Dispatch::runJob3_configureTab, base::Unretained(this), job_id);
-    activeJobs[job_id]->reloadCb = cb;
-    activeJobs[job_id]->currentTab->client_->AddEventHandler("Page.loadEventFired", cb);
+    auto cb = base::BindRepeating(&Dispatch::runJob3_loadScripts, base::Unretained(this), job_id);
+    activeJobs[job_id]->runtimeEnableCb = cb;
+    activeJobs[job_id]->currentTab->client_->AddEventHandler("Runtime.executionContextCreated", cb);
     activeJobs[job_id]->currentTab->client_->SendCommand("Page.reload");
   }
 
-  void Dispatch::runJob3_configureTab(const int &job_id, const base::Value::Dict& msg) {
-    LOG(INFO) << "CAUGHT PAGE RELOAD";
-    // calling move on this non-unique actually makes it unique and causes it to be destroyed after
-    activeJobs[job_id]->currentTab->client_->RemoveEventHandler("Page.loadEventFired", std::move(activeJobs[job_id]->reloadCb));
-   }
+  void Dispatch::runJob3_loadScripts(const int &job_id, const base::Value::Dict& msg) {
+    LOG(INFO) << "Runtime enable";
+    activeJobs[job_id]->currentTab->client_->RemoveEventHandler(
+        "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
+    activeJobs[job_id]->scriptItr = parent_->localScriptFiles.begin();
+
+    base::Value::Dict empty;
+    runJob4_loadNextScript(job_id, std::move(empty));
+
+  }
+
+  void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
+
+    if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
+      // now we export next?
+      return;
+    }
+    std::string scriptPath(*activeJobs[job_id]->scriptItr);
+    std::ifstream script(scriptPath);
+    if (!script.is_open()) {
+      LOG(ERROR) << "Failed to find, or open, local file at "
+        << scriptPath << " with working directory " << parent_->cwd.value() << std::endl;
+      parent_->ShutdownSoon();
+      return;
+    }
+    std::string scriptString((std::istreambuf_iterator<char>(script)),
+        std::istreambuf_iterator<char>(script));
+
+    auto after_loaded = base::BindRepeating(
+        &Dispatch::runJob5_runLoadedScript, base::Unretained(this), job_id);
+
+    base::Value::Dict script_params;
+    script_params.Set("expression", scriptString);
+    script_params.Set("sourceURL", scriptPath);
+    script_params.Set("persistScript", true);
+
+    activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.compileScript", std::move(script_params), after_loaded);
+  }
+
+  void Dispatch::runJob5_runLoadedScript(const int job_id, const base::Value::Dict msg) {
+    activeJobs[job_id]->scriptItr++;
+
+    auto after_run = base::BindRepeating(
+        &Dispatch::runJob4_loadNextScript, base::Unretained(this), job_id);
+
+    base::Value::Dict script_params;
+    std::string scriptId = *msg.FindDict("result")->FindString("scriptId");
+    script_params.Set("scriptId", scriptId);
+    activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.runScript", std::move(script_params), after_run);
+  }
 
   void Dispatch::PostJob(std::unique_ptr<Job> job) {
     if (job->format == "eps" && !popplerAvailable) {

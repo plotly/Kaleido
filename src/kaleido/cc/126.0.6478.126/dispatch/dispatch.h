@@ -36,7 +36,8 @@ namespace kaleido {
       std::string format;
       std::string scope;
       std::unique_ptr<Tab> currentTab;
-      SimpleDevToolsProtocolClient::EventCallback reloadCb;
+      SimpleDevToolsProtocolClient::EventCallback runtimeEnableCb;
+      std::vector<std::string>::iterator scriptItr;
     // TOOD what else, dump that initial job message
   };
 
@@ -89,7 +90,9 @@ namespace kaleido {
 
       void runJob1_resetTab(const int &job_id);
       void runJob2_reloadTab(const int &job_id, base::Value::Dict msg);
-      void runJob3_configureTab(const int &job_id, const base::Value::Dict& msg);
+      void runJob3_loadScripts(const int &job_id, const base::Value::Dict& msg);
+      void runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg);
+      void runJob5_runLoadedScript(const int job_id, const base::Value::Dict msg);
 
       void sortTab(int id, std::unique_ptr<Tab> tab);
       void sortJob(std::unique_ptr<Job>);

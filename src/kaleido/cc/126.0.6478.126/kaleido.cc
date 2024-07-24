@@ -255,6 +255,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
     // we are likely using the old protocol, which for now is all we accept
     if (maybe_format) {
       LOG(INFO) << "It seems like we're using the old protocol.";
+      LOG(INFO) << jsonDict.DebugString();
       old=true;
       std::unique_ptr<Job> job = std::make_unique<Job>();
       job->version = 0;

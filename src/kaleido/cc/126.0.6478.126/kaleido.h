@@ -31,6 +31,10 @@ namespace kaleido {
       Kaleido(const Kaleido&) = delete;
       Kaleido& operator=(const Kaleido&) = delete;
 
+      // make more private?
+      std::vector<std::string> localScriptFiles;
+      base::FilePath cwd;
+
       // This is basically a singleton. Could we pass the constructor instead of on browser start?
       void OnBrowserStart(headless::HeadlessBrowser* browser);
 
@@ -49,6 +53,7 @@ namespace kaleido {
       // a browser, global basically,
       // this is needed for anything that does anything on thread control
       raw_ptr<headless::HeadlessBrowser> browser_;
+      void ShutdownSoon();
 
   private:
 
@@ -71,12 +76,9 @@ namespace kaleido {
     raw_ptr<Dispatch> dispatch;
 
 
-    void ShutdownSoon();
     void ShutdownTask();
 
     // FROM PREVIOUS STRUCTURE
-    base::FilePath cwd;
-    std::vector<std::string> localScriptFiles;
     std::string tmpFileName;
     base::raw_ptr<scopes::BaseScope> scope_ptr;
   };
