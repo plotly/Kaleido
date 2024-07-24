@@ -11,6 +11,8 @@
 
 namespace kaleido {
   using namespace simple_devtools_protocol_client;
+  // I got tired of typing the whole thing at the end, TODO change all next commit
+  typedef std::unique_ptr<SimpleDevToolsProtocolClient> tab_t;
   class Kaleido;
 
   struct Job {
@@ -40,11 +42,14 @@ namespace kaleido {
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
       void CreateTab(int id, const GURL &url);
+      void PostJob(int id, std::unique_ptr<Job>);
 
       void Release() { browser_devtools_client_.DetachClient(); } // subclients go with it
 
 
     private:
+
+
       raw_ptr<Kaleido> parent_;
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
@@ -58,7 +63,9 @@ namespace kaleido {
       // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
-      void sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab);
+      void sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab); // task
+      void sortJob(int id, std::unique_ptr<Job>); // task
+      void dispatchJob(int id, std::unique_ptr<Job> job, tab_t tab);
       void dumpEvent(const base::Value::Dict& msg);
       void dumpResponse(base::Value::Dict msg);
   };
