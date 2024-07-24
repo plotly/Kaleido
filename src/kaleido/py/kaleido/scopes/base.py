@@ -177,12 +177,24 @@ Searched for executable 'kaleido' on the following system PATH:
                     # spaces.  The subprocess.Popen docs makes it sound like this shouldn't be
                     # necessary.
                     proc_args = self._build_proc_args()
+                    env = os.environ.copy()
+                    resource_folder = os.path.join(
+                        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        'executable'
+                    )
+                    if 'LD_LIBRARY_PATH' not in env: env['LD_LIBRARY_PATH']=""
+                    env['LD_LIBRARY_PATH'] = str(os.path.join(resource_folder, "lib")) + ":" + env.get('LD_LIBRARY_PATH']
+                    env['FONTCONFIG_PATH'] = str(os.path.join(resource_folder, "etc", "fonts"))
+                    env['XDG_DATA_HOME'] =   str(os.path.join(resource_folder, "xdg"))
+
                     self._proc = subprocess.Popen(
                         proc_args,
                         stdin=subprocess.PIPE,
                         stdout=subprocess.PIPE,
                         stderr=None if self.debug else subprocess.PIPE,
-                        shell=sys.platform == "win32"
+                        shell=sys.platform == "win32",
+                        env=env,
+                        cwd=str(resource_folder),
                     )
 
                     # Set up thread to asynchronously collect standard error stream
