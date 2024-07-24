@@ -201,6 +201,7 @@ void Kaleido::listenTask() {
     ShutdownSoon();
     return;
   };
+  if (in == "\n") postListenTask();
   if (ReadJSON(in)) postListenTask();
 }
 
@@ -260,11 +261,6 @@ bool Kaleido::ReadJSON(std::string &msg) {
       std::unique_ptr<Job> job = std::make_unique<Job>();
       job->version = 0;
       job->id = -2;
-      if (!maybe_format) {
-        std::string error = base::StringPrintf("Malformed Export JSON: format key not found.");
-        Api_OldMsg(1, error);
-        return true;
-      }
       job->format = *maybe_format;
       job->scope = scope_ptr->ScopeName().c_str();
       dispatch->PostJob(std::move(job));
@@ -365,11 +361,9 @@ void Kaleido::Api_OldMsg(int code, std::string message) {
                     std::istreambuf_iterator<char>(verStream)),std::istreambuf_iterator<char>());
     }
     std::string error = base::StringPrintf(
-            "{\"code\": %d, \"message\": \"%s\", \"result\": null, \"version\": \"%s\"}\n",
+            "{\"code\": %d, \"message\": \"%s\", \"result\": null, \"version\": \"%s\"}",
             code, message.c_str(), version->c_str());
     PostEchoTaskOld(error);
-
-    // TODO SOME WAY FOR POST ECHO TASK TO KNOW
 }
 
 } // namespace kaleido

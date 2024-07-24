@@ -130,9 +130,11 @@ namespace kaleido {
     std::string scriptPath(*activeJobs[job_id]->scriptItr);
     std::ifstream script(scriptPath);
     if (!script.is_open()) {
-      LOG(ERROR) << "Failed to find, or open, local file at "
-        << scriptPath << " with working directory " << parent_->cwd.value() << std::endl;
-      parent_->ShutdownSoon();
+      std::string error = base::StringPrintf("Failed to find, or open, local file at %s with working directory %s",
+          scriptPath.c_str(), parent_->cwd.value().c_str());
+      LOG(ERROR) << error;
+      parent_->Api_OldMsg(404, error);
+      // TODO gotta kill job
       return;
     }
     std::string scriptString((std::istreambuf_iterator<char>(script)),
