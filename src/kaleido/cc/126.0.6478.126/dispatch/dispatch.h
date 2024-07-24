@@ -24,7 +24,7 @@ namespace kaleido {
       // should disable other assignments
       base::raw_ptr<headless::HeadlessWebContents> web_contents_; // not ours
       std::unique_ptr<SimpleDevToolsProtocolClient> client_;
-  }; // client has a disconnect, web_contents has a close, this might help
+  };
 
   class Job {
     public:
@@ -33,12 +33,13 @@ namespace kaleido {
       // should disable other assignments
       int version;
       int id;
+      base::Value::Dict spec;
       std::string format;
       std::string scope;
       std::unique_ptr<Tab> currentTab;
       SimpleDevToolsProtocolClient::EventCallback runtimeEnableCb;
       std::vector<std::string>::iterator scriptItr;
-    // TOOD what else, dump that initial job message
+
   };
 
   // probably should be a singleton, could use static, make_unique, etc

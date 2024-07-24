@@ -90,7 +90,8 @@ namespace kaleido {
     // it would be better to create them and destroy them on the browser task, who is accessing them
     // that way we can also destroy them on the browser task
     // before shut down
-    // we can also check to see if the activeJobs queue is donefor
+    // we can also check to see if the activeJobs queue is done for
+    // check job_id in ever instance
     // TODO
     parent_->browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
