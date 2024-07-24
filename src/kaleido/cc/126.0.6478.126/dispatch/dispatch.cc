@@ -67,6 +67,8 @@ namespace kaleido {
 
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, tab_t tab) {
     LOG(INFO) << "Matching job to tab";
+    jobs.push(std::move(job));
+    tabs.push(std::move(tab));
     // they actually both die :-(
     // Do chain of stuff
     return;
