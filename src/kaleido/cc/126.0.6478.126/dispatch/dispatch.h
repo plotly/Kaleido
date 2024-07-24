@@ -13,25 +13,41 @@
 
 namespace kaleido {
   using namespace simple_devtools_protocol_client;
-  // I got tired of typing the whole thing at the end, TODO change all next commit
-  typedef std::unique_ptr<SimpleDevToolsProtocolClient> tab_t;
+
   class Kaleido;
 
-  struct Job {
-    int version;
-    int id;
-    std::string format;
-    std::string scope;
-  };
-  // probably should be a singleton, could use static, make_unique, etc
 
+  class Tab {
+    public:
+      Tab();
+      ~Tab();
+      // should disable other assignments
+      base::raw_ptr<headless::HeadlessWebContents> web_contents_; // not ours
+      std::unique_ptr<SimpleDevToolsProtocolClient> client_;
+  }; // client has a disconnect, web_contents has a close, this might help
+
+  class Job {
+    public:
+      Job();
+      ~Job();
+      // should disable other assignments
+      int version;
+      int id;
+      std::string format;
+      std::string scope;
+      std::unique_ptr<Tab> currentTab;
+      SimpleDevToolsProtocolClient::EventCallback reloadCb;
+    // TOOD what else, dump that initial job message
+  };
+
+  // probably should be a singleton, could use static, make_unique, etc
   // Sadly, callback hell persists in google's chromium. 
   // DevTools is an asynchronous IPC messaging platform, their internal API uses callbacks,
   // not blockable coroutines- just callbacks without async/await to linearize
   // the architecture. So how do we make it easier to read? I can't use lambda functions because 
   // lambda functions + class methods don't mix w/ google's callback utilities.
   // A full state machine that manages callbacks as subroutines would 
-  // be absurdly out of scope.
+  // be absurdly out of scope. (note added later: chromium forces it)
   //
   // Ergo, patterns like createTab1_desc(), createTab2_desc() clarify the concepts,
   // the process started by a CreateTab() public call.
@@ -45,11 +61,12 @@ namespace kaleido {
       Dispatch& operator=(const Dispatch&) = delete;
       void CreateTab(int id, const GURL &url);
       void PostJob(std::unique_ptr<Job>);
+      void ReloadAll();
 
       void Release() {
         browser_devtools_client_.DetachClient();
-        //delete web_contents;
-      } // subclients go with it... not anymore
+        // go through tab and active jobs, maybe have to cancel stuff
+      }
 
 
     private:
@@ -59,29 +76,27 @@ namespace kaleido {
       // a devtools client for the _whole_ browser process (not a tab)
       SimpleDevToolsProtocolClient browser_devtools_client_;
 
-      base::raw_ptr<headless::HeadlessWebContents> web_contents;
-      // TODO: we now need to store these with the tabs, it should be a struct URGENT
-
       // Represent connections to a tab
-      std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
+      std::queue<std::unique_ptr<Tab>> tabs;
       std::queue<std::unique_ptr<Job>> jobs;
       int job_number = 0;
 
-      std::unordered_map<int, SimpleDevToolsProtocolClient::EventCallback> job_events;
+      std::unordered_map<int, std::unique_ptr<Job>> activeJobs; // TODO needs to transfer everthing
 
       // All queue operations happen on a SequencedTaskRunner for memory safety
       // Note: no callbacks allowed from within the SequencedTaskRunner
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
-      void runJob1_resetTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id);
-      void runJob2_reloadTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, base::Value::Dict msg);
-      void runJob3_configureTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, const base::Value::Dict& msg);
+      void runJob1_resetTab(const int &job_id);
+      void runJob2_reloadTab(const int &job_id, base::Value::Dict msg);
+      void runJob3_configureTab(const int &job_id, const base::Value::Dict& msg);
 
-      void sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab); // task
-      void sortJob(std::unique_ptr<Job>); // task
-      void dispatchJob(std::unique_ptr<Job> job, tab_t tab);
+      void sortTab(int id, std::unique_ptr<Tab> tab);
+      void sortJob(std::unique_ptr<Job>);
+      void dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab);
       void dumpEvent(const base::Value::Dict& msg);
       void dumpResponse(base::Value::Dict msg);
+      void reloadAll();
 
       bool popplerAvailable;
       bool inkscapeAvailable;

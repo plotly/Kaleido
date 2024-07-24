@@ -14,6 +14,18 @@
 
 namespace kaleido {
 
+  Tab::Tab() {}
+  Tab::~Tab() {
+    // TODO calling this destructor on shutdown would be V good, otherwise we complain
+    client_->DetachClient();
+    web_contents_->Close();
+  }
+  Job::Job() {}
+  Job::~Job() {
+    if (currentTab) currentTab.reset();
+  }
+
+
   Dispatch::Dispatch(raw_ptr<Kaleido> parent_): parent_(parent_) {
     browser_devtools_client_.AttachToBrowser();
     job_line = base::ThreadPool::CreateSequencedTaskRunner({
@@ -25,20 +37,32 @@ namespace kaleido {
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
+    auto tab = std::make_unique<Tab>();
     headless::HeadlessWebContents::Builder builder(
       parent_->browser_->GetDefaultBrowserContext()->CreateWebContentsBuilder());
-    web_contents = builder.SetInitialURL(url).Build();
+    tab->web_contents_ = builder.SetInitialURL(url).Build();
 
-    auto tab = std::make_unique<SimpleDevToolsProtocolClient>();
-    tab->AttachToWebContents(headless::HeadlessWebContentsImpl::From(web_contents)->web_contents());
+    tab->client_ = std::make_unique<SimpleDevToolsProtocolClient>();
+    // DevToolsTargetReady TODO
+    tab->client_->AttachToWebContents(headless::HeadlessWebContentsImpl::From(tab->web_contents_)->web_contents());
 
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::sortTab, base::Unretained(this), id, std::move(tab)));
 
   }
+  void Dispatch::ReloadAll() {
+    parent_->browser_->BrowserMainThread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Dispatch::reloadAll, base::Unretained(this)));
+  }
+  void Dispatch::reloadAll() {
+    for (auto& it: activeJobs) {
+      activeJobs[it.first]->currentTab->client_->SendCommand("Page.reload");
+    }
+  }
 
-  void Dispatch::sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab) {
+  void Dispatch::sortTab(int id, std::unique_ptr<Tab> tab) {
     if (jobs.size() == 0) {
       tabs.push(std::move(tab));
     } else {
@@ -55,11 +79,18 @@ namespace kaleido {
     }
   }
 
-  void Dispatch::dispatchJob(std::unique_ptr<Job> job, tab_t tab) {
+  void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
     int job_id = job_number++;
+    job->currentTab = std::move(tab);
+    activeJobs[job_id] = std::move(job);
+    // it would be better to create them and destroy them on the browser task, who is accessing them
+    // that way we can also destroy them on the browser task
+    // before shut down
+    // we can also check to see if the activeJobs queue is donefor
+    // TODO
     parent_->browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
-      base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), std::move(job), std::move(tab), job_id));
+      base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), job_id));
     return;
   }
 
@@ -68,25 +99,28 @@ namespace kaleido {
   // WebContents TODO
   // Reunify output
 
-  void Dispatch::runJob1_resetTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id) {
-    tab->SendCommand("Page.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), std::move(job), std::move(tab), job_id));
+  void Dispatch::runJob1_resetTab(const int &job_id) {
+    activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), job_id));
   }
 
-  void Dispatch::runJob2_reloadTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, base::Value::Dict msg) {
-    LOG(INFO) << "CAUGHT ENABLE";
-    LOG(INFO) << msg.DebugString();
-    /*auto cb = base::BindRepeating(&Dispatch::runJob3_configureTab, base::Unretained(this), std::move(job), std::move(tab), job_id);
-    job_events[job_id] = cb.get();
-    tab->AddEventHandler("Page.loadEventFired", std::move(cb));
-    tab->SendCommand("Page.reload");*/
+  void Dispatch::runJob2_reloadTab(const int &job_id, base::Value::Dict msg) {
+    auto cb = base::BindRepeating(&Dispatch::runJob3_configureTab, base::Unretained(this), job_id);
+    activeJobs[job_id]->reloadCb = cb;
+    activeJobs[job_id]->currentTab->client_->AddEventHandler("Page.loadEventFired", cb);
+    activeJobs[job_id]->currentTab->client_->SendCommand("Page.reload");
   }
 
-  void Dispatch::runJob3_configureTab(std::unique_ptr<Job> job, tab_t tab, const int &job_id, const base::Value::Dict& msg) {
-    LOG(INFO) << "CAUGHT PAGE RELOAD";/*
+  void Dispatch::runJob3_configureTab(const int &job_id, const base::Value::Dict& msg) {
+    LOG(INFO) << "CAUGHT PAGE RELOAD";
+    activeJobs[job_id]->currentTab->client_->RemoveEventHandler("Page.loadEventFired", activeJobs[job_id]->reloadCb);
+    //tabs.push(std::move(tab));
+    //jobs.push(std::move(job));
+
+      /*
     tab->RemoveEventHandler("Page.loadEventFired", *job_events[job_id]);
     job_events.erase(job_id);*/
     // Theoretically, we've reloaded the page, and we're good to go. Theoretically.
-  }
+   }
 
   void Dispatch::PostJob(std::unique_ptr<Job> job) {
     if (job->format == "eps" && !popplerAvailable) {
