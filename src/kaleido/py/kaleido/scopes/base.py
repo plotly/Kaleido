@@ -185,10 +185,11 @@ Searched for executable 'kaleido' on the following system PATH:
                     )
 
                     # Set up thread to asynchronously collect standard error stream
-                    if self._std_error_thread is None or not self._std_error_thread.is_alive():
+                    if self._std_error_thread is None or not self._std_error_thread.is_alive() and not self.debug:
                         self._std_error_thread = Thread(target=self._collect_standard_error)
                         self._std_error_thread.daemon = True
                         self._std_error_thread.start()
+                        # I didn't have much luck with this strategy
 
                     # Read startup message and check for errors
                     startup_response_string = self._proc.stdout.readline().decode('utf-8')

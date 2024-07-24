@@ -70,9 +70,8 @@ namespace kaleido {
     // they actually both die :-(
     // Do chain of stuff
     return;
-
   }
-  void Dispatch::PostJob(std::unique_ptr<Job> job) { 
+  void Dispatch::PostJob(std::unique_ptr<Job> job) {
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::sortJob, base::Unretained(this), std::move(job)));
