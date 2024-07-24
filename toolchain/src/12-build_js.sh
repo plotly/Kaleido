@@ -32,6 +32,7 @@ export SRC_DIR="${MAIN_DIR}/src/kaleido/js/"
 
 pushd "${SRC_DIR}"
 mkdir -p build/
+rm -rf node_modules/
 npm install
 npm run clean
 npm run build
