@@ -67,6 +67,10 @@ namespace kaleido {
 
       void Release() {
         browser_devtools_client_.DetachClient();
+        for (auto &it : activeJobs) {
+          activeJobs[it.first].reset();
+          activeJobs.erase(it.first);
+        }
         // go through tab and active jobs, maybe have to cancel stuff
       }
 

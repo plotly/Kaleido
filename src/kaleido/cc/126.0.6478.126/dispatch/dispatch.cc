@@ -20,6 +20,7 @@ namespace kaleido {
   Tab::~Tab() {
     // TODO calling this destructor on shutdown would be V good, otherwise we complain
     client_->DetachClient();
+    client_.reset();
     web_contents_->Close();
   }
   Job::Job() {}
@@ -39,6 +40,10 @@ namespace kaleido {
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
+    // There is a possible race condition here
+    // If the browser shuts down right after calling create tab
+    // Would need to create tab on the browser thread and put it in active jobs
+    // To solve
     auto tab = std::make_unique<Tab>();
     headless::HeadlessWebContents::Builder builder(
       parent_->browser_->GetDefaultBrowserContext()->CreateWebContentsBuilder());
@@ -53,6 +58,7 @@ namespace kaleido {
         base::BindOnce(&Dispatch::sortTab, base::Unretained(this), id, std::move(tab)));
 
   }
+
   void Dispatch::ReloadAll() {
     parent_->browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
@@ -84,15 +90,10 @@ namespace kaleido {
   // Memory TODO
 
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
+    // reace condition, all of the below should happen on the browser task
     int job_id = job_number++;
     job->currentTab = std::move(tab);
     activeJobs[job_id] = std::move(job);
-    // it would be better to create them and destroy them on the browser task, who is accessing them
-    // that way we can also destroy them on the browser task
-    // before shut down
-    // we can also check to see if the activeJobs queue is done for
-    // check job_id in ever instance
-    // TODO
     parent_->browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
       base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), job_id));
@@ -100,11 +101,13 @@ namespace kaleido {
   }
 
   void Dispatch::runJob1_resetTab(const int &job_id) {
+    if (activeJobs.find(job_id) == activeJobs.end()) return;
     activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable");
     activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), job_id));
   }
 
   void Dispatch::runJob2_reloadTab(const int &job_id, base::Value::Dict msg) {
+    if (activeJobs.find(job_id) == activeJobs.end()) return;
     auto cb = base::BindRepeating(&Dispatch::runJob3_loadScripts, base::Unretained(this), job_id);
     activeJobs[job_id]->runtimeEnableCb = cb;
     activeJobs[job_id]->currentTab->client_->AddEventHandler("Runtime.executionContextCreated", cb);
@@ -115,6 +118,7 @@ namespace kaleido {
     LOG(INFO) << "Runtime enable";
     activeJobs[job_id]->currentTab->client_->RemoveEventHandler(
         "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
+    if (activeJobs.find(job_id) == activeJobs.end()) return;
     activeJobs[job_id]->scriptItr = parent_->localScriptFiles.begin();
 
     base::Value::Dict empty;
@@ -123,7 +127,7 @@ namespace kaleido {
   }
 
   void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
-
+    if (activeJobs.find(job_id) == activeJobs.end()) return;
     if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
       // now we export next?
       return;
@@ -153,6 +157,7 @@ namespace kaleido {
   }
 
   void Dispatch::runJob5_runLoadedScript(const int job_id, const base::Value::Dict msg) {
+    if (activeJobs.find(job_id) == activeJobs.end()) return;
     activeJobs[job_id]->scriptItr++;
 
     auto after_run = base::BindRepeating(
