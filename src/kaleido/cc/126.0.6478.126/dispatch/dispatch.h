@@ -7,7 +7,7 @@
 
 #include "base/task/sequenced_task_runner.h"
 #include "headless/app/kaleido.h"
-
+#include <unordered_map>
 
 namespace kaleido {
   using namespace simple_devtools_protocol_client;
@@ -57,9 +57,14 @@ namespace kaleido {
       SimpleDevToolsProtocolClient browser_devtools_client_;
 
       base::raw_ptr<headless::HeadlessWebContents> web_contents;
+      // TODO: we now need to store these with the tabs, it should be a struct URGENT
+
       // Represent connections to a tab
       std::queue<std::unique_ptr<SimpleDevToolsProtocolClient>> tabs;
       std::queue<std::unique_ptr<Job>> jobs;
+      int job_number = 0;
+
+      unordered_map<int, SimpleDevToolsProtocolClient::EventCallback> job_events;
 
       // All queue operations happen on a SequencedTaskRunner for memory safety
       // Note: no callbacks allowed from within the SequencedTaskRunner

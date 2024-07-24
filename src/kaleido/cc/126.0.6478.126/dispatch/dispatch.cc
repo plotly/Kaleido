@@ -22,11 +22,6 @@ namespace kaleido {
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
-  /*
-      browser_->BrowserMainThread()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&Dispatch::CreateTab, base::Unretained(dispatch), *id, GURL(std::string("file://") + tmpFileName)));
-  */
     headless::HeadlessWebContents::Builder builder(
       parent_->browser_->GetDefaultBrowserContext()->CreateWebContentsBuilder());
     web_contents = builder.SetInitialURL(url).Build();
@@ -34,14 +29,6 @@ namespace kaleido {
     auto tab = std::make_unique<SimpleDevToolsProtocolClient>();
     tab->AttachToWebContents(headless::HeadlessWebContentsImpl::From(web_contents)->web_contents());
 
-    // Commands to the browser
-    // Memory management to the job line
-    /*
-    LOG(INFO) << "Attached to web contents";
-    tab->AddEventHandler("Page.loadEventFired", base::BindRepeating(&Dispatch::dumpEvent, base::Unretained(this)));
-    tab->SendCommand("Page.enable", base::BindOnce(&Dispatch::dumpResponse, base::Unretained(this)));
-    LOG(INFO) << "Enabled page";
-    */
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::sortTab, base::Unretained(this), id, std::move(tab)));
@@ -66,14 +53,35 @@ namespace kaleido {
   }
 
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, tab_t tab) {
-    LOG(INFO) << "Matching job to tab";
-    jobs.push(std::move(job));
-    tabs.push(std::move(tab));
-    // they actually both die :-(
-    // Do chain of stuff
+    int job_id = job_number++;
+    browser_->BrowserMainThread()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), std::move(job), std::move(tab), job_id));
     return;
   }
+
+  // DELCARE ALL TODO
+
+  void Dispatch::runJob1_resetTab(std::unique_ptr<Job> job, tab_t tab, int job_id) {
+    tab->SendCommand("Page.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), std::move(job), std::move(tab), job_id));
+  }
+
+  void Dispatch::runJob2_reloadTab(std::unique_ptr<Job> job, tab_t tab, base::Value::Dict msg, int job_id) {
+    auto cb = base::BindRepeating(&Dispatch::runJob3_configureTab, base::Unretained(this), std::move(job), std::move(tab), job_id);
+    job_events[job_id] = cb.get();
+    tab->AddEventHandler("Page.loadEventFired", std::move(cb));
+    tab->SendCommand("Page.reload");
+  }
+  void Dispatch::runJob3_configureTab(std::unique_ptr<Job> job, tab_t tab, const base::Value::Dict& msg, int job_id) {
+    LOG(INFO) << "CAUGHT PAGE RELOAD";
+    tab->RemoveEventHandler("Page.loadEventFired", job_events[job_id]);
+    job_events.erase(job_id);
+    // Theoretically, we've reloaded the page, and we're good to go. Theoretically.
+  }
+
+
   void Dispatch::PostJob(std::unique_ptr<Job> job) {
+    // TODO THIS IS WHERE WE DO FINAL VALIDATIONS
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::sortJob, base::Unretained(this), std::move(job)));
