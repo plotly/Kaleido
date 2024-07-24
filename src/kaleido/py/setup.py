@@ -174,12 +174,12 @@ setup(
     package_data={
         'kaleido': executable_files,
     },
-    ext_modules=[
+    ext_modules=[ # provokes a platform build
         setuptools.Extension(
             name='kaleido-chromium',
             sources=[]
             )
-        ]
+        ],
     cmdclass=dict(
         clean=CleanCommand,
         write_version=WriteVersion,
