@@ -52,30 +52,30 @@ namespace kaleido {
     if (jobs.size() == 0) {
       tabs.push(std::move(tab));
     } else {
-      dispatchJob(id, std::move(jobs.front()), std::move(tab));
+      dispatchJob(std::move(jobs.front()), std::move(tab));
       jobs.pop();
     }
   }
-  void Dispatch::sortJob(int id, std::unique_ptr<Job> job) {
+  void Dispatch::sortJob(std::unique_ptr<Job> job) {
     if (tabs.size() == 0) {
       jobs.push(std::move(job));
     } else {
-      dispatchJob(id, std::move(job), std::move(tabs.front()));
+      dispatchJob(std::move(job), std::move(tabs.front()));
       tabs.pop();
     }
   }
 
-  void Dispatch::dispatchJob(int id, std::unique_ptr<Job> job, tab_t tab) {
+  void Dispatch::dispatchJob(std::unique_ptr<Job> job, tab_t tab) {
     LOG(INFO) << "Matching job to tab";
     // they actually both die :-(
     // Do chain of stuff
     return;
 
   }
-  void Dispatch::PostJob(int id, std::unique_ptr<Job> job) { // declared TODO
+  void Dispatch::PostJob(std::unique_ptr<Job> job) { 
     job_line->PostTask(
         FROM_HERE,
-        base::BindOnce(&Dispatch::sortJob, base::Unretained(this), id, std::move(job)));
+        base::BindOnce(&Dispatch::sortJob, base::Unretained(this), std::move(job)));
   }
 
   // event callback signature

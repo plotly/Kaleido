@@ -42,7 +42,7 @@ namespace kaleido {
       Dispatch(const Dispatch&) = delete;
       Dispatch& operator=(const Dispatch&) = delete;
       void CreateTab(int id, const GURL &url);
-      void PostJob(int id, std::unique_ptr<Job>);
+      void PostJob(std::unique_ptr<Job>);
 
       void Release() { browser_devtools_client_.DetachClient(); } // subclients go with it
 
@@ -64,8 +64,8 @@ namespace kaleido {
       scoped_refptr<base::SequencedTaskRunner> job_line;
 
       void sortTab(int id, std::unique_ptr<SimpleDevToolsProtocolClient> tab); // task
-      void sortJob(int id, std::unique_ptr<Job>); // task
-      void dispatchJob(int id, std::unique_ptr<Job> job, tab_t tab);
+      void sortJob(std::unique_ptr<Job>); // task
+      void dispatchJob(std::unique_ptr<Job> job, tab_t tab);
       void dumpEvent(const base::Value::Dict& msg);
       void dumpResponse(base::Value::Dict msg);
   };

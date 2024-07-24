@@ -244,8 +244,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
       }
       job->format = *maybe_format;
       job->scope = scope_ptr->ScopeName().c_str();
-      std::string error = base::StringPrintf("Perfect. %s %s", job->format.c_str(), job->scope.c_str());
-      utils::writeJsonMessage(1, error); // We are getting here
+      dispatch->PostJob(std::move(job));
       return true;
     } else {
       Api_ErrorMissingBasicFields(id);
