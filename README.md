@@ -57,7 +57,7 @@ The kaleido Python package provides a low-level Python API that is designed to b
 from kaleido.scopes.plotly import PlotlyScope
 import plotly.graph_objects as go
 scope = PlotlyScope(
-    plotlyjs="https://cdn.plot.ly/plotly-latest.min.js",
+    plotlyjs="https://cdn.plot.ly/plotly-2.0.0.min.js",
     # plotlyjs="/path/to/local/plotly.js",
 )
 
