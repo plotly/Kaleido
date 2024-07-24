@@ -79,6 +79,8 @@ namespace kaleido {
     }
   }
 
+  // Memory TODO
+
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
     int job_id = job_number++;
     job->currentTab = std::move(tab);
@@ -94,11 +96,6 @@ namespace kaleido {
     return;
   }
 
-  // Pure call back structure --> central manager structure TODO
-  // Memory TODO
-  // WebContents TODO
-  // Reunify output
-
   void Dispatch::runJob1_resetTab(const int &job_id) {
     activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), job_id));
   }
@@ -112,14 +109,8 @@ namespace kaleido {
 
   void Dispatch::runJob3_configureTab(const int &job_id, const base::Value::Dict& msg) {
     LOG(INFO) << "CAUGHT PAGE RELOAD";
-    activeJobs[job_id]->currentTab->client_->RemoveEventHandler("Page.loadEventFired", activeJobs[job_id]->reloadCb);
-    //tabs.push(std::move(tab));
-    //jobs.push(std::move(job));
-
-      /*
-    tab->RemoveEventHandler("Page.loadEventFired", *job_events[job_id]);
-    job_events.erase(job_id);*/
-    // Theoretically, we've reloaded the page, and we're good to go. Theoretically.
+    // calling move on this non-unique actually makes it unique and causes it to be destroyed after
+    activeJobs[job_id]->currentTab->client_->RemoveEventHandler("Page.loadEventFired", std::move(activeJobs[job_id]->reloadCb));
    }
 
   void Dispatch::PostJob(std::unique_ptr<Job> job) {
