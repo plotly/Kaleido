@@ -141,6 +141,7 @@ namespace kaleido {
       params.Set("arguments", std::move(args));
       params.Set("returnByValue", false);
       params.Set("userGesture", true);
+      params.Set("awaitPromise", true);
       params.Set("executionContextId", activeJobs[job_id]->executionId);
       activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.callFunctionOn",
 				std::move(params),
