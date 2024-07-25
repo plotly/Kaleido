@@ -183,7 +183,7 @@ Searched for executable 'kaleido' on the following system PATH:
                         'executable'
                     )
                     if 'LD_LIBRARY_PATH' not in env: env['LD_LIBRARY_PATH']=""
-                    env['LD_LIBRARY_PATH'] = str(os.path.join(resource_folder, "lib")) + ":" + env.get('LD_LIBRARY_PATH']
+                    env['LD_LIBRARY_PATH'] = str(os.path.join(resource_folder, "lib")) + ":" + env['LD_LIBRARY_PATH']
                     env['FONTCONFIG_PATH'] = str(os.path.join(resource_folder, "etc", "fonts"))
                     env['XDG_DATA_HOME'] =   str(os.path.join(resource_folder, "xdg"))
 
