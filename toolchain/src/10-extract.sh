@@ -111,32 +111,4 @@ missing=False, annotate=False, relative=True)")")
   done
 fi
 
-old_stylecomment='
-if [ $KALEIDO_ARCH == "x64" ]; then
-  # /usr/lib/x86_64-linux-gnu/
-  for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
-  do
-    cp /usr/lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
-  done
-
-  # /usr/lib/x86_64-linux-gnu/nss
-  cp /usr/lib/x86_64-linux-gnu/nss/* /repos/build/kaleido/lib/
-
-  # /lib/x86_64-linux-gnu/
-  for SO_FILE in libexpat.so.1 # libdl.so.2 libpthread.so.0 librt.so.1 libm.so.6 libgcc_s.so.1 libc.so.6
-  do
-    cp /lib/x86_64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
-  done
-
-elif [ $KALEIDO_ARCH == "arm64" ]; then
-    # /usr/lib/aarch64-linux-gnu/
-  for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
-  do
-    cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/$SO_FILE /repos/build/kaleido/lib/$SO_FILE
-  done
-
-  # /usr/lib/aarch64-linux-gnu/nss
-  cp /repos/src/build/linux/debian_sid_arm64-sysroot/usr/lib/aarch64-linux-gnu/nss/* /repos/build/kaleido/lib/
-
-fi
-'
+rm -rf $BUILD_DIR/gen/third_party/devtools-frontend/ # huge and i doubt we need it
