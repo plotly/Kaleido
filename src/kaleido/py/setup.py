@@ -157,7 +157,7 @@ class PackageWheel(Command):
         self.run_command("bdist_wheel")
 
 setup(
-    name="kaleido",
+    name="kaleidofix2",
     version=version,
     author="Jon Mease",
     author_email="jon@plotly.com",
