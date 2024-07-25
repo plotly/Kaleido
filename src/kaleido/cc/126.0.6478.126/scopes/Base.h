@@ -22,7 +22,10 @@ namespace kaleido {
                 virtual ~BaseScope();
 
                 virtual std::string ScopeName() = 0;
-                virtual void BuildCallArguments();
+                virtual base::Value::List BuildCallArguments();
+				// For above, theoretically a JSON list would be 
+				// fine and we should give them 
+				// that option.
                 std::list<std::string> ScriptTags();
                 std::list<std::string> LocalScriptFiles();
                 std::string GetCommandLineSwitch(std::string name);
@@ -46,7 +49,7 @@ namespace kaleido {
             delete plugin;
         }
 
-        void BaseScope::BuildCallArguments() {
+        base::Value::List BaseScope::BuildCallArguments() {
             return;
         }
 

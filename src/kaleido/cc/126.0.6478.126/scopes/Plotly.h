@@ -30,7 +30,7 @@ namespace kaleido {
 
             std::string ScopeName() override;
 
-            void BuildCallArguments() override;
+            base::Value::List BuildCallArguments() override;
 
         public:
             std::string topojsonUrl;
@@ -104,26 +104,21 @@ namespace kaleido {
             return "plotly";
         }
 
-        void PlotlyScope::BuildCallArguments() {
-            /*
-            std::vector<std::unique_ptr<::headless::runtime::CallArgument>> args;
+        base::Value::List PlotlyScope::BuildCallArguments() {
+
+            base::Value::List args;
+
+			base::Value::Dict arg1;
+			arg1.Set("value", mapboxToken);
+			base::Value::Dict arg2;
+			arg2.Set("value", topojsonUrl);
 
             // Add mapbox token from command line
-            args.push_back(
-                    headless::runtime::CallArgument::Builder()
-                            .SetValue(std::make_unique<base::Value>(base::StringPiece(mapboxToken)))
-                            .Build()
-            );
+            args.append(std::move(arg1));
+            args.append(std::move(arg2));
 
-            // Add topojson url from command-line
-            args.push_back(
-                    headless::runtime::CallArgument::Builder()
-                            .SetValue(std::make_unique<base::Value>(base::StringPiece(topojsonUrl)))
-                            .Build()
-            );
             // TODO essentially were setting strings to functions
-            return args;*/
-            return;
+            return std::move(args);
         }
     }
 }
