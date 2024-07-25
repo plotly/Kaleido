@@ -36,11 +36,6 @@ namespace kaleido {
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
-    // There is a possible danglng pointer here
-    // If the browser shuts down right after calling create tab
-    // Then the unique pointer was be present queue to be destroyed properly
-    // Would need to create tab on the browser thread and put it in active jobs
-    // Basically, protect which threads access which queues
     auto tab = std::make_unique<Tab>();
     headless::HeadlessWebContents::Builder builder(
       parent_->browser_->GetDefaultBrowserContext()->CreateWebContentsBuilder());
@@ -67,6 +62,7 @@ namespace kaleido {
     }
   }
 
+  // jobLine modifying tabs and jobs
   void Dispatch::sortTab(int id, std::unique_ptr<Tab> tab) {
     if (jobs.size() == 0) {
       tabs.push(std::move(tab));
@@ -75,6 +71,8 @@ namespace kaleido {
       jobs.pop();
     }
   }
+
+  // jobLine modifying tabs and jobs
   void Dispatch::sortJob(std::unique_ptr<Job> job) {
     if (tabs.size() == 0) {
       jobs.push(std::move(job));
@@ -84,8 +82,7 @@ namespace kaleido {
     }
   }
 
-  // Memory TODO, singletons etc
-
+  // jobline modying tabs and jobs and aciveJobs
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
     int job_id = job_number++;
 
@@ -121,15 +118,14 @@ namespace kaleido {
     activeJobs[job_id]->executionId = *msg.FindDict("params")->FindDict("context")->FindInt("id");
     base::Value::Dict empty;
     runJob4_loadNextScript(job_id, std::move(empty));
-
   }
 
   void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
-			std::string exportFunction = base::StringPrintf(
-					"function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
-					parent_->scope_name.c_str());
+      std::string exportFunction = base::StringPrintf(
+          "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
+          parent_->scope_name.c_str());
 
       base::Value::Dict spec;
       spec.Set("value", std::move(activeJobs[job_id]->spec_parsed));

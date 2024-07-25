@@ -34,7 +34,7 @@ namespace kaleido {
       int version;
       int id; // TODO change all this to messageId or userMsgId or something
       int executionId;
-			base::Value::Dict spec_parsed;
+      base::Value::Dict spec_parsed;
       std::string format;
       std::string scope;
       std::unique_ptr<Tab> currentTab;
@@ -67,6 +67,10 @@ namespace kaleido {
       void ReloadAll();
 
       void Release() {
+        // browser thread removing active jobs and tabs, it needs to happen in two parts
+        // jobline has to remove it from the queue or array
+        // browser has to actually destroy it
+        // browser will always finish its task if shutdown is called
         browser_devtools_client_.DetachClient();
         for (auto &it : activeJobs) {
           activeJobs[it.first].reset();
@@ -93,7 +97,7 @@ namespace kaleido {
       std::queue<std::unique_ptr<Job>> jobs;
       int job_number = 0;
 
-      std::unordered_map<int, std::unique_ptr<Job>> activeJobs; // TODO needs to transfer everthing
+      std::unordered_map<int, std::unique_ptr<Job>> activeJobs;
 
       // All queue operations happen on a SequencedTaskRunner for memory safety
       // Note: no callbacks allowed from within the SequencedTaskRunner

@@ -267,7 +267,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
       job->id = -2;
       job->format = *maybe_format;
       job->scope = scope_ptr->ScopeName().c_str();
-			job->spec_parsed = std::move(jsonDict);
+      job->spec_parsed = std::move(jsonDict);
       dispatch->PostJob(std::move(job));
       return true;
     } else {
