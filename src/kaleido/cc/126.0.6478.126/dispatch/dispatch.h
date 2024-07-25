@@ -28,13 +28,13 @@ namespace kaleido {
 
   class Job {
     public:
-      Job(std::string& spec);
+      Job();
       ~Job();
       // should disable other assignments
       int version;
       int id; // TODO change all this to messageId or userMsgId or something
       int executionId;
-      std::string spec;
+			base::Value::Dict spec_parsed;
       std::string format;
       std::string scope;
       std::unique_ptr<Tab> currentTab;

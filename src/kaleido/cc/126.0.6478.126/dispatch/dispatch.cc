@@ -20,7 +20,7 @@ namespace kaleido {
     client_->DetachClient();
     web_contents_.ExtractAsDangling()->Close();
   }
-  Job::Job(std::string& spec): spec(spec) {}
+  Job::Job() {}
   Job::~Job() {
     if (currentTab) currentTab.reset();
   }
@@ -88,13 +88,13 @@ namespace kaleido {
   // Memory TODO, singletons etc
 
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
-    // all of the below should happen on the browser task
     int job_id = job_number++;
+
     job->currentTab = std::move(tab);
     activeJobs[job_id] = std::move(job);
     parent_->browser_->BrowserMainThread()->PostTask(
       FROM_HERE,
-      base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), job_id));
+      base::BindOnce(&Dispatch::runJob1_resetTab, base::Unretained(this), job_id)); // jobline gives browser control of tab/job
     return;
   }
 
@@ -133,7 +133,7 @@ namespace kaleido {
 					parent_->scope_name.c_str());
 
       base::Value::Dict spec;
-      spec.Set("value", activeJobs[job_id]->spec);
+      spec.Set("value", std::move(activeJobs[job_id]->spec_parsed));
       base::Value::List args = std::move(parent_->scope_args);
       args.Insert(args.begin(), base::Value(std::move(spec)));
       base::Value::Dict params;

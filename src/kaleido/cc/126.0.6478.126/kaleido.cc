@@ -262,11 +262,12 @@ bool Kaleido::ReadJSON(std::string &msg) {
       LOG(INFO) << "It seems like we're using the old protocol.";
       LOG(INFO) << jsonDict.DebugString();
       old=true;
-      std::unique_ptr<Job> job = std::make_unique<Job>(msg);
+      std::unique_ptr<Job> job = std::make_unique<Job>();
       job->version = 0;
       job->id = -2;
       job->format = *maybe_format;
       job->scope = scope_ptr->ScopeName().c_str();
+			job->spec_parsed = std::move(jsonDict);
       dispatch->PostJob(std::move(job));
       return true;
     } else {

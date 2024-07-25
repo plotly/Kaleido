@@ -40,6 +40,7 @@ namespace kaleido {
       void OnBrowserStart(headless::HeadlessBrowser* browser);
 
       // Dispatch uses this to let us know how things went
+			void PostEchoTaskOld(const std::string&);
       void ReportOperation(int id, bool success, const base::Value::Dict &msg);
       void ReportSuccess(int id);
       void ReportFailure(int id, const std::string& msg);
@@ -67,7 +68,6 @@ namespace kaleido {
     void postListenTask();
     std::atomic_flag listening = ATOMIC_FLAG_INIT; // to only call postListenTask() once
     void PostEchoTask(const std::string&); // echo something out
-    void PostEchoTaskOld(const std::string&);
 
     std::unordered_map<int, const std::string&> messageIds; // every message must have a unique id
     bool ReadJSON(std::string&); // try to turn message into json object
