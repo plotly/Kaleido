@@ -230,6 +230,7 @@ void Kaleido::PostEchoTask(const std::string &msg) {
   auto echo = [](const std::string &msg){ std::cout << msg << std::endl; };
   output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg));
 }
+
 void Kaleido::PostEchoTaskOld(const std::string &msg) {
   auto echo = [](const std::string &msg){ std::cout << msg << std::endl; };
   output_sequence->PostTask(FROM_HERE, base::BindOnce(echo, msg));

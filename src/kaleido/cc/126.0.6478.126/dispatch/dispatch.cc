@@ -114,7 +114,6 @@ namespace kaleido {
         "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     activeJobs[job_id]->scriptItr = parent_->localScriptFiles.begin();
-    LOG(INFO) << msg.DebugString();
     activeJobs[job_id]->executionId = *msg.FindDict("params")->FindDict("context")->FindInt("id");
     base::Value::Dict empty;
     runJob4_loadNextScript(job_id, std::move(empty));
