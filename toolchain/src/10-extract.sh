@@ -104,10 +104,14 @@ missing=False, annotate=False, relative=True)")")
     done
 
   fi
+  # all linux, copy whole non-kernel lib
+  for f in $(sed -nr 's/^.*=> (.*) \(.*/\1/p' <(ldd ${SRC_DIR}/kaleido)); do
+    mkdir -p $BUILD_DIR/lib/
+    cp $f $BUILD_DIR/lib/
+  done
 fi
 
-# Ignoring this for now, do we really want
-comment='
+old_stylecomment='
 if [ $KALEIDO_ARCH == "x64" ]; then
   # /usr/lib/x86_64-linux-gnu/
   for SO_FILE in libnss3.so libnssutil3.so libnspr4.so libplc4.so libplds4.so libsqlite3.so.0
