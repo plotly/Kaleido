@@ -92,6 +92,7 @@ fi
 if [[ "$PLATFORM" == "LINUX" ]]; then
   if [[ "${CHROMIUM_VERSION_TAG}" == "126.0.6478.126" ]] || $TRY; then
  
+    strip -s "${SRC_DIR}/kaleido"
     cp "${SRC_DIR}/kaleido" "${BUILD_DIR}/kaleido"
     chmod +x "${BUILD_DIR}/kaleido"
     FILES=$(echo -e "$($PYTHON -c "$IMPORT; \
