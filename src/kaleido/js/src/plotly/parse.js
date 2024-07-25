@@ -33,6 +33,7 @@ const ACCEPT_HEADER = Object.keys(contentFormat).reduce(function (obj, key) {
  *  - result
  */
 function parse (body, _opts) {
+  let debugStruct = {};
   const result = {}
 
   const errorOut = (code, extra) => {
@@ -47,13 +48,15 @@ function parse (body, _opts) {
   // to support both 'serve' requests (figure/format/../)
   // and 'run' body (data/layout) structures
   if (body.figure) {
+    debugStruct['request_type'] = 'serve'
     figure = body.figure
     opts = body
   } else {
+    debugStruct['request_type'] = 'run'
     figure = body
     opts = _opts
   }
-
+  
   result.scale = isPositiveNumeric(opts.scale) ? Number(opts.scale) : cst.dflt.scale
   result.fid = isNonEmptyString(opts.fid) ? opts.fid : null
   result.encoded = !!opts.encoded
@@ -69,7 +72,7 @@ function parse (body, _opts) {
   }
 
   if (!isPlainObj(figure)) {
-    return errorOut(400, 'non-object figure')
+    return errorOut(400, 'non-object figure: ' + JSON.stringify(debugStruct))
   }
 
   if (!figure.data && !figure.layout) {
