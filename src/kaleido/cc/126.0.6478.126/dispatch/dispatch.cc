@@ -181,7 +181,7 @@ namespace kaleido {
   void Dispatch::runJob6_processImage(const int& job_id, base::Value::Dict msg) {
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     std::string result = *msg.FindDict("result")->FindDict("result")->FindString("value");
-    PostEchoTaskOld(result.c_str());
+    parent_->PostEchoTaskOld(result.c_str());
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::closeJob, base::Unretained(this), job_id)); // we're done with this job_id
