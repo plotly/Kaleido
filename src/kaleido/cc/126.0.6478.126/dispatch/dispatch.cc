@@ -13,9 +13,7 @@
 #include "base/task/thread_pool.h"
 #include "base/task/bind_post_task.h"
 // We can do the same thing with a WebContentsBuilder to create a tab, but maybe we can do it directly with dev tools?
-
 namespace kaleido {
-
   Tab::Tab() {}
   Tab::~Tab() {
     // TODO calling this destructor on shutdown would be V good, otherwise we complain
@@ -133,12 +131,12 @@ namespace kaleido {
 
 			std::string exportFunction = base::StringPrintf(
 					"function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
-					scope->ScopeName().c_str());
+					parent_->scope_name.c_str());
 
       base::Value::Dict spec;
       spec.Set("value", activeJobs[job_id]->spec);
-      base::Value::List args = parent_->scope_ptr->BuildCallArguments();
-      args.Insert(0, std::move(spec));
+      base::Value::List args = std::move(parent_->scope_args);
+      args.Insert(args.begin(), base::Value(std::move(spec)));
       base::Value::Dict params;
       params.Set("functionDeclaration", exportFunction);
       params.Set("arguments", std::move(args));

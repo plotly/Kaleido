@@ -124,10 +124,11 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // This handles the case where args[0] is a wchar_t on Windows
   std::stringstream scope_stringstream;
   scope_stringstream << args[0];
-  std::string scope_name = scope_stringstream.str();
+  scope_name = scope_stringstream.str();
 
   // Instantiate renderer scope
   scope_ptr = LoadScope(scope_name);
+  scope_args = scope_ptr->BuildCallArguments();
 
   if (!scope_ptr) {
       // Invalid scope name

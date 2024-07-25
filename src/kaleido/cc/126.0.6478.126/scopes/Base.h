@@ -50,7 +50,8 @@ namespace kaleido {
         }
 
         base::Value::List BaseScope::BuildCallArguments() {
-            return;
+			base::Value::List empty;
+            return empty;
         }
 
         std::list<std::string> BaseScope::ScriptTags() {

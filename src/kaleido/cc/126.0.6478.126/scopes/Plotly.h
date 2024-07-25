@@ -114,11 +114,11 @@ namespace kaleido {
 			arg2.Set("value", topojsonUrl);
 
             // Add mapbox token from command line
-            args.append(std::move(arg1));
-            args.append(std::move(arg2));
+            args.Append(std::move(arg1));
+            args.Append(std::move(arg2));
 
             // TODO essentially were setting strings to functions
-            return std::move(args);
+            return args;
         }
     }
 }
