@@ -103,10 +103,12 @@ namespace kaleido {
       void runJob2_reloadTab(const int &job_id, base::Value::Dict msg);
       void runJob3_loadScripts(const int &job_id, const base::Value::Dict& msg);
       void runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg);
-      void runJob5_runLoadedScript(const int job_id, const base::Value::Dict msg);
+      void runJob5_runLoadedScript(const int &job_id, const base::Value::Dict msg);
+      void runJob6_processImage(const int &job_id, const base::Value::Dict msg);
 
       void sortTab(int id, std::unique_ptr<Tab> tab);
       void sortJob(std::unique_ptr<Job>);
+      void closeJob(const int &job_id);
       void dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab);
       void dumpEvent(const base::Value::Dict& msg);
       void dumpResponse(base::Value::Dict msg);
