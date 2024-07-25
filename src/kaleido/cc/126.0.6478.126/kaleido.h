@@ -58,10 +58,10 @@ namespace kaleido {
       std::string scope_name;
       base::Value::List scope_args;
       void ShutdownSoon();
+      bool old = false;
 
   private:
 
-    bool old = false;
     // User IO stuff for main
     void StartListen(); // continually reads stdin on parallel task
     void listenTask();

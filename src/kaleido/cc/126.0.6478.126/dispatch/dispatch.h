@@ -121,6 +121,8 @@ namespace kaleido {
       bool popplerAvailable;
       bool inkscapeAvailable;
       std::unique_ptr<base::Environment> env;
+
+      inline bool checkError(const base::Value::Dict &msg, const std::string &context, const int& job_id);
   };
 }
 
