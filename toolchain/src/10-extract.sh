@@ -109,6 +109,11 @@ missing=False, annotate=False, relative=True)")")
     mkdir -p $BUILD_DIR/lib/
     cp $f $BUILD_DIR/lib/
   done
+  # manual
+  cp /usr/lib/x86_64-linux-gnu/nss/* ${BUILD_DIR}/lib/
+  for f in libdl libpthread librt libm libgcc_s libc; do
+    rm ${BUILD_DIR}/lib/${f}* || echo "No ${f}"
+  done
 fi
 
 rm -rf $BUILD_DIR/gen/third_party/devtools-frontend/ # huge and i doubt we need it
