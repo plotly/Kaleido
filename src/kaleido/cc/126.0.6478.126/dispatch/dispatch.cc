@@ -128,7 +128,6 @@ namespace kaleido {
   void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
-
 			std::string exportFunction = base::StringPrintf(
 					"function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
 					parent_->scope_name.c_str());
@@ -143,7 +142,6 @@ namespace kaleido {
       params.Set("returnByValue", false);
       params.Set("userGesture", true);
       params.Set("executionContextId", activeJobs[job_id]->executionId);
-      LOG(INFO) << params.DebugString();
       activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.callFunctionOn",
 				std::move(params),
 				base::BindOnce(&Dispatch::dumpResponse, base::Unretained(this)));
@@ -160,8 +158,7 @@ namespace kaleido {
       return;
     }
     std::string scriptString((std::istreambuf_iterator<char>(script)),
-        std::istreambuf_iterator<char>(script));
-
+        std::istreambuf_iterator<char>());
     auto after_loaded = base::BindRepeating(
         &Dispatch::runJob5_runLoadedScript, base::Unretained(this), job_id);
 
@@ -169,7 +166,6 @@ namespace kaleido {
     script_params.Set("expression", scriptString);
     script_params.Set("sourceURL", scriptPath);
     script_params.Set("persistScript", true);
-
     activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.compileScript", std::move(script_params), after_loaded);
   }
 
