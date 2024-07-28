@@ -15,10 +15,9 @@ usage=(
   "You can always try -v or --verbose"
   ""
 
-  "Final: this will generate a release build, meaning longer compile, faster startup, perfect timestamp."
-  "Updating timestamp will prompt a rebuild of lots of libraries you otherwise don't need to rebuild, so"
-  "do this at the end."
-  "build_ninja [-f|--final]"
+  "This will prompt a dev build, or a component build. Compiling goes from 30 seconds to 5"
+  "seconds for your typical small kaleido change. Not packagable."
+  "build_ninja [-d|--dev]"
   ""
   "Show: show will just let you know if you last did a development build or not"
   "build_ninja [-s|--show]"
@@ -34,13 +33,18 @@ usage=(
 
 # todo args --list
 # todo show
-FLAGS=("-f" "--final" "-s" "--show" "-l" "--list" "-t" "--try")
+FLAGS=("-d" "--dev" "-s" "--show" "-l" "--list" "-t" "--try")
 ARGFLAGS=()
 
 SCRIPT_DIR="$( cd -- "$( dirname -- $(readlink -f -- "${BASH_SOURCE[0]}") )" &> /dev/null && pwd )"
 . "$SCRIPT_DIR/include/utilities.sh"
 
-FINAL="$(flags_resolve false "-f" "--final")"
+FINAL=true
+DEV="$(flags_resolve false "-d" "--dev")"
+if $DEV; then
+  FINAL=false
+fi
+
 $FINAL && DEV=false || DEV=true
 
 SHOW="$(flags_resolve false "-s" "--show")"
