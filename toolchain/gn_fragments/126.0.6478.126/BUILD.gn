@@ -49,6 +49,7 @@ executable("kaleido") {
     "//content/public/child:child",
     "//content/public/common",
     "//content/public/utility",
+    "//printing/buildflags",
   ]
   if (proprietary_codecs) {
     deps += [ ":generate_headless_shell_license_file" ]
@@ -63,6 +64,15 @@ executable("kaleido") {
   }
   if (!is_fuchsia) {
     deps += [ "//components/crash/content/browser" ]
+  }
+  if (enable_printing) {
+    deps += [
+      "//components/printing/browser",
+      "//components/printing/browser/headless:headless",
+      "//components/printing/renderer",
+      "//components/services/print_compositor",
+      "//components/services/print_compositor/public/mojom",
+    ]
   }
   if (is_win) {
     defines = [ "HEADLESS_USE_CRASHPAD" ]
