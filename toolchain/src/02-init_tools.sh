@@ -43,18 +43,19 @@ if [[ "$PLATFORM" == "WINDOWS" ]]; then
     cmd.exe /c cipd_bin_setup.bat
     cmd.exe /c 'bootstrap\win_tools.bat'
   elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]] || $TRY; then
-    pushd $MAIN_DIR/vendor/depot_tools/
-    cmd <<EOF
+    pushd "$MAIN_DIR/vendor/depot_tools/"
+    COMMAND="
 set DEPOT_TOOLS_UPDATE=0\n
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0\n
-set PATH=$MAIN_DIR\\\vendor\\\depot_tools;$MAIN_DIR\\\vendor\\\depot_tools\\\bootstrap;%PATH%\n
+set PATH=$MAIN_DIR\\\vendor\\\depot_tools\\\;$MAIN_DIR\\\vendor\\\depot_tools\\\bootstrap;%PATH%\n
+where python3\n
 cipd_bin_setup.bat\n
 bootstrap\\\win_tools.bat\n
-exit
-EOF
+exit"
+    echo -e "$COMMAND" | cmd
     popd
   else
-    util_error "No elif branch in 02-init_tools.sh for this version $CHROMIUM_VERSION_TAG, as of today, you still have to add the branch manually. You can add an elif statement right where you find this error, so search for it."
+    util_error "No elif branch in 02-init_tools.sh for this version $CHROMIUM_VERSION_TAG, as of today, you still have to add the branch manually. You can add an elif statement right where you find this error, so search for it. (or see help)"
   fi
 elif [[ "$PLATFORM" == "LINUX" ]]; then
   mkdir -p "$MAIN_DIR/toolchain/tmp"
