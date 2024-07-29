@@ -27,3 +27,8 @@ src/kaleido/CREDITS.html
 src/kaleido/version
 CREDITS.html
 src/kaleido/py/kaleido/executable
+# Windows build artifacts
+vendor/.cipd
+vendor/.gclient_entries
+vendor/.gclient_previous_sync_commits
+vendor/.gcs_entries
