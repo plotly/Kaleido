@@ -126,4 +126,17 @@ fi
 $NO_VERBOSE || echo "Args file:"
 $NO_VERBOSE || cat "${ARGS_FILE}"
 
-( cd "$MAIN_DIR/vendor/src" && gn gen "$OUTDIR" )
+pushd "$MAIN_DIR/vendor/src"
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
+  COMMAND="
+set DEPOT_TOOLS_UPDATE=0\n
+set DEPOT_TOOLS_WIN_TOOLCHAIN=0\n
+set PATH=$MAIN_DIR\\\vendor\\\depot_tools;$MAIN_DIR\\\vendor\\\depot_tools\\\bootstrap;%PATH%\n
+echo %PATH%\n
+where python3\n
+gn gen ${OUTDIR}\nexit\n"
+  echo -e $COMMAND | cmd.exe
+else
+  gn gen "$OUTDIR"
+fi
+popd

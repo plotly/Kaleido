@@ -45,8 +45,11 @@ if [[ "$PLATFORM" == "WINDOWS" ]]; then
   elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]] || $TRY; then
     pushd $MAIN_DIR/vendor/depot_tools/
     cmd <<EOF
-cipd_bin_setup.bat
-bootstrap\win_tools.bat
+set DEPOT_TOOLS_UPDATE=0\n
+set DEPOT_TOOLS_WIN_TOOLCHAIN=0\n
+set PATH=$MAIN_DIR\\\vendor\\\depot_tools;$MAIN_DIR\\\vendor\\\depot_tools\\\bootstrap;%PATH%\n
+cipd_bin_setup.bat\n
+bootstrap\\\win_tools.bat\n
 exit
 EOF
     popd

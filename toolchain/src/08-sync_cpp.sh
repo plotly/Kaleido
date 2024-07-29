@@ -27,6 +27,10 @@ util_get_version
 util_export_version
 
 CC_DIR="${MAIN_DIR}/src/kaleido/cc/$CHROMIUM_VERSION_TAG"
+
+$NO_VERBOSE || echo "CC_DIR: $CC_DIR"
+$NO_VERBOSE || echo "CP_DIR: $MAIN_DIR/src/kaleido/cc"
+
 if [ ! -d "$CC_DIR" ] && $TRY; then
   CC_DIR="${MAIN_DIR}/src/kaleido/cc/$(ls "${MAIN_DIR}/src/kaleido/cc/" -vt | head -1)"
 elif [ -d "$CC_DIR" ]; then
@@ -35,5 +39,12 @@ else
   util_error "No cc dir for $CHROMIUM_VERSION_TAG, look at --try or make your own"
 fi
 
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
+  rm -rf "${MAIN_DIR}/vendor/src/headless/app/"*
+  cp -r "${CC_DIR}/"* "${MAIN_DIR}/vendor/src/headless/app"
+  exit 0
+fi
+
+# Really annoying
 
 rsync -av --delete "${CC_DIR}/" "${MAIN_DIR}/vendor/src/headless/app"
