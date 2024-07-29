@@ -39,17 +39,17 @@ util_export_version
 # This may change with depot tools vesion, and it still needs to be worked out per platform
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
   if [[ "$CHROMIUM_VERSION_TAG" == "88.0.4324.150" ]]; then
-    util_error "Try to execute the following manually first"
-    # What's the deal with this really though, how do you call this
-    # Do we expect to be in the depot_tools directory?
+    util_error "no worky"
     cmd.exe /c cipd_bin_setup.bat
     cmd.exe /c 'bootstrap\win_tools.bat'
   elif [[ "$CHROMIUM_VERSION_TAG" == "126.0.6478.126" ]] || $TRY; then
-    util_error "Try to execute the following manually first"
-    # What's the deal with this really though, how do you call this
-    # Do we expect to be in the depot_tools directory?
-    cmd.exe /c cipd_bin_setup.bat
-    cmd.exe /c 'bootstrap\win_tools.bat'
+    pushd $MAIN_DIR/vendor/depot_tools/
+    cmd <<EOF
+cipd_bin_setup.bat
+bootstrap\win_tools.bat
+exit
+EOF
+    popd
   else
     util_error "No elif branch in 02-init_tools.sh for this version $CHROMIUM_VERSION_TAG, as of today, you still have to add the branch manually. You can add an elif statement right where you find this error, so search for it."
   fi
