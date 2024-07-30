@@ -30,4 +30,19 @@ util_export_version
 
 OUTDIR="${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}"
 
-( cd "${MAIN_DIR}/vendor/src"; ninja -C $OUTDIR -j $CPUS kaleido )
+pushd "$MAIN_DIR/vendor/src"
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
+  COMMAND="
+set DEPOT_TOOLS_UPDATE=0\n
+set DEPOT_TOOLS_WIN_TOOLCHAIN=0\n
+set PATH=$MAIN_DIR\\\vendor\\\depot_tools;$MAIN_DIR\\\vendor\\\depot_tools\\\bootstrap;%PATH%\n
+set CPUS=$CPUS\n
+echo %PATH%\n
+where python3\n
+ninja -C $OUTDIR -j $CPUS kaleido\n
+exit\n"
+  echo -e $COMMAND | cmd.exe
+else
+  ninja -C $OUTDIR -j $CPUS kaleido
+fi
+popd
