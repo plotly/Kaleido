@@ -59,16 +59,16 @@ def match_json_to_directory(config_file, src_dir, relative=True, exists=True, mi
         if relative:
           f = f.removeprefix(src_dir)
         if annotate:
-          print(f"exists: {f}")
+          print(f"exists: {str(f)}")
         else:
-          print(f)
+          print(f, end=" ")
       if (not os.path.exists(f) and missing):
         if relative:
           f = f.removeprefix(src_dir)
         if annotate:
-          print(f"missing: {f}")
+          print(f"missing: {str(f)}")
         else:
-          print(f)
+          print(f, end=" ")
 
 # 1) load a json and begin processing it
 # 2) list what files you can and can't find

@@ -44,7 +44,7 @@ ASSESS="$(flags_resolve false "-s" "--assess")"
 mkdir -p "$BUILD_DIR"
 globals_clean_build_dir
 
-$NO_VERBOSE || echo "We are extracnig to $BUILD_DIR"
+$NO_VERBOSE || echo "We are extracting to $BUILD_DIR"
 
 # mainly reexported, but making sure the python script has it
 export MAIN_DIR
@@ -73,6 +73,7 @@ elif [[ "$PLATFORM" == "OSX" ]]; then
 fi
 export CONFIG
 
+which python3
 if [[ -z "${PYTHON-""}" ]] && which python3 &> /dev/null; then
   PYTHON="python3"
 else
@@ -82,11 +83,12 @@ fi
 export PYTHONPATH="${MAIN_DIR}/toolchain/src/:${PYTHONPATH-""}" 
 
 if $ASSESS; then
-  echo -e "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=True, annotate=True, relative=False)")"
+  pushd "${MAIN_DIR}/toolchain/src/"
+  echo "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=True, annotate=True, relative=False)")"
+  popd
   exit 0
 fi
-
-# echo -e "$($PYTHON -c "$IMPORT; extract.hello_world()")"
+#echo -e "$($PYTHON -c "$IMPORT; extract.hello_world()")"
 
 # may not need to have platform/version branches here if we use different ${CONFIG} each time
 if [[ "$PLATFORM" == "LINUX" ]]; then
@@ -118,8 +120,38 @@ missing=False, annotate=False, relative=True)")")
 fi
 
 if [[ "$PLATFORM" == "OSX" ]]; then
+    cp "${SRC_DIR}/kaleido" "${BUILD_DIR}/kaleido"
+    chmod +x "${BUILD_DIR}/kaleido"
+    FILES=$(echo -e "$($PYTHON -c "$IMPORT; \
+extract.match_json_to_directory('\
+${CONFIG}-original', \
+'$SRC_DIR', \
+missing=False, annotate=False, relative=True)")")
+    for f in $FILES; do
+      mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_"
+    done
   $NO_VERBOSE || echo "Check the line here:"
   cp "$MAIN_DIR/vendor/src/out/Kaleido_$PLATFORM_$TARGET_ARCH/lib"*.dylib "${BUILD_DIR}/"
+fi
+
+if [[ "$PLATFORM" == "WINDOWS" ]]; then
+    pushd "${MAIN_DIR}/toolchain/src/"
+    cp "${SRC_DIR}/kaleido" "${BUILD_DIR}/kaleido"
+    chmod +x "${BUILD_DIR}/kaleido"
+    FILES=$(echo "$($PYTHON -c "$IMPORT; \
+extract.match_json_to_directory('\
+${CONFIG}-original', \
+'$SRC_DIR', \
+missing=False, annotate=False, relative=True)")")
+    for f in $FILES; do
+      echo "$f"
+      echo "${SRC_DIR}${f}"
+      echo "${BUILD_DIR}$(dirname "$f")"
+      mkdir -p "${BUILD_DIR}$(dirname "$f")"
+      cp -r "${SRC_DIR}${f}" "${BUILD_DIR}$(dirname "$f")"
+      echo
+    done
+    popd
 fi
 
 rm -rf $BUILD_DIR/gen/third_party/devtools-frontend/ # huge and i doubt we need it
