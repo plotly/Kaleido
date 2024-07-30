@@ -1,6 +1,12 @@
-#
+# TECHDEBT
 
 These are ordered by how they should be done.
+
+## Buildflags
+
+Look at the tip of interface-fix and windows build
+Getting rid of ozone is good and saves space (probably)
+But some stuff doesn't work with windows which we wish would, and could withs ome massaging.
 
 ## Concurrency
 (Chromium's concurrency model is inferior to golangs.)
