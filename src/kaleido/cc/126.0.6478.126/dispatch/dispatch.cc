@@ -12,6 +12,44 @@
 #include "base/task/thread_pool.h"
 #include "base/task/bind_post_task.h"
 // We can do the same thing with a WebContentsBuilder to create a tab, but maybe we can do it directly with dev tools?
+#if defined(OS_WIN)
+
+#include "base/files/file_util.h"
+#include "base/strings/stringprintf.h"
+#include <iostream>
+#include <fstream>
+namespace base {
+    // Chromium doens't provide and implementation of ExecutableExistsInPath on Windows, so we add one here
+    bool ExecutableExistsInPath(Environment* env,
+        const std::string& executable) {
+        std::string path;
+        if (!env->GetVar("PATH", &path)) {
+            LOG(ERROR) << "No $PATH variable. Assuming no " << executable << ".";
+            return false;
+        }
+
+        for (const StringPiece& cur_path:
+            SplitStringPiece(path, ";", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
+
+            // Build wide strings using wstringstreams
+            std::wstringstream wpath_ss;
+            wpath_ss << std::string(cur_path).c_str();
+
+            std::wstringstream wexecutable_ss;
+            wexecutable_ss << executable.c_str() << ".exe";
+
+            std::wstring wpath_ss_as_string = wpath_ss.str();
+            FilePath::StringPieceType w_cur_path(wpath_ss_as_string);
+            FilePath file(w_cur_path);
+
+            if (PathExists(file.Append(wexecutable_ss.str()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+#endif
 namespace kaleido {
   Tab::Tab() {}
   Tab::~Tab() {
@@ -160,8 +198,14 @@ namespace kaleido {
     std::string scriptPath(*activeJobs[job_id]->scriptItr);
     std::ifstream script(scriptPath);
     if (!script.is_open()) {
+
+#if defined(OS_WIN)
+      std::string error = base::StringPrintf("Failed to find, or open, local file at %s with working directory.",
+          scriptPath.c_str());
+#else
       std::string error = base::StringPrintf("Failed to find, or open, local file at %s with working directory %s",
           scriptPath.c_str(), parent_->cwd.value().c_str());
+#endif
       LOG(ERROR) << error;
       parent_->Api_OldMsg(404, error);
       // TODO gotta kill job

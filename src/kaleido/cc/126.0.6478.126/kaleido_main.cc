@@ -70,7 +70,7 @@ int main(int argc, const char** argv) {
 
 namespace {
 
-void buildSandbox(content::ContentMainParams) {
+void buildSandbox(content::ContentMainParams params) {
   #if BUILDFLAG(IS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
     content::InitializeSandboxInfo(&sandbox_info);
@@ -111,9 +111,9 @@ void processCommandLine(content::ContentMainParams params, int argc, const char*
 
   #if defined(HEADLESS_USE_CRASHPAD)
     if (process_type == crash_reporter::switches::kCrashpadHandler) {
-      return crash_reporter::RunAsCrashpadHandler(
+      crash_reporter::RunAsCrashpadHandler(
           *base::CommandLine::ForCurrentProcess(), base::FilePath(),
-          ::switches::kProcessType, switches::kUserDataDir);
+          ::switches::kProcessType, headless::switches::kUserDataDir);
     }
   #endif  // defined(HEADLESS_USE_CRASHPAD)
 
@@ -133,38 +133,3 @@ void processCommandLine(content::ContentMainParams params, int argc, const char*
 }
 
 } // namespace
-
-
-#if defined(OS_WIN)
-namespace base {
-    // Chromium doens't provide and implementation of ExecutableExistsInPath on Windows, so we add one here
-    bool ExecutableExistsInPath(Environment* env,
-        const std::string& executable) {
-        std::string path;
-        if (!env->GetVar("PATH", &path)) {
-            LOG(ERROR) << "No $PATH variable. Assuming no " << executable << ".";
-            return false;
-        }
-
-        for (const StringPiece& cur_path:
-            SplitStringPiece(path, ";", KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY)) {
-
-            // Build wide strings using wstringstreams
-            std::wstringstream wpath_ss;
-            wpath_ss << std::string(cur_path).c_str();
-
-            std::wstringstream wexecutable_ss;
-            wexecutable_ss << executable.c_str() << ".exe";
-
-            std::wstring wpath_ss_as_string = wpath_ss.str();
-            FilePath::StringPieceType w_cur_path(wpath_ss_as_string);
-            FilePath file(w_cur_path);
-
-            if (PathExists(file.Append(wexecutable_ss.str()))) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
-#endif
