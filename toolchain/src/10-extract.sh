@@ -117,4 +117,9 @@ missing=False, annotate=False, relative=True)")")
   done
 fi
 
+if [[ "$PLATFORM" == "OSX" ]]; then
+  $NO_VERBOSE || echo "Check the line here:"
+  cp "$MAIN_DIR/vendor/src/out/Kaleido_$PLATFORM_$TARGET_ARCH/lib"*.dylib "${BUILD_DIR}/"
+fi
+
 rm -rf $BUILD_DIR/gen/third_party/devtools-frontend/ # huge and i doubt we need it

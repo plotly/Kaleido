@@ -95,5 +95,13 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
   # runhooks? i don't think we need to TODO but mentioned
   $NO_VERBOSE || echo "Downloaded and installed build-deps."
 elif [[ "$PLATFORM" == "OSX" ]]; then
-  $NO_VERBOSE || echo "Did nothing for OSX, we will have to do something, probably the same as linux." # TODO
+  $NO_VERBOSE || echo "MAC INIT IS EXPERIMENTAL"
+  pushd "$MAIN_DIR/vendor/depot_tools"
+  source "./cipd_bin_setup.sh"
+  cipd_bin_setup
+
+  # Don't bootstrap Python 3 on windows, since it is already done by
+  # bootstrap/win_tools.bat.
+  source "./bootstrap_python3"
+  bootstrap_python3
 fi
