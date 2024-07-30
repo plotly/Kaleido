@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This is a script to help get us into a workable dev-environment inside a docker container
 # ⚠️⚠️⚠️ HERE BE DRAGONS ⚠️⚠️⚠️
 #    \****__              ____
