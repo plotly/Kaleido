@@ -7,6 +7,11 @@
 #include <signal.h>
 #include <cstdio>
 #include <string>
+if 
+
+#if !defined(OS_WIN)
+#include <stdlib.h>
+#endif
 
 #include "headless/app/kaleido.h"
 
