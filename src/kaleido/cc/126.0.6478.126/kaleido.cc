@@ -9,7 +9,7 @@
 #include <string>
 
 
-#include <unistd.h>
+#include <stdlib.h>
 
 #include "headless/app/kaleido.h"
 
@@ -56,7 +56,7 @@ void Kaleido::ShutdownSoon() {
 }
 void Kaleido::ShutdownTask() {
   LOG(INFO) << "Calling shutdown on browser";
-  if (tmpFileName.size()) std::remove(tmpFileName.c_str());
+  //if (tmpFileName.size()) std::remove(tmpFileName.c_str()); TODO
   dispatch->Release(); // Fine to destruct what we have here.
   dispatch = nullptr;
   browser_.ExtractAsDangling()->Shutdown();
@@ -136,18 +136,13 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
   // Write html to temp file
-  char *tmpVar = strdup("/tmp/XXXXXX"); // must free
-  std::string easierString(tmpFileName);
-  free(tmpVar); // done with this clib madness
-  tmpFileName = easierString + ".html";
-  int assumeWorks = mkstemp(tmpFileName.c_str());
-  std::ofstream htmlFile(tmpFileName);
-  //htmlFile.open(tmpFileName, std::ios::out);
-  htmlFile << htmlStringStream.str();
-  htmlFile.close();
+
+  tmpFile = base::CreateAndOpenTemporaryStream(&tmpFileName);
+  tmpFile << htmlStringStream.str();
+  tmpFile.close();
 
   // Create file:// url to temp file
-  GURL url = GURL(std::string("file://") + tmpFileName);
+  GURL url = GURL(std::string("file://") + std::string(tmpFileName));
 
   // Initialization succeeded
   Api_OldMsg(0, "Initilization Success");

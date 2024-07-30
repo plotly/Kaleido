@@ -82,7 +82,8 @@ namespace kaleido {
     void ShutdownTask();
 
     // FROM PREVIOUS STRUCTURE
-    std::string tmpFileName;
+    base::FilePath tmpFileName;
+    base::ScopedFile tmpFile;
   };
 }
 
