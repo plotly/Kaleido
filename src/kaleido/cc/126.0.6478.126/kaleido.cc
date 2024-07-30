@@ -9,9 +9,7 @@
 #include <string>
 
 
-#if !defined(OS_WIN)
 #include <stdlib.h>
-#endif
 
 #include "headless/app/kaleido.h"
 
