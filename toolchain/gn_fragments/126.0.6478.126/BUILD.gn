@@ -12,11 +12,9 @@ static_library("dispatch") {
   defines = []
   deps = [
     "//components/devtools/simple_devtools_protocol_client",
-  ]
-
-  public_deps = [
     "//base",
   ]
+
 }
 
 executable("kaleido") {
@@ -51,9 +49,6 @@ executable("kaleido") {
     "//content/public/utility",
     "//printing/buildflags",
   ]
-  if (proprietary_codecs) {
-    deps += [ ":generate_headless_shell_license_file" ]
-  }
   public_deps = [
     ":headless_non_renderer",
     "//base",
