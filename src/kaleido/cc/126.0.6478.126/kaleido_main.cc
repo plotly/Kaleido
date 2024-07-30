@@ -70,7 +70,7 @@ int main(int argc, const char** argv) {
 
 namespace {
 
-void buildSandbox(content::ContentMainParams) {
+void buildSandbox(content::ContentMainParams params) {
   #if BUILDFLAG(IS_WIN)
     sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
     content::InitializeSandboxInfo(&sandbox_info);
@@ -111,9 +111,9 @@ void processCommandLine(content::ContentMainParams params, int argc, const char*
 
   #if defined(HEADLESS_USE_CRASHPAD)
     if (process_type == crash_reporter::switches::kCrashpadHandler) {
-      return crash_reporter::RunAsCrashpadHandler(
+      crash_reporter::RunAsCrashpadHandler(
           *base::CommandLine::ForCurrentProcess(), base::FilePath(),
-          ::switches::kProcessType, switches::kUserDataDir);
+          ::switches::kProcessType, headless::switches::kUserDataDir);
     }
   #endif  // defined(HEADLESS_USE_CRASHPAD)
 
