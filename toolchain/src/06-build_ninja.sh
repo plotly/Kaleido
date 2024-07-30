@@ -112,11 +112,18 @@ $NO_VERBOSE || echo "Create build directory and placing build arguments inside o
 
 mkdir -p "${OUTDIR}"
 
-# note- this will make timestamp not accurate for chromium, but best choice rn, see build/compute_build_timestamp.py
 SUFFIX="
 is_component_build=$DEV
 is_official_build=false
 target_cpu=\"${TARGET_ARCH}\""
+
+if [[ "$PLATFORM" == "OSX" ]]; then
+  SUFFIX="
+is_component_build=$DEV
+is_official_build=false
+target_cpu=\"${TARGET_ARCH}\"
+use_cups=true"
+fi
 
 if [[ ! -f "${ARGS_FILE}" ]] || [[ $(diff "$ARGS_FILE" <(cat "$TEMPLATE_FILE" <(echo "$SUFFIX"))) ]]; then
     cp "${TEMPLATE_FILE}" "${ARGS_FILE}"
