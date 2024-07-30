@@ -53,7 +53,8 @@ void Kaleido::ShutdownSoon() {
 }
 void Kaleido::ShutdownTask() {
   LOG(INFO) << "Calling shutdown on browser";
-  if (tmpFileName.size()) std::remove(tmpFileName.c_str());
+  if (tmpFileName) std::remove(tmpFileName);
+  if (tmpFileName) free(tmpFileName);
   dispatch->Release(); // Fine to destruct what we have here.
   dispatch = nullptr;
   browser_.ExtractAsDangling()->Shutdown();
@@ -133,9 +134,10 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
   // Write html to temp file
-  tmpFileName = std::tmpnam(nullptr) + std::string(".html");
-  std::ofstream htmlFile;
-  htmlFile.open(tmpFileName, std::ios::out);
+  tmpFileName = strdup("/tmp/XXXXXX"); // must free
+  mkstemp(tmpFileName);
+  std::ofstream htmlFile(tmpFileName);
+  //htmlFile.open(tmpFileName, std::ios::out);
   htmlFile << htmlStringStream.str();
   htmlFile.close();
 
