@@ -48,6 +48,7 @@ if [[ "$PLATFORM" == "WINDOWS" ]]; then
 set DEPOT_TOOLS_UPDATE=0\n
 set DEPOT_TOOLS_WIN_TOOLCHAIN=0\n
 set PATH=$MAIN_DIR\\\vendor\\\depot_tools\\\;$MAIN_DIR\\\vendor\\\depot_tools\\\bootstrap;%PATH%\n
+set CPUS=$CPUS\n
 where python3\n
 cipd_bin_setup.bat\n
 bootstrap\\\win_tools.bat\n
