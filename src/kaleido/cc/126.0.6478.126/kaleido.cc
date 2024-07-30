@@ -9,7 +9,7 @@
 #include <string>
 
 
-#include <stdlib.h>
+#include <unistd.h>
 
 #include "headless/app/kaleido.h"
 
