@@ -137,12 +137,12 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   // Write html to temp file
 
-  tmpFile = base::CreateAndOpenTemporaryStream(&tmpFileName);
-  std::ofstream(tmpFile) << htmlStringStream.str();
-  tmpFile.close();
+  auto tmpFile = base::CreateAndOpenTemporaryStream(&tmpFileName);
+  fprintf(tmpFile.get(), "%s", htmlStringStream.str().c_str());
+  tmpFile.reset();
 
   // Create file:// url to temp file
-  GURL url = GURL(std::string("file://") + std::string(tmpFileName));
+  GURL url = GURL(std::string("file://") + std::string(tmpFileName.value()));
 
   // Initialization succeeded
   Api_OldMsg(0, "Initilization Success");
@@ -256,7 +256,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
     }
   }
   if (operation && *operation == "create_tab") {
-    dispatch->CreateTab(*id, GURL(std::string("file://") + std::string(tmpFileName)));
+    dispatch->CreateTab(*id, GURL(std::string("file://") + std::string(tmpFileName.value())));
   } else if (operation && *operation == "reload") {
     dispatch->ReloadAll();
   } else if (operation && *operation == "noop") {} else {
