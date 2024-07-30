@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -u
 
@@ -97,6 +97,7 @@ elif [[ "$PLATFORM" == "LINUX" ]]; then
 elif [[ "$PLATFORM" == "OSX" ]]; then
   $NO_VERBOSE || echo "MAC INIT IS EXPERIMENTAL"
   pushd "$MAIN_DIR/vendor/depot_tools"
+  set +u
   source "./cipd_bin_setup.sh"
   cipd_bin_setup
 
@@ -104,4 +105,7 @@ elif [[ "$PLATFORM" == "OSX" ]]; then
   # bootstrap/win_tools.bat.
   source "./bootstrap_python3"
   bootstrap_python3
+
+  set -u
+  popd
 fi

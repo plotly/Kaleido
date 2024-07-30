@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
 set -u
 
@@ -101,7 +101,7 @@ $NO_VERBOSE || echo "LINE MARKER: $(head -n 1 "$BUILD_SUFFIX")"
 $NO_VERBOSE || echo "LINE NUMBER: $LINE_NO"
 if [[ -n "$LINE_NO" ]]; then
   $NO_VERBOSE || echo "Recreating original based on file"
-  head "$TARGET" -n $(($LINE_NO - 1)) > "${TARGET}.TEMP"
+  head -n $(($LINE_NO - 1)) "$TARGET" > "${TARGET}.TEMP"
   mv "${TARGET}.TEMP" "$TARGET"
 fi
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
