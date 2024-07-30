@@ -34,7 +34,7 @@ python3 setup.py package
 popd
 
 # command, after package
-
+mkdir -p "${MAIN_DIR}/build/"
 cp "${MAIN_DIR}/src/kaleido/py/dist/"* "${MAIN_DIR}/build/"
 
 # linux called bundle_hash_artifacts
