@@ -78,3 +78,55 @@ ninja -C out/Kaleido_mac_$KALEIDO_ARCH -j 8 kaleido
 if [ ! -f "out/Kaleido_mac_$KALEIDO_ARCH/kaleido" ]
 then
   echo "Error: Kaleido executable was not built";
+  exit 1
+fi
+
+# 5) Copy build files
+mkdir -p ../build/kaleido/
+rm -r ../build/kaleido/*
+mkdir -p ../build/kaleido/bin
+cp out/Kaleido_mac_$KALEIDO_ARCH/kaleido ../build/kaleido/bin
+
+# mathjax
+mkdir -p ../build/kaleido/etc
+unzip ../vendor/Mathjax-2.7.5.zip -d ../build/kaleido/etc/
+mv ../build/kaleido/etc/Mathjax-2.7.5 ../build/kaleido/etc/mathjax
+
+# Copy icudtl.dat and settings.dat
+cp ./out/Kaleido_mac_$KALEIDO_ARCH/icudtl.dat ../build/kaleido/bin
+
+# Copy dynamic libraries
+cp ./out/Kaleido_mac_$KALEIDO_ARCH/libswiftshader*.dylib ../build/kaleido/bin
+cp ./out/Kaleido_mac_$KALEIDO_ARCH/libGLES*.dylib ../build/kaleido/bin
+cp ./out/Kaleido_mac_$KALEIDO_ARCH/libEGL*.dylib ../build/kaleido/bin
+
+# launch script
+echo "#!/bin/bash
+DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
+cd \$DIR
+./bin/kaleido \$@
+" > ../build/kaleido/kaleido
+chmod +x ../build/kaleido/kaleido
+
+# version
+cp ../kaleido/version ../build/kaleido/
+
+# license
+cp ../kaleido/LICENSE.txt ../build/kaleido/
+cp ../kaleido/CREDITS.html ../build/kaleido/
+cp ../kaleido/README.md ../build/kaleido/
+
+# Copy javascript
+pushd ../kaleido/js/
+mkdir -p build/
+npm install
+npm run clean
+npm run build
+popd
+
+mkdir -p ../build/kaleido/js/
+cp ../kaleido/js/build/*.js ../build/kaleido/js/
+
+# Build python wheel
+cd ../kaleido/py
+python3 setup.py package
