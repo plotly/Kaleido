@@ -138,7 +138,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   // Write html to temp file
 
   tmpFile = base::CreateAndOpenTemporaryStream(&tmpFileName);
-  tmpFile << htmlStringStream.str();
+  tmpFile.get() << htmlStringStream.str();
   tmpFile.close();
 
   // Create file:// url to temp file
