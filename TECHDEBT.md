@@ -1,6 +1,9 @@
 # TECHDEBT
 
 These are ordered by how they should be done.
+## New Remove
+
+The new tempfile remove function is blocking in a non MayBlock thread so figure that out
 
 ## Buildflags
 
