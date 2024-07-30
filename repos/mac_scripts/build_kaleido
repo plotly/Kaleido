@@ -1,48 +1,62 @@
 #!/bin/bash
 
+
 if [ $# -eq 0 ]; then
     echo "No architecture provided"
     exit 1
 fi
 
+
 export KALEIDO_ARCH=$1
+
 
 # Don't autoupdate depottools version
 export DEPOT_TOOLS_UPDATE=0
 
+
 # full path to mac_scripts/ directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+
 # cd to repos directory
-cd $DIR/..
+cd "$DIR/.."
+
 
 # Update version based on git tag
 python3 ./version/build_pep440_version.py
+
 
 # Copy README and LICENSE to kaleido (For consistency with Linux docker build process)
 cp ../README.md ./kaleido/
 cp ../LICENSE.txt ./kaleido/
 cp ./CREDITS.html ./kaleido/
 
+
 # Add depot_tools directory to PATH
 export PATH="$PATH:`pwd`/depot_tools"
+
 
 # Make output directory
 mkdir -p ./src/out/Kaleido_mac_$KALEIDO_ARCH/
 
+
 # Write out/Kaleido_mac_$KALEIDO_ARCH/args.gn
 cp ./mac_scripts/args_$KALEIDO_ARCH.gn ./src/out/Kaleido_mac_$KALEIDO_ARCH/args.gn
+
 
 # cd to repos/src
 cd src
 
+
 # 1) Reset headless/BUILD.gn
 git checkout HEAD -- headless/BUILD.gn
+
 
 # 2) Append kaleido section to headless build file (src/headless/BUILD.gn)
 echo "
 executable(\"kaleido\") {
   sources = [ \"app/kaleido.cc\" ]
+
 
   deps = [
     \":headless_shell_lib\",
@@ -50,13 +64,16 @@ executable(\"kaleido\") {
   ]
 }" >> headless/BUILD.gn
 
+
 # 3) Copy kaleido/kaleido.cc to src/headless/app/kaleido.cc
 rm -rf headless/app/plugins
 cp -r ../kaleido/cc/* headless/app/
 
+
 # 4) Perform build, result will be out/Kaleido_mac_$KALEIDO_ARCH/kaleido
 gn gen out/Kaleido_mac_$KALEIDO_ARCH
 ninja -C out/Kaleido_mac_$KALEIDO_ARCH -j 8 kaleido
+
 
 if [ ! -f "out/Kaleido_mac_$KALEIDO_ARCH/kaleido" ]
 then
@@ -86,7 +103,6 @@ cp ./out/Kaleido_mac_$KALEIDO_ARCH/libEGL*.dylib ../build/kaleido/bin
 # launch script
 echo "#!/bin/bash
 DIR=\"\$( cd \"\$( dirname \"\${BASH_SOURCE[0]}\" )\" >/dev/null 2>&1 && pwd )\"
-
 cd \$DIR
 ./bin/kaleido \$@
 " > ../build/kaleido/kaleido
