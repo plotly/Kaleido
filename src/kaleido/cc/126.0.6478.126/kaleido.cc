@@ -40,6 +40,7 @@
 #include <iostream>
 #include <fstream>
 
+#define FILE_URI_PREFIX "file://"
 
 /// END COPY 2
 namespace kaleido {
@@ -142,7 +143,8 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   tmpFile.reset();
 
   // Create file:// url to temp file
-  GURL url = GURL(std::string("file://") + std::string(tmpFileName.value()));
+  std::string urlCopy(tmpFileName.value().begin(), tmpFileName.value().end());
+  GURL url = GURL(FILE_URI_PREFIX + urlCopy);
 
   // Initialization succeeded
   Api_OldMsg(0, "Initilization Success");
@@ -256,7 +258,8 @@ bool Kaleido::ReadJSON(std::string &msg) {
     }
   }
   if (operation && *operation == "create_tab") {
-    dispatch->CreateTab(*id, GURL(std::string("file://") + std::string(tmpFileName.value())));
+    std::string urlCopy(tmpFileName.value().begin(), tmpFileName.value().end());
+    dispatch->CreateTab(*id, GURL(FILE_URI_PREFIX + urlCopy));
   } else if (operation && *operation == "reload") {
     dispatch->ReloadAll();
   } else if (operation && *operation == "noop") {} else {
