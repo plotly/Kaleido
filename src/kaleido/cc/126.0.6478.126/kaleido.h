@@ -82,7 +82,7 @@ namespace kaleido {
     void ShutdownTask();
 
     // FROM PREVIOUS STRUCTURE
-    raw_ptr<char> tmpFileName;
+    std::string tmpFileName;
   };
 }
 

@@ -134,8 +134,11 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
   // Write html to temp file
-  tmpFileName = strdup("/tmp/XXXXXX"); // must free
-  mkstemp(tmpFileName);
+  char *tmpVar = strdup("/tmp/XXXXXX"); // must free
+  std::string easierString(tmpFileName);
+  free(tmpVar); // done with this clib madness
+  tmpFileName = easierString + ".html";
+  int assumeWorks = mkstemp(tmpFileName.c_str());
   std::ofstream htmlFile(tmpFileName);
   //htmlFile.open(tmpFileName, std::ios::out);
   htmlFile << htmlStringStream.str();
