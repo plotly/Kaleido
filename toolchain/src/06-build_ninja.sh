@@ -65,6 +65,7 @@ util_export_version
 GN_FRAG_DIR="${MAIN_DIR}/toolchain/gn_fragments/$CHROMIUM_VERSION_TAG"
 if [ ! -d "$GN_FRAG_DIR" ] && $TRY; then
   GN_FRAG_DIR="${MAIN_DIR}/toolchain/gn_fragments/$(ls "${MAIN_DIR}/src/vendor-patches/chromium" -vt | head -1)"
+  $NO_VERBOSE || echo "--try: $GN_FRAG_DIR"
 elif [ -d "$GN_FRAG_DIR" ]; then
   : # optimistic path
 else
@@ -96,16 +97,15 @@ if $LIST; then
 fi
 
 LINE_NO=$(grep "$TARGET" -ne "$(head -n 1 "$BUILD_SUFFIX")" | cut -f1 -d:)
-$NO_VERBOSE || echo "$(head -n 1 "$BUILD_SUFFIX")"
-$NO_VERBOSE || echo "$LINE_NO"
+$NO_VERBOSE || echo "LINE MARKER: $(head -n 1 "$BUILD_SUFFIX")"
+$NO_VERBOSE || echo "LINE NUMBER: $LINE_NO"
 if [[ -n "$LINE_NO" ]]; then
+  $NO_VERBOSE || echo "Recreating original based on file"
   head "$TARGET" -n $(($LINE_NO - 1)) > "${TARGET}.TEMP"
   mv "${TARGET}.TEMP" "$TARGET"
 fi
 $NO_VERBOSE || echo "Appending build information to headless/BUILD.gn"
 cat "$BUILD_SUFFIX" >> "$TARGET"
-
-$NO_VERBOSE || cat "$TARGET"
 
 $NO_VERBOSE || echo "Create build directory and placing build arguments inside of it, and running gn gen"
 
