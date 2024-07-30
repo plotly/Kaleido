@@ -256,7 +256,7 @@ bool Kaleido::ReadJSON(std::string &msg) {
     }
   }
   if (operation && *operation == "create_tab") {
-    dispatch->CreateTab(*id, GURL(std::string("file://") + tmpFileName));
+    dispatch->CreateTab(*id, GURL(std::string("file://") + std::string(tmpFileName)));
   } else if (operation && *operation == "reload") {
     dispatch->ReloadAll();
   } else if (operation && *operation == "noop") {} else {

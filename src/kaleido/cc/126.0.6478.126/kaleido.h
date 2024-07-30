@@ -83,7 +83,7 @@ namespace kaleido {
 
     // FROM PREVIOUS STRUCTURE
     base::FilePath tmpFileName;
-    base::ScopedFile tmpFile;
+    base::ScopedFILE tmpFile;
   };
 }
 
