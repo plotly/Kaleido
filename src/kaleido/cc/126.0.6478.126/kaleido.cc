@@ -53,7 +53,7 @@ void Kaleido::ShutdownSoon() {
 }
 void Kaleido::ShutdownTask() {
   LOG(INFO) << "Calling shutdown on browser";
-  if (tmpFileName.size()) std::remove(tmpFileName);
+  if (tmpFileName.size()) std::remove(tmpFileName.c_str());
   dispatch->Release(); // Fine to destruct what we have here.
   dispatch = nullptr;
   browser_.ExtractAsDangling()->Shutdown();
