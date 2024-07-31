@@ -129,7 +129,9 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "For finding the source:"
       $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink -m "${SRC_DIR}/${f}")"
       $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink -m "${SRC_DIR}${f}")"
-      mkdir -p "$(dirname "$(readlink -m "${BUILD_DIR}/$f")")" && cp -r "$(readlink -m "${SRC_DIR}/${f}")" "$_" # this might only work on linux :-(
+      mkdir -p "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
+      cp -r "$(readlink -m "${SRC_DIR}/${f}")" "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
+      #mkdir -p "$(dirname "$(readlink -m "${BUILD_DIR}/$f")")" && cp -r "$(readlink -m "${SRC_DIR}/${f}")" "$_" # this might only work on linux :-(
       $NO_VERBOSE || echo
     done
     IFS=$OLDIFS
