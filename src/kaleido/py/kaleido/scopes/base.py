@@ -85,7 +85,7 @@ class BaseScope(object):
         # Add .cmd extension on Windows. The which function below doesn't need this, but os.path.exists requires
         # the file extension
         if platform.system() == "Windows":
-            vendored_executable_path += ".cmd"
+            vendored_executable_path += ".exe"
 
         if os.path.exists(vendored_executable_path):
             # The kaleido executable is vendored under kaleido/executable.
