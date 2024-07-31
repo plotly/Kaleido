@@ -81,6 +81,10 @@ elif [[ "${PLATFORM}" == "OSX" ]]; then
   CONFIG="${CONFIG_DIR}/mac-archive-rel.json"
 fi
 export CONFIG
+
+if [ ! -f "${CONFIG}" ]; then
+  util_error "COULDN'T FIND ${CONFIG}"
+fi
 $NO_VERBOSE || echo "Found config: $CONFIG"
 
 $NO_VERBOSE || which python3
