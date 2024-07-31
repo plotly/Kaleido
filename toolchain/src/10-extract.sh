@@ -124,7 +124,7 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
       $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
       MKDIR_PATH="$(dirname "${BUILD_DIR}")${f}"
-      if [ -f "${MKDIR_PATH}" ]; then
+      if [ ! -d "${MKDIR_PATH}" ]; then
         MKDIR_PATH="$(dirname "${MKDIR_PATH}")"
       fi
       $NO_VERBOSE || echo "For creating its directory: ${MKDIR_PATH}"
