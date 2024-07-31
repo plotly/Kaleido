@@ -1,0 +1,147 @@
+// kaleido_main.cc runs main() and includes a lot of google boilerplate.
+#include "headless/app/kaleido.h"
+
+// Fundamental chromium includes
+#include "content/public/app/content_main.h"
+#include "headless/lib/headless_content_main_delegate.h"
+
+// Fundamental utilities
+#include "base/logging.h"
+#include "base/files/file_util.h"
+#include "base/functional/bind.h"
+
+#include "build/build_config.h" // IS_WIN and stuff like that
+
+// Sandbox Includes
+#if BUILDFLAG(IS_WIN)
+#include "content/public/app/sandbox_helper_win.h"
+#include "sandbox/win/src/sandbox_types.h"  // nogncheck
+#elif BUILDFLAG(IS_MAC)
+#include "base/check.h"
+#include "sandbox/mac/seatbelt_exec.h"
+#endif
+
+// CLI includes, not sure if using all
+#include "base/command_line.h"
+#include "base/base_switches.h"
+#include "content/public/common/content_switches.h"
+#include "headless/public/switches.h"
+#if BUILDFLAG(IS_MAC)
+#include "components/os_crypt/sync/os_crypt_switches.h"  // nogncheck
+#endif
+
+// Browser Includes
+#include "headless/lib/browser/headless_browser_impl.h"
+#include "headless/public/headless_browser.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "base/strings/utf_string_conversions.h"
+#include "components/crash/core/app/crash_switches.h"  // nogncheck
+#include "components/crash/core/app/run_as_crashpad_handler_win.h"
+#include "sandbox/win/src/sandbox_types.h"
+#endif
+
+#include <iostream>
+// Can you clear up deps in build?
+//
+namespace {
+  void buildSandbox(content::ContentMainParams, int argc, const char** argv);
+  void processCommandLine(content::ContentMainParams, int argc, const char** argv);
+}
+
+
+int main(int argc, const char** argv) {
+  std::cout << "We're here" << std::endl;
+  content::ContentMainParams params(nullptr);
+
+  std::cout << "Params inited" << std::endl;
+  buildSandbox(std::move(params), argc, argv);
+  std::cout << "Sandbox built" << std::endl;
+
+  processCommandLine(std::move(params), argc, argv);
+  std::cout << "Commandline processed" << std::endl;
+
+  // Now we're going to start the browser
+  // Would love to do this inside the constructor but
+  // ... chromium just hates it.
+  auto browser = std::make_unique<headless::HeadlessBrowserImpl>(
+      base::BindOnce(&kaleido::Kaleido::OnBrowserStart, base::Unretained(new kaleido::Kaleido())));
+      // Should be a lambda that starts a Kaleido, not a function in Kaleido
+  std::cout << "Browser made" << std::endl;
+  headless::HeadlessContentMainDelegate delegate(std::move(browser));
+  std::cout << "delegate inited" << std::endl;
+  params.delegate = &delegate;
+  std::cout << "delegate put to params, running content" << std::endl;
+  return content::ContentMain(std::move(params));
+}
+
+
+namespace {
+
+void buildSandbox(content::ContentMainParams params, int argc, const char** argv) {
+  #if BUILDFLAG(IS_WIN)
+    sandbox::SandboxInterfaceInfo sandbox_info = {nullptr};
+    content::InitializeSandboxInfo(&sandbox_info);
+    // Sandbox info has to be set and initialized.
+    params.sandbox_info = &sandbox_info;
+  #elif !BUILDFLAG(IS_ANDROID)
+    params.argc = argc;
+    params.argv = argv
+    #if BUILDFLAG(IS_MAC)
+      sandbox::SeatbeltExecServer::CreateFromArgumentsResult seatbelt =
+          sandbox::SeatbeltExecServer::CreateFromArguments(
+              argv[0], argc, const_cast<char**>(argv));
+      if (seatbelt.sandbox_required) {
+        CHECK(seatbelt.server->InitializeSandbox());
+      }
+    #endif  // BUILDFLAG(IS_MAC)
+  #endif  // BUILDFLAG(IS_WIN)
+}
+
+void processCommandLine(content::ContentMainParams params, int argc, const char** argv) {
+
+  #if BUILDFLAG(IS_WIN)
+    base::CommandLine::Init(0, nullptr);
+  #else
+    base::CommandLine::Init(argc, argv);
+  #endif  // BUILDFLAG(IS_WIN)
+
+  base::CommandLine& command_line(*base::CommandLine::ForCurrentProcess());
+  // command_line.AppendSwitch(::switches::kDisableGpu); // <-- possibility
+  // could be used to always put on essential switches
+
+  std::cout << "Original command: " << command_line.GetArgumentsString() << std::endl;
+  std::cout << "Args size: " << command_line.GetArgs().size() << std::endl;
+  for (const auto &piece : command_line.GetArgs()) {
+    std::cout << piece << std::endl;
+  }
+
+
+  std::string process_type = command_line.GetSwitchValueASCII(::switches::kProcessType);
+  std::cout << "Process type: " << process_type << std::endl;
+
+  #if defined(HEADLESS_USE_CRASHPAD)
+    std::cout << "HEADLESS_USE_CRASHPAD" << std::endl;
+    if (process_type == crash_reporter::switches::kCrashpadHandler) {
+      crash_reporter::RunAsCrashpadHandler(
+          *base::CommandLine::ForCurrentProcess(), base::FilePath(),
+          ::switches::kProcessType, headless::switches::kUserDataDir);
+    }
+  #endif  // defined(HEADLESS_USE_CRASHPAD)
+
+  // Chromium starts child processes, and we need this to catch them and their flags
+  if (!process_type.empty()) {
+    headless::HeadlessContentMainDelegate delegate(nullptr);
+    params.delegate = &delegate;
+    int rc = content::ContentMain(std::move(params));
+    base::Process::TerminateCurrentProcessImmediately(rc);
+    NOTREACHED_IN_MIGRATION();
+  }
+  // So we must be the main process...
+
+  #if BUILDFLAG(IS_MAC)
+    command_line.AppendSwitch(os_crypt::switches::kUseMockKeychain);
+  #endif
+}
+
+} // namespace
