@@ -73,12 +73,12 @@ else
 fi
 $NO_VERBOSE || echo "Set CONFIG_DIR: $CONFIG_DIR"
 
-if [[ "$PLATFORM" == "WINDOWS" ]]; then
-  CONFIG="$CONFIG_DIR/win-archive-rel.json"
-elif [[ "$PLATFORM" == "LINUX" ]]; then
-  CONFIG="$CONFIG_DIR/linux-archive-rel.json"
-elif [[ "$PLATFORM" == "OSX" ]]; then
-  CONFIG="$CONFIG_DIR/mac-archive-rel.json"
+if [[ "${PLATFORM}" == "WINDOWS" ]]; then
+  CONFIG="${CONFIG_DIR}/win-archive-rel.json"
+elif [[ "${PLATFORM}" == "LINUX" ]]; then
+  CONFIG="${CONFIG_DIR}/linux-archive-rel.json"
+elif [[ "${PLATFORM}" == "OSX" ]]; then
+  CONFIG="${CONFIG_DIR}/mac-archive-rel.json"
 fi
 export CONFIG
 $NO_VERBOSE || echo "Found config: $CONFIG"
