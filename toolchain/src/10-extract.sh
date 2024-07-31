@@ -123,7 +123,7 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "Processing file: $f"
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
       $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
-      MKDIR_PATH="${BUILD_DIR%/}/${/#f}"
+      MKDIR_PATH="${BUILD_DIR%/}/${f#/}"
       $NO_VERBOSE || echo "First mkdir path: ${MKDIR_PATH}"
       if [ ! -d "${MKDIR_PATH}" ]; then
         MKDIR_PATH="$(dirname "${MKDIR_PATH}")"
