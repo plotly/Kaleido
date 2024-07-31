@@ -74,11 +74,11 @@ fi
 $NO_VERBOSE || echo "Set CONFIG_DIR: $CONFIG_DIR"
 
 if [[ "${PLATFORM}" == "WINDOWS" ]]; then
-  CONFIG="$(readlink -m "${CONFIG_DIR}/win-archive-rel.json")"
+  CONFIG="$(readlink "${CONFIG_DIR}/win-archive-rel.json")"
 elif [[ "${PLATFORM}" == "LINUX" ]]; then
-  CONFIG="$(readlink -m "${CONFIG_DIR}/linux-archive-rel.json")"
+  CONFIG="$(readlink "${CONFIG_DIR}/linux-archive-rel.json")"
 elif [[ "${PLATFORM}" == "OSX" ]]; then
-  CONFIG="$(readlink -m "${CONFIG_DIR}/mac-archive-rel.json")"
+  CONFIG="$(readlink "${CONFIG_DIR}/mac-archive-rel.json")"
 fi
 export CONFIG
 
@@ -124,13 +124,13 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
       $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
       $NO_VERBOSE || echo "For creating its directory (2 methods):"
-      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink -m "$(dirname "${BUILD_DIR}/${f}")")"
-      $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink -m "${BUILD_DIR}$(dirname "$f")")"
+      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink "$(dirname "${BUILD_DIR}/${f}")")"
+      $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink "${BUILD_DIR}$(dirname "$f")")"
       $NO_VERBOSE || echo "For finding the source:"
-      $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink -m "${SRC_DIR}/${f}")"
-      $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink -m "${SRC_DIR}${f}")"
-      mkdir -p "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
-      cp -r "$(readlink -m "${SRC_DIR}/${f}")" "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
+      $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink "${SRC_DIR}/${f}")"
+      $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink "${SRC_DIR}${f}")"
+      mkdir -p "$(readlink "${BUILD_DIR}/$(dirname "$f")")"
+      cp -r "$(readlink "${SRC_DIR}/${f}")" "$(readlink "${BUILD_DIR}/$(dirname "$f")")"
       $NO_VERBOSE || echo
     done
     IFS=$OLDIFS
@@ -166,13 +166,13 @@ if [[ "$PLATFORM" == "OSX" ]]; then
     $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
     $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
     $NO_VERBOSE || echo "For creating its directory (2 methods):"
-    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink -m "$(dirname "${BUILD_DIR}/${f}")")"
-    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink -m "${BUILD_DIR}$(dirname "$f")")"
+    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink "$(dirname "${BUILD_DIR}/${f}")")"
+    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink "${BUILD_DIR}$(dirname "$f")")"
     $NO_VERBOSE || echo "For finding the source:"
-    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink -m "${SRC_DIR}/${f}")"
-    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink -m "${SRC_DIR}${f}")"
-    mkdir -p "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
-    cp -r "$(readlink -m "${SRC_DIR}/${f}")" "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
+    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink "${SRC_DIR}/${f}")"
+    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink "${SRC_DIR}${f}")"
+    mkdir -p "$(readlink "${BUILD_DIR}/$(dirname "$f")")"
+    cp -r "$(readlink "${SRC_DIR}/${f}")" "$(readlink "${BUILD_DIR}/$(dirname "$f")")"
     $NO_VERBOSE || echo
   done
   IFS=$OLDIFS
@@ -197,13 +197,13 @@ missing=False, annotate=False, relative=True)")")
     $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
     $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
     $NO_VERBOSE || echo "For creating its directory (2 methods):"
-    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink -m "$(dirname "${BUILD_DIR}/${f}")")"
-    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink -m "${BUILD_DIR}$(dirname "$f")")"
+    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink "$(dirname "${BUILD_DIR}/${f}")")"
+    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink "${BUILD_DIR}$(dirname "$f")")"
     $NO_VERBOSE || echo "For finding the source:"
-    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink -m "${SRC_DIR}/${f}")"
-    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink -m "${SRC_DIR}${f}")"
-    mkdir -p "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
-    cp -r "$(readlink -m "${SRC_DIR}/${f}")" "$(readlink -m "${BUILD_DIR}/$(dirname "$f")")"
+    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink "${SRC_DIR}/${f}")"
+    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink "${SRC_DIR}${f}")"
+    mkdir -p "$(readlink "${BUILD_DIR}/$(dirname "$f")")"
+    cp -r "$(readlink "${SRC_DIR}/${f}")" "$(readlink "${BUILD_DIR}/$(dirname "$f")")"
     $NO_VERBOSE || echo
   done
   IFS=$OLDIFS
