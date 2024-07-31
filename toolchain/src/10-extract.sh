@@ -128,11 +128,12 @@ missing=False, annotate=False, relative=True)")")
       if [ ! -d "${MKDIR_PATH}" ]; then
         MKDIR_PATH="$(dirname "${MKDIR_PATH}")"
       fi
+      MKDIR_PATH+="/"
       $NO_VERBOSE || echo "For creating its directory: ${MKDIR_PATH}"
       SRC_PATH="${SRC_DIR}${f}"
       $NO_VERBOSE || echo "To copy: ${SRC_PATH}"
-      mkdir -p "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
-      cp -r "$(readlink -f "${SRC_DIR}/${f}")" "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
+      mkdir -p "$MKDIR_PATH"
+      cp -r "${SRC_PATH}" "${MKDIR_PATH}"
       $NO_VERBOSE || echo
     done
     IFS=$OLDIFS
