@@ -168,7 +168,6 @@ if [[ "$PLATFORM" == "OSX" ]]; then
     mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_" || util_error "OSX doesn't support \$_ maybe"
     $NO_VERBOSE || echo
   done
-  $NO_VERBOSE || echo "Check the line here:"
   cp "${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}/lib"*.dylib "${BUILD_DIR}/"
 fi
 
