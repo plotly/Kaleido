@@ -82,8 +82,8 @@ elif [[ "${PLATFORM}" == "OSX" ]]; then
 fi
 export CONFIG
 
-if [ ! -f "${CONFIG}" ]; then
-  util_error "COULDN'T FIND ${CONFIG}"
+if [ ! -f "${CONFIG}-original" ]; then
+  util_error "COULDN'T FIND ${CONFIG}-original"
 fi
 $NO_VERBOSE || echo "Found config: $CONFIG"
 
