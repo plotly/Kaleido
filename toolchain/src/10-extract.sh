@@ -74,11 +74,11 @@ fi
 $NO_VERBOSE || echo "Set CONFIG_DIR: $CONFIG_DIR"
 
 if [[ "${PLATFORM}" == "WINDOWS" ]]; then
-  CONFIG="${CONFIG_DIR}/win-archive-rel.json"
+  CONFIG="$(readlink -m "${CONFIG_DIR}/win-archive-rel.json")"
 elif [[ "${PLATFORM}" == "LINUX" ]]; then
-  CONFIG="${CONFIG_DIR}/linux-archive-rel.json"
+  CONFIG="$(readlink -m "${CONFIG_DIR}/linux-archive-rel.json")"
 elif [[ "${PLATFORM}" == "OSX" ]]; then
-  CONFIG="${CONFIG_DIR}/mac-archive-rel.json"
+  CONFIG="$(readlink -m "${CONFIG_DIR}/mac-archive-rel.json")"
 fi
 export CONFIG
 
@@ -122,25 +122,25 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
       $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
       $NO_VERBOSE || echo "For creating its directory (2 methods):"
-      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(dirname "${BUILD_DIR}/${f}")"
-      $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
+      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink -m "$(dirname "${BUILD_DIR}/${f}")"
+      $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink -m "${BUILD_DIR}$(dirname "$f")"
       $NO_VERBOSE || echo "For finding the source:"
-      $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
-      $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
-      mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_" # this might only work on linux :-(
+      $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink -m "${SRC_DIR}/${f}"
+      $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"$(readlink -m "${SRC_DIR}${f}"
+      mkdir -p $(dirname "$(readlink -m "${BUILD_DIR}/$f") && cp -r "$(readlink -m "${SRC_DIR}/${f}" "$_" # this might only work on linux :-(
       $NO_VERBOSE || echo
     done
   fi
   # all linux, copy whole non-kernel lib
   $NO_VERBOSE || echo "Running linux only copies"
-  for f in $(sed -nr 's/^.*=> (.*) \(.*/\1/p' <(ldd ${SRC_DIR}/kaleido)); do
-    mkdir -p $BUILD_DIR/lib/
-    cp $f $BUILD_DIR/lib/
+  for f in $(sed -nr 's/^.*=> (.*) \(.*/\1/p' <(ldd "${SRC_DIR}/kaleido")); do
+    mkdir -p "${BUILD_DIR}/lib/"
+    cp "${f}" "${BUILD_DIR}/lib/"
   done
   # manual
-  cp /usr/lib/x86_64-linux-gnu/nss/* ${BUILD_DIR}/lib/
+  cp /usr/lib/x86_64-linux-gnu/nss/* "${BUILD_DIR}/lib/"
   for f in libdl libpthread librt libm libgcc_s libc; do
-    rm ${BUILD_DIR}/lib/${f}* || echo "No ${f} to remove, moving on..."
+    rm "${BUILD_DIR}/lib/${f}"* || echo "No ${f} to remove, moving on..."
   done
   # done
 fi
@@ -199,4 +199,4 @@ missing=False, annotate=False, relative=True)")")
   popd
 fi
 $NO_VERBOSE || echo "Done with platform specific, removing devtools js ui"
-rm -rf $BUILD_DIR/gen/third_party/devtools-frontend/ # huge and i doubt we need it
+rm -rf "${BUILD_DIR}/gen/third_party/devtools-frontend/" # huge and i doubt we need it
