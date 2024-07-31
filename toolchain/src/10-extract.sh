@@ -123,12 +123,13 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "Processing file: $f"
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
       $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
-      $NO_VERBOSE || echo "For creating its directory (2 methods):"
-      $NO_VERBOSE || echo '  $(dirname "${BUILD_DIR}")${f}: '"$(dirname "${BUILD_DIR}")${f}"
-      $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
-      $NO_VERBOSE || echo "For finding the source:"
-      $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
-      $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
+      MKDIR_PATH="$(dirname "${BUILD_DIR}")${f}"
+      if [ -f "${MKDIR_PATH}" ]; then
+        MKDIR_PATH="$(dirname "${MKDIR_PATH}")"
+      fi
+      $NO_VERBOSE || echo "For creating its directory: ${MKDIR_PATH}"
+      SRC_PATH="${SRC_DIR}${f}"
+      $NO_VERBOSE || echo "To copy: ${SRC_PATH}"
       mkdir -p "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
       cp -r "$(readlink -f "${SRC_DIR}/${f}")" "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
       $NO_VERBOSE || echo
