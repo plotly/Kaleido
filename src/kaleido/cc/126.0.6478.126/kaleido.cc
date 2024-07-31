@@ -115,7 +115,7 @@ class HeadlessShell {
   raw_ptr<HeadlessBrowser> browser_ = nullptr;
 };
 void HeadlessShell::OnBrowserStart(HeadlessBrowser* browser) {
-  std::cout << "We cool" << std::endl;
+  //std::cout << "We cool" << std::endl;
   browser_ = browser;
   base::raw_ptr<kaleido::Kaleido> kaleido = new kaleido::Kaleido();
   kaleido->OnBrowserStart(browser);
@@ -206,7 +206,7 @@ namespace kaleido {
 Kaleido::Kaleido() = default;
 
 void AnotherBrowserStart(headless::HeadlessBrowser* browser) {
-  std::cout << "Its fine" << std::endl;
+  //std::cout << "Its fine" << std::endl;
 }
 
 // Control Flow, declare here
@@ -225,7 +225,7 @@ void Kaleido::ShutdownTask() {
 }
 
 void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
-  std::cout << "OnBrowserStart" << std::endl;
+  //std::cout << "OnBrowserStart" << std::endl;
   browser_ = browser; // global by another name
 
   // Actual constructor duties, init stuff
