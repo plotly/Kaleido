@@ -32,3 +32,10 @@ vendor/.cipd
 vendor/.gclient_entries
 vendor/.gclient_previous_sync_commits
 vendor/.gcs_entries
+
+# Packaing build artifacts
+src/kaleido/js/node_modules/
+src/kaleido/py/LICENSE.txt
+src/kaleido/py/README.md
+src/kaleido/py/dist/
+src/kaleido/py/kaleido/_version.py
