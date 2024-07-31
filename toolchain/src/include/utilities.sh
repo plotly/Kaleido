@@ -115,6 +115,8 @@ case "$OSTYPE" in
   *)        PLATFORM="$OSTYPE" ;;
 esac
 
+$NO_VERBOSE || echo "Found platform: $PLATFORM from OSTYPE $OSTYPE"
+
 if ! [[ "$PLATFORM" =~ ^(OSX|LINUX|WINDOWS)$ ]]; then
   util_error "$PLATFORM is not a supported platform for building."
 fi
