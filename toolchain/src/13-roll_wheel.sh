@@ -26,7 +26,11 @@ util_get_version
 util_export_version
 
 $NO_VERBOSE || echo "Running 12-roll_wheel.sh"
-
+echo
+echo
+echo "This part is never silent."
+echo
+echo
 python3 -m pip install setuptools
 export KALEIDO_ARCH="$TARGET_ARCH"
 pushd "${MAIN_DIR}/src/kaleido/py"
