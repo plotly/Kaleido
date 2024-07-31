@@ -74,16 +74,16 @@ fi
 $NO_VERBOSE || echo "Set CONFIG_DIR: $CONFIG_DIR"
 
 if [[ "${PLATFORM}" == "WINDOWS" ]]; then
-  CONFIG="$(readlink -f "${CONFIG_DIR}/win-archive-rel.json")"
+  CONFIG="$(readlink -f "${CONFIG_DIR}/win-archive-rel.json-original")"
 elif [[ "${PLATFORM}" == "LINUX" ]]; then
-  CONFIG="$(readlink -f "${CONFIG_DIR}/linux-archive-rel.json")"
+  CONFIG="$(readlink -f "${CONFIG_DIR}/linux-archive-rel.json-original")"
 elif [[ "${PLATFORM}" == "OSX" ]]; then
-  CONFIG="$(readlink -f "${CONFIG_DIR}/mac-archive-rel.json")"
+  CONFIG="$(readlink -f "${CONFIG_DIR}/mac-archive-rel.json-original")"
 fi
 export CONFIG
 
-if [ ! -f "${CONFIG}-original" ]; then
-  util_error "COULDN'T FIND ${CONFIG}-original"
+if [ ! -f "${CONFIG}" ]; then
+  util_error "COULDN'T FIND ${CONFIG}"
 fi
 $NO_VERBOSE || echo "Found config: $CONFIG"
 
@@ -98,7 +98,7 @@ export PYTHONPATH="${MAIN_DIR}/toolchain/src/:${PYTHONPATH-""}"
 
 if $ASSESS; then
   pushd "${MAIN_DIR}/toolchain/src/"
-  echo "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}-original','$SRC_DIR', missing=True, annotate=True, relative=False)")"
+  echo "$($PYTHON -c "$IMPORT; extract.match_json_to_directory('${CONFIG}','$SRC_DIR', missing=True, annotate=True, relative=False)")"
   popd
   exit 0
 fi
@@ -113,7 +113,7 @@ if [[ "$PLATFORM" == "LINUX" ]]; then
     chmod +x "${BUILD_DIR}/kaleido"
     FILES=$(echo -e "$($PYTHON -c "$IMPORT; \
 extract.match_json_to_directory('\
-${CONFIG}-original', \
+${CONFIG}', \
 '$SRC_DIR', \
 missing=False, annotate=False, relative=True)")")
     $NO_VERBOSE || echo "Found files: $FILES"
@@ -158,7 +158,7 @@ if [[ "$PLATFORM" == "OSX" ]]; then
   chmod +x "${BUILD_DIR}/kaleido"
   FILES=$(echo -e "$($PYTHON -c "$IMPORT; \
     extract.match_json_to_directory('\
-    ${CONFIG}-original', \
+    ${CONFIG}', \
     '$SRC_DIR', \
     missing=False, annotate=False, relative=True)")")
   $NO_VERBOSE || echo "Found files: $FILES"
@@ -192,7 +192,7 @@ if [[ "$PLATFORM" == "WINDOWS" ]]; then
   chmod +x "${BUILD_DIR}/kaleido"
   FILES=$(echo "$($PYTHON -c "$IMPORT; \
 extract.match_json_to_directory('\
-${CONFIG}-original', \
+${CONFIG}', \
 '$SRC_DIR', \
 missing=False, annotate=False, relative=True)")")
   $NO_VERBOSE || echo "Found files: $FILES"
