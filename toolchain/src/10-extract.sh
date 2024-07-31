@@ -117,6 +117,8 @@ ${CONFIG}-original', \
 '$SRC_DIR', \
 missing=False, annotate=False, relative=True)")")
     $NO_VERBOSE || echo "Found files: $FILES"
+    OLDIFS=$IFS
+    IFS=$'\t'
     for f in $FILES; do
       $NO_VERBOSE || echo "Processing file: $f"
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
@@ -130,6 +132,7 @@ missing=False, annotate=False, relative=True)")")
       mkdir -p $(dirname "$(readlink -m "${BUILD_DIR}/$f") && cp -r "$(readlink -m "${SRC_DIR}/${f}" "$_" # this might only work on linux :-(
       $NO_VERBOSE || echo
     done
+    IFS=$OLDIFS
   fi
   # all linux, copy whole non-kernel lib
   $NO_VERBOSE || echo "Running linux only copies"
@@ -155,6 +158,8 @@ if [[ "$PLATFORM" == "OSX" ]]; then
     '$SRC_DIR', \
     missing=False, annotate=False, relative=True)")")
   $NO_VERBOSE || echo "Found files: $FILES"
+  OLDIFS=$IFS
+  IFS=$'\t'
   for f in $FILES; do
     $NO_VERBOSE || echo "Processing file: $f"
     $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
@@ -168,6 +173,7 @@ if [[ "$PLATFORM" == "OSX" ]]; then
     mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_" || util_error "OSX doesn't support \$_ maybe"
     $NO_VERBOSE || echo
   done
+  IFS=$OLDIFS
   cp "${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}/lib"*.dylib "${BUILD_DIR}/"
 fi
 
@@ -182,6 +188,8 @@ ${CONFIG}-original', \
 '$SRC_DIR', \
 missing=False, annotate=False, relative=True)")")
   $NO_VERBOSE || echo "Found files: $FILES"
+  OLDIFS=$IFS
+  IFS=$'\t'
   for f in $FILES; do
     $NO_VERBOSE || echo "Processing file: $f"
     $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
@@ -196,6 +204,7 @@ missing=False, annotate=False, relative=True)")")
     cp -r "${SRC_DIR}${f}" "${BUILD_DIR}$(dirname "$f")"
     $NO_VERBOSE || echo
   done
+  IFS=$OLDIFS
   popd
 fi
 $NO_VERBOSE || echo "Done with platform specific, removing devtools js ui"
