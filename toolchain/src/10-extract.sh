@@ -115,11 +115,17 @@ missing=False, annotate=False, relative=True)")")
     $NO_VERBOSE || echo "Found files: $FILES"
     for f in $FILES; do
       $NO_VERBOSE || echo "Processing file: $f"
-      $NO_VERBOSE || echo "dirname BUILD_DIR/f: $(dirname "${BUILD_DIR}/$f")"
-      $NO_VERBOSE || echo "SRC_DIR:f ${SRC_DIR}/${f}"
+      $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
+      $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
+      $NO_VERBOSE || echo "For creating its directory (2 methods):"
+      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(dirname "${BUILD_DIR}/${f}")"
+      $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
+      $NO_VERBOSE || echo "For finding the source:"
+      $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
+      $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
       mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_" # this might only work on linux :-(
+      $NO_VERBOSE || echo
     done
-
   fi
   # all linux, copy whole non-kernel lib
   $NO_VERBOSE || echo "Running linux only copies"
@@ -147,8 +153,14 @@ if [[ "$PLATFORM" == "OSX" ]]; then
   $NO_VERBOSE || echo "Found files: $FILES"
   for f in $FILES; do
     $NO_VERBOSE || echo "Processing file: $f"
-    $NO_VERBOSE || echo "(dirname {BUILD_DIR}/f): $(dirname "${BUILD_DIR}/$f")"
-    $NO_VERBOSE || echo "(SRC_DIR/f): ${SRC_DIR}/${f}"
+    $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
+    $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
+    $NO_VERBOSE || echo "For creating its directory (2 methods):"
+    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(dirname "${BUILD_DIR}/${f}")"
+    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
+    $NO_VERBOSE || echo "For finding the source:"
+    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
+    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
     mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_" || util_error "OSX doesn't support \$_ maybe"
     $NO_VERBOSE || echo
   done
@@ -168,9 +180,15 @@ ${CONFIG}-original', \
 missing=False, annotate=False, relative=True)")")
   $NO_VERBOSE || echo "Found files: $FILES"
   for f in $FILES; do
-    $NO_VERBOSE || echo "f: $f"
-    $NO_VERBOSE || echo "{SRC_DIR}{f}: ${SRC_DIR}${f}"
-    $NO_VERBOSE || echo "{BUILD_DIR}{dirname f}: ${BUILD_DIR}$(dirname "$f")"
+    $NO_VERBOSE || echo "Processing file: $f"
+    $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
+    $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
+    $NO_VERBOSE || echo "For creating its directory (2 methods):"
+    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(dirname "${BUILD_DIR}/${f}")"
+    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
+    $NO_VERBOSE || echo "For finding the source:"
+    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
+    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
     mkdir -p "${BUILD_DIR}$(dirname "$f")"
     cp -r "${SRC_DIR}${f}" "${BUILD_DIR}$(dirname "$f")"
     $NO_VERBOSE || echo
