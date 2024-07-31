@@ -168,14 +168,17 @@ if [[ "$PLATFORM" == "OSX" ]]; then
     $NO_VERBOSE || echo "Processing file: $f"
     $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
     $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
-    $NO_VERBOSE || echo "For creating its directory (2 methods):"
-    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}${f}): '"$(dirname "${BUILD_DIR}${f}")"
-    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
-    $NO_VERBOSE || echo "For finding the source:"
-    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
-    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
-    mkdir -p "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
-    cp -r "$(readlink -f "${SRC_DIR}/${f}")" "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
+    MKDIR_PATH="${BUILD_DIR%/}/${f#/}"
+    $NO_VERBOSE || echo "First mkdir path: ${MKDIR_PATH}"
+    if [ ! -d "${MKDIR_PATH}" ]; then
+      MKDIR_PATH="$(dirname "${MKDIR_PATH}")"
+    fi
+    MKDIR_PATH+="/"
+    $NO_VERBOSE || echo "For creating its directory: ${MKDIR_PATH}"
+    SRC_PATH="${SRC_DIR}${f}"
+    $NO_VERBOSE || echo "To copy: ${SRC_PATH}"
+    mkdir -p "$MKDIR_PATH"
+    cp -r "${SRC_PATH}" "${MKDIR_PATH}"
     $NO_VERBOSE || echo
   done
   IFS=$OLDIFS
@@ -199,14 +202,17 @@ missing=False, annotate=False, relative=True)")")
     $NO_VERBOSE || echo "Processing file: $f"
     $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
     $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
-    $NO_VERBOSE || echo "For creating its directory (2 methods):"
-    $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}${f}): '"$(dirname "${BUILD_DIR}${f}")"
-    $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"${BUILD_DIR}$(dirname "$f")"
-    $NO_VERBOSE || echo "For finding the source:"
-    $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"${SRC_DIR}/${f}"
-    $NO_VERBOSE || echo '  ${SRC_DIR}${f}:               '"${SRC_DIR}${f}"
-    mkdir -p "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
-    cp -r "$(readlink -f "${SRC_DIR}/${f}")" "$(readlink -f "${BUILD_DIR}/$(dirname "$f")")"
+    MKDIR_PATH="${BUILD_DIR%/}/${f#/}"
+    $NO_VERBOSE || echo "First mkdir path: ${MKDIR_PATH}"
+    if [ ! -d "${MKDIR_PATH}" ]; then
+      MKDIR_PATH="$(dirname "${MKDIR_PATH}")"
+    fi
+    MKDIR_PATH+="/"
+    $NO_VERBOSE || echo "For creating its directory: ${MKDIR_PATH}"
+    SRC_PATH="${SRC_DIR}${f}"
+    $NO_VERBOSE || echo "To copy: ${SRC_PATH}"
+    mkdir -p "$MKDIR_PATH"
+    cp -r "${SRC_PATH}" "${MKDIR_PATH}"
     $NO_VERBOSE || echo
   done
   IFS=$OLDIFS
