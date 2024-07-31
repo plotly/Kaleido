@@ -124,7 +124,7 @@ missing=False, annotate=False, relative=True)")")
       $NO_VERBOSE || echo "SRC_DIR:         ${SRC_DIR}"
       $NO_VERBOSE || echo "BUILD_DIR:       ${BUILD_DIR}"
       $NO_VERBOSE || echo "For creating its directory (2 methods):"
-      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink -m "$(dirname "${BUILD_DIR}/${f}")"
+      $NO_VERBOSE || echo '  $(dirname ${BUILD_DIR}/${f}): '"$(readlink -m "$(dirname "${BUILD_DIR}/${f}")")"
       $NO_VERBOSE || echo '  ${BUILD_DIR}$(dirname "$f"):  '"$(readlink -m "${BUILD_DIR}$(dirname "$f")")"
       $NO_VERBOSE || echo "For finding the source:"
       $NO_VERBOSE || echo '  ${SRC_DIR}/${f}:              '"$(readlink -m "${SRC_DIR}/${f}")"
