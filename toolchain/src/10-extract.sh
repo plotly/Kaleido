@@ -115,8 +115,8 @@ missing=False, annotate=False, relative=True)")")
     $NO_VERBOSE || echo "Found files: $FILES"
     for f in $FILES; do
       $NO_VERBOSE || echo "Processing file: $f"
-      $NO_VERBOSE || echo "$(dirname "${BUILD_DIR}/$f")"
-      $NO_VERBOSE || echo "${SRC_DIR}/${f}"
+      $NO_VERBOSE || echo "dirname BUILD_DIR/f: $(dirname "${BUILD_DIR}/$f")"
+      $NO_VERBOSE || echo "SRC_DIR:f ${SRC_DIR}/${f}"
       mkdir -p $(dirname "${BUILD_DIR}/$f") && cp -r "${SRC_DIR}/${f}" "$_" # this might only work on linux :-(
     done
 
