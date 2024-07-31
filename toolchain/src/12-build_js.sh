@@ -44,5 +44,5 @@ else
 fi
 popd
 
-mkdir "${BUILD_DIR}/js/"
+mkdir -p "${BUILD_DIR}/js/"
 cp -r "${SRC_DIR}/build/"*.js "${BUILD_DIR}/js/"
