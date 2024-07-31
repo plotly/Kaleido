@@ -128,6 +128,7 @@ $NO_VERBOSE || echo "Found platform: $PLATFORM"
 
 export MAIN_DIR="${MAIN_DIR-$(git rev-parse --show-toplevel)}"
 $NO_VERBOSE || echo "Found main dir: ${MAIN_DIR}"
+$NO_VERBOSE || git -C "${MAIN_DIR}" log -1 --oneline
 
 if [[ "$MAIN_DIR" == "" ]] || [[ "$MAIN_DIR" == "/" ]]; then
   util_error "git rev-parse returned an empty directory, are we in a git directory?"
