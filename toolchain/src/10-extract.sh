@@ -136,7 +136,7 @@ missing=False, annotate=False, relative=True)")")
   # manual
   cp /usr/lib/x86_64-linux-gnu/nss/* ${BUILD_DIR}/lib/
   for f in libdl libpthread librt libm libgcc_s libc; do
-    rm ${BUILD_DIR}/lib/${f}* || echo "No ${f}"
+    rm ${BUILD_DIR}/lib/${f}* || echo "No ${f} to remove, moving on..."
   done
   # done
 fi
