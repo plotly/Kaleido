@@ -177,5 +177,5 @@ missing=False, annotate=False, relative=True)")")
   done
   popd
 fi
-
+$NO_VERBOSE || echo "Done with platform specific, removing devtools js ui"
 rm -rf $BUILD_DIR/gen/third_party/devtools-frontend/ # huge and i doubt we need it
