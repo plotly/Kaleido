@@ -165,7 +165,7 @@ if [[ "$PLATFORM" == "OSX" ]]; then
     $NO_VERBOSE || echo
   done
   $NO_VERBOSE || echo "Check the line here:"
-  cp "$MAIN_DIR/vendor/src/out/Kaleido_$PLATFORM_$TARGET_ARCH/lib"*.dylib "${BUILD_DIR}/"
+  cp "${MAIN_DIR}/vendor/src/out/Kaleido_${PLATFORM}_${TARGET_ARCH}/lib"*.dylib "${BUILD_DIR}/"
 fi
 
 if [[ "$PLATFORM" == "WINDOWS" ]]; then
