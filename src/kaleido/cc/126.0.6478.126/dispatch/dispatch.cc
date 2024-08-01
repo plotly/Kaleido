@@ -270,8 +270,10 @@ namespace kaleido {
       LOG(INFO) << "PostEchoTaskOld about to be called";
       parent_->PostEchoTaskOld(result.c_str());
       LOG(INFO) << "PostEchoTaskOld called";
+    } else {
+      LOG(INFO) << "Bad result"; // TODO: needs to somehow let js know... 
+      parent_->Api_OldMsg(400, "Javascript in scope provoked exception");
     }
-    LOG(INFO) << "Bad result";
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::closeJob, base::Unretained(this), job_id)); // we're done with this job_id
