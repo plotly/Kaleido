@@ -301,6 +301,9 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   // Write html to temp file
   tmpFileName = base::FormatTemporaryFileName(HTML);
+  #if BUILDFLAG(IS_WIN)
+  tmpFileName = base::FilePath(base::StrCat({tmpFileName.value(),L".", HTML}));
+  #endif
   std::ofstream htmlFile;
   htmlFile.open(tmpFileName.value(), std::ios::out);
   htmlFile << htmlStringStream.str();
