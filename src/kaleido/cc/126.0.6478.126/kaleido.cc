@@ -205,10 +205,6 @@ namespace kaleido {
 
 Kaleido::Kaleido() = default;
 
-void AnotherBrowserStart(headless::HeadlessBrowser* browser) {
-  //std::cout << "Its fine" << std::endl;
-}
-
 // Control Flow, declare here
 void Kaleido::ShutdownSoon() {
   scope_ptr = nullptr;
