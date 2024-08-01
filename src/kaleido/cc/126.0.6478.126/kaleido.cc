@@ -41,6 +41,11 @@
 #include <fstream>
 
 #define FILE_URI_PREFIX "file://"
+#if BUILDFLAG(IS_WIN)
+#define HTML L"html"
+#else
+#define HTML "html"
+#endif
 
 
 // COPY
@@ -295,7 +300,7 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
   // Write html to temp file
-  tmpFileName = base::FormatTemporaryFileName("html");
+  tmpFileName = base::FormatTemporaryFileName(HTML);
   std::ofstream htmlFile;
   htmlFile.open(tmpFileName.value(), std::ios::out);
   htmlFile << htmlStringStream.str();
