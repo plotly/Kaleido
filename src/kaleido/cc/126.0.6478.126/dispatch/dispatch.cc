@@ -124,6 +124,7 @@ namespace kaleido {
 
   // jobline modying tabs and jobs and aciveJobs
   void Dispatch::dispatchJob(std::unique_ptr<Job> job, std::unique_ptr<Tab> tab) {
+    LOG(INFO) << "Dispatching job.";
     int job_id = job_number++;
 
     job->currentTab = std::move(tab);
@@ -135,6 +136,7 @@ namespace kaleido {
   }
 
   inline bool Dispatch::checkError(const base::Value::Dict &msg, const std::string &context, const int& job_id) {
+    LOG(INFO) << "Looking for error";
     if (msg.FindString("error")) {
         std::string error = base::StringPrintf(
                 "%s: Response: %s", context.c_str(), msg.DebugString().c_str());
@@ -149,16 +151,18 @@ namespace kaleido {
   }
 
   void Dispatch::runJob1_resetTab(const int &job_id) {
-    LOG(INFO) << "reseting tab";
+    LOG(INFO) << "job1_reset tab";
     if (activeJobs.find(job_id) == activeJobs.end()) return;
-
+    LOG(INFO) << "Not canceled";
     activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable");
     activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.enable", base::BindOnce(&Dispatch::runJob2_reloadTab, base::Unretained(this), job_id));
   }
 
   void Dispatch::runJob2_reloadTab(const int &job_id, base::Value::Dict msg) {
-    LOG(INFO) << "reloading tab, trying to, setting execution watcher";
+    LOG(INFO) << "job2_reload tab, and set executionContextCreated";
+    LOG(INFO) << msg.DebugString();
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob2_reloadTab", job_id)) return;
+    LOG(INFO) << "Not canceled";
     auto cb = base::BindRepeating(&Dispatch::runJob3_loadScripts, base::Unretained(this), job_id);
     activeJobs[job_id]->runtimeEnableCb = cb;
     activeJobs[job_id]->currentTab->client_->AddEventHandler("Runtime.executionContextCreated", cb);
@@ -166,11 +170,12 @@ namespace kaleido {
   }
 
   void Dispatch::runJob3_loadScripts(const int &job_id, const base::Value::Dict& msg) {
-    LOG(INFO) << "Runtime enable called, started script load";
+    LOG(INFO) << "job3_load scripts, Execution context created"
     LOG(INFO) << msg.DebugString();
     activeJobs[job_id]->currentTab->client_->RemoveEventHandler(
         "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob3_loadScripts", job_id)) return;
+    LOG(INFO) << "Not canceled";
     activeJobs[job_id]->scriptItr = parent_->localScriptFiles.begin();
     activeJobs[job_id]->executionId = *msg.FindDict("params")->FindDict("context")->FindInt("id");
     base::Value::Dict empty;
@@ -178,11 +183,12 @@ namespace kaleido {
   }
 
   void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
-    LOG(INFO) << "loadNextScript (did I run one?)";
+    LOG(INFO) << "job4_load NextScript";
     LOG(INFO) << msg.DebugString();
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob4_loadNextScript", job_id)) return;
+    LOG(INFO) << "not cancelled";
     if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
-      LOG(INFO) << "done loading";
+      LOG(INFO) << "done loading scripts, trying to run kaleido_scope()";
       std::string exportFunction = base::StringPrintf(
           "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
           parent_->scope_name.c_str());
@@ -236,8 +242,10 @@ namespace kaleido {
   }
 
   void Dispatch::runJob5_runLoadedScript(const int &job_id, const base::Value::Dict msg) {
-    LOG(INFO) << "Script compiled, trying to run";
+    LOG(INFO) << "job5_run loaded: Script compiled, trying to run";
+    LOG(INFO) << msg.DebugString();
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob5_runLoadedScript", job_id)) return;
+    LOG(INFO) << "Not cancelled";
     activeJobs[job_id]->scriptItr++;
 
     auto after_run = base::BindRepeating(
@@ -250,9 +258,10 @@ namespace kaleido {
   }
 
   void Dispatch::runJob6_processImage(const int& job_id, base::Value::Dict msg) {
-    LOG(INFO) << "Processing image";
+    LOG(INFO) << "job6_Processing image";
+    LOG(IFNO) << msg.DebugString();
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob6_processImage", job_id)) return;
-    LOG(INFO) << "Job was active and no error";
+    LOG(INFO) << "Not cancelled";
     LOG(INFO) << msg.DebugString();
     std::string result = *msg.FindDict("result")->FindDict("result")->FindString("value");
     LOG(INFO) << "Got result into string";

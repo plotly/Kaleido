@@ -307,9 +307,8 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   // Create file:// url to temp file
   LOG(INFO) << "Log file name narrowed:";
-  GURL uri = headless::ConvertArgumentToURL(tmpFileName.value());
-  LOG(INFO) << uri.spec();
-  GURL url = GURL(FILE_URI_PREFIX + uri);
+  GURL url = headless::ConvertArgumentToURL(tmpFileName.value());
+  LOG(INFO) << url.spec();
 
   // Initialization succeeded
   Api_OldMsg(0, "Initilization Success");
@@ -397,7 +396,6 @@ bool Kaleido::ReadJSON(std::string &msg) {
     // we are likely using the old protocol, which for now is all we accept
     if (maybe_format) {
       LOG(INFO) << "It seems like we're using the old protocol.";
-      LOG(INFO) << jsonDict.DebugString();
       old=true;
       std::unique_ptr<Job> job = std::make_unique<Job>();
       job->version = 0;
