@@ -74,6 +74,8 @@ namespace kaleido {
   }
 
   void Dispatch::CreateTab(int id, const GURL &url) {
+    LOG(INFO) << "CREATING TAB!";
+    LOG(INFO) << "Creating tab: " << url.spec();
     auto tab = std::make_unique<Tab>();
     headless::HeadlessWebContents::Builder builder(
       parent_->browser_->GetDefaultBrowserContext()->CreateWebContentsBuilder());
