@@ -157,10 +157,10 @@ if [[ "$PLATFORM" == "OSX" ]]; then
   cp "${SRC_DIR}/kaleido" "${BUILD_DIR}/kaleido"
   chmod +x "${BUILD_DIR}/kaleido"
   FILES=$(echo -e "$($PYTHON -c "$IMPORT; \
-    extract.match_json_to_directory('\
-    ${CONFIG}', \
-    '$SRC_DIR', \
-    missing=False, annotate=False, relative=True)")")
+extract.match_json_to_directory('\
+${CONFIG}', \
+'$SRC_DIR', \
+missing=False, annotate=False, relative=True)")")
   $NO_VERBOSE || echo "Found files: $FILES"
   OLDIFS=$IFS
   IFS=$'\t'
