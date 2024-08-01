@@ -298,10 +298,16 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
 
   auto tmpFile = base::CreateAndOpenTemporaryStream(&tmpFileName);
   fprintf(tmpFile.get(), "%s", htmlStringStream.str().c_str());
+  LOG(INFO) << "Dumping HTML from memory";
+  LOG(INFO) << htmlStringStream.str().c_str();
+  LOG(INFO) << "Log file name:";
+  LOG(INFO) << tmpFileName;
   tmpFile.reset();
 
   // Create file:// url to temp file
   std::string urlCopy(tmpFileName.value().begin(), tmpFileName.value().end());
+  LOG(INFO) << "Log file name narrowed:";
+  LOG(INFO) << urlCopy;
   GURL url = GURL(FILE_URI_PREFIX + urlCopy);
 
   // Initialization succeeded

@@ -147,6 +147,7 @@ namespace kaleido {
   }
 
   void Dispatch::runJob1_resetTab(const int &job_id) {
+    LOG(INFO) << "reseting tab";
     if (activeJobs.find(job_id) == activeJobs.end()) return;
 
     activeJobs[job_id]->currentTab->client_->SendCommand("Page.enable");
@@ -154,6 +155,7 @@ namespace kaleido {
   }
 
   void Dispatch::runJob2_reloadTab(const int &job_id, base::Value::Dict msg) {
+    LOG(INFO) << "reloading tab, trying to, setting execution watcher";
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob2_reloadTab", job_id)) return;
     auto cb = base::BindRepeating(&Dispatch::runJob3_loadScripts, base::Unretained(this), job_id);
     activeJobs[job_id]->runtimeEnableCb = cb;
@@ -162,7 +164,8 @@ namespace kaleido {
   }
 
   void Dispatch::runJob3_loadScripts(const int &job_id, const base::Value::Dict& msg) {
-    LOG(INFO) << "Runtime enable";
+    LOG(INFO) << "Runtime enable called, started script load";
+    LOG(INFO) << msg.DebugString();
     activeJobs[job_id]->currentTab->client_->RemoveEventHandler(
         "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob3_loadScripts", job_id)) return;
@@ -173,8 +176,11 @@ namespace kaleido {
   }
 
   void Dispatch::runJob4_loadNextScript(const int &job_id, const base::Value::Dict msg) {
+    LOG(INFO) << "loadNextScript (did I run one?)";
+    LOG(INFO) << msg.DebugString();
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob4_loadNextScript", job_id)) return;
     if (activeJobs[job_id]->scriptItr == parent_->localScriptFiles.end()) {
+      LOG(INFO) << "done loading";
       std::string exportFunction = base::StringPrintf(
           "function(spec, ...args) { return kaleido_scopes.%s(spec, ...args).then(JSON.stringify); }",
           parent_->scope_name.c_str());
@@ -190,6 +196,8 @@ namespace kaleido {
       params.Set("userGesture", true);
       params.Set("awaitPromise", true);
       params.Set("executionContextId", activeJobs[job_id]->executionId);
+      LOG(INFO) << "Params for loading script:";
+      LOG(INFO) << params.DebugString();
       activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.callFunctionOn",
         std::move(params),
         base::BindOnce(&Dispatch::runJob6_processImage, base::Unretained(this), job_id));
@@ -198,7 +206,7 @@ namespace kaleido {
     std::string scriptPath(*activeJobs[job_id]->scriptItr);
     std::ifstream script(scriptPath);
     if (!script.is_open()) {
-
+      LOG(ERROR) << "Problem with opening script";
 #if defined(OS_WIN)
       std::string error = base::StringPrintf("Failed to find, or open, local file at %s with working directory.",
           scriptPath.c_str());
@@ -220,10 +228,13 @@ namespace kaleido {
     script_params.Set("expression", scriptString);
     script_params.Set("sourceURL", scriptPath);
     script_params.Set("persistScript", true);
+    script_params.Set("executionContextId", activeJobs[job_id]->executionId);
+    LOG(INFO) << "Sending script to compile";
     activeJobs[job_id]->currentTab->client_->SendCommand("Runtime.compileScript", std::move(script_params), after_loaded);
   }
 
   void Dispatch::runJob5_runLoadedScript(const int &job_id, const base::Value::Dict msg) {
+    LOG(INFO) << "Script compiled, trying to run";
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob5_runLoadedScript", job_id)) return;
     activeJobs[job_id]->scriptItr++;
 
@@ -237,16 +248,25 @@ namespace kaleido {
   }
 
   void Dispatch::runJob6_processImage(const int& job_id, base::Value::Dict msg) {
+    LOG(INFO) << "Processing image";
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob6_processImage", job_id)) return;
+    LOG(INFO) << "Job was active and no error";
+    LOG(INFO) << msg.DebugString();
     std::string result = *msg.FindDict("result")->FindDict("result")->FindString("value");
+    LOG(INFO) << "Got result into string";
+    LOG(INFO) << result;
+    LOG(INFO) << "PostEchoTaskOld about to be called";
     parent_->PostEchoTaskOld(result.c_str());
+    LOG(INFO) << "PostEchoTaskOld called";
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::closeJob, base::Unretained(this), job_id)); // we're done with this job_id
+    LOG(INFO) << "About to return from runJob6_processImage, posted closejob task";
     return;
   }
 
   void Dispatch::closeJob(const int& job_id) { // browser is modifying activejobs/etc, it should be jobline
+    LOG(INFO) << "close Job called";
     int messageId = activeJobs[job_id]->id;
     if (activeJobs.find(job_id) == activeJobs.end()) return;
     auto oldTab = std::move(activeJobs[job_id]->currentTab);
