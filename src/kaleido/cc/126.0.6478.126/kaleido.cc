@@ -295,14 +295,15 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlStringStream << "</head><body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body></html>";
 
   // Write html to temp file
-
-  auto tmpFile = base::CreateAndOpenTemporaryStream(&tmpFileName);
-  fprintf(tmpFile.get(), "%s", htmlStringStream.str().c_str());
+  tmpFileName = base::FormatTemporaryFileName("html");
+  std::ofstream htmlFile;
+  htmlFile.open(tmpFileName.value(), std::ios::out);
+  htmlFile << htmlStringStream.str();
   LOG(INFO) << "Dumping HTML from memory";
   LOG(INFO) << htmlStringStream.str().c_str();
   LOG(INFO) << "Log file name:";
   LOG(INFO) << tmpFileName;
-  tmpFile.reset();
+  htmlFile.close();
 
   // Create file:// url to temp file
   std::string urlCopy(tmpFileName.value().begin(), tmpFileName.value().end());
