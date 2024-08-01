@@ -90,7 +90,7 @@
 #endif
 namespace headless {
 namespace {
-/*GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
+GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
 #if BUILDFLAG(IS_WIN)
   GURL url(base::WideToUTF8(arg));
 #else
@@ -100,7 +100,7 @@ namespace {
     return url;
   return net::FilePathToFileURL(
       base::MakeAbsoluteFilePath(base::FilePath(arg)));
-}*/ // useful but bring it in later
+} // useful but bring it in later
 // An application which implements a simple headless browser.
 class HeadlessShell {
  public:
@@ -306,10 +306,10 @@ void Kaleido::OnBrowserStart(headless::HeadlessBrowser* browser) {
   htmlFile.close();
 
   // Create file:// url to temp file
-  std::string urlCopy(tmpFileName.value().begin(), tmpFileName.value().end());
   LOG(INFO) << "Log file name narrowed:";
-  LOG(INFO) << urlCopy;
-  GURL url = GURL(FILE_URI_PREFIX + urlCopy);
+  GURL uri = headless::ConvertArgumentToURL(tmpFileName.value());
+  LOG(INFO) << uri.spec();
+  GURL url = GURL(FILE_URI_PREFIX + uri);
 
   // Initialization succeeded
   Api_OldMsg(0, "Initilization Success");
