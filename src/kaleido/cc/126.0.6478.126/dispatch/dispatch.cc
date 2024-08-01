@@ -170,7 +170,7 @@ namespace kaleido {
   }
 
   void Dispatch::runJob3_loadScripts(const int &job_id, const base::Value::Dict& msg) {
-    LOG(INFO) << "job3_load scripts, Execution context created"
+    LOG(INFO) << "job3_load scripts, Execution context created";
     LOG(INFO) << msg.DebugString();
     activeJobs[job_id]->currentTab->client_->RemoveEventHandler(
         "Runtime.executionContextCreated", std::move(activeJobs[job_id]->runtimeEnableCb));
@@ -259,16 +259,19 @@ namespace kaleido {
 
   void Dispatch::runJob6_processImage(const int& job_id, base::Value::Dict msg) {
     LOG(INFO) << "job6_Processing image";
-    LOG(IFNO) << msg.DebugString();
+    LOG(INFO) << msg.DebugString();
     if (activeJobs.find(job_id) == activeJobs.end() || checkError(msg, "runJob6_processImage", job_id)) return;
     LOG(INFO) << "Not cancelled";
     LOG(INFO) << msg.DebugString();
-    std::string result = *msg.FindDict("result")->FindDict("result")->FindString("value");
-    LOG(INFO) << "Got result into string";
-    LOG(INFO) << result;
-    LOG(INFO) << "PostEchoTaskOld about to be called";
-    parent_->PostEchoTaskOld(result.c_str());
-    LOG(INFO) << "PostEchoTaskOld called";
+    if (!msg.FindDict("result")->FindDict("exceptionDetails")) {
+      std::string result = *msg.FindDict("result")->FindDict("result")->FindString("value");
+      LOG(INFO) << "Got result into string";
+      LOG(INFO) << result;
+      LOG(INFO) << "PostEchoTaskOld about to be called";
+      parent_->PostEchoTaskOld(result.c_str());
+      LOG(INFO) << "PostEchoTaskOld called";
+    }
+    LOG(INFO) << "Bad result";
     job_line->PostTask(
         FROM_HERE,
         base::BindOnce(&Dispatch::closeJob, base::Unretained(this), job_id)); // we're done with this job_id
