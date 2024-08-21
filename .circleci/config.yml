@@ -18,8 +18,8 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install Dependencies
-        command: sudo apt-get update && sudo apt-get install rsync npm nodejs pip
+          name: Install Dependencies
+          command: sudo apt-get update && sudo apt-get install rsync npm nodejs pip
       - set_version
 
   linux-x64:
@@ -29,8 +29,8 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install Dependencies
-        command: sudo apt-get update && sudo apt-get install rsync npm nodejs pip
+          name: Install Dependencies
+          command: sudo apt-get update && sudo apt-get install rsync npm nodejs pip
       - set_version
 
   windows-x64:
@@ -40,9 +40,9 @@ jobs:
       - checkout
       # The following actually comes installed already:
       - run:
-        name: Install Dependencies
-        #command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
-        command: choco install rsync
+          name: Install Dependencies
+          #command: choco install git.install --params "'/GitAndUnixToolsOnPath /WindowsTerminal /NoAutoCrlf'"
+          command: choco install rsync
       - set_version
 
   osx:
@@ -52,8 +52,8 @@ jobs:
     steps:
       - checkout
       - run:
-        name: Install Dependencies
-        command: brew install rsync
+          name: Install Dependencies
+          command: brew install rsync
       # The following recommended by circle CI, but it takes time, costs money, and may not be necessary
       #- run:
         #name: Delete simulators and unused platforms to save space
