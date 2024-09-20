@@ -295,7 +295,7 @@ setup(
     long_description_content_type="text/markdown",
     license="MIT",
     install_requires=[
-        "pathlib ; python_version<'3.4'",
+        "pathlib ; python_version>'3.4'",
     ],
     packages=["kaleido", "kaleido.scopes"],
     package_data={
