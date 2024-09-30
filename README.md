@@ -39,7 +39,7 @@ Then, open `figure.png` in the current working directory.
 
 See the plotly static image export documentation for more information: https://plotly.com/python/static-image-export/.
 
-# Previos Kaleido API
+# Previous Kaleido API
 
 Kaleido was previously arcitectured to accept "scopes"- they are no longer necessary. The old API is demonstrated below but it is only supported to the extent needed as to not break previous implementations of kaleido for plotly. This API will likely emit a deprecation warning, and proceed to be unsupported.
 
