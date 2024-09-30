@@ -39,3 +39,4 @@ src/kaleido/py/LICENSE.txt
 src/kaleido/py/README.md
 src/kaleido/py/dist/
 src/kaleido/py/kaleido/_version.py
+.venv
