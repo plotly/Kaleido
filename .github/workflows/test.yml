@@ -9,10 +9,7 @@ jobs:
       - name: Install Dependencies
         run:  sudo apt-get update && sudo apt-get install chromium-browser
       - name: Install devtools
-        run:  ls && pip install .[dev] numpy
-      - name: diagnostic
-        run:  dtdoctor
-        timeout-minutes: 1
+        run:  ls && pip install .[dev]
       - name: test
         run:  pytest
         timeout-minutes: 1
@@ -24,10 +21,7 @@ jobs:
       - name: Install Dependencies
         run:  choco install googlechrome -y --ignore-checksums
       - name: Install devtools
-        run:  pip install .[dev] numpy
-      - name: diagnostic
-        run:  dtdoctor
-        timeout-minutes: 1
+        run:  pip install .[dev]
       - name: test
         run:  pytest
         timeout-minutes: 1
@@ -39,10 +33,7 @@ jobs:
       - name: Install Dependencies
         run:  brew install google-chrome
       - name: Install devtools
-        run:  pip install .[dev] numpy
-      - name: diagnostic
-        run:  dtdoctor
-        timeout-minutes: 1
+        run:  pip install .
       - name: test
         run:  pytest
         timeout-minutes: 1
