@@ -1,0 +1,48 @@
+name: test-wf
+on: pull_request
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v1
+      - name: Install Dependencies
+        run:  sudo apt-get update && sudo apt-get install chromium-browser
+      - name: Install devtools
+        run:  ls && pip install .[dev] numpy
+      - name: diagnostic
+        run:  dtdoctor
+        timeout-minutes: 1
+      - name: test
+        run:  pytest
+        timeout-minutes: 1
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install Dependencies
+        run:  choco install googlechrome -y --ignore-checksums
+      - name: Install devtools
+        run:  pip install .[dev] numpy
+      - name: diagnostic
+        run:  dtdoctor
+        timeout-minutes: 1
+      - name: test
+        run:  pytest
+        timeout-minutes: 1
+  test-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install Dependencies
+        run:  brew install google-chrome
+      - name: Install devtools
+        run:  pip install .[dev] numpy
+      - name: diagnostic
+        run:  dtdoctor
+        timeout-minutes: 1
+      - name: test
+        run:  pytest
+        timeout-minutes: 1

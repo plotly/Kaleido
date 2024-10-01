@@ -1,42 +1,15 @@
-# Py build stuff
+# Py Build Stuff
 *.pyc
 *.egg-info/
+__pycache__
 
-# Text editor stuff
+# Text Editor Stuff
 *.DS_Store
 *.kate-swp
 *.sw*
 
-# Old, don't know
-.idea/
-
-# Toolchain artifacts
-.set_version
-bin
-toolchain/tmp/
-
-# Vendor repos
-vendor/src
-vendor/depot_tools
-
-# Build artifacts
-build/
-src/kaleido/LICENSE.txt
-src/kaleido/README.md
-src/kaleido/CREDITS.html
-src/kaleido/version
-CREDITS.html
-src/kaleido/py/kaleido/executable
-# Windows build artifacts
-vendor/.cipd
-vendor/.gclient_entries
-vendor/.gclient_previous_sync_commits
-vendor/.gcs_entries
-
-# Packaing build artifacts
-src/kaleido/js/node_modules/
-src/kaleido/py/LICENSE.txt
-src/kaleido/py/README.md
-src/kaleido/py/dist/
-src/kaleido/py/kaleido/_version.py
+# Local Environment
 .venv
+
+# Artifacts from Build
+src/js/build
