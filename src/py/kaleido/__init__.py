@@ -1,4 +1,7 @@
-# do not ever import scopes here! it is deprecated
+#import ONLY to maintain namespace structure of previous version
+#don't use!
+#import kaleido.scopes as scopes
+
 # and this folder is the new API
 from pathlib import Path
 import asyncio
@@ -9,10 +12,10 @@ from devtools import Browser
 
 script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
 
-_all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
-_text_formats = ("svg", "json", "eps")
+_all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
+_text_formats_ = ("svg", "json", "eps")
 
-_scope_flags = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
+_scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
 def to_image_block(figure):
     loop = None
