@@ -5,6 +5,12 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages]
 find = {namespaces = false}
 
+[tool.setuptools.package-data]
+kaleido = ['vendor/*']
+
+[tool.setuptools-git-versioning]
+enabled = true
+
 [project]
 name = "kaleido"
 description = "plotly graph export library"
@@ -27,8 +33,3 @@ dev = [
 
 [tool.ruff.lint]
 ignore = ["E701"] # E701 oneline if's
-
-[tool.setuptools-git-versioning]
-enabled = true
-
-
