@@ -209,3 +209,7 @@ class PlotlyScope():
     def mapbox_access_token(self, val):
         self._mapbox_access_token = val
         self._shutdown_kaleido()
+
+    def _shutdown_kaleido(self):
+        pass
+        # TODO: #2 deprecate, but also used to reset HTML
