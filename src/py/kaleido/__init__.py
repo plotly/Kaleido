@@ -6,6 +6,8 @@ import json
 
 from devtools import Browser
 
+
+
 script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
 
 _all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
@@ -69,8 +71,10 @@ async def to_image(spec):
                     code=code, message=message
                 )
             )
-
-        img = json.loads(response.get("result").get("result").get("value")).get("result")
+        try:
+            img = json.loads(response.get("result").get("result").get("value")).get("result")
+        except Exception as e:
+            raise RuntimeError(response) from e
 
         # Base64 decode binary types
         if format not in _text_formats_:
