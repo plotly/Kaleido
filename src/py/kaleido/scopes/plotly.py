@@ -2,6 +2,8 @@ from __future__ import absolute_import
 import os
 from pathlib import Path
 
+from plotly.graph_objects import Figure
+
 import kaleido # kaleido __init__.py, dislike
 
 # The original kaleido provided a global lock (instead of supporting concurrency)
@@ -102,7 +104,6 @@ class PlotlyScope():
         :return: image bytes
         """
         # TODO: validate args
-        from plotly.graph_objects import Figure
         if isinstance(figure, Figure):
             figure = figure.to_dict()
 
@@ -145,16 +146,13 @@ class PlotlyScope():
             )
 
 
-        data = figure
-        config = dict(format=format,
-                      width=width,
-                      height=height,
-                      scale=scale)
+        js_args = dict(format=format, width=width, height=height, scale=scale)
+        spec = dict(js_args, data = figure)
 
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with _proc_lock:
-            img = kaleido.to_image_block(data, config)
+            img = kaleido.to_image_block(spec)
 
         return img
 

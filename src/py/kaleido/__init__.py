@@ -1,8 +1,4 @@
-#import ONLY to maintain namespace structure of previous version
-#don't use!
-#import kaleido.scopes as scopes
-
-# and this folder is the new API
+# don't use scopes!
 from pathlib import Path
 import asyncio
 import base64
@@ -17,7 +13,7 @@ _text_formats_ = ("svg", "json", "eps")
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
-def to_image_block(figure):
+def to_image_block(spec):
     loop = None
     try:
         loop = asyncio.get_running_loop()
@@ -27,9 +23,9 @@ def to_image_block(figure):
         # TODO: create thread and post the new loop there and run the thing and return it in a message queue :-(
         ...
     else:
-        return asyncio.run(to_image(figure))
+        return asyncio.run(to_image(spec))
 
-async def to_image(figure):
+async def to_image(spec):
     async with Browser(headless=False) as browser:
         tab = await browser.create_tab(script_path.as_uri())
         await tab.send_command("Page.enable")
@@ -56,7 +52,7 @@ async def to_image(figure):
 
         params = dict(
                 functionDeclaration=kaleido_jsfn,
-                arguments=[dict(value=figure)],
+                arguments=[dict(value=spec)],
                 returnByValue=False,
                 userGesture=True,
                 awaitPromise=True,
@@ -77,6 +73,6 @@ async def to_image(figure):
         img = json.loads(response.get("result").get("result").get("value")).get("result")
 
         # Base64 decode binary types
-        if format not in _text_formats:
+        if format not in _text_formats_:
             img = base64.b64decode(img)
         return img
