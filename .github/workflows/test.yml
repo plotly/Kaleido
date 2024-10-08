@@ -8,8 +8,8 @@ jobs:
       - uses: actions/setup-python@v1
       - name: Install Dependencies
         run:  sudo apt-get update && sudo apt-get install chromium-browser
-      - name: Install devtools
-        run:  ls && pip install .[dev]
+      - name: Install kaleido
+        run:  ls && pip install src/py/.[dev]
       - name: test
         run:  pytest
         timeout-minutes: 1
@@ -20,8 +20,8 @@ jobs:
       - uses: actions/setup-python@v5
       - name: Install Dependencies
         run:  choco install googlechrome -y --ignore-checksums
-      - name: Install devtools
-        run:  pip install .[dev]
+      - name: Install kaleido
+        run:  pip install src/py/.[dev]
       - name: test
         run:  pytest
         timeout-minutes: 1
@@ -32,8 +32,8 @@ jobs:
       - uses: actions/setup-python@v5
       - name: Install Dependencies
         run:  brew install google-chrome
-      - name: Install devtools
-        run:  pip install .
+      - name: Install kaleido
+        run:  pip install src/py/.[dev]
       - name: test
         run:  pytest
         timeout-minutes: 1
