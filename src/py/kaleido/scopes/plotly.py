@@ -1,8 +1,5 @@
 from __future__ import absolute_import
-import base64
 import os
-import io
-import sys
 from pathlib import Path
 
 import kaleido # kaleido __init__.py, dislike
