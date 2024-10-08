@@ -2,7 +2,8 @@
 - [ ] #2: Add switch deprecation warnings (See TODO)
 - [ ] #3: TODO: Obey plolty versions switches (plotlyjs, mathjax, openmapbox)
 - [x] #4: Build not picking up version tag :-( <-- not picking up repo at all
-- [ ] #5: Can't import
+- [x] #5: Can't import
+- [ ] #6: Will permanently need more from old api (prepare spec)
 
 
 
