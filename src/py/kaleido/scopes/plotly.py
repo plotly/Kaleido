@@ -1,23 +1,34 @@
 from __future__ import absolute_import
-from kaleido.scopes.base import BaseScope, which
 import base64
 import os
+import io
+import sys
 from pathlib import Path
-import subprocess
 
-class PlotlyScope(BaseScope):
+import kaleido # kaleido __init__.py, dislike
+
+# The original kaleido provided a global lock (instead of supporting concurrency)
+# So kaleido 2.0 will as well if it's used from scopes (old api)
+from threading import Lock
+_proc_lock = Lock()
+
+try:
+    from json import JSONDecodeError
+except ImportError:
+    JSONDecodeError = ValueError
+
+class PlotlyScope():
     """
     Scope for transforming Plotly figures to static images
     """
-    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
-    _text_formats = ("svg", "json", "eps")
+    _all_formats = kaleido._all_formats_
+    _text_formats = kaleido._text_formats_
 
-    _scope_flags = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
-    _scope_chromium_args = ("--no-sandbox",)
+    _scope_flags = kaleido._scope_flags_
+
 
     def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, **kwargs):
-        # TODO: validate args
-        # Save scope flags as internal properties
+        # TODO: #2 This is deprecated, this whole FILE is deprecated
         self._plotlyjs = plotlyjs
         self._topojson = topojson
         self._mapbox_access_token = mapbox_access_token
@@ -25,7 +36,7 @@ class PlotlyScope(BaseScope):
         # Try to find local MathJax, but never fail if something goes wrong
         try:
             self._initialize_mathax(mathjax)
-        except:
+        except: # noqa TODO what would the actual error be
             self._mathjax = None
 
         # to_image-level default values
@@ -33,8 +44,6 @@ class PlotlyScope(BaseScope):
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
-
-        super(PlotlyScope, self).__init__(**kwargs)
 
     def _initialize_mathax(self, mathjax=None):
         if mathjax is not None:
@@ -47,19 +56,12 @@ class PlotlyScope(BaseScope):
             'etc',
             'mathjax',
             'MathJax.js'
-        )
+            ) # TODO: #1 Not vendored yet
         mathjax_path = None
         if os.path.exists(vendored_mathjax_path):
             # MathJax is vendored under kaleido/executable.
             # It was probably install as a PyPI wheel
             mathjax_path = vendored_mathjax_path
-        else:
-            mathjax_path_executable = which("mathjax-path")
-            if mathjax_path_executable:
-                # A script named "mathjax-path" found on the PATH,
-                # MathJax was probably installed as a conda package
-                path_bytes = subprocess.check_output(mathjax_path_executable)
-                mathjax_path = path_bytes.decode("utf8").strip()
 
         if mathjax_path:
             mathjax_uri = Path(mathjax_path).absolute().as_uri()
@@ -69,11 +71,8 @@ class PlotlyScope(BaseScope):
 
     @property
     def scope_name(self):
+        # TODO: #2 This is deprecated
         return "plotly"
-
-    def _json_dumps(self, val):
-        import plotly.io as pio
-        return pio.to_json(val, validate=False, remove_uids=False)
 
     def transform(self, figure, format=None, width=None, height=None, scale=None):
         """
@@ -148,27 +147,17 @@ class PlotlyScope(BaseScope):
                 )
             )
 
-        # Transform in using _perform_transform rather than superclass so we can access the full
-        # response dict, including error codes.
-        response = self._perform_transform(
-            figure, format=format, width=width, height=height, scale=scale
-        )
 
-        # Check for export error, later can customize error messages for plotly Python users
-        code = response.get("code", 0)
-        if code != 0:
-            message = response.get("message", None)
-            raise ValueError(
-                "Transform failed with error code {code}: {message}".format(
-                    code=code, message=message
-                )
-            )
+        data = figure
+        config = dict(format=format,
+                      width=width,
+                      height=height,
+                      scale=scale)
 
-        img = response.get("result").encode("utf-8")
-
-        # Base64 decode binary types
-        if format not in self._text_formats:
-            img = base64.b64decode(img)
+        # Write to process and read result within a lock so that can be
+        # sure we're reading the response to our request
+        with _proc_lock:
+            img = kaleido.to_image_block(data, config)
 
         return img
 

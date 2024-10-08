@@ -1,0 +1,8 @@
+- [ ] #1: Vendor mathjax
+- [ ] #2: Add switch deprecation warnings (See TODO)
+- [ ] #3: TODO: Obey plolty versions switches (plotlyjs, mathjax, openmapbox)
+
+
+
+NOTES:
+Eliminated conda search for mathjax, they can use a custom path
