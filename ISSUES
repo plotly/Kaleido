@@ -1,6 +1,7 @@
 - [ ] #1: Vendor mathjax
 - [ ] #2: Add switch deprecation warnings (See TODO)
 - [ ] #3: TODO: Obey plolty versions switches (plotlyjs, mathjax, openmapbox)
+- [ ] #4: Build not picking up version tag :-(
 
 
 
