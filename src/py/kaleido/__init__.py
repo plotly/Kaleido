@@ -9,8 +9,9 @@ from choreographer import Browser
 
 script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
 
-_all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
-_text_formats_ = ("svg", "json", "eps")
+# pdf and eps temporarily disabled
+_all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "json") # pdf and eps
+_text_formats_ = ("svg", "json",) # eps
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
