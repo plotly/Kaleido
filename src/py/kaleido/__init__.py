@@ -3,7 +3,6 @@ from pathlib import Path
 import asyncio
 import base64
 import json
-from threading import Thread
 
 from choreographer import Browser
 
