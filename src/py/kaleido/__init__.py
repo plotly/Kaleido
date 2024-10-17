@@ -3,6 +3,7 @@ from pathlib import Path
 import asyncio
 import base64
 import json
+from threading import Thread
 
 from choreographer import Browser
 
@@ -22,8 +23,7 @@ def to_image_block(spec):
     except RuntimeError:
         pass
     if loop:
-        # TODO: create thread and post the new loop there and run the thing and return it in a message queue :-(
-        ...
+        raise RuntimeError("Kaleido doesn't support asyncio + the old kaleido API yet.")
     else:
         return asyncio.run(to_image(spec))
 

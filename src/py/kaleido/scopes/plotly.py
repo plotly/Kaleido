@@ -73,36 +73,7 @@ class PlotlyScope():
         # TODO: #2 This is deprecated
         return "plotly"
 
-    def transform(self, figure, format=None, width=None, height=None, scale=None):
-        """
-        Convert a Plotly figure into a static image
-
-        :param figure: Plotly figure or figure dictionary
-        :param format: The desired image format. One of
-           'png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', or 'json'.
-
-           If 'json', the following arguments are ignored and a full
-           JSON representation of the figure is returned.
-
-           If not specified, will default to the `scope.default_format` property
-        :param width: The width of the exported image in layout pixels.
-            If the `scale` property is 1.0, this will also be the width
-            of the exported image in physical pixels.
-
-            If not specified, will default to the `scope.default_width` property
-        :param height: The height of the exported image in layout pixels.
-            If the `scale` property is 1.0, this will also be the height
-            of the exported image in physical pixels.
-
-            If not specified, will default to the `scope.default_height` property
-        :param scale: The scale factor to use when exporting the figure.
-            A scale factor larger than 1.0 will increase the image resolution
-            with respect to the figure's layout pixel dimensions. Whereas as
-            scale factor of less than 1.0 will decrease the image resolution.
-
-            If not specified, will default to the `scope.default_scale` property
-        :return: image bytes
-        """
+    def make_spec(self, figure, format=None, width=None, height=None, scale=None):
         # TODO: validate args
         if isinstance(figure, Figure):
             figure = figure.to_dict()
@@ -147,7 +118,39 @@ class PlotlyScope():
 
 
         js_args = dict(format=format, width=width, height=height, scale=scale)
-        spec = dict(js_args, data = figure)
+        return dict(js_args, data = figure)
+
+    def transform(self, figure, format=None, width=None, height=None, scale=None):
+        """
+        Convert a Plotly figure into a static image
+
+        :param figure: Plotly figure or figure dictionary
+        :param format: The desired image format. One of
+           'png', 'jpg', 'jpeg', 'webp', 'svg', 'pdf', or 'json'.
+
+           If 'json', the following arguments are ignored and a full
+           JSON representation of the figure is returned.
+
+           If not specified, will default to the `scope.default_format` property
+        :param width: The width of the exported image in layout pixels.
+            If the `scale` property is 1.0, this will also be the width
+            of the exported image in physical pixels.
+
+            If not specified, will default to the `scope.default_width` property
+        :param height: The height of the exported image in layout pixels.
+            If the `scale` property is 1.0, this will also be the height
+            of the exported image in physical pixels.
+
+            If not specified, will default to the `scope.default_height` property
+        :param scale: The scale factor to use when exporting the figure.
+            A scale factor larger than 1.0 will increase the image resolution
+            with respect to the figure's layout pixel dimensions. Whereas as
+            scale factor of less than 1.0 will decrease the image resolution.
+
+            If not specified, will default to the `scope.default_scale` property
+        :return: image bytes
+        """
+        spec = self.make_spec(figure, format=format, width=width, height=height, scale=scale)
 
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
