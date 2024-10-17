@@ -7,7 +7,6 @@ import json
 from choreographer import Browser
 
 
-
 script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
 
 _all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "eps", "json")
@@ -28,7 +27,7 @@ def to_image_block(spec):
         return asyncio.run(to_image(spec))
 
 async def to_image(spec):
-    async with Browser(headless=False) as browser:
+    async with Browser(headless=True) as browser:
         tab = await browser.create_tab(script_path.as_uri())
         await tab.send_command("Page.enable")
         await tab.send_command("Runtime.enable")
