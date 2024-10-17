@@ -4,7 +4,7 @@ import asyncio
 import base64
 import json
 
-from devtools import Browser
+from choreographer import Browser
 
 
 
