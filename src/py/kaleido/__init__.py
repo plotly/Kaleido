@@ -71,11 +71,15 @@ async def to_image(spec):
                 )
             )
         try:
-            img = json.loads(response.get("result").get("result").get("value")).get("result")
+            js_response = json.loads(response.get("result").get("result").get("value"))
+            response_format = js_response.get("format")
+            img = js_response.get("result")
         except Exception as e:
             raise RuntimeError(response) from e
 
         # Base64 decode binary types
-        if format not in _text_formats_:
+        if response_format not in _text_formats_:
             img = base64.b64decode(img)
+        else:
+            img = str.encode(img)
         return img
