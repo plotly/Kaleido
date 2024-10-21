@@ -71,25 +71,16 @@ def make_spec(figure, format=None, width=None, height=None, scale=None):
 async def to_image(spec, topojson=None, mapbox_token=None):
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab(script_path.as_uri())
+        event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
+        event_page_fired = tab.subscribe_once("Page.loadEventFired")
         await tab.send_command("Page.enable")
         await tab.send_command("Runtime.enable")
-
-        event_done = asyncio.get_running_loop().create_future()
-        async def execution_started_cb(response):
-            event_done.set_result(response)
-        tab.subscribe("Runtime.executionContextCreated", execution_started_cb, repeating=False)
-        await tab.send_command("Page.reload")
-        await event_done
-        execution_context_id = event_done.result()["params"]["context"]["id"]
+        await event_runtime
+        execution_context_id = event_runtime.result()["params"]["context"]["id"]
         # this could just as easily be part of the original script
         # some changes could be made their to download more easily TODO
         # read original python, read original javascript
-
-        event_done = asyncio.get_running_loop().create_future()
-        async def load_done_cb(response):
-            event_done.set_result(response)
-        tab.subscribe("Page.loadEventFired", load_done_cb, repeating=False)
-        await event_done
+        await event_page_fired
 
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
         extra_args = []
