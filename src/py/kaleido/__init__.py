@@ -15,7 +15,7 @@ _text_formats_ = ("svg", "json",) # eps
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
-def to_image_block(spec):
+def to_image_block(spec, topojson=None, mapbox_token=None):
     loop = None
     try:
         loop = asyncio.get_running_loop()
@@ -24,9 +24,9 @@ def to_image_block(spec):
     if loop:
         raise RuntimeError("Kaleido doesn't support asyncio + the old kaleido API yet.")
     else:
-        return asyncio.run(to_image(spec))
+        return asyncio.run(to_image(spec, topojson, mapbox_token))
 
-async def to_image(spec):
+async def to_image(spec, topojson=None, mapbox_token=None):
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab(script_path.as_uri())
         await tab.send_command("Page.enable")
@@ -50,10 +50,16 @@ async def to_image(spec):
         await event_done
 
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
-
+        extra_args = []
+        if topojson:
+            extra_args.append(dict(value=topojson))
+        if mapbox_token:
+            extra_args.append(dict(value=mapbox_token))
+        arguments = [dict(value=spec)]
+        arguments.extend(extra_args)
         params = dict(
                 functionDeclaration=kaleido_jsfn,
-                arguments=[dict(value=spec)],
+                arguments=arguments,
                 returnByValue=False,
                 userGesture=True,
                 awaitPromise=True,

@@ -156,7 +156,7 @@ class PlotlyScope():
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with _proc_lock:
-            img = kaleido.to_image_block(spec)
+            img = kaleido.to_image_block(spec, self._topojson, self._mapbox_access_token)
 
         return img
 
