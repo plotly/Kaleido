@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 find = {namespaces = false}
 
 [tool.setuptools.package-data]
-kaleido = ['vendor/**']
+kaleido = ['vendor/*',]
 
 [tool.setuptools-git-versioning]
 enabled = true
