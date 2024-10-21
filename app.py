@@ -8,7 +8,7 @@ from plotly.graph_objects import Figure
 from choreographer import Browser
 
 
-script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
+script_path = Path(__file__).resolve().parent / "index.html"
 
 # pdf and eps temporarily disabled
 _all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "json") # pdf and eps
