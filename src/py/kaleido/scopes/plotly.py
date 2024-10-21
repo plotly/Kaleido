@@ -55,12 +55,10 @@ class PlotlyScope():
             'vendor',
             'MathJax.js'
             )
-        print(f"Vendored mj path: {vendored_mathjax_path}")
         mathjax_path = None
         if os.path.exists(vendored_mathjax_path):
             # MathJax is vendored under kaleido/executable.
             # It was probably install as a PyPI wheel
-            print("Found")
             mathjax_path = vendored_mathjax_path
 
         if mathjax_path:
