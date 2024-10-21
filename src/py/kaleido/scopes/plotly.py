@@ -37,6 +37,7 @@ class PlotlyScope():
             self._initialize_mathax(mathjax)
         except: # noqa TODO what would the actual error be
             self._mathjax = None
+        print(f"Mathjax result: {self._mathjax}")
 
         # to_image-level default values
         self.default_format = "png"
@@ -51,11 +52,11 @@ class PlotlyScope():
 
         vendored_mathjax_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-            'executable',
-            'etc',
+            'vendor',
             'mathjax',
             'MathJax.js'
-            ) # TODO: #1 Not vendored yet
+            )
+        print(f"Vendored mj path: {vendored_mathjax_path}")
         mathjax_path = None
         if os.path.exists(vendored_mathjax_path):
             # MathJax is vendored under kaleido/executable.
