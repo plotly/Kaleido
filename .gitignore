@@ -2,6 +2,7 @@
 
 # ignore build artifacts
 __pycache__
+*.egg-info/
 
 # builds
 results/*
