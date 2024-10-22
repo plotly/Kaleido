@@ -1,11 +1,10 @@
 from pathlib import Path
-import asyncio
 import base64
 import json
 
 from choreographer import Browser
 
-script_path = Path(__file__).resolve().parent / "vendor"/ "index.html"
+script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
 
 # pdf and eps temporarily disabled
 
