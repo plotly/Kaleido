@@ -9,14 +9,18 @@ script_path = Path(__file__).resolve().parent / "index.html"
 
 # pdf and eps temporarily disabled
 
-_text_formats_ = ("svg", "json",) # eps
+_text_formats_ = (
+    "svg",
+    "json",
+)  # eps
+
 
 def to_spec(figure, format=None, width=None, height=None, scale=None):
     default_format = "png"
     default_scale = 1
     default_width = 700
     default_height = 500
-    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "json") # pdf and eps
+    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
     # TODO: validate args
     if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
@@ -30,38 +34,37 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
 
     # Compute image width / height
     width = (
-            width
-            or layout.get("width", None)
-            or layout.get("template", {}).get("layout", {}).get("width", None)
-            or default_width
+        width
+        or layout.get("width", None)
+        or layout.get("template", {}).get("layout", {}).get("width", None)
+        or default_width
     )
     height = (
-            height
-            or layout.get("height", None)
-            or layout.get("template", {}).get("layout", {}).get("height", None)
-            or default_height
+        height
+        or layout.get("height", None)
+        or layout.get("template", {}).get("layout", {}).get("height", None)
+        or default_height
     )
 
     # Normalize format
     original_format = format
     format = format.lower()
-    if format == 'jpg':
-        format = 'jpeg'
+    if format == "jpg":
+        format = "jpeg"
 
     if format not in _all_formats:
         supported_formats_str = repr(list(_all_formats))
         raise ValueError(
             "Invalid format '{original_format}'.\n"
-            "    Supported formats: {supported_formats_str}"
-            .format(
+            "    Supported formats: {supported_formats_str}".format(
                 original_format=original_format,
-                supported_formats_str=supported_formats_str
+                supported_formats_str=supported_formats_str,
             )
         )
 
-
     js_args = dict(format=format, width=width, height=height, scale=scale)
-    return dict(js_args, data = figure)
+    return dict(js_args, data=figure)
+
 
 async def to_image(
     figure,
@@ -70,8 +73,8 @@ async def to_image(
     height=None,
     scale=None,
     topojson=None,
-    mapbox_token=None
-    ):
+    mapbox_token=None,
+):
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab(script_path.as_uri())
         event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
@@ -95,13 +98,13 @@ async def to_image(
         arguments = [dict(value=spec)]
         arguments.extend(extra_args)
         params = dict(
-                functionDeclaration=kaleido_jsfn,
-                arguments=arguments,
-                returnByValue=False,
-                userGesture=True,
-                awaitPromise=True,
-                executionContextId=execution_context_id,
-                )
+            functionDeclaration=kaleido_jsfn,
+            arguments=arguments,
+            returnByValue=False,
+            userGesture=True,
+            awaitPromise=True,
+            executionContextId=execution_context_id,
+        )
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
 
         # Check for export error, later can customize error messages for plotly Python users
