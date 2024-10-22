@@ -12,8 +12,6 @@ script_path = Path(__file__).resolve().parent / "index.html"
 
 _text_formats_ = ("svg", "json",) # eps
 
-_scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
-
 def make_spec(figure, format=None, width=None, height=None, scale=None):
     default_format = "png"
     default_scale = 1
