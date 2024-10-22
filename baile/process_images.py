@@ -63,7 +63,15 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
     js_args = dict(format=format, width=width, height=height, scale=scale)
     return dict(js_args, data = figure)
 
-async def to_image(spec, topojson=None, mapbox_token=None):
+async def to_image(
+    figure,
+    format=None,
+    width=None,
+    height=None,
+    scale=None,
+    topojson=None,
+    mapbox_token=None
+    ):
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab(script_path.as_uri())
         event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
@@ -78,6 +86,7 @@ async def to_image(spec, topojson=None, mapbox_token=None):
         await event_page_fired
 
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
+        spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
         extra_args = []
         if topojson:
             extra_args.append(dict(value=topojson))
@@ -117,8 +126,3 @@ async def to_image(spec, topojson=None, mapbox_token=None):
         else:
             img = str.encode(img)
         return img
-
-
-def transform(figure, format=None, width=None, height=None, scale=None):
-    spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
-    return asyncio.run(to_image(spec))
