@@ -85,6 +85,7 @@ class PlotlyScope():
 """<!DOCTYPE html>
 <html>
   <head>
+    <style id=\"head-style\"></style>
     <title>Kaleido-fier</title>
     <script>
       window.PlotlyConfig = {MathJaxConfig: 'local'}
@@ -100,10 +101,9 @@ class PlotlyScope():
         if self._mathjax:
             page += f" <script type=\"text/javascript\" id=\"MathJax-script\" src=\"{self._mathjax}?config=TeX-AMS-MML_SVG\"></script>\n"
         page+= \
-f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>
-  </head>
-  <body>
-  </body>
+f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>"""+\
+"""  </head>
+  <body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body>
 </html>"""
         return page
 

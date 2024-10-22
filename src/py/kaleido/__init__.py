@@ -10,8 +10,8 @@ from choreographer import Browser
 script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
 
 # pdf and eps temporarily disabled
-_all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "json") # pdf and eps
-_text_formats_ = ("svg", "json",) # eps
+_all_formats_ = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf") # eps missing (emf has code but no listed support)
+_text_formats_ = ("svg", "json",) # eps is a text format? :-O
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
@@ -84,6 +84,17 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None):
             img = js_response.get("result")
         except Exception as e:
             raise RuntimeError(response) from e
+        await asyncio.sleep(30)
+        if response_format == "pdf":
+            pdf_params = dict(printBackground=True,
+                          marginTop=0,
+                          marginBottom=0,
+                          marginLeft=0,
+                          marginRight=0,
+                          preferCSSPageSize=True,)
+            pdf_response = await tab.send_command("Page.printToPDF", params=pdf_params)
+            img = pdf_response.get("result").get("data")
+
 
         # Base64 decode binary types
         if response_format not in _text_formats_:
