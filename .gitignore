@@ -1,0 +1,10 @@
+.venv
+
+# ignore build artifacts
+__pycache__
+
+# builds
+results/*
+
+# ipynb
+.ipynb_checkpoints/
