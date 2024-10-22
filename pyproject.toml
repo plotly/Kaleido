@@ -12,7 +12,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 version = "0.0.1a"
 dependencies = [
- "choreographer",
+ "choreographer >=0.99.1",
  ]
 
 [tool.ruff.lint]
