@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 import os
 from pathlib import Path
+import tempfile
 
 from plotly.graph_objects import Figure
 
@@ -37,13 +38,23 @@ class PlotlyScope():
             self._initialize_mathax(mathjax)
         except: # noqa TODO what would the actual error be
             self._mathjax = None
-        print(f"Mathjax result: {self._mathjax}")
 
         # to_image-level default values
         self.default_format = "png"
         self.default_width = 700
         self.default_height = 500
         self.default_scale = 1
+
+        self._plotlyfier = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'vendor',
+            'kaleido_scopes.js'
+            )
+
+        self._tempdir = tempfile.TemporaryDirectory()
+        self._tempfile = open(f"{self._tempdir.name}/index.html", "w")
+        self._tempfile.write(self.make_page_string())
+        self._tempfile.close()
 
     def _initialize_mathax(self, mathjax=None):
         if mathjax is not None:
@@ -53,8 +64,10 @@ class PlotlyScope():
         vendored_mathjax_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
             'vendor',
+            'mathjax',
             'MathJax.js'
             )
+        # There is something wild going on w/ mathjax, I think plotly is injecting it?
         mathjax_path = None
         if os.path.exists(vendored_mathjax_path):
             # MathJax is vendored under kaleido/executable.
@@ -66,6 +79,33 @@ class PlotlyScope():
             self._mathjax = mathjax_uri
         else:
             self._mathjax = None
+
+    def make_page_string(self):
+        page = \
+"""<!DOCTYPE html>
+<html>
+  <head>
+    <title>Kaleido-fier</title>
+    <script>
+      window.PlotlyConfig = {MathJaxConfig: 'local'}
+    </script>
+"""
+        pjs = self._plotlyjs
+        if not pjs:
+            pjs = "https://cdn.plot.ly/plotly-2.35.2.min.js"
+        elif not pjs.startswith("http") and not pjs.startswith("file"):
+            pjs = Path(pjs).absolute().as_uri()
+        page += f" <script src=\"{pjs}\" charset=\"utf-8\"></script>\n"
+
+        if self._mathjax:
+            page += f" <script type=\"text/javascript\" id=\"MathJax-script\" src=\"{self._mathjax}?config=TeX-AMS-MML_SVG\"></script>\n"
+        page+= \
+f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>
+  </head>
+  <body>
+  </body>
+</html>"""
+        return page
 
     @property
     def scope_name(self):
@@ -154,7 +194,7 @@ class PlotlyScope():
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with _proc_lock:
-            img = kaleido.to_image_block(spec, self._topojson, self._mapbox_access_token)
+            img = kaleido.to_image_block(spec, Path(self._tempfile.name).absolute(), self._topojson, self._mapbox_access_token)
 
         return img
 
@@ -213,5 +253,28 @@ class PlotlyScope():
         self._shutdown_kaleido()
 
     def _shutdown_kaleido(self):
-        pass
-        # TODO: #2 deprecate, but also used to reset HTML
+        self._tempfile = open(f"{self._tempdir.name}/index.html", "w")
+        self._tempfile.write(self.make_page_string())
+        self._tempfile.close()
+
+    def __del__(self):
+        try:
+            if os.path.exists(self._tempfile.name):
+                try:
+                    os.remove(self._tempfile.name)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        try:
+            if os.path.exists(self._tempdir.name):
+                try:
+                    self._tempdir.cleanup()
+                except Exception:
+                    pass
+                try:
+                    os.rmdir(self._tempdir.name)
+                except Exception:
+                    pass
+        except Exception:
+            pass

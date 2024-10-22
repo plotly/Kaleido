@@ -15,7 +15,7 @@ _text_formats_ = ("svg", "json",) # eps
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
-def to_image_block(spec, topojson=None, mapbox_token=None):
+def to_image_block(spec, f=None, topojson=None, mapbox_token=None):
     loop = None
     try:
         loop = asyncio.get_running_loop()
@@ -24,11 +24,13 @@ def to_image_block(spec, topojson=None, mapbox_token=None):
     if loop:
         raise RuntimeError("Kaleido doesn't support asyncio + the old kaleido API yet.")
     else:
-        return asyncio.run(to_image(spec, topojson, mapbox_token))
+        return asyncio.run(to_image(spec, f, topojson, mapbox_token))
 
-async def to_image(spec, topojson=None, mapbox_token=None):
-    async with Browser(headless=True) as browser:
-        tab = await browser.create_tab(script_path.as_uri())
+async def to_image(spec, f=None, topojson=None, mapbox_token=None):
+    async with Browser(headless=False) as browser:
+        if not f:
+            f = script_path.absolute()
+        tab = await browser.create_tab(f.as_uri())
         await tab.send_command("Page.enable")
         await tab.send_command("Runtime.enable")
 
