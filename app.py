@@ -3,7 +3,7 @@ import json
 import asyncio
 
 from pathlib import Path
-from .baile import to_image
+import baile
 
 dirIn = Path(__file__).resolve().parent / "mocks/"
 ALL_MOCKS = [os.path.splitext(a)[0] for a in os.listdir(dirIn) if a.endswith(".json")]
@@ -32,7 +32,7 @@ async def process_images():
                     if "height" in layout:
                         height = layout["height"]
             try:
-                img_data = await to_image(fig, format="png", width=width, height=height)
+                img_data = await baile.to_image(fig, format="png", width=width, height=height)
                 output_file = f"./results/{name}.png"
                 with open(output_file, "wb") as out_file:
                     out_file.write(img_data)
