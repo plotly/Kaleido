@@ -5,7 +5,7 @@ import json
 
 from choreographer import Browser
 
-script_path = Path(__file__).resolve().parent / "index.html"
+script_path = Path(__file__).resolve().parent / "vendor"/ "index.html"
 
 # pdf and eps temporarily disabled
 
