@@ -3,8 +3,6 @@ import asyncio
 import base64
 import json
 
-from plotly.graph_objects import Figure
-
 from choreographer import Browser
 
 
@@ -23,7 +21,7 @@ def make_spec(figure, format=None, width=None, height=None, scale=None):
     default_height = 500
     _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "json") # pdf and eps
     # TODO: validate args
-    if isinstance(figure, Figure):
+    if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
 
     # Apply default format and scale
