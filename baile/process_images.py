@@ -11,7 +11,7 @@ script_path = Path(__file__).resolve().parent / "index.html"
 
 _text_formats_ = ("svg", "json",) # eps
 
-def make_spec(figure, format=None, width=None, height=None, scale=None):
+def to_spec(figure, format=None, width=None, height=None, scale=None):
     default_format = "png"
     default_scale = 1
     default_width = 700
@@ -120,5 +120,5 @@ async def to_image(spec, topojson=None, mapbox_token=None):
 
 
 def transform(figure, format=None, width=None, height=None, scale=None):
-    spec = make_spec(figure, format=format, width=width, height=height, scale=scale)
+    spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
     return asyncio.run(to_image(spec))
