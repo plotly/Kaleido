@@ -27,7 +27,7 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None):
         return asyncio.run(to_image(spec, f, topojson, mapbox_token))
 
 async def to_image(spec, f=None, topojson=None, mapbox_token=None):
-    async with Browser(headless=False) as browser:
+    async with Browser(headless=True) as browser:
         if not f:
             f = script_path.absolute()
         tab = await browser.create_tab(f.as_uri())
