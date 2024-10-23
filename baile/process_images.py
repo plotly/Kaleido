@@ -50,14 +50,10 @@ def verify_format(format):
     return format
 
 
-def to_spec(figure, format=None, width=None, height=None, scale=None):
+def to_spec(figure, format=DEFAULT_FORMAT, width=None, height=None, scale=DEFAULT_SCALE):
     # TODO: validate args
     if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
-
-    # Apply default format and scale
-    format = format if format is not None else DEFAULT_FORMAT
-    scale = scale if scale is not None else DEFAULT_SCALE
 
     # Get figure layout
     layout = figure.get("layout", {})
