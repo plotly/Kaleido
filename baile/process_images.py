@@ -1,6 +1,8 @@
 from pathlib import Path
+import os
 import base64
 import json
+import uuid
 
 from choreographer import Browser
 
@@ -108,7 +110,22 @@ async def to_image(
     layout_opts=None,
     topojson=None,
     mapbox_token=None,
+    path=None,
+    name=None
 ):
+    file_path = None
+    # Set json
+    if os.path.isfile(figure):
+        file_path = figure.copy()
+        with open(figure, 'r') as file:
+            figure = json.load(file)
+
+    # Set name
+    if file_path and not name:
+        name = os.path.splitext(os.path.basename(file_path))[0]
+    elif not name:
+        name = str(uuid.uuid4())
+
     # spec creation
     spec = to_spec(figure, layout_opts)
 
@@ -152,4 +169,15 @@ async def to_image(
         # send request to run script in chromium
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
 
+        if path:
+            # Get image
+            img_data = from_response(response)
+
+            # Set path of tyhe image file
+            output_file = f"{path}/{name}.{layout_opts.get("format", DEFAULT_FORMAT)}"
+
+            # Write image file
+            with open(output_file, "wb") as out_file:
+                out_file.write(img_data)
+            return img_data
         return from_response(response)
