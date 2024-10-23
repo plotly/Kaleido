@@ -67,7 +67,7 @@ def to_spec(figure, format=DEFAULT_FORMAT, width=None, height=None, scale=DEFAUL
     return dict(js_args, data=figure)
 
 
-def get_image_by_response(response):
+def from_response(response):
     # Check for export error, later can customize error messages for plotly Python users
     code = response.get("code", 0)
     if code != 0:
@@ -145,4 +145,4 @@ async def to_image(
         # send request to run script in chromium
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
 
-        return get_image_by_response(response)
+        return from_response(response)
