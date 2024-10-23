@@ -5,14 +5,14 @@ import asyncio
 from pathlib import Path
 import baile
 
-dirIn = Path(__file__).resolve().parent / "mocks/"
-ALL_MOCKS = [os.path.splitext(a)[0] for a in os.listdir(dirIn) if a.endswith(".json")]
+dir_in = Path(__file__).resolve().parent / "mocks/"
+ALL_MOCKS = [os.path.splitext(a)[0] for a in os.listdir(dir_in) if a.endswith(".json")]
 ALL_MOCKS.sort()
-allNames = ALL_MOCKS
+all_names = ALL_MOCKS
 
 async def process_images():
-    for name in allNames:
-        with open(os.path.join(dirIn, name + ".json"), "r") as _in:
+    for name in all_names:
+        with open(os.path.join(dir_in, name + ".json"), "r") as _in:
             try:
                 fig = json.load(_in)
             except Exception as e:
