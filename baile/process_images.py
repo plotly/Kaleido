@@ -31,21 +31,7 @@ def get_figure_dimensions(layout, width, height):
     return width, height
 
 
-def to_spec(figure, format=None, width=None, height=None, scale=None):
-    # TODO: validate args
-    if hasattr(figure, "to_dict"):
-        figure = figure.to_dict()
-
-    # Apply default format and scale
-    format = format if format is not None else DEFAULT_FORMAT
-    scale = scale if scale is not None else DEFAULT_SCALE
-
-    # Get figure layout
-    layout = figure.get("layout", {})
-
-    # Compute image width / height
-    width, height = get_figure_dimensions(layout, width, height)
-
+def verify_format(format):
     # Normalize format
     original_format = format
     format = format.lower()
@@ -61,6 +47,25 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
                 supported_formats_str=supported_formats_str,
             )
         )
+    return format
+
+
+def to_spec(figure, format=None, width=None, height=None, scale=None):
+    # TODO: validate args
+    if hasattr(figure, "to_dict"):
+        figure = figure.to_dict()
+
+    # Apply default format and scale
+    format = format if format is not None else DEFAULT_FORMAT
+    scale = scale if scale is not None else DEFAULT_SCALE
+
+    # Get figure layout
+    layout = figure.get("layout", {})
+
+    # Compute image width / height
+    width, height = get_figure_dimensions(layout, width, height)
+
+    format = verify_format(format)
 
     js_args = dict(format=format, width=width, height=height, scale=scale)
     return dict(js_args, data=figure)
