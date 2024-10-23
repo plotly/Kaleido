@@ -17,10 +17,14 @@ SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
 
 
 def get_layout_info(layout_opts):
-    format = layout_opts.get("format", DEFAULT_FORMAT)
-    width = layout_opts.get("width", DEFAULT_WIDTH)
-    height = layout_opts.get("height", DEFAULT_HEIGHT)
-    scale = layout_opts.get("scale", DEFAULT_SCALE)
+    format = (
+        layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
+    )
+    width = layout_opts.get("width", DEFAULT_WIDTH) if layout_opts else DEFAULT_WIDTH
+    height = (
+        layout_opts.get("height", DEFAULT_HEIGHT) if layout_opts else DEFAULT_HEIGHT
+    )
+    scale = layout_opts.get("scale", DEFAULT_SCALE) if layout_opts else DEFAULT_SCALE
     return format, width, height, scale
 
 
@@ -112,18 +116,13 @@ async def write_file(img_data, output_file):
 
 
 async def to_image(
-    figure,
-    layout_opts=None,
-    topojson=None,
-    mapbox_token=None,
-    path=None,
-    name=None
+    figure, layout_opts=None, topojson=None, mapbox_token=None, path=None, name=None
 ):
     file_path = None
     # Set json
     if os.path.isfile(figure):
         file_path = figure
-        with open(figure, 'r') as file:
+        with open(figure, "r") as file:
             figure = json.load(file)
 
     # Set name
@@ -180,7 +179,11 @@ async def to_image(
             img_data = from_response(response)
 
             # Set path of tyhe image file
-            format_path = layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
+            format_path = (
+                layout_opts.get("format", DEFAULT_FORMAT)
+                if layout_opts
+                else DEFAULT_FORMAT
+            )
             output_file = f"{path}/{name}.{format_path}"
 
             await write_file(img_data, output_file)
