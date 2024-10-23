@@ -76,19 +76,26 @@ async def to_image(
 ):
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab(script_path.as_uri())
+
+        # subscribe events one time
         event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
         event_page_fired = tab.subscribe_once("Page.loadEventFired")
+
         await tab.send_command("Page.enable")
         await tab.send_command("Runtime.enable")
+
+        # await event futures
         await event_runtime
         execution_context_id = event_runtime.result()["params"]["context"]["id"]
-        # this could just as easily be part of the original script
-        # some changes could be made their to download more easily TODO
-        # read original python, read original javascript
         await event_page_fired
 
+        # script
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
+
+        # spec creation
         spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
+
+        # params
         extra_args = []
         if topojson:
             extra_args.append(dict(value=topojson))
@@ -104,6 +111,8 @@ async def to_image(
             awaitPromise=True,
             executionContextId=execution_context_id,
         )
+
+        # run script in chromium
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
 
         # Check for export error, later can customize error messages for plotly Python users
