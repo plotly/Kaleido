@@ -105,6 +105,12 @@ def from_response(response):
     return img
 
 
+async def write_file(img_data, output_file):
+    # Write image file
+    with open(output_file, "wb") as out_file:
+        out_file.write(img_data)
+
+
 async def to_image(
     figure,
     layout_opts=None,
@@ -116,7 +122,7 @@ async def to_image(
     file_path = None
     # Set json
     if os.path.isfile(figure):
-        file_path = figure.copy()
+        file_path = figure
         with open(figure, 'r') as file:
             figure = json.load(file)
 
@@ -124,7 +130,7 @@ async def to_image(
     if file_path and not name:
         name = os.path.splitext(os.path.basename(file_path))[0]
     elif not name:
-        name = str(uuid.uuid4())
+        name = uuid.uuid4()
 
     # spec creation
     spec = to_spec(figure, layout_opts)
@@ -174,10 +180,9 @@ async def to_image(
             img_data = from_response(response)
 
             # Set path of tyhe image file
-            output_file = f"{path}/{name}.{layout_opts.get("format", DEFAULT_FORMAT)}"
+            format_path = layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
+            output_file = f"{path}/{name}.{format_path}"
 
-            # Write image file
-            with open(output_file, "wb") as out_file:
-                out_file.write(img_data)
+            await write_file(img_data, output_file)
             return img_data
         return from_response(response)
