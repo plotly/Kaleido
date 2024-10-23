@@ -127,13 +127,11 @@ async def to_image(
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
 
         # params
-        extra_args = []
-        if topojson:
-            extra_args.append(dict(value=topojson))
-        if mapbox_token:
-            extra_args.append(dict(value=mapbox_token))
         arguments = [dict(value=spec)]
-        arguments.extend(extra_args)
+        if topojson:
+            arguments.append(dict(value=topojson))
+        if mapbox_token:
+            arguments.append(dict(value=mapbox_token))
         params = dict(
             functionDeclaration=kaleido_jsfn,
             arguments=arguments,
