@@ -69,27 +69,27 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
 
 def get_image_by_response(response):
     # Check for export error, later can customize error messages for plotly Python users
-        code = response.get("code", 0)
-        if code != 0:
-            message = response.get("message", None)
-            raise ValueError(
-                "Transform failed with error code {code}: {message}".format(
-                    code=code, message=message
-                )
+    code = response.get("code", 0)
+    if code != 0:
+        message = response.get("message", None)
+        raise ValueError(
+            "Transform failed with error code {code}: {message}".format(
+                code=code, message=message
             )
-        try:
-            js_response = json.loads(response.get("result").get("result").get("value"))
-            response_format = js_response.get("format")
-            img = js_response.get("result")
-        except Exception as e:
-            raise RuntimeError(response) from e
+        )
+    try:
+        js_response = json.loads(response.get("result").get("result").get("value"))
+        response_format = js_response.get("format")
+        img = js_response.get("result")
+    except Exception as e:
+        raise RuntimeError(response) from e
 
-        # Base64 decode binary types
-        if response_format not in TEXT_FORMATS:
-            img = base64.b64decode(img)
-        else:
-            img = str.encode(img)
-        return img
+    # Base64 decode binary types
+    if response_format not in TEXT_FORMATS:
+        img = base64.b64decode(img)
+    else:
+        img = str.encode(img)
+    return img
 
 
 async def to_image(
