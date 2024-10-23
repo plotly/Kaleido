@@ -10,9 +10,8 @@ DEFAULT_FORMAT = "png"
 DEFAULT_SCALE = 1
 DEFAULT_WIDTH = 700
 DEFAULT_HEIGHT = 500
-TEXT_FORMATS = ("svg", "json",)  # eps
+TEXT_FORMATS = ("svg", "json")  # eps
 SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
-
 
 
 def get_figure_dimensions(layout, width, height):
