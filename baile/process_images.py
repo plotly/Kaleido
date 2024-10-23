@@ -81,6 +81,7 @@ async def to_image(
         event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
         event_page_fired = tab.subscribe_once("Page.loadEventFired")
 
+        # send request to enable target to generate events and run scripts
         await tab.send_command("Page.enable")
         await tab.send_command("Runtime.enable")
 
@@ -89,7 +90,7 @@ async def to_image(
         execution_context_id = event_runtime.result()["params"]["context"]["id"]
         await event_page_fired
 
-        # script
+        # js script
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
 
         # spec creation
@@ -112,7 +113,7 @@ async def to_image(
             executionContextId=execution_context_id,
         )
 
-        # run script in chromium
+        # send request to run script in chromium
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
 
         # Check for export error, later can customize error messages for plotly Python users
