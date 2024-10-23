@@ -5,7 +5,7 @@ from pathlib import Path
 
 import baile
 
-# Extract jsons on mocks
+# Extract jsons of mocks
 dir_in = Path(__file__).resolve().parent / "mocks/"
 ALL_MOCKS = [os.path.splitext(a)[0] for a in os.listdir(dir_in) if a.endswith(".json")]
 ALL_MOCKS.sort()
