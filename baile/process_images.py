@@ -15,6 +15,23 @@ SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
 
 
 
+def get_figure_dimensions(layout, width, height):
+    # Compute image width / height with fallbacks
+    width = (
+        width
+        or layout.get("width")
+        or layout.get("template", {}).get("layout", {}).get("width")
+        or DEFAULT_WIDTH
+    )
+    height = (
+        height
+        or layout.get("height")
+        or layout.get("template", {}).get("layout", {}).get("height")
+        or DEFAULT_HEIGHT
+    )
+    return width, height
+
+
 def to_spec(figure, format=None, width=None, height=None, scale=None):
     # TODO: validate args
     if hasattr(figure, "to_dict"):
@@ -28,18 +45,7 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
     layout = figure.get("layout", {})
 
     # Compute image width / height
-    width = (
-        width
-        or layout.get("width", None)
-        or layout.get("template", {}).get("layout", {}).get("width", None)
-        or DEFAULT_WIDTH
-    )
-    height = (
-        height
-        or layout.get("height", None)
-        or layout.get("template", {}).get("layout", {}).get("height", None)
-        or DEFAULT_HEIGHT
-    )
+    width, height = get_figure_dimensions(layout, width, height)
 
     # Normalize format
     original_format = format
