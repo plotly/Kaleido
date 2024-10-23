@@ -14,6 +14,25 @@ TEXT_FORMATS = ("svg", "json")  # eps
 SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
 
 
+def get_layout_info(layout_opts):
+    format=(
+        layout_opts.get("format")
+        or DEFAULT_FORMAT
+    ),
+    width = (
+        layout_opts.get("width")
+        or DEFAULT_WIDTH
+    )
+    height = (
+        layout_opts.get("height")
+        or DEFAULT_HEIGHT
+    )
+    scale=(
+        layout_opts.get("scale")
+        or DEFAULT_SCALE
+    )
+    return format, width, height, scale
+
 def get_figure_dimensions(layout, width, height):
     # Compute image width / height with fallbacks
     width = (
@@ -50,7 +69,10 @@ def verify_format(format):
     return format
 
 
-def to_spec(figure, format=DEFAULT_FORMAT, width=None, height=None, scale=DEFAULT_SCALE):
+def to_spec(figure, layout_opts):
+    # Extract info
+    format, width, height, scale = get_layout_info(layout_opts)
+    
     # TODO: validate args
     if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
@@ -94,15 +116,12 @@ def from_response(response):
 
 async def to_image(
     figure,
-    format=DEFAULT_FORMAT,
-    width=DEFAULT_WIDTH,
-    height=DEFAULT_HEIGHT,
-    scale=DEFAULT_SCALE,
+    layout_opts=None,
     topojson=None,
     mapbox_token=None,
 ):
     # spec creation
-    spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
+    spec = to_spec(figure, layout_opts)
 
     # Browser connection
     async with Browser(headless=True) as browser:
