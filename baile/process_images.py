@@ -15,23 +15,12 @@ SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
 
 
 def get_layout_info(layout_opts):
-    format=(
-        layout_opts.get("format")
-        or DEFAULT_FORMAT
-    ),
-    width = (
-        layout_opts.get("width")
-        or DEFAULT_WIDTH
-    )
-    height = (
-        layout_opts.get("height")
-        or DEFAULT_HEIGHT
-    )
-    scale=(
-        layout_opts.get("scale")
-        or DEFAULT_SCALE
-    )
+    format = layout_opts.get("format", DEFAULT_FORMAT)
+    width = layout_opts.get("width", DEFAULT_WIDTH)
+    height = layout_opts.get("height", DEFAULT_HEIGHT)
+    scale = layout_opts.get("scale", DEFAULT_SCALE)
     return format, width, height, scale
+
 
 def get_figure_dimensions(layout, width, height):
     # Compute image width / height with fallbacks
@@ -72,7 +61,7 @@ def verify_format(format):
 def to_spec(figure, layout_opts):
     # Extract info
     format, width, height, scale = get_layout_info(layout_opts)
-    
+
     # TODO: validate args
     if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
