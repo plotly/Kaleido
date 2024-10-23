@@ -3,6 +3,7 @@ import os
 import base64
 import json
 import uuid
+import warnings
 
 from choreographer import Browser
 
@@ -124,6 +125,13 @@ async def to_image(
         file_path = figure
         with open(figure, "r") as file:
             figure = json.load(file)
+
+    # Warning if path=None
+    if not path:
+        warnings.warn(
+            "Image instance will not be saved as a file. Provide a path to save it.",
+            UserWarning,
+        )
 
     # Set name
     if file_path and not name:
