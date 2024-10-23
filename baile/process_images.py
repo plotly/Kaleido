@@ -4,31 +4,25 @@ import json
 
 from choreographer import Browser
 
-script_path = Path(__file__).resolve().parent / "vendor" / "index.html"
+# constants
+SCRIPT_PATH = Path(__file__).resolve().parent / "vendor" / "index.html"
+DEFAULT_FORMAT = "png"
+DEFAULT_SCALE = 1
+DEFAULT_WIDTH = 700
+DEFAULT_HEIGHT = 500
+TEXT_FORMATS = ("svg", "json",)  # eps
+SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
 
-# pdf and eps temporarily disabled
-
-_text_formats_ = (
-    "svg",
-    "json",
-)  # eps
 
 
 def to_spec(figure, format=None, width=None, height=None, scale=None):
-    # default values
-    default_format = "png"
-    default_scale = 1
-    default_width = 700
-    default_height = 500
-    _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
-
     # TODO: validate args
     if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
 
     # Apply default format and scale
-    format = format if format is not None else default_format
-    scale = scale if scale is not None else default_scale
+    format = format if format is not None else DEFAULT_FORMAT
+    scale = scale if scale is not None else DEFAULT_SCALE
 
     # Get figure layout
     layout = figure.get("layout", {})
@@ -38,13 +32,13 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
         width
         or layout.get("width", None)
         or layout.get("template", {}).get("layout", {}).get("width", None)
-        or default_width
+        or DEFAULT_WIDTH
     )
     height = (
         height
         or layout.get("height", None)
         or layout.get("template", {}).get("layout", {}).get("height", None)
-        or default_height
+        or DEFAULT_HEIGHT
     )
 
     # Normalize format
@@ -53,8 +47,8 @@ def to_spec(figure, format=None, width=None, height=None, scale=None):
     if format == "jpg":
         format = "jpeg"
 
-    if format not in _all_formats:
-        supported_formats_str = repr(list(_all_formats))
+    if format not in SUPPORTED_FORMATS:
+        supported_formats_str = repr(list(SUPPORTED_FORMATS))
         raise ValueError(
             "Invalid format '{original_format}'.\n"
             "    Supported formats: {supported_formats_str}".format(
@@ -77,7 +71,7 @@ async def to_image(
     mapbox_token=None,
 ):
     async with Browser(headless=True) as browser:
-        tab = await browser.create_tab(script_path.as_uri())
+        tab = await browser.create_tab(SCRIPT_PATH.as_uri())
 
         # subscribe events one time
         event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
@@ -135,7 +129,7 @@ async def to_image(
             raise RuntimeError(response) from e
 
         # Base64 decode binary types
-        if response_format not in _text_formats_:
+        if response_format not in TEXT_FORMATS:
             img = base64.b64decode(img)
         else:
             img = str.encode(img)
