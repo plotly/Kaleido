@@ -15,11 +15,13 @@ _text_formats_ = (
 
 
 def to_spec(figure, format=None, width=None, height=None, scale=None):
+    # default values
     default_format = "png"
     default_scale = 1
     default_width = 700
     default_height = 500
     _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
+
     # TODO: validate args
     if hasattr(figure, "to_dict"):
         figure = figure.to_dict()
