@@ -94,10 +94,10 @@ def from_response(response):
 
 async def to_image(
     figure,
-    format=None,
-    width=None,
-    height=None,
-    scale=None,
+    format=DEFAULT_FORMAT,
+    width=DEFAULT_WIDTH,
+    height=DEFAULT_HEIGHT,
+    scale=DEFAULT_SCALE,
     topojson=None,
     mapbox_token=None,
 ):
