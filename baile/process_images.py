@@ -101,6 +101,10 @@ async def to_image(
     topojson=None,
     mapbox_token=None,
 ):
+    # spec creation
+    spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
+
+    # Browser connection
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab(SCRIPT_PATH.as_uri())
 
@@ -121,9 +125,6 @@ async def to_image(
 
         # js script
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
-
-        # spec creation
-        spec = to_spec(figure, format=format, width=width, height=height, scale=scale)
 
         # params
         extra_args = []
