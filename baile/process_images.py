@@ -111,9 +111,13 @@ def from_response(response):
 
 
 async def write_file(img_data, output_file):
-    # Write image file
-    with open(output_file, "wb") as out_file:
-        out_file.write(img_data)
+    try:
+        # Write image file
+        with open(output_file, "wb") as out_file:
+            out_file.write(img_data)
+    except Exception as e:
+        print(f"Error writing {output_file}: {e}")
+        raise
 
 
 async def to_image(
