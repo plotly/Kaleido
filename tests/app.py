@@ -6,7 +6,8 @@ from pathlib import Path
 import baile
 
 # Extract jsons of mocks
-dir_in = Path(__file__).resolve().parent / "mocks/"
+dir_in = Path(__file__).resolve().parent.parent / "mocks"  
+results_dir = Path(__file__).resolve().parent.parent / "results" 
 ALL_MOCKS = [os.path.splitext(a)[0] for a in os.listdir(dir_in) if a.endswith(".json")]
 ALL_MOCKS.sort()
 all_names = ALL_MOCKS
@@ -19,7 +20,7 @@ async def process_images():
         json_path = os.path.join(dir_in, name + ".json")
         try:
             # Process to generete images of the json
-            await baile.to_image(json_path, path="./results/")
+            await baile.to_image(json_path, path=str(results_dir))
         except Exception as e:
             print("No to image")
             print(e)
