@@ -19,7 +19,7 @@ async def process_images():
         json_path = os.path.join(dir_in, name + ".json")
         try:
             # Process to generete images of the json
-            await baile.to_image(json_path)
+            await baile.to_image(json_path, path="./results/")
         except Exception as e:
             print("No to image")
             print(e)
