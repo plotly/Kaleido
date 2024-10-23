@@ -113,8 +113,10 @@ async def to_image(
 
         # await event futures
         await event_runtime
-        execution_context_id = event_runtime.result()["params"]["context"]["id"]
         await event_page_fired
+
+        # use event result
+        execution_context_id = event_runtime.result()["params"]["context"]["id"]
 
         # js script
         kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
