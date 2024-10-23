@@ -16,45 +16,15 @@ all_names = ALL_MOCKS
 async def process_images():
     for name in all_names:
         # read json
-        with open(os.path.join(dir_in, name + ".json"), "r") as _in:
-            try:
-                # Load json as obj
-                fig = json.load(_in)
-            except Exception as e:
-                print("No load")
-                print(e)
-                print(_in)
-                print("***")
-                continue
-
-            # Set diomensions
-            width = 700
-            height = 500
-            if "layout" in fig:
-                layout = fig["layout"]
-                if "autosize" not in layout or layout["autosize"] != True:
-                    if "width" in layout:
-                        width = layout["width"]
-                    if "height" in layout:
-                        height = layout["height"]
-            try:
-                # Process to generete images of the json
-                img_data = await baile.to_image(
-                    fig, format="png", width=width, height=height
-                )
-
-                # Set path of tyhe image file
-                output_file = f"./results/{name}.png"
-
-                # Write image file
-                with open(output_file, "wb") as out_file:
-                    out_file.write(img_data)
-                print(f"Image saved to {output_file}")
-            except Exception as e:
-                print("No to image")
-                print(e)
-                print(_in)
-                print("***")
+        json_path = os.path.join(dir_in, name + ".json")
+        try:
+            # Process to generete images of the json
+            await baile.to_image(json_path)
+        except Exception as e:
+            print("No to image")
+            print(e)
+            print(json_path)
+            print("***")
 
 
 # Run the loop
