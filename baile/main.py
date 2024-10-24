@@ -5,7 +5,8 @@ import warnings
 import asyncio
 
 from choreographer import Browser
-from .prepare import to_spec, from_response, write_file, SCRIPT_PATH, DEFAULT_FORMAT
+from .prepare import to_spec, from_response, write_file, DEFAULT_FORMAT
+from .tab import Tab
 
 
 async def to_image(
@@ -36,7 +37,7 @@ async def to_image(
 
     # Browser connection
     async with Browser(headless=True) as browser:
-        tab = await browser.create_tab(SCRIPT_PATH.as_uri())
+        tab = await Tab.create(browser)
 
         # subscribe events one time
         event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
