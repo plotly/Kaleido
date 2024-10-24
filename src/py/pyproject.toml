@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=65.0.0", "wheel", "setuptools-git-versioning"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages]
+find = {namespaces = false}
+
+[tool.setuptools.package-data]
+kaleido = ['vendor/*',]
+
+[tool.setuptools-git-versioning]
+enabled = true
+
+[project]
+name = "kaleido"
+description = "plotly graph export library"
+license = {file = "LICENSE.txt"}
+readme = "README.md"
+requires-python = ">=3.9"
+dynamic = ["version"]
+dependencies = ["choreographer"]
+authors = [
+  {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
+]
+maintainers = [
+  {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  ]
+
+[tool.ruff.lint]
+ignore = ["E701"] # E701 oneline if's
