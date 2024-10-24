@@ -3,7 +3,6 @@ from pathlib import Path
 import asyncio
 import base64
 import json
-import warnings
 
 from choreographer import Browser
 
