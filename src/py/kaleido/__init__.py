@@ -15,24 +15,24 @@ _text_formats_ = ("svg", "json",) # eps is a text format? :-O
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
-def to_image_block(spec, f=None, topojson=None, mapbox_token=None):
+def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
     try:
         _ = asyncio.get_running_loop()
         from threading import Thread
         image = None
         def get_image():
             nonlocal image
-            image = asyncio.run(to_image(spec, f, topojson, mapbox_token))
+            image = asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
         t = Thread(target=get_image)
         t.start()
         t.join()
         return image
     except RuntimeError:
         pass
-    return asyncio.run(to_image(spec, f, topojson, mapbox_token))
+    return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
 
-async def to_image(spec, f=None, topojson=None, mapbox_token=None):
-    async with Browser(headless=True) as browser:
+async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
+    async with Browser(headless=True, debug=debug, debug_browser=debug) as browser:
         if not f:
             f = script_path.absolute()
         tab = await browser.create_tab(f.as_uri())

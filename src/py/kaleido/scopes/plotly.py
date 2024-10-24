@@ -27,7 +27,8 @@ class PlotlyScope():
     _scope_flags = kaleido._scope_flags_
 
 
-    def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, **kwargs):
+    def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, debug=False, **kwargs):
+        self.debug=debug
         # TODO: #2 This is deprecated, this whole FILE is deprecated
         self._plotlyjs = plotlyjs
         self._topojson = topojson
@@ -159,7 +160,7 @@ f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>"""+
         js_args = dict(format=format, width=width, height=height, scale=scale)
         return dict(js_args, data = figure)
 
-    def transform(self, figure, format=None, width=None, height=None, scale=None):
+    def transform(self, figure, format=None, width=None, height=None, scale=None, debug=None):
         """
         Convert a Plotly figure into a static image
 
@@ -189,12 +190,14 @@ f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>"""+
             If not specified, will default to the `scope.default_scale` property
         :return: image bytes
         """
+        if not debug:
+            debug=self.debug
         spec = self.make_spec(figure, format=format, width=width, height=height, scale=scale)
 
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with _proc_lock:
-            img = kaleido.to_image_block(spec, Path(self._tempfile.name).absolute(), self._topojson, self._mapbox_access_token)
+            img = kaleido.to_image_block(spec, Path(self._tempfile.name).absolute(), self._topojson, self._mapbox_access_token, debug=debug)
 
         return img
 
