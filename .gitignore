@@ -7,7 +7,7 @@ __pycache__
 # builds
 tests/images/*
 
-# avoid ignore placeholder
+# avoid ignore .gitkeep
 !tests/images/.gitkeep
 
 # ipynb
