@@ -8,9 +8,6 @@ __pycache__
 tests/images/*
 
 # avoid ignore placeholder
-!tests/images/placeholder
-
-# avoid ignore placeholder
 !tests/images/.gitkeep
 
 # ipynb
