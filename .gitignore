@@ -7,5 +7,8 @@ __pycache__
 # builds
 tests/images/*
 
+# avoid ignore placeholder
+!tests/images/placeholder
+
 # ipynb
 .ipynb_checkpoints/
