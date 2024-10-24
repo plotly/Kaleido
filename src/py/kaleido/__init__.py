@@ -3,6 +3,7 @@ from pathlib import Path
 import asyncio
 import base64
 import json
+import warnings
 
 from choreographer import Browser
 
@@ -16,15 +17,20 @@ _text_formats_ = ("svg", "json",) # eps is a text format? :-O
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
 def to_image_block(spec, f=None, topojson=None, mapbox_token=None):
-    loop = None
     try:
-        loop = asyncio.get_running_loop()
+        _ = asyncio.get_running_loop()
+        from threading import Thread
+        image = None
+        def get_image():
+            nonlocal image
+            image = asyncio.run(to_image(spec, f, topojson, mapbox_token))
+        t = Thread(target=get_image)
+        t.start()
+        t.join()
+        return image
     except RuntimeError:
         pass
-    if loop:
-        raise RuntimeError("Kaleido doesn't support asyncio + the old kaleido API yet.")
-    else:
-        return asyncio.run(to_image(spec, f, topojson, mapbox_token))
+    return asyncio.run(to_image(spec, f, topojson, mapbox_token))
 
 async def to_image(spec, f=None, topojson=None, mapbox_token=None):
     async with Browser(headless=True) as browser:
@@ -84,7 +90,6 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None):
             img = js_response.get("result")
         except Exception as e:
             raise RuntimeError(response) from e
-        await asyncio.sleep(30)
         if response_format == "pdf":
             pdf_params = dict(printBackground=True,
                           marginTop=0,
