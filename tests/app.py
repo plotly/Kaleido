@@ -7,7 +7,7 @@ import baile
 
 # Extract jsons of mocks
 dir_in = Path(__file__).resolve().parent / "mocks"
-results_dir = Path(__file__).resolve().parent / "results"
+results_dir = Path(__file__).resolve().parent / "images"
 ALL_MOCKS = [os.path.splitext(a)[0] for a in os.listdir(dir_in) if a.endswith(".json")]
 ALL_MOCKS.sort()
 all_names = ALL_MOCKS
