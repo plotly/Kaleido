@@ -4,6 +4,7 @@ import base64
 import json
 import uuid
 import warnings
+import asyncio
 
 from choreographer import Browser
 
@@ -110,7 +111,7 @@ def from_response(response):
     return img
 
 
-async def write_file(img_data, output_file):
+def write_file(img_data, output_file):
     try:
         # Write image file
         with open(output_file, "wb") as out_file:
@@ -198,6 +199,7 @@ async def to_image(
             )
             output_file = f"{path}/{name}.{format_path}"
 
-            await write_file(img_data, output_file)
+            # New thread, this avoid the blocking of the event loop
+            await asyncio.to_thread(write_file, img_data, output_file)
             return img_data
         return from_response(response)
