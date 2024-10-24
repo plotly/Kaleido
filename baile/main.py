@@ -23,11 +23,7 @@ def _verify_path_and_name(figure, name):
     return figure, name
 
 
-async def _from_json_to_img(
-    tab, figure, layout_opts, topojson, mapbox_token, path, name
-):
-    # spec creation
-    spec = to_spec(figure, layout_opts)
+async def _run_in_chromium(tab, spec, topojson, mapbox_token):
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
@@ -62,7 +58,17 @@ async def _from_json_to_img(
     )
 
     # send request to run script in chromium
-    response = await tab.send_command("Runtime.callFunctionOn", params=params)
+    return await tab.send_command("Runtime.callFunctionOn", params=params)
+
+
+async def _from_json_to_img(
+    tab, figure, layout_opts, topojson, mapbox_token, path, name
+):
+    # spec creation
+    spec = to_spec(figure, layout_opts)
+
+    # Comunicate and run script for image in chromium
+    response = await _run_in_chromium(tab, spec, topojson, mapbox_token)
 
     if path:
         # Get image
