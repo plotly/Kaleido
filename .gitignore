@@ -5,7 +5,7 @@ __pycache__
 *.egg-info/
 
 # builds
-results/*
+tests/images/*
 
 # ipynb
 .ipynb_checkpoints/
