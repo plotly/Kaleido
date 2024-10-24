@@ -8,9 +8,7 @@ from .prepare import to_spec, from_response, write_file, DEFAULT_FORMAT
 from .browser import Browser
 
 
-async def _from_json_to_img(
-    tab, figure, layout_opts, topojson, mapbox_token, path, name
-):
+def _verify_path_and_name(figure, name):
     file_path = None
     # Set json
     if os.path.isfile(figure):
@@ -22,6 +20,12 @@ async def _from_json_to_img(
         name = os.path.splitext(os.path.basename(file_path))[0]
     elif not name:
         name = uuid.uuid4()
+    return figure, name
+
+
+async def _from_json_to_img(
+    tab, figure, layout_opts, topojson, mapbox_token, path, name
+):
     # spec creation
     spec = to_spec(figure, layout_opts)
     # subscribe events one time
@@ -89,6 +93,8 @@ async def to_image(
     # Browser connection
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab()
+
+        figure, name = _verify_path_and_name(figure, name)
 
         result = await _from_json_to_img(
             tab, figure, layout_opts, topojson, mapbox_token, path, name
