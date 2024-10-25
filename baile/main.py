@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import json
 import uuid
@@ -8,7 +9,22 @@ from .prepare import to_spec, from_response, write_file, DEFAULT_FORMAT
 from .browser import Browser
 
 
-def _verify_path_and_name(figure, name):
+def _verify_figures(path_figs):
+    # Work with Paths and directories
+    if isinstance(path_figs, str):
+        figures = Path(path_figs)
+    else:
+        figures = path_figs
+
+    # Return list
+    if os.path.isdir(path_figs):
+        return [str(figures / a) for a in os.listdir(figures) if a.endswith(".json")]
+    else:
+        # If is just one dir or path
+        return [path_figs]
+
+
+def _verify_path_and_name(figure):
     file_path = None
     # Set json
     if os.path.isfile(figure):
@@ -16,10 +32,7 @@ def _verify_path_and_name(figure, name):
         with open(figure, "r") as file:
             figure = json.load(file)
     # Set name
-    if file_path and not name:
-        name = os.path.splitext(os.path.basename(file_path))[0]
-    elif not name:
-        name = uuid.uuid4()
+    name = os.path.splitext(os.path.basename(file_path))[0]
     return figure, name
 
 
@@ -58,7 +71,12 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token):
     )
 
     # send request to run script in chromium
-    return await tab.send_command("Runtime.callFunctionOn", params=params)
+    result = await tab.send_command("Runtime.callFunctionOn", params=params)
+
+    # Disable to avoid chromium fail / Error in Kaleido
+    await tab.send_command("Runtime.disable")
+    await tab.reload()
+    return result
 
 
 async def _from_json_to_img(
@@ -70,25 +88,20 @@ async def _from_json_to_img(
     # Comunicate and run script for image in chromium
     response = await _run_in_chromium(tab, spec, topojson, mapbox_token)
 
-    if path:
-        # Get image
-        img_data = from_response(response)
+    # Get image
+    img_data = from_response(response)
 
-        # Set path of tyhe image file
-        format_path = (
-            layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
-        )
-        output_file = f"{path}/{name}.{format_path}"
+    # Set path of tyhe image file
+    format_path = (
+        layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
+    )
+    output_file = f"{path}/{name}.{format_path}"
 
-        # New thread, this avoid the blocking of the event loop
-        await asyncio.to_thread(write_file, img_data, output_file)
-        return img_data
-    return from_response(response)
+    # New thread, this avoid the blocking of the event loop
+    await asyncio.to_thread(write_file, img_data, output_file)
 
 
-async def to_image(
-    figure, layout_opts=None, topojson=None, mapbox_token=None, path=None, name=None
-):
+async def to_image(path_figs, path, layout_opts=None, topojson=None, mapbox_token=None):
     # Warning if path=None
     if not path:
         warnings.warn(
@@ -96,18 +109,20 @@ async def to_image(
             UserWarning,
         )
 
+    # Generate list of jsons
+    figures = _verify_figures(path_figs)
+
     # Browser connection
     async with Browser(headless=True) as browser:
         tab = await browser.create_tab()
 
-        # Check figure and name
-        figure, name = _verify_path_and_name(
-            figure, name
-        )  # This verify or can set figure and/or name
+        for figure in figures:
+            # Check figure and name
+            figure, name = _verify_path_and_name(
+                figure
+            )  # This verify or can set figure and name
 
-        # Process the info to generate the image
-        result = await _from_json_to_img(
-            tab, figure, layout_opts, topojson, mapbox_token, path, name
-        )
-
-        return result
+            # Process the info to generate the image
+            await _from_json_to_img(
+                tab, figure, layout_opts, topojson, mapbox_token, path, name
+            )
