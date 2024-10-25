@@ -18,7 +18,7 @@ license = {file = "LICENSE.txt"}
 readme = "README.md"
 requires-python = ">=3.9"
 dynamic = ["version"]
-dependencies = ["choreographer"]
+dependencies = ["choreographer>=0.99.2"]
 authors = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
