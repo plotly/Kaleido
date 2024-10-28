@@ -106,6 +106,10 @@ f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>"""+
 """  </head>
   <body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body>
 </html>"""
+        if self.debug:
+            print("Displaying generated HTML".center(50, "*"))
+            print(page)
+            print("end".center(50, "*"))
         return page
 
     @property

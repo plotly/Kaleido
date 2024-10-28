@@ -3,6 +3,7 @@ from pathlib import Path
 import asyncio
 import base64
 import json
+import sys
 
 from choreographer import Browser
 
@@ -18,32 +19,46 @@ _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
     try:
         _ = asyncio.get_running_loop()
+        if debug: print("Got running loop, threading", file=sys.stderr)
         from threading import Thread
         image = None
         def get_image():
             nonlocal image
+            if debug: print("Calling to_image in thread", file=sys.stderr)
             image = asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
         t = Thread(target=get_image)
+        if debug: print("Calling thread start", file=sys.stderr)
         t.start()
         t.join()
+        if debug: print("Done with thread", file=sys.stderr)
         return image
     except RuntimeError:
+        if debug: print("No loop, no thread", file=sys.stderr)
         pass
     return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
 
 async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
     async with Browser(headless=True, debug=debug, debug_browser=debug) as browser:
+        async def print_all(r):
+            print(f"All subscription: {r}", file=sys.stderr)
+        if debug: browser.subscribe("*", print_all)
         if not f:
             f = script_path.absolute()
+        if debug: print(f"Creating tab w/ file: {f.as_uri()}", file=sys.stderr)
         tab = await browser.create_tab(f.as_uri())
+        if debug: tab.subscribe("*", print_all)
+        if debug: print("Enabling page")
         await tab.send_command("Page.enable")
+        if debug: print("Enabling runtime")
         await tab.send_command("Runtime.enable")
 
         event_done = asyncio.get_running_loop().create_future()
         async def execution_started_cb(response):
             event_done.set_result(response)
         tab.subscribe("Runtime.executionContextCreated", execution_started_cb, repeating=False)
+        if debug: print("About to reload page", file=sys.stderr)
         await tab.send_command("Page.reload")
+        if debug: print("Waiting executionContextCreated", file=sys.stderr)
         await event_done
         execution_context_id = event_done.result()["params"]["context"]["id"]
         # this could just as easily be part of the original script
@@ -53,6 +68,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
         event_done = asyncio.get_running_loop().create_future()
         async def load_done_cb(response):
             event_done.set_result(response)
+        if debug: print("waiting loadEventFired", file=sys.stderr)
         tab.subscribe("Page.loadEventFired", load_done_cb, repeating=False)
         await event_done
 
@@ -84,7 +100,9 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
                 )
             )
         try:
+            if debug: print("Sending command", file=sys.stderr)
             js_response = json.loads(response.get("result").get("result").get("value"))
+            if debug: print(f"Received: {js_response}", file=sys.stderr)
             response_format = js_response.get("format")
             img = js_response.get("result")
         except Exception as e:
@@ -96,6 +114,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
                           marginLeft=0,
                           marginRight=0,
                           preferCSSPageSize=True,)
+            if debug: print("Sending command to print pdf")
             pdf_response = await tab.send_command("Page.printToPDF", params=pdf_params)
             img = pdf_response.get("result").get("data")
 
