@@ -36,18 +36,37 @@ def _verify_path_and_name(figure):
     return figure, name
 
 
+async def print_todo(obj):
+    print(obj["method"])
+
 async def _run_in_chromium(tab, spec, topojson, mapbox_token):
+    print(
+        f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}"
+    )
+
+    tab.subscribe("*", print_todo)
+
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
+    #print("subscribe Runtime.executionContextCreated")
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
+    #print("subscribe Page.loadEventFired")
 
     # send request to enable target to generate events and run scripts
     await tab.send_command("Page.enable")
+    print("Succes await tab.send_command('Page.enable')")
     await tab.send_command("Runtime.enable")
+    print("Succes await tab.send_command('Runtime.enable')")
 
     # await event futures
     await event_runtime
+    print(
+        f"Succes await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
+    )
     await event_page_fired
+    print(
+        f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
+    )
 
     # use event result
     execution_context_id = event_runtime.result()["params"]["context"]["id"]
