@@ -90,16 +90,12 @@ class PlotlyScope():
     <title>Kaleido-fier</title>
     <script>
         window.KaleidoReport = ["no error"];
-        window.addEventListener('error', function (e) {
-            if (typeof window.KaleidoReport == 'undefined') {
-                window.KaleidoReport = new Array();
-            }
-            if (navigator.onLine) {
-                window.KaleidoReport.push(e);
-            } else {
+        function logError(e) {
+            window.KaleidoReport.push(e);
+            if (!navigator.onLine) {
                 window.KaleidoReport.push("offline");
             }
-        });
+        }
     </script>
     <script>
       window.PlotlyConfig = {MathJaxConfig: 'local'}
@@ -110,12 +106,12 @@ class PlotlyScope():
             pjs = "https://cdn.plot.ly/plotly-2.35.2.min.js"
         elif not pjs.startswith("http") and not pjs.startswith("file"):
             pjs = Path(pjs).absolute().as_uri()
-        page += f" <script src=\"{pjs}\" charset=\"utf-8\"></script>\n"
+        page += f" <script src=\"{pjs}\" charset=\"utf-8\" onerror=\"logError('plotly')\"></script>\n"
 
         if self._mathjax:
-            page += f" <script type=\"text/javascript\" id=\"MathJax-script\" src=\"{self._mathjax}?config=TeX-AMS-MML_SVG\"></script>\n"
+            page += f" <script type=\"text/javascript\" id=\"MathJax-script\" src=\"{self._mathjax}?config=TeX-AMS-MML_SVG\" onerror=\"logError('mathjax')\"></script>\n"
         page+= \
-f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}"></script>"""+\
+f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}" onerror=\"logError('scoper')\"></script>"""+\
 """  </head>
   <body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body>
 </html>"""
