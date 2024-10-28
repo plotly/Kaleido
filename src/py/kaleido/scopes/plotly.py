@@ -88,6 +88,16 @@ class PlotlyScope():
   <head>
     <style id=\"head-style\"></style>
     <title>Kaleido-fier</title>
+    window.addEventListener('error', function (e) {
+        if (typeof window.KaleidoReport == 'undefined') {
+            window.KaleidoReport = new Array()
+        }
+        if (navigator.onLine) {
+            window.KaleidoReport.push(e)
+        } else {
+            window.KaleidoReport.push("offline")
+        }
+    });
     <script>
       window.PlotlyConfig = {MathJaxConfig: 'local'}
     </script>

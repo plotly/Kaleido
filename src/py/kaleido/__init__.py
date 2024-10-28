@@ -65,14 +65,24 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
         # some changes could be made their to download more easily TODO
         # read original python, read original javascript
 
-        event_done = asyncio.get_running_loop().create_future()
+        event_done = asyncio.get_running_loop().create_future() # REORDER THIS
         async def load_done_cb(response):
             event_done.set_result(response)
         if debug: print("waiting loadEventFired", file=sys.stderr)
         tab.subscribe("Page.loadEventFired", load_done_cb, repeating=False)
         await event_done
 
-        kaleido_jsfn = r"function(spec, ...args) { console.log(typeof spec); console.log(spec); return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
+        if debug:
+            debug_jsfn = r"function() { return window.KaleidoReport; }"
+            params = dict(
+                    functionDeclaration=debug_jsfn,
+                    returnByValue=True,
+                    executionContextId=execution_context_id)
+            print(await tab.send_command("Runtime.callFunctionOn", params=params))
+
+
+
+        kaleido_jsfn = r"function(spec, ...args) { return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify); }"
         extra_args = []
         if topojson:
             extra_args.append(dict(value=topojson))
