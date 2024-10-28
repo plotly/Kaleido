@@ -14,7 +14,7 @@ results_dir = Path(__file__).resolve().parent / "images"
 async def process_images():
     try:
         # Process to generete images of the json
-        await baile.to_image(path_figs=dir_in, path=str(results_dir))
+        await baile.to_image(path_figs=dir_in, path=str(results_dir), num_tabs=4)
     except Exception as e:
         print("No to image")
         print(e)
