@@ -113,16 +113,19 @@ async def to_image(path_figs, path, layout_opts=None, topojson=None, mapbox_toke
     figures = _verify_figures(path_figs)
 
     # Browser connection
-    async with Browser(headless=True) as browser:
-        tab = await browser.create_tab()
+    browser = await Browser(headless=True)
+    tab = await browser.create_tab()
 
-        for figure in figures:
-            # Check figure and name
-            figure, name = _verify_path_and_name(
-                figure
-            )  # This verify or can set figure and name
+    for figure in figures:
+        # Check figure and name
+        figure, name = _verify_path_and_name(
+            figure
+        )  # This verify or can set figure and name
 
-            # Process the info to generate the image
-            await _from_json_to_img(
-                tab, figure, layout_opts, topojson, mapbox_token, path, name
-            )
+        # Process the info to generate the image
+        await _from_json_to_img(
+            tab, figure, layout_opts, topojson, mapbox_token, path, name
+        )
+
+    # Close Browser
+    browser.close()
