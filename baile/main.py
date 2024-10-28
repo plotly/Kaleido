@@ -72,15 +72,18 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
+    print("Succes await tab.send_command('Runtime.callFunctionOn', params=params)")
 
     # Disable to avoid chromium fail / Error in Kaleido
     await tab.send_command("Runtime.disable")
+    print("Succes await tab.send_command('Runtime.disable')")
     await tab.reload()
+    print("Succes await tab.reload()")
     return result
 
 
 async def _from_json_to_img(
-    tab, figure, layout_opts, topojson, mapbox_token, path, name
+    tab, figure, queue, layout_opts, topojson, mapbox_token, path, name
 ):
     # spec creation
     spec = to_spec(figure, layout_opts)
@@ -100,8 +103,13 @@ async def _from_json_to_img(
     # New thread, this avoid the blocking of the event loop
     await asyncio.to_thread(write_file, img_data, output_file)
 
+    # Put the tab in the queue
+    await queue.put(tab)
 
-async def to_image(path_figs, path, layout_opts=None, topojson=None, mapbox_token=None):
+
+async def to_image(
+    path_figs, path, num_tabs=1, layout_opts=None, topojson=None, mapbox_token=None
+):
     # Warning if path=None
     if not path:
         warnings.warn(
@@ -112,9 +120,16 @@ async def to_image(path_figs, path, layout_opts=None, topojson=None, mapbox_toke
     # Generate list of jsons
     figures = _verify_figures(path_figs)
 
+    # Create queue
+    queue = asyncio.Queue(maxsize=num_tabs + 1)
+    #print(queue)
+
     # Browser connection
     browser = await Browser(headless=True)
-    tab = await browser.create_tab()
+    for _ in range(num_tabs):
+        tab = await browser.create_tab()
+        await queue.put(tab)
+    #print(f"Asi estan todos los queue {queue}")
 
     for figure in figures:
         # Check figure and name
@@ -122,10 +137,15 @@ async def to_image(path_figs, path, layout_opts=None, topojson=None, mapbox_toke
             figure
         )  # This verify or can set figure and name
 
+        tab = await queue.get()
+        #print(f"Este es el tab que se obtiene {tab}")
+        #print(f"Asi estan todos los queue luego del get {queue}")
+
         # Process the info to generate the image
         await _from_json_to_img(
-            tab, figure, layout_opts, topojson, mapbox_token, path, name
+            tab, figure, queue, layout_opts, topojson, mapbox_token, path, name
         )
+        #print(f"Asi estan todos los queue luego del put {queue}")
 
     # Close Browser
-    browser.close()
+    await browser.close()
