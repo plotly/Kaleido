@@ -1,9 +1,11 @@
 from pathlib import Path
 import os
+import sys
 import json
 import uuid
 import warnings
 import asyncio
+import async_timeout as atimeout
 
 from .prepare import to_spec, from_response, write_file, DEFAULT_FORMAT
 from .browser import Browser
@@ -39,6 +41,7 @@ def _verify_path_and_name(figure):
 async def print_todo(obj):
     print(obj["method"])
 
+
 async def _run_in_chromium(tab, spec, topojson, mapbox_token):
     print(
         f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}"
@@ -48,9 +51,9 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token):
 
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
-    #print("subscribe Runtime.executionContextCreated")
+    # print("subscribe Runtime.executionContextCreated")
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
-    #print("subscribe Page.loadEventFired")
+    # print("subscribe Page.loadEventFired")
 
     # send request to enable target to generate events and run scripts
     await tab.send_command("Page.enable")
@@ -127,7 +130,14 @@ async def _from_json_to_img(
 
 
 async def to_image(
-    path_figs, path, num_tabs=1, layout_opts=None, topojson=None, mapbox_token=None
+    path_figs,
+    path,
+    num_tabs=1,
+    layout_opts=None,
+    topojson=None,
+    mapbox_token=None,
+    debug=None,
+    timeout=30,
 ):
     # Warning if path=None
     if not path:
@@ -141,30 +151,33 @@ async def to_image(
 
     # Create queue
     queue = asyncio.Queue(maxsize=num_tabs + 1)
-    #print(queue)
+    # print(queue)
 
     # Browser connection
-    browser = await Browser(headless=True)
-    for _ in range(num_tabs):
-        tab = await browser.create_tab()
-        await queue.put(tab)
-    #print(f"Asi estan todos los queue {queue}")
+    async with (
+        Browser(headless=True, debug=debug, debug_browser=debug) as browser,
+        atimeout.timeout(timeout),
+    ):
 
-    for figure in figures:
-        # Check figure and name
-        figure, name = _verify_path_and_name(
-            figure
-        )  # This verify or can set figure and name
+        async def print_all(r):
+            print(f"All subscription: {r}", file=sys.stderr)
 
-        tab = await queue.get()
-        #print(f"Este es el tab que se obtiene {tab}")
-        #print(f"Asi estan todos los queue luego del get {queue}")
+        if debug:
+            browser.subscribe("*", print_all)
+        for _ in range(num_tabs):
+            tab = await browser.create_tab()
+            await queue.put(tab)
+        # print(f"Asi estan todos los queue {queue}")
 
-        # Process the info to generate the image
-        await _from_json_to_img(
-            tab, figure, queue, layout_opts, topojson, mapbox_token, path, name
-        )
-        #print(f"Asi estan todos los queue luego del put {queue}")
+        for figure in figures:
+            # Check figure and name
+            figure, name = _verify_path_and_name(
+                figure
+            )  # This verify or can set figure and name
 
-    # Close Browser
-    await browser.close()
+            tab = await queue.get()
+
+            await _from_json_to_img(
+                tab, figure, queue, layout_opts, topojson, mapbox_token, path, name
+            )
+            # print(f"Asi estan todos los queue luego del put {queue}")
