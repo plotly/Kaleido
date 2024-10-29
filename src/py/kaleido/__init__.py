@@ -47,30 +47,37 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
         if debug: print(f"Creating tab w/ file: {f.as_uri()}", file=sys.stderr)
         tab = await browser.create_tab(f.as_uri())
         if debug: tab.subscribe("*", print_all)
+
+        if debug: print("About to reload page", file=sys.stderr)
+        await tab.send_command("Page.reload")
+
+        page_loaded = asyncio.get_running_loop().create_future()
+        async def load_done_cb(response):
+            page_loaded.set_result(response)
+        if debug: print("waiting loadEventFired", file=sys.stderr)
+        tab.subscribe("Page.loadEventFired", load_done_cb, repeating=False)
+
         if debug: print("Enabling page")
         await tab.send_command("Page.enable")
+
+        await page_loaded
+
+        javascript_enabled = asyncio.get_running_loop().create_future()
+        async def execution_started_cb(response):
+            javascript_enabled.set_result(response)
+        tab.subscribe("Runtime.executionContextCreated", execution_started_cb, repeating=False)
+
         if debug: print("Enabling runtime")
         await tab.send_command("Runtime.enable")
 
-        event_done = asyncio.get_running_loop().create_future()
-        async def execution_started_cb(response):
-            event_done.set_result(response)
-        tab.subscribe("Runtime.executionContextCreated", execution_started_cb, repeating=False)
-        if debug: print("About to reload page", file=sys.stderr)
-        await tab.send_command("Page.reload")
         if debug: print("Waiting executionContextCreated", file=sys.stderr)
-        await event_done
-        execution_context_id = event_done.result()["params"]["context"]["id"]
+
+        await javascript_enabled
+        execution_context_id = javascript_enabled.result()["params"]["context"]["id"]
         # this could just as easily be part of the original script
         # some changes could be made their to download more easily TODO
         # read original python, read original javascript
 
-        event_done = asyncio.get_running_loop().create_future() # REORDER THIS
-        async def load_done_cb(response):
-            event_done.set_result(response)
-        if debug: print("waiting loadEventFired", file=sys.stderr)
-        tab.subscribe("Page.loadEventFired", load_done_cb, repeating=False)
-        await event_done
 
         if debug:
             debug_jsfn = r"function() { return window.KaleidoReport; }"
