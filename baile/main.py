@@ -39,36 +39,40 @@ def _verify_path_and_name(figure):
 
 
 async def print_todo(obj):
-    print(obj["method"])
+    print(f"Event in Tab: {obj["method"]}", file=sys.stderr)
 
 
 async def _run_in_chromium(tab, spec, topojson, mapbox_token):
     print(
-        f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}"
+        f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}",
+        file=sys.stderr,
     )
 
-    tab.subscribe("*", print_todo)
+    if "*" not in list(tab.sessions.values())[0].subscriptions:
+        tab.subscribe("*", print_todo)
 
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
-    # print("subscribe Runtime.executionContextCreated")
+    print("subscribe Runtime.executionContextCreated", file=sys.stderr)
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
-    # print("subscribe Page.loadEventFired")
+    print("subscribe Page.loadEventFired", file=sys.stderr)
 
     # send request to enable target to generate events and run scripts
     await tab.send_command("Page.enable")
-    print("Succes await tab.send_command('Page.enable')")
+    print("Succes await tab.send_command('Page.enable')", file=sys.stderr)
     await tab.send_command("Runtime.enable")
-    print("Succes await tab.send_command('Runtime.enable')")
+    print("Succes await tab.send_command('Runtime.enable')", file=sys.stderr)
 
     # await event futures
     await event_runtime
     print(
-        f"Succes await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
+        f"Succes await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
+        file=sys.stderr,
     )
     await event_page_fired
     print(
-        f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
+        f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
+        file=sys.stderr,
     )
 
     # use event result
@@ -94,13 +98,17 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
-    print("Succes await tab.send_command('Runtime.callFunctionOn', params=params)")
+    print(
+        "Succes await tab.send_command('Runtime.callFunctionOn', params=params)",
+        file=sys.stderr,
+    )
 
     # Disable to avoid chromium fail / Error in Kaleido
     await tab.send_command("Runtime.disable")
-    print("Succes await tab.send_command('Runtime.disable')")
+    print("Succes await tab.send_command('Runtime.disable')", file=sys.stderr)
     await tab.reload()
-    print("Succes await tab.reload()")
+    print("Succes await tab.reload()", file=sys.stderr)
+    await asyncio.sleep(1)
     return result
 
 
