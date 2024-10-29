@@ -5,6 +5,8 @@ import base64
 import json
 import sys
 
+import async_timeout as atimeout
+
 from choreographer import Browser
 
 
@@ -37,8 +39,10 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
         pass
     return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
 
-async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False):
-    async with Browser(headless=True, debug=debug, debug_browser=debug) as browser:
+async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, timeout=30):
+    async with (
+            Browser(headless=True, debug=debug, debug_browser=debug) as browser,
+            atimeout.timeout(timeout)):
         async def print_all(r):
             print(f"All subscription: {r}", file=sys.stderr)
         if debug: browser.subscribe("*", print_all)
