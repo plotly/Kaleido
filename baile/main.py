@@ -158,6 +158,7 @@ async def to_image(
     topojson=None,
     mapbox_token=None,
     debug=None,
+    headless=True
 ):
     # Warning if path=None
     if not path:
@@ -175,7 +176,7 @@ async def to_image(
 
     # Browser connection
     async with (
-        Browser(headless=False, debug=debug, debug_browser=debug) as browser,
+        Browser(headless=headless, debug=debug, debug_browser=debug) as browser,
     ):
 
         async def print_all(r):
