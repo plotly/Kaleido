@@ -44,43 +44,51 @@ async def print_todo(obj):
         print(obj, file=sys.stderr)
 
 
-async def _run_in_chromium(tab, spec, topojson, mapbox_token):
-    print(
-        f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}",
-        file=sys.stderr,
-    )
+async def _run_in_chromium(tab, spec, topojson, mapbox_token, debug):
+    if debug:
+        print(
+            f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}",
+            file=sys.stderr,
+        )
 
-    if "*" not in list(tab.sessions.values())[0].subscriptions:
+    if debug and "*" not in list(tab.sessions.values())[0].subscriptions:
         tab.subscribe("*", print_todo)
 
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
-    print("subscribe Runtime.executionContextCreated", file=sys.stderr)
+    if debug:
+        print("subscribe Runtime.executionContextCreated", file=sys.stderr)
 
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
-    print("subscribe Page.loadEventFired", file=sys.stderr)
+    if debug:
+        print("subscribe Page.loadEventFired", file=sys.stderr)
     # send request to enable target to generate events and run scripts
 
     await tab.reload()
-    print("Success await tab.reload()", file=sys.stderr)
+    if debug:
+        print("Success await tab.reload()", file=sys.stderr)
 
     await tab.send_command("Page.enable")
-    print("Success await tab.send_command('Page.enable')", file=sys.stderr)
+    if debug:
+        print("Success await tab.send_command('Page.enable')", file=sys.stderr)
     await event_page_fired
-    print(
-        f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
-        file=sys.stderr,
-    )
+    if debug:
+        print(
+            f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
+            file=sys.stderr,
+        )
 
     await tab.send_command("Runtime.enable")
-    print("Success await tab.send_command('Runtime.enable')", file=sys.stderr)
+    if debug:
+        print("Success await tab.send_command('Runtime.enable')", file=sys.stderr)
 
     # await event futures
     await event_runtime
-    print(
-        f"Success await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
-        file=sys.stderr,
-    )
+    if debug:
+        print(
+            f"Success await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
+            file=sys.stderr,
+        )
 
     # use event result
     execution_context_id = event_runtime.result()["params"]["context"]["id"]
@@ -105,23 +113,24 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
-    print(
-        "Succes await tab.send_command('Runtime.callFunctionOn', params=params)",
-        file=sys.stderr,
-    )
+    if debug:
+        print(
+            "Succes await tab.send_command('Runtime.callFunctionOn', params=params)",
+            file=sys.stderr,
+        )
 
     return result
 
 
 async def _from_json_to_img(
-    tab, figure, queue, layout_opts, topojson, mapbox_token, path, name
+    tab, figure, queue, layout_opts, topojson, mapbox_token, path, name, debug
 ):
     # spec creation
     spec = to_spec(figure, layout_opts)
 
     print("Calling chromium".center(50,"*"))
     # Comunicate and run script for image in chromium
-    response = await _run_in_chromium(tab, spec, topojson, mapbox_token)
+    response = await _run_in_chromium(tab, spec, topojson, mapbox_token, debug)
 
     # Get image
     img_data = from_response(response)
@@ -131,10 +140,12 @@ async def _from_json_to_img(
         layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
     )
     output_file = f"{path}/{name}.{format_path}"
-    print("Writing file".center(50,"*"))
+    if debug:
+        print("Writing file".center(50,"*"))
     # New thread, this avoid the blocking of the event loop
     await asyncio.to_thread(write_file, img_data, output_file)
-    print("Returning tab".center(50,"*"))
+    if debug:
+        print("Returning tab".center(50,"*"))
     # Put the tab in the queue
     await queue.put(tab)
 
@@ -175,7 +186,6 @@ async def to_image(
         for _ in range(num_tabs):
             tab = await browser.create_tab()
             await queue.put(tab)
-        # print(f"Asi estan todos los queue {queue}")
 
         for figure in figures:
             # Check figure and name
@@ -183,12 +193,14 @@ async def to_image(
                 figure
             )  # This verify or can set figure and name
             if name.startswith("mapbox"): continue
-            print("Got figure, getting tab".center(50,"*"))
+            if debug:
+                print("Got figure, getting tab".center(50,"*"))
             tab = await queue.get()
-            print(f"Awaiting wrapper for img {name} {path} on tab {tab}".center(100, "*"))
+            if debug:
+                print(f"Awaiting wrapper for img {name} {path} on tab {tab}".center(100, "*"))
             async with atimeout.timeout(60*5) as cm:
                 await _from_json_to_img(
-                    tab, figure, queue, layout_opts, topojson, mapbox_token, path, name
+                    tab, figure, queue, layout_opts, topojson, mapbox_token, path, name, debug
                 )
-            print(f"Timeout result: {cm.expired}")
-            # print(f"Asi estan todos los queue luego del put {queue}")
+            if debug:
+                print(f"Timeout result: {cm.expired}")
