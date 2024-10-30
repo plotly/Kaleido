@@ -2,7 +2,6 @@ from pathlib import Path
 import os
 import sys
 import json
-import uuid
 import warnings
 import asyncio
 import async_timeout as atimeout
@@ -128,7 +127,7 @@ async def _from_json_to_img(
     # spec creation
     spec = to_spec(figure, layout_opts)
 
-    print("Calling chromium".center(50,"*"))
+    print("Calling chromium".center(50, "*"))
     # Comunicate and run script for image in chromium
     response = await _run_in_chromium(tab, spec, topojson, mapbox_token, debug)
 
@@ -141,11 +140,11 @@ async def _from_json_to_img(
     )
     output_file = f"{path}/{name}.{format_path}"
     if debug:
-        print("Writing file".center(50,"*"))
+        print("Writing file".center(50, "*"))
     # New thread, this avoid the blocking of the event loop
     await asyncio.to_thread(write_file, img_data, output_file)
     if debug:
-        print("Returning tab".center(50,"*"))
+        print("Returning tab".center(50, "*"))
     # Put the tab in the queue
     await queue.put(tab)
 
@@ -158,7 +157,7 @@ async def to_image(
     topojson=None,
     mapbox_token=None,
     debug=None,
-    headless=True
+    headless=True,
 ):
     # Warning if path=None
     if not path:
@@ -172,7 +171,6 @@ async def to_image(
 
     # Create queue
     queue = asyncio.Queue(maxsize=num_tabs + 1)
-    # print(queue)
 
     # Browser connection
     async with (
@@ -193,15 +191,28 @@ async def to_image(
             figure, name = _verify_path_and_name(
                 figure
             )  # This verify or can set figure and name
-            if name.startswith("mapbox"): continue
+            if name.startswith("mapbox"):
+                continue
             if debug:
-                print("Got figure, getting tab".center(50,"*"))
+                print("Got figure, getting tab".center(50, "*"))
             tab = await queue.get()
             if debug:
-                print(f"Awaiting wrapper for img {name} {path} on tab {tab}".center(100, "*"))
-            async with atimeout.timeout(60*5) as cm:
+                print(
+                    f"Awaiting wrapper for img {name} {path} on tab {tab}".center(
+                        100, "*"
+                    )
+                )
+            async with atimeout.timeout(60 * 5) as cm:
                 await _from_json_to_img(
-                    tab, figure, queue, layout_opts, topojson, mapbox_token, path, name, debug
+                    tab,
+                    figure,
+                    queue,
+                    layout_opts,
+                    topojson,
+                    mapbox_token,
+                    path,
+                    name,
+                    debug,
                 )
             if debug:
                 print(f"Timeout result: {cm.expired}")
