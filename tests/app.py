@@ -18,7 +18,7 @@ async def process_images():
             path_figs=dir_in, path=str(results_dir), num_tabs=4, debug=True
         )
     except Exception as e:
-        print("No to image")
+        print("No to image".center(30,"%"))
         print(e)
         print("***")
 
