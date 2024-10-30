@@ -1,4 +1,5 @@
 import asyncio
+import argparse
 from pathlib import Path
 
 import baile
@@ -7,13 +8,17 @@ import baile
 dir_in = Path(__file__).resolve().parent / "mocks"
 results_dir = Path(__file__).resolve().parent / "images"
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--n_tabs', type=int, default=4, help='Number of tabs')
+args = parser.parse_args()
+arg_dict = vars(args)
 
 # Loop to generate images of the jsons
 async def process_images():
     try:
         # Process to generete images of the json
         await baile.to_image(
-            path_figs=dir_in, path=str(results_dir), num_tabs=4, debug=True
+            path_figs=dir_in, path=str(results_dir), num_tabs=arg_dict["n_tabs"], debug=True, headless=False
         )
     except Exception as e:
         print("No to image".center(30,"%"))
