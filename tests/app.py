@@ -10,6 +10,7 @@ results_dir = Path(__file__).resolve().parent / "images"
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--n_tabs", type=int, default=4, help="Number of tabs")
+parser.add_argument("--path_mock", type=str, default=dir_in, help="Directory of mock file/s")
 args = parser.parse_args()
 arg_dict = vars(args)
 
@@ -19,7 +20,7 @@ async def process_images():
     try:
         # Process to generete images of the json
         await baile.to_image(
-            path_figs=dir_in,
+            path_figs=arg_dict["path_mock"],
             path=str(results_dir),
             num_tabs=arg_dict["n_tabs"],
             debug=True,
