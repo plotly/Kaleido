@@ -66,7 +66,7 @@ if __name__ == "__main__":
             results["error"] = result_message
 
         # Convert results to JSON and print
-        print("Benchmark".center(10, "*"))
+        print("Benchmark".center(30, "*"))
         print(json.dumps(results, indent=4))
     else:
         asyncio.run(process_images())
