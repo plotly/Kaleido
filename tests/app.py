@@ -12,7 +12,7 @@ results_dir = Path(__file__).resolve().parent / "images"
 parser = argparse.ArgumentParser()
 parser.add_argument("--n_tabs", type=int, help="Number of tabs")
 parser.add_argument(
-    "--path_mock", type=str, default=dir_in, help="Directory of mock file/s"
+    "--mock_path", type=str, default=dir_in, help="Directory of mock file/s"
 )
 parser.add_argument("--benchmark", action="store_true", help="Enable benchmarking")
 args = parser.parse_args()
@@ -29,7 +29,7 @@ elif not arg_dict["benchmark"] and not arg_dict["n_tabs"]:
 async def process_images():
     try:
         await baile.to_image(
-            path_figs=arg_dict["path_mock"],
+            path_figs=arg_dict["mock_path"],
             path=str(results_dir),
             num_tabs=arg_dict["n_tabs"],
             debug=True,
@@ -50,7 +50,7 @@ if __name__ == "__main__":
         results = {
             "execution_time": None,
             "unit": "seconds",
-            "path_mock": arg_dict["path_mock"],
+            "mock_path": arg_dict["mock_path"],
         }
 
         t1_start = process_time()  # Start timing
