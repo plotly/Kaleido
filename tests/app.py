@@ -50,7 +50,7 @@ if __name__ == "__main__":
         results = {
             "execution_time": None,
             "unit": "seconds",
-            "file": arg_dict["path_mock"],
+            "path_mock": arg_dict["path_mock"],
         }
 
         t1_start = process_time()  # Start timing
