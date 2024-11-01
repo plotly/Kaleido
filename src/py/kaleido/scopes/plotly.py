@@ -52,7 +52,7 @@ class PlotlyScope():
             'kaleido_scopes.js'
             )
 
-        self._tempdir = tempfile.TemporaryDirectory()
+        self._tempdir = tempfile.TemporaryDirectory(dir=Path.home(), prefix=".kaleido-")
         self._tempfile = open(f"{self._tempdir.name}/index.html", "w")
         self._tempfile.write(self.make_page_string())
         self._tempfile.close()
