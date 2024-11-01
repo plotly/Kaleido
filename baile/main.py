@@ -63,13 +63,12 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token, debug):
         print("subscribe Page.loadEventFired", file=sys.stderr)
     # send request to enable target to generate events and run scripts
 
-    await tab.reload()
-    if debug:
-        print("Success await tab.reload()", file=sys.stderr)
-
     await tab.send_command("Page.enable")
     if debug:
         print("Success await tab.send_command('Page.enable')", file=sys.stderr)
+    await tab.reload()
+    if debug:
+        print("Success await tab.reload()", file=sys.stderr)
     await event_page_fired
     if debug:
         print(
