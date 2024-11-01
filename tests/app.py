@@ -15,6 +15,16 @@ parser.add_argument(
     "--mock_path", type=str, default=dir_in, help="Directory of mock file/s"
 )
 parser.add_argument("--benchmark", action="store_true", help="Enable benchmarking")
+parser.add_argument(
+    "--headless",
+    action="store_true",
+    dest="headless",
+    default=True,
+    help="Set headless as True",
+)
+parser.add_argument(
+    "--no_headless", action="store_false", dest="headless", help="Set headless as False"
+)
 args = parser.parse_args()
 arg_dict = vars(args)
 
@@ -33,7 +43,7 @@ async def process_images():
             path=str(results_dir),
             num_tabs=arg_dict["n_tabs"],
             debug=True,
-            headless=False,
+            headless=arg_dict["headless"],
         )
         return "Successful"
     except Exception as e:
