@@ -45,7 +45,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
             raise RuntimeError(str(res))
 
     async with (
-            Browser(headless=True, debug=debug, debug_browser=debug) as browser,
+            Browser(headless=True, debug=debug, debug_browser=sys.stderr) as browser,
             atimeout.timeout(timeout)):
         async def print_all(r):
             print(f"All subscription: {r}", file=sys.stderr)
@@ -62,7 +62,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
 
         page_loaded = tab.subscribe_once("Page.loadEventFired")
 
-        if debug: print("Enabling page")
+        if debug: print("Enabling page", file=sys.stderr)
         res = await tab.send_command("Page.enable")
         check_error(res)
 
@@ -81,7 +81,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
             print("Clearing previous executionContextCreated", file=sys.stderr)
             javascript_enabled = tab.subscribe_once("Runtime.executionContextCreated")
 
-        if debug: print("Enabling runtime")
+        if debug: print("Enabling runtime", file=sys.stderr)
         res = await tab.send_command("Runtime.enable")
         check_error(res)
 
@@ -100,7 +100,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
                     functionDeclaration=debug_jsfn,
                     returnByValue=True,
                     executionContextId=execution_context_id)
-            print(await tab.send_command("Runtime.callFunctionOn", params=params))
+            print(await tab.send_command("Runtime.callFunctionOn", params=params), file=sys.stderr)
 
 
 
@@ -147,7 +147,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
                           marginLeft=0,
                           marginRight=0,
                           preferCSSPageSize=True,)
-            if debug: print("Sending command to print pdf")
+            if debug: print("Sending command to print pdf", file=sys.stderr)
             pdf_response = await tab.send_command("Page.printToPDF", params=pdf_params)
             check_error(pdf_response)
             img = pdf_response.get("result").get("data")

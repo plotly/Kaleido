@@ -118,9 +118,9 @@ f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}" onerror=\"log
   <body style=\"{margin: 0; padding: 0;}\"><img id=\"kaleido-image\"><img></body>
 </html>"""
         if self.debug:
-            print("Displaying generated HTML".center(50, "*"))
-            print(page)
-            print("end".center(50, "*"))
+            print("Displaying generated HTML".center(50, "*"), file=sys.stderr)
+            print(page, file=sys.stderr)
+            print("end".center(50, "*"), file=sys.stderr)
         return page
 
     @property
