@@ -40,6 +40,10 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
     return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
 
 async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, timeout=60):
+    def check_error(res):
+        if 'error' in res:
+            raise RuntimeError(str(res))
+
     async with (
             Browser(headless=True, debug=debug, debug_browser=debug) as browser,
             atimeout.timeout(timeout)):
@@ -53,20 +57,22 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
 
         if debug: tab.subscribe("*", print_all)
         if debug: print("Activating page", file=sys.stderr)
-        await tab.send_command("Page.bringToFront")
+        res = await tab.send_command("Page.bringToFront")
+        check_error(res)
 
         page_loaded = tab.subscribe_once("Page.loadEventFired")
 
         if debug: print("Enabling page")
-        await tab.send_command("Page.enable")
+        res = await tab.send_command("Page.enable")
+        check_error(res)
 
         while page_loaded.done():
             print("Clearing previous loadEventFired", file=sys.stderr)
             page_loaded = tab.subscribe_once("Page.loadEventFired")
 
-
         if debug: print("About to reload page", file=sys.stderr)
-        await tab.send_command("Page.reload")
+        res = await tab.send_command("Page.reload")
+        check_error(res)
 
         await page_loaded
 
@@ -76,7 +82,8 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
             javascript_enabled = tab.subscribe_once("Runtime.executionContextCreated")
 
         if debug: print("Enabling runtime")
-        await tab.send_command("Runtime.enable")
+        res = await tab.send_command("Runtime.enable")
+        check_error(res)
 
         if debug: print("Waiting executionContextCreated", file=sys.stderr)
 
@@ -113,8 +120,9 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
                 awaitPromise=True,
                 executionContextId=execution_context_id,
                 )
+        if debug: print("Sending command", file=sys.stderr)
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
-
+        check_error(response)
         # Check for export error, later can customize error messages for plotly Python users
         code = response.get("code", 0)
         if code != 0:
@@ -125,7 +133,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
                 )
             )
         try:
-            if debug: print("Sending command", file=sys.stderr)
+            if debug: print("Loading result", file=sys.stderr)
             js_response = json.loads(response.get("result").get("result").get("value"))
             if debug: print(f"Received: {js_response}", file=sys.stderr)
             response_format = js_response.get("format")
@@ -141,6 +149,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
                           preferCSSPageSize=True,)
             if debug: print("Sending command to print pdf")
             pdf_response = await tab.send_command("Page.printToPDF", params=pdf_params)
+            check_error(pdf_response)
             img = pdf_response.get("result").get("data")
 
 
