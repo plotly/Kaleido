@@ -39,7 +39,7 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
         pass
     return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
 
-async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, timeout=30):
+async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, timeout=60):
     async with (
             Browser(headless=True, debug=debug, debug_browser=debug) as browser,
             atimeout.timeout(timeout)):
@@ -50,26 +50,30 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, 
             f = script_path.absolute()
         if debug: print(f"Creating tab w/ file: {f.as_uri()}", file=sys.stderr)
         tab = await browser.create_tab(f.as_uri())
+
         if debug: tab.subscribe("*", print_all)
+        if debug: print("Activating page", file=sys.stderr)
+        await tab.send_command("Page.bringToFront")
 
-        if debug: print("About to reload page", file=sys.stderr)
-        await tab.send_command("Page.reload")
-
-        page_loaded = asyncio.get_running_loop().create_future()
-        async def load_done_cb(response):
-            page_loaded.set_result(response)
-        if debug: print("waiting loadEventFired", file=sys.stderr)
-        tab.subscribe("Page.loadEventFired", load_done_cb, repeating=False)
+        page_loaded = tab.subscribe_once("Page.loadEventFired")
 
         if debug: print("Enabling page")
         await tab.send_command("Page.enable")
 
+        while page_loaded.done():
+            print("Clearing previous loadEventFired", file=sys.stderr)
+            page_loaded = tab.subscribe_once("Page.loadEventFired")
+
+
+        if debug: print("About to reload page", file=sys.stderr)
+        await tab.send_command("Page.reload")
+
         await page_loaded
 
-        javascript_enabled = asyncio.get_running_loop().create_future()
-        async def execution_started_cb(response):
-            javascript_enabled.set_result(response)
-        tab.subscribe("Runtime.executionContextCreated", execution_started_cb, repeating=False)
+        javascript_enabled = tab.subscribe_once("Runtime.executionContextCreated")
+        while javascript_enabled.done():
+            print("Clearing previous executionContextCreated", file=sys.stderr)
+            javascript_enabled = tab.subscribe_once("Runtime.executionContextCreated")
 
         if debug: print("Enabling runtime")
         await tab.send_command("Runtime.enable")

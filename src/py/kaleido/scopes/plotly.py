@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import os
 from pathlib import Path
 import tempfile
+import sys
 
 from plotly.graph_objects import Figure
 
@@ -53,6 +54,7 @@ class PlotlyScope():
             )
 
         self._tempdir = tempfile.TemporaryDirectory(dir=Path.home(), prefix=".kaleido-")
+        if self.debug: print(f"Tempdir: {self._tempdir.name}", file=sys.stderr)
         self._tempfile = open(f"{self._tempdir.name}/index.html", "w")
         self._tempfile.write(self.make_page_string())
         self._tempfile.close()
