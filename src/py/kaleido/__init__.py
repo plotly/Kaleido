@@ -4,6 +4,7 @@ import asyncio
 import base64
 import json
 import sys
+import os
 
 import async_timeout as atimeout
 
@@ -39,7 +40,9 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
         pass
     return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
 
-async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=False, timeout=60):
+async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, timeout=60):
+    if debug is None:
+        debug = "KALEIDO-DEBUG" in os.environ
     def check_error(res):
         if 'error' in res:
             raise RuntimeError(str(res))
