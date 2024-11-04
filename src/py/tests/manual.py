@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "json")
 dirname="./test-results/"
 os.makedirs(dirname, exist_ok=True)
@@ -83,5 +84,6 @@ with open(dirname+"log.log", 'w') as sys.stderr:
         except Exception as e:
             print(e, file=sys.stderr)
     print("Done!")
-    print(f"Please check {dirname}log.log")
+    print("Please send over test-results.zip")
 
+shutil.make_archive("test-results", 'zip', dirname)
