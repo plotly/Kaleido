@@ -91,8 +91,9 @@ class PlotlyScope():
     <style id=\"head-style\"></style>
     <title>Kaleido-fier</title>
     <script>
-        window.KaleidoReport = ["no error"];
+        window.KaleidoReport = ["start"];
         function logError(e) {
+            window.KaleidoReport.push("error");
             window.KaleidoReport.push(e);
             if (!navigator.onLine) {
                 window.KaleidoReport.push("offline");
