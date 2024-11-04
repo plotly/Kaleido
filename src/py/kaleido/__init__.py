@@ -19,7 +19,9 @@ _text_formats_ = ("svg", "json",) # eps is a text format? :-O
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
-def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=False):
+def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
+    if debug is None:
+        debug = "KALEIDO-DEBUG" in os.environ
     try:
         _ = asyncio.get_running_loop()
         if debug: print("Got running loop, threading", file=sys.stderr)

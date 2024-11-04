@@ -28,7 +28,9 @@ class PlotlyScope():
     _scope_flags = kaleido._scope_flags_
 
 
-    def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, debug=False, **kwargs):
+    def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, debug=None, **kwargs):
+        if debug is None:
+            debug = "KALEIDO-DEBUG" in os.environ
         self.debug=debug
         # TODO: #2 This is deprecated, this whole FILE is deprecated
         self._plotlyjs = plotlyjs
