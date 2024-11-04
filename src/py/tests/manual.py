@@ -7,6 +7,7 @@ os.makedirs(dirname, exist_ok=True)
 os.environ["KALEIDO-DEBUG"] = "true"
 
 total = len(_all_formats) * 5
+failures = []
 x = 0
 def count():
     global x
@@ -38,6 +39,7 @@ with open(dirname+"log.log", 'w') as sys.stderr:
 
         except Exception as e:
             print(e, file=sys.stderr)
+            failures.append(e)
 
     import asyncio
     print("ASYNC w/ PRETEND BLOCKING".center(50, "&"), file=sys.stderr)
@@ -51,6 +53,7 @@ with open(dirname+"log.log", 'w') as sys.stderr:
                     count()
             except Exception as e:
                 print(e, file=sys.stderr)
+                failures.append(e)
 
     asyncio.run(test_with_blocking_in_async())
     print("ASYNC w/ ASYNC NATIVE".center(50, "&"), file=sys.stderr)
@@ -68,6 +71,7 @@ with open(dirname+"log.log", 'w') as sys.stderr:
                     count()
             except Exception as e:
                 print(e, file=sys.stderr)
+                failures.append(e)
     asyncio.run(test_with_async())
     ## Other
 
@@ -83,7 +87,10 @@ with open(dirname+"log.log", 'w') as sys.stderr:
             count()
         except Exception as e:
             print(e, file=sys.stderr)
-    print("Done!")
-    print("Please send over test-results.zip")
-
+            failures.append(e)
 shutil.make_archive("test-results", 'zip', dirname)
+print("Done!")
+print(f"Successes: {x}/{total}")
+print("Please send over test-results.zip")
+print(f"Logs and images in {dirname}")
+
