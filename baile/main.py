@@ -10,7 +10,7 @@ from .prepare import to_spec, from_response, write_file, DEFAULT_FORMAT
 from .browser import Browser
 
 
-def _verify_figures(path_figs):
+def _get_json_path(path_figs):
     # Work with Paths and directories
     if isinstance(path_figs, str):
         figures = Path(path_figs)
@@ -166,7 +166,7 @@ async def to_image(
         )
 
     # Generate list of jsons
-    figures = _verify_figures(path_figs)
+    figures = _get_json_path(path_figs)
 
     # Create queue
     queue = asyncio.Queue(maxsize=num_tabs + 1)
