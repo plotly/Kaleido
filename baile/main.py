@@ -43,7 +43,7 @@ async def print_from_event(obj):
         print(obj, file=sys.stderr)
 
 
-async def _run_in_chromium(tab, spec, topojson, mapbox_token, debug):
+async def _generate_image(tab, spec, topojson, mapbox_token, debug):
     if debug:
         print(
             f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}",
@@ -128,7 +128,7 @@ async def _from_json_to_img(
 
     print("Calling chromium".center(50, "*"))
     # Comunicate and run script for image in chromium
-    response = await _run_in_chromium(tab, spec, topojson, mapbox_token, debug)
+    response = await _generate_image(tab, spec, topojson, mapbox_token, debug)
 
     # Get image
     img_data = from_response(response)
