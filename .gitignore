@@ -13,3 +13,4 @@ __pycache__
 
 # Artifacts from Build
 src/js/build
+test-results*
