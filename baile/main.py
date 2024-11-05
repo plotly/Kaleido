@@ -37,7 +37,7 @@ def _load_figure(figure):
     return figure, name
 
 
-async def print_todo(obj):
+async def print_from_event(obj):
     print(f"Event in Tab: {obj["method"]}", file=sys.stderr)
     if obj["method"] == "Runtime.consoleAPICalled":
         print(obj, file=sys.stderr)
@@ -51,7 +51,7 @@ async def _run_in_chromium(tab, spec, topojson, mapbox_token, debug):
         )
 
     if debug and "*" not in list(tab.sessions.values())[0].subscriptions:
-        tab.subscribe("*", print_todo)
+        tab.subscribe("*", print_from_event)
 
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
