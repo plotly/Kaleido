@@ -6,7 +6,7 @@ import warnings
 import asyncio
 import async_timeout as atimeout
 
-from .fig_properties import to_spec, from_response, write_file, DEFAULT_FORMAT
+from .fig_properties import to_spec, from_response, _write_file, DEFAULT_FORMAT
 from .browser import Browser
 
 
@@ -141,7 +141,7 @@ async def _run_kaleido_in_tab(
     if debug:
         print("Writing file".center(50, "*"))
     # New thread, this avoid the blocking of the event loop
-    await asyncio.to_thread(write_file, img_data, output_file)
+    await asyncio.to_thread(_write_file, img_data, output_file)
     if debug:
         print("Returning tab".center(50, "*"))
     # Put the tab in the queue

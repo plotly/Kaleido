@@ -106,7 +106,7 @@ def from_response(response):
     return img
 
 
-def write_file(img_data, output_file):
+def _write_file(img_data, output_file):
     try:
         # Write image file
         with open(output_file, "wb") as out_file:
