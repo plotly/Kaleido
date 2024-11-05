@@ -120,7 +120,7 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
     return result
 
 
-async def _from_json_to_img(
+async def _run_kaleido_in_tab(
     tab, figure, queue, layout_opts, topojson, mapbox_token, path, name, debug
 ):
     # spec creation
@@ -202,7 +202,7 @@ async def to_image(
                     )
                 )
             async with atimeout.timeout(60 * 5) as cm:
-                await _from_json_to_img(
+                await _run_kaleido_in_tab(
                     tab,
                     figure,
                     queue,
