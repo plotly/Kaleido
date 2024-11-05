@@ -25,7 +25,7 @@ def _get_json_path(path_figs):
         return [path_figs]
 
 
-def _verify_path_and_name(figure):
+def _load_figure(figure):
     file_path = None
     # Set json
     if os.path.isfile(figure):
@@ -187,7 +187,7 @@ async def to_image(
 
         for figure in figures:
             # Check figure and name
-            figure, name = _verify_path_and_name(
+            figure, name = _load_figure(
                 figure
             )  # This verify or can set figure and name
             if name.startswith("mapbox"):
