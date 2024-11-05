@@ -148,7 +148,7 @@ async def _run_kaleido_in_tab(
     await queue.put(tab)
 
 
-async def to_image(
+async def create_image(
     path_figs,
     path,
     num_tabs=1,

@@ -38,7 +38,7 @@ elif not arg_dict["benchmark"] and not arg_dict["n_tabs"]:
 # Function to process the images
 async def process_images():
     try:
-        await baile.to_image(
+        await baile.create_image(
             path_figs=arg_dict["mock_path"],
             path=str(results_dir),
             num_tabs=arg_dict["n_tabs"],
