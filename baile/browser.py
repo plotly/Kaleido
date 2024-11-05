@@ -3,7 +3,7 @@ import warnings
 import choreographer as choreo
 
 from .tab import Tab
-from .prepare import SCRIPT_PATH
+from .fig_properties import SCRIPT_PATH
 
 
 class Browser(choreo.browser.Browser):

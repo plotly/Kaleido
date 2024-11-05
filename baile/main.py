@@ -6,7 +6,7 @@ import warnings
 import asyncio
 import async_timeout as atimeout
 
-from .prepare import to_spec, from_response, write_file, DEFAULT_FORMAT
+from .fig_properties import to_spec, from_response, write_file, DEFAULT_FORMAT
 from .browser import Browser
 
 
