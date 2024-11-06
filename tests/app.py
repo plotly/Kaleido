@@ -38,7 +38,8 @@ elif not arg_dict["benchmark"] and not arg_dict["n_tabs"]:
 
 # Get logger and set handler
 logging.StreamHandler(stream=sys.stderr)
-logger = logging.getLogger("tests/app.py")
+relative_path = Path(__file__).relative_to(Path.cwd())
+logger = logging.getLogger(str(relative_path))
 
 # Function to process the images
 async def process_images():
