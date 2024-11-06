@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 import argparse
 import asyncio
+import logging
 import baile
 
 # Extract jsons of mocks
@@ -47,9 +48,9 @@ async def process_images():
         )
         return "Successful"
     except Exception as e:
-        print("No to image".center(30, "%"))
-        print(e)
-        print("***")
+        logging.exception("No to image".center(30, "%"))
+        logging.exception(e)
+        logging.exception("***")
         return e
 
 
@@ -76,7 +77,7 @@ if __name__ == "__main__":
             results["error"] = result_message
 
         # Convert results to JSON and print
-        print("Benchmark".center(30, "*"))
-        print(json.dumps(results, indent=4))
+        logging.info("Benchmark".center(30, "*"))
+        logging.info(json.dumps(results, indent=4))
     else:
         asyncio.run(process_images())

@@ -1,6 +1,7 @@
 from pathlib import Path
 import base64
 import json
+import logging
 
 
 # constants
@@ -112,5 +113,5 @@ def _write_file(img_data, output_file):
         with open(output_file, "wb") as out_file:
             out_file.write(img_data)
     except Exception as e:
-        print(f"Error writing {output_file}: {e}")
+        logging.error(f"Error writing {output_file}: {e}")
         raise
