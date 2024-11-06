@@ -15,6 +15,7 @@ logging.basicConfig(level=logging.WARNING)
 stderr_handler = logging.StreamHandler(stream=sys.stderr)
 logger = logging.getLogger(__name__)
 
+
 def _get_json_path(path_figs):
     # Work with Paths and directories
     if isinstance(path_figs, str):
