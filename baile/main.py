@@ -10,6 +10,11 @@ from .fig_properties import to_spec, from_response, _write_file, DEFAULT_FORMAT
 from .browser import Browser
 
 
+# Get logger and add handler
+logging.basicConfig(level=logging.WARNING)
+stderr_handler = logging.StreamHandler(stream=sys.stderr)
+logger = logging.getLogger(__name__)
+
 def _get_json_path(path_figs):
     # Work with Paths and directories
     if isinstance(path_figs, str):
@@ -38,13 +43,13 @@ def _load_figure(figure):
 
 
 async def print_from_event(obj):
-    logging.info(f"Event in Tab: {obj['method']}")
+    logger.info(f"Event in Tab: {obj['method']}")
     if obj["method"] == "Runtime.consoleAPICalled":
-        logging.info(obj)
+        logger.info(obj)
 
 
 async def _generate_image(tab, spec, topojson, mapbox_token, debug):
-    logging.info(
+    logger.info(
         f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}"
     )
 
@@ -53,29 +58,29 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
 
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
-    logging.debug("subscribe Runtime.executionContextCreated")
+    logger.debug("subscribe Runtime.executionContextCreated")
 
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
-    logging.debug("subscribe Page.loadEventFired")
+    logger.debug("subscribe Page.loadEventFired")
 
     # send request to enable target to generate events and run scripts
     await tab.send_command("Page.enable")
-    logging.debug("Success await tab.send_command('Page.enable')")
+    logger.debug("Success await tab.send_command('Page.enable')")
 
     await tab.reload()
-    logging.debug("Success await tab.reload()")
+    logger.debug("Success await tab.reload()")
 
     await event_page_fired
-    logging.debug(
+    logger.debug(
         f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
     )
 
     await tab.send_command("Runtime.enable")
-    logging.debug("Success await tab.send_command('Runtime.enable')")
+    logger.debug("Success await tab.send_command('Runtime.enable')")
 
     # await event futures
     await event_runtime
-    logging.debug(
+    logger.debug(
         f"Success await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
     )
 
@@ -102,7 +107,7 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
-    logging.debug(
+    logger.debug(
         "Succes await tab.send_command('Runtime.callFunctionOn', params=params)"
     )
 
@@ -115,7 +120,7 @@ async def _run_kaleido_in_tab(
     # spec creation
     spec = to_spec(figure, layout_opts)
 
-    logging.debug("Calling chromium".center(50, "*"))
+    logger.debug("Calling chromium".center(50, "*"))
     # Comunicate and run script for image in chromium
     response = await _generate_image(tab, spec, topojson, mapbox_token, debug)
 
@@ -127,10 +132,10 @@ async def _run_kaleido_in_tab(
         layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
     )
     output_file = f"{path}/{name}.{format_path}"
-    logging.debug("Writing file".center(50, "*"))
+    logger.debug("Writing file".center(50, "*"))
     # New thread, this avoid the blocking of the event loop
     await asyncio.to_thread(_write_file, img_data, output_file)
-    logging.debug("Returning tab".center(50, "*"))
+    logger.debug("Returning tab".center(50, "*"))
     # Put the tab in the queue
     await queue.put(tab)
 
@@ -145,16 +150,13 @@ async def create_image(
     debug=None,
     headless=True,
 ):
-    stderr_handler = logging.StreamHandler(stream=sys.stderr)
+    # Set logger level
     if debug:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.WARNING)
-    logging.getLogger().addHandler(stderr_handler)
+        logger.setLevel(logging.DEBUG)
 
     # Warning if path=None
     if not path:
-        logging.warning(
+        logger.warning(
             "Image instance will not be saved as a file. Provide a path to save it."
         )
 
@@ -170,7 +172,7 @@ async def create_image(
     ):
 
         async def print_all(r):
-            logging.info(f"All subscription: {r}")
+            logger.info(f"All subscription: {r}")
 
         if debug:
             browser.subscribe("*", print_all)
@@ -185,9 +187,9 @@ async def create_image(
             )  # This verify or can set figure and name
             if name.startswith("mapbox"):
                 continue
-            logging.debug("Got figure, getting tab".center(50, "*"))
+            logger.debug("Got figure, getting tab".center(50, "*"))
             tab = await queue.get()
-            logging.debug(
+            logger.debug(
                 f"Awaiting wrapper for img {name} {path} on tab {tab}".center(100, "*")
             )
             async with atimeout.timeout(60 * 5) as cm:
@@ -202,4 +204,4 @@ async def create_image(
                     name,
                     debug,
                 )
-            logging.info(f"Timeout result: {cm.expired}")
+            logger.info(f"Timeout result: {cm.expired}")
