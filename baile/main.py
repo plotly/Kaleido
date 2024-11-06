@@ -2,7 +2,6 @@ from pathlib import Path
 import os
 import sys
 import json
-import warnings
 import logging
 import asyncio
 import async_timeout as atimeout
@@ -163,9 +162,8 @@ async def create_image(
 ):
     # Warning if path=None
     if not path:
-        warnings.warn(
-            "Image instance will not be saved as a file. Provide a path to save it.",
-            UserWarning,
+        logging.warning(
+            "Image instance will not be saved as a file. Provide a path to save it."
         )
 
     # Generate list of jsons
