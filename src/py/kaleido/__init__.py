@@ -21,7 +21,7 @@ _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
 def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
     if debug is None:
-        debug = "KALEIDO-DEBUG" in os.environ
+        debug = "KALEIDO-DEBUG" in os.environ or "KALEIDO_DEBUG" in os.environ
     try:
         _ = asyncio.get_running_loop()
         if debug: print("Got running loop, threading", file=sys.stderr)
@@ -44,7 +44,7 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
 
 async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, timeout=60):
     if debug is None:
-        debug = "KALEIDO-DEBUG" in os.environ
+        debug = "KALEIDO-DEBUG" in os.environ or "KALEIDO_DEBUG" in os.environ
     def check_error(res):
         if 'error' in res:
             raise RuntimeError(str(res))
