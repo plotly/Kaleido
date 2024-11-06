@@ -38,57 +38,46 @@ def _load_figure(figure):
 
 
 async def print_from_event(obj):
-    logging.info(f"Event in Tab: {obj["method"]}", file=sys.stderr)
+    logging.info(f"Event in Tab: {obj['method']}")
     if obj["method"] == "Runtime.consoleAPICalled":
-        logging.info(obj, file=sys.stderr)
+        logging.info(obj)
 
 
 async def _generate_image(tab, spec, topojson, mapbox_token, debug):
-    if debug:
-        logging.info(
-            f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}",
-            file=sys.stderr,
-        )
+    logging.info(
+        f"The futures in sessions {list(tab.sessions.values())[0].subscriptions_futures}"
+    )
 
     if debug and "*" not in list(tab.sessions.values())[0].subscriptions:
         tab.subscribe("*", print_from_event)
 
     # subscribe events one time
     event_runtime = tab.subscribe_once("Runtime.executionContextCreated")
-    if debug:
-        logging.debug("subscribe Runtime.executionContextCreated", file=sys.stderr)
+    logging.debug("subscribe Runtime.executionContextCreated")
 
     event_page_fired = tab.subscribe_once("Page.loadEventFired")
-    if debug:
-        logging.debug("subscribe Page.loadEventFired", file=sys.stderr)
-    # send request to enable target to generate events and run scripts
+    logging.debug("subscribe Page.loadEventFired")
 
+    # send request to enable target to generate events and run scripts
     await tab.send_command("Page.enable")
-    if debug:
-        logging.debug("Success await tab.send_command('Page.enable')", file=sys.stderr)
+    logging.debug("Success await tab.send_command('Page.enable')")
+
     await tab.reload()
-    if debug:
-        logging.debug("Success await tab.reload()", file=sys.stderr)
+    logging.debug("Success await tab.reload()")
+
     await event_page_fired
-    if debug:
-        logging.debug(
-            f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
-            file=sys.stderr,
-        )
+    logging.debug(
+        f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
+    )
 
     await tab.send_command("Runtime.enable")
-    if debug:
-        logging.debug(
-            "Success await tab.send_command('Runtime.enable')", file=sys.stderr
-        )
+    logging.debug("Success await tab.send_command('Runtime.enable')")
 
     # await event futures
     await event_runtime
-    if debug:
-        logging.debug(
-            f"Success await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}",
-            file=sys.stderr,
-        )
+    logging.debug(
+        f"Success await event_runtime, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
+    )
 
     # use event result
     execution_context_id = event_runtime.result()["params"]["context"]["id"]
@@ -113,11 +102,9 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
-    if debug:
-        logging.debug(
-            "Succes await tab.send_command('Runtime.callFunctionOn', params=params)",
-            file=sys.stderr,
-        )
+    logging.debug(
+        "Succes await tab.send_command('Runtime.callFunctionOn', params=params)"
+    )
 
     return result
 
@@ -140,12 +127,10 @@ async def _run_kaleido_in_tab(
         layout_opts.get("format", DEFAULT_FORMAT) if layout_opts else DEFAULT_FORMAT
     )
     output_file = f"{path}/{name}.{format_path}"
-    if debug:
-        logging.debug("Writing file".center(50, "*"))
+    logging.debug("Writing file".center(50, "*"))
     # New thread, this avoid the blocking of the event loop
     await asyncio.to_thread(_write_file, img_data, output_file)
-    if debug:
-        logging.debug("Returning tab".center(50, "*"))
+    logging.debug("Returning tab".center(50, "*"))
     # Put the tab in the queue
     await queue.put(tab)
 
@@ -160,6 +145,13 @@ async def create_image(
     debug=None,
     headless=True,
 ):
+    stderr_handler = logging.StreamHandler(stream=sys.stderr)
+    if debug:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARNING)
+    logging.getLogger().addHandler(stderr_handler)
+
     # Warning if path=None
     if not path:
         logging.warning(
@@ -178,7 +170,7 @@ async def create_image(
     ):
 
         async def print_all(r):
-            logging.info(f"All subscription: {r}", file=sys.stderr)
+            logging.info(f"All subscription: {r}")
 
         if debug:
             browser.subscribe("*", print_all)
@@ -193,15 +185,11 @@ async def create_image(
             )  # This verify or can set figure and name
             if name.startswith("mapbox"):
                 continue
-            if debug:
-                logging.debug("Got figure, getting tab".center(50, "*"))
+            logging.debug("Got figure, getting tab".center(50, "*"))
             tab = await queue.get()
-            if debug:
-                logging.debug(
-                    f"Awaiting wrapper for img {name} {path} on tab {tab}".center(
-                        100, "*"
-                    )
-                )
+            logging.debug(
+                f"Awaiting wrapper for img {name} {path} on tab {tab}".center(100, "*")
+            )
             async with atimeout.timeout(60 * 5) as cm:
                 await _run_kaleido_in_tab(
                     tab,
@@ -214,5 +202,4 @@ async def create_image(
                     name,
                     debug,
                 )
-            if debug:
-                logging.info(f"Timeout result: {cm.expired}")
+            logging.info(f"Timeout result: {cm.expired}")
