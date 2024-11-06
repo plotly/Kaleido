@@ -1,5 +1,6 @@
 from time import process_time
 from pathlib import Path
+import sys
 import json
 import argparse
 import asyncio
@@ -35,6 +36,9 @@ if arg_dict["benchmark"] and not arg_dict["n_tabs"]:
 elif not arg_dict["benchmark"] and not arg_dict["n_tabs"]:
     arg_dict["n_tabs"] = 4
 
+# Get logger and set handler
+logging.StreamHandler(stream=sys.stderr)
+logger = logging.getLogger("tests/app.py")
 
 # Function to process the images
 async def process_images():
@@ -42,15 +46,15 @@ async def process_images():
         await baile.create_image(
             path_figs=arg_dict["mock_path"],
             path=str(results_dir),
-            num_tabs=arg_dict["n_tabs"],
             debug=True,
+            num_tabs=arg_dict["n_tabs"],
             headless=arg_dict["headless"],
         )
         return "Successful"
     except Exception as e:
-        logging.error("No to image".center(30, "%"))
-        logging.error(e)
-        logging.error("***")
+        logger.error("No to image".center(30, "%"))
+        logger.error(e)
+        logger.error("***")
         return e
 
 
@@ -77,8 +81,8 @@ if __name__ == "__main__":
             results["error"] = result_message
 
         # Convert results to JSON and print
-        logging.basicConfig(level=logging.DEBUG)
-        logging.info("Benchmark".center(30, "*"))
-        logging.info(json.dumps(results, indent=4))
+        logger.setLevel(logging.DEBUG)
+        logger.info("Benchmark".center(30, "*"))
+        logger.info(json.dumps(results, indent=4))
     else:
         asyncio.run(process_images())
