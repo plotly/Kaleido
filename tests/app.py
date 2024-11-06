@@ -48,9 +48,9 @@ async def process_images():
         )
         return "Successful"
     except Exception as e:
-        logging.exception("No to image".center(30, "%"))
-        logging.exception(e)
-        logging.exception("***")
+        logging.error("No to image".center(30, "%"))
+        logging.error(e)
+        logging.error("***")
         return e
 
 
@@ -77,6 +77,7 @@ if __name__ == "__main__":
             results["error"] = result_message
 
         # Convert results to JSON and print
+        logging.basicConfig(level=logging.DEBUG)
         logging.info("Benchmark".center(30, "*"))
         logging.info(json.dumps(results, indent=4))
     else:
