@@ -1,9 +1,12 @@
+from pathlib import Path
 import warnings
 
 import choreographer as choreo
 
 from .tab import Tab
-from .fig_properties import SCRIPT_PATH
+
+# Path of the page to use
+SCRIPT_PATH = Path(__file__).resolve().parent / "vendor" / "index.html"
 
 
 class Browser(choreo.browser.Browser):

@@ -4,7 +4,6 @@ import json
 
 
 # constants
-SCRIPT_PATH = Path(__file__).resolve().parent / "vendor" / "index.html"
 DEFAULT_FORMAT = "png"
 DEFAULT_SCALE = 1
 DEFAULT_WIDTH = 700
