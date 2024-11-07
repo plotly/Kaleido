@@ -50,7 +50,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, t
             raise RuntimeError(str(res))
 
     async with (
-            Browser(headless=True, debug=debug, debug_browser=sys.stderr) as browser,
+            Browser(headless=True, debug=debug, debug_browser=debug) as browser,
             atimeout.timeout(timeout)):
         async def print_all(r):
             print(f"All subscription: {r}", file=sys.stderr)
