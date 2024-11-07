@@ -7,23 +7,8 @@ from .fig_properties import SCRIPT_PATH
 
 
 class Browser(choreo.browser.Browser):
-    def __init__(
-        self,
-        path=None,
-        headless=True,
-        loop=None,
-        executor=None,
-        debug=False,
-        debug_browser=None,
-    ):
-        super().__init__(
-            path,
-            headless,
-            loop,
-            executor,
-            debug,
-            debug_browser,
-        )
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     async def create_tab(self, url=SCRIPT_PATH.as_uri(), width=None, height=None):
         if not self.loop:
