@@ -5,10 +5,13 @@ import inspect
 DEBUG1 = 10
 DEBUG2 = 5
 
+# Create the logging
 basicConfig = logging.basicConfig
 
+# Set name
 logger = logging.getLogger(__name__)
 
+# Overwrite functions
 def debug2(message):
     logger.name = __name__+":"+inspect.stack()[0].function
     logger.debug(msg=message, stacklevel=DEBUG2)
