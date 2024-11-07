@@ -4,8 +4,10 @@ import sys
 import json
 import argparse
 import asyncio
-import logging
 import baile
+
+from baile import custom_logging as logging
+
 
 # Extract jsons of mocks
 dir_in = Path(__file__).resolve().parent / "mocks"
@@ -36,10 +38,6 @@ if arg_dict["benchmark"] and not arg_dict["n_tabs"]:
 elif not arg_dict["benchmark"] and not arg_dict["n_tabs"]:
     arg_dict["n_tabs"] = 4
 
-# Get logger and set handler
-logging.StreamHandler(stream=sys.stderr)
-relative_path = Path(__file__).relative_to(Path.cwd())
-logger = logging.getLogger(str(relative_path))
 
 # Function to process the images
 async def process_images():
@@ -53,9 +51,9 @@ async def process_images():
         )
         return "Successful"
     except Exception as e:
-        logger.error("No to image".center(30, "%"))
-        logger.error(e)
-        logger.error("***")
+        logging.error("No to image".center(30, "%"))
+        logging.error(e)
+        logging.error("***")
         return e
 
 
@@ -82,8 +80,8 @@ if __name__ == "__main__":
             results["error"] = result_message
 
         # Convert results to JSON and print
-        logger.setLevel(logging.DEBUG)
-        logger.info("Benchmark".center(30, "*"))
-        logger.info(json.dumps(results, indent=4))
+        logging.logger.setLevel(logging.DEBUG1)
+        logging.info("Benchmark".center(30, "*"))
+        logging.info(json.dumps(results, indent=4))
     else:
         asyncio.run(process_images())
