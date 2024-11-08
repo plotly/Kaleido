@@ -7,6 +7,8 @@ import async_timeout as atimeout
 
 from .fig_properties import to_spec, from_response, _write_file, DEFAULT_FORMAT
 from .browser import Browser
+import chereographer as choreo
+
 from . import custom_logging as logging
 
 
@@ -59,7 +61,11 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
     logging.debug1("subscribe Page.loadEventFired")
 
     # send request to enable target to generate events and run scripts
-    await tab.send_command("Page.enable")
+    response = await tab.send_command("Page.enable")
+    if "error" in response:
+        raise RuntimeError(
+            "Could not enable the Page"
+        ) from choreo.DevtoolsProtocolError(response)
     logging.debug2("Success await tab.send_command('Page.enable')")
 
     await tab.reload()
@@ -70,7 +76,11 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
         f"Succes await event_page_fired, the subscriptions now are {list(tab.sessions.values())[0].subscriptions_futures}"
     )
 
-    await tab.send_command("Runtime.enable")
+    response = await tab.send_command("Runtime.enable")
+    if "error" in response:
+        raise RuntimeError(
+            "Could not enable the Runtime"
+        ) from choreo.DevtoolsProtocolError(response)
     logging.debug1("Success await tab.send_command('Runtime.enable')")
 
     # await event futures
@@ -102,6 +112,10 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
+    if "error" in result:
+        raise RuntimeError(
+            "Could not run callFunctionOn in Runtime"
+        ) from choreo.DevtoolsProtocolError(result)
     logging.debug2(
         "Succes await tab.send_command('Runtime.callFunctionOn', params=params)"
     )
