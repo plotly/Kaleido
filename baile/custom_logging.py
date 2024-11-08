@@ -38,5 +38,3 @@ def warning(message):
 def critical(message):
     function = inspect.stack()[0].function
     logger.critical(f"{function}: {message}")
-
-logger.setLevel(DEBUG2) #Just to test it
