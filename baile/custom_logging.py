@@ -1,37 +1,40 @@
+import sys
 import logging
 import inspect
 
 # new constants
-DEBUG1 = 10
 DEBUG2 = 5
 
 # Create the logging
 basicConfig = logging.basicConfig
+logging.addLevelName(DEBUG2, "DEBUG2")
 
 # Set name
 logger = logging.getLogger(__name__)
 
 # Overwrite functions
 def debug2(message):
-    logger.name = __name__+":"+inspect.stack()[0].function
-    logger.debug(msg=message, stacklevel=DEBUG2)
+    if logger.isEnabledFor(DEBUG2):
+        logger._log(DEBUG2, message)
 
 def debug1(message):
-    logger.name = __name__+":"+inspect.stack()[0].function
-    logger.debug(msg=message, stacklevel=DEBUG1)
+    function = inspect.stack()[0].function
+    logger.debug(f"{function}: {message}")
 
 def info(message):
-    logger.name = __name__+":"+inspect.stack()[0].function
-    logger.info(msg=message)
+    function = inspect.stack()[0].function
+    logger.info(f"{function}: {message}")
 
 def error(message):
-    logger.name = __name__+":"+inspect.stack()[0].function
-    logger.error(msg=message)
+    function = inspect.stack()[0].function
+    logger.error(f"{function}: {message}")
 
 def warning(message):
-    logger.name = __name__+":"+inspect.stack()[0].function
-    logger.warning(msg=message)
+    function = inspect.stack()[0].function
+    logger.warning(f"{function}: {message}")
 
 def critical(message):
-    logger.name = __name__+":"+inspect.stack()[0].function
-    logger.critical(msg=message)
+    function = inspect.stack()[0].function
+    logger.critical(f"{function}: {message}")
+
+logger.setLevel(DEBUG2) #Just to test it
