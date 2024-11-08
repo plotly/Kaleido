@@ -1,8 +1,6 @@
-from pathlib import Path
-import sys
 import base64
 import json
-import logging
+from . import custom_logging as logging
 
 
 # constants
@@ -12,9 +10,6 @@ DEFAULT_WIDTH = 700
 DEFAULT_HEIGHT = 500
 TEXT_FORMATS = ("svg", "json")  # eps
 SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json")  # pdf and eps
-
-logging.StreamHandler(stream=sys.stderr)
-logger = logging.getLogger(__name__)
 
 
 def get_layout_info(layout_opts):
@@ -116,5 +111,5 @@ def _write_file(img_data, output_file):
         with open(output_file, "wb") as out_file:
             out_file.write(img_data)
     except Exception as e:
-        logger.error(f"Error writing {output_file}: {e}")
+        logging.error(f"Error writing {output_file}: {e}")
         raise
