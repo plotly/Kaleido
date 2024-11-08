@@ -6,8 +6,6 @@ import argparse
 import asyncio
 import baile
 
-from baile import custom_logging as logging
-
 
 # Extract jsons of mocks
 dir_in = Path(__file__).resolve().parent / "mocks"
@@ -51,9 +49,9 @@ async def process_images():
         )
         return "Successful"
     except Exception as e:
-        logging.error("No to image".center(30, "%"))
-        logging.error(e)
-        logging.error("***")
+        print("No to image".center(30, "%"))
+        print(e)
+        print("***")
         return e
 
 
@@ -80,8 +78,7 @@ if __name__ == "__main__":
             results["error"] = result_message
 
         # Convert results to JSON and print
-        logging.logger.setLevel(logging.DEBUG1)
-        logging.info("Benchmark".center(30, "*"))
-        logging.info(json.dumps(results, indent=4))
+        print("Benchmark".center(30, "*"))
+        print(json.dumps(results, indent=4))
     else:
         asyncio.run(process_images())
