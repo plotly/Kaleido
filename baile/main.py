@@ -9,6 +9,8 @@ import async_timeout as atimeout
 from .fig_properties import to_spec, from_response, _write_file, DEFAULT_FORMAT
 from .browser import Browser
 
+import chereographer as choreo
+
 
 def _get_json_path(path_figs):
     # Work with Paths and directories
@@ -63,7 +65,11 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
         print("subscribe Page.loadEventFired", file=sys.stderr)
     # send request to enable target to generate events and run scripts
 
-    await tab.send_command("Page.enable")
+    response = await tab.send_command("Page.enable")
+    if "error" in response:
+        raise RuntimeError(
+            "Could not enable the Page"
+        ) from choreo.DevtoolsProtocolError(response)
     if debug:
         print("Success await tab.send_command('Page.enable')", file=sys.stderr)
     await tab.reload()
@@ -76,7 +82,11 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
             file=sys.stderr,
         )
 
-    await tab.send_command("Runtime.enable")
+    response = await tab.send_command("Runtime.enable")
+    if "error" in response:
+        raise RuntimeError(
+            "Could not enable the Runtime"
+        ) from choreo.DevtoolsProtocolError(response)
     if debug:
         print("Success await tab.send_command('Runtime.enable')", file=sys.stderr)
 
@@ -111,6 +121,10 @@ async def _generate_image(tab, spec, topojson, mapbox_token, debug):
 
     # send request to run script in chromium
     result = await tab.send_command("Runtime.callFunctionOn", params=params)
+    if "error" in result:
+        raise RuntimeError(
+            "Could not run callFunctionOn in Runtime"
+        ) from choreo.DevtoolsProtocolError(result)
     if debug:
         print(
             "Succes await tab.send_command('Runtime.callFunctionOn', params=params)",
