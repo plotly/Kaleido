@@ -17,24 +17,24 @@ logger.addHandler(handler)
 # Overwrite functions
 def debug2(message):
     function = inspect.stack()[0].function
-    logger._log(DEBUG2, f"{function}: {message}", ()) # The () is for the empty args
+    logger._log(DEBUG2, f"{function.capitalize()}: {message}", ()) # The () is for the empty args
 
 def debug1(message):
     function = inspect.stack()[0].function
-    logger.debug(f"{function}: {message}")
+    logger.debug(f"{function.capitalize()}: {message}")
 
 def info(message):
     function = inspect.stack()[0].function
-    logger.info(f"{function}: {message}")
+    logger.info(f"{function.capitalize()}: {message}")
 
 def error(message):
     function = inspect.stack()[0].function
-    logger.error(f"{function}: {message}")
+    logger.error(f"{function.capitalize()}: {message}")
 
 def warning(message):
     function = inspect.stack()[0].function
-    logger.warning(f"{function}: {message}")
+    logger.warning(f"{function.capitalize()}: {message}")
 
 def critical(message):
     function = inspect.stack()[0].function
-    logger.critical(f"{function}: {message}")
+    logger.critical(f"{function.capitalize()}: {message}")
