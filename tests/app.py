@@ -1,6 +1,5 @@
 from time import process_time
 from pathlib import Path
-import sys
 import json
 import argparse
 import asyncio
