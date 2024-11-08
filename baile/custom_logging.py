@@ -16,9 +16,10 @@ logger.addHandler(handler)
 
 def _get_name():
     upper_frame = inspect.currentframe().f_back.f_back
-    module = inspect.getmodule(upper_frame).__name__
+    module_frame = inspect.getmodule(upper_frame)
+    module = module_frame.__name__ if module_frame else inspect.getmodule(upper_frame.f_back).__name__
     module_function = upper_frame.f_code.co_name
-    return f"{module}:{module_function}"
+    return f"{module}:{module_function}()"
 
 # Overwrite functions
 def debug2(message):
