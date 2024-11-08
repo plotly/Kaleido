@@ -16,9 +16,8 @@ logger.addHandler(handler)
 
 # Overwrite functions
 def debug2(message):
-    if logger.isEnabledFor(DEBUG2):
-        function = inspect.stack()[0].function
-        logger._log(DEBUG2, f"{function}: {message}", ()) # The () is for the empty args
+    function = inspect.stack()[0].function
+    logger._log(DEBUG2, f"{function}: {message}", ()) # The () is for the empty args
 
 def debug1(message):
     function = inspect.stack()[0].function
