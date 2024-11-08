@@ -1,3 +1,4 @@
+import sys
 import logging
 import inspect
 
@@ -8,8 +9,10 @@ DEBUG2 = 5
 basicConfig = logging.basicConfig
 logging.addLevelName(DEBUG2, "DEBUG2")
 
-# Set name
+# Set logger
 logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(stream=sys.stderr)
+logger.addHandler(handler)
 
 # Overwrite functions
 def debug2(message):
