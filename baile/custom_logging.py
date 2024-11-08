@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 # Overwrite functions
 def debug2(message):
     if logger.isEnabledFor(DEBUG2):
-        logger._log(DEBUG2, message)
+        logger._log(DEBUG2, message, ()) # The () is for the empty args
 
 def debug1(message):
     function = inspect.stack()[0].function
