@@ -15,6 +15,7 @@ handler = logging.StreamHandler(stream=sys.stderr)
 logger.addHandler(handler)
 
 
+# Improve the name
 def _get_name():
     upper_frame = inspect.currentframe().f_back.f_back
     module_frame = inspect.getmodule(upper_frame)
