@@ -12,10 +12,15 @@ logging.addLevelName(DEBUG2, "DEBUG2")
 # Set logger
 logger = logging.getLogger(__name__)
 
-# Set handler
+# Create handler
 handler = logging.StreamHandler(stream=sys.stderr)
-logger.addHandler(handler)
 
+# Create Formatter
+formatter = logging.Formatter('%(asctime)s - %(message)s') #TODO
+
+# Customize logger
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 # Improve the name
 def _get_name():
