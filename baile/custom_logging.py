@@ -33,9 +33,7 @@ def _get_name():
 # Custom debug with custom level
 def debug2(message):
     function = inspect.stack()[0].function
-    logger._log(
-        DEBUG2, f"{function.upper()}:{_get_name()}: {message}", ()
-    )  # The () is for the empty args
+    logger.log(DEBUG2, f"{function.upper()}:{_get_name()}: {message}")
 
 
 # Wrap function
