@@ -27,13 +27,18 @@ def _get_name():
     logging_function = inspect.currentframe().f_back.f_code.co_name
     upper_frame = inspect.currentframe().f_back.f_back
     module_frame = inspect.getmodule(upper_frame)
-    module = (
-        module_frame.__name__
+    package = (
+        module_frame.__package__
         if module_frame
-        else inspect.getmodule(upper_frame.f_back).__name__
+        else inspect.getmodule(upper_frame.f_back).__package__
+    )
+    file = (
+    module_frame.__name__
+    if module_frame
+    else inspect.getmodule(upper_frame.f_back).__name__
     )
     module_function = upper_frame.f_code.co_name
-    return f"{logging_function.upper()}:{module}:{module_function}()"
+    return f"{logging_function.upper()} - {package}:{file}:{module_function}()"
 
 
 # Custom debug with custom level
