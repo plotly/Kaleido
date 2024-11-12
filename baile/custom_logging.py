@@ -24,7 +24,7 @@ logger.addHandler(handler)
 
 # Improve the name
 def _get_name():
-    logging_function = inspect.currentframe().f_back.f_code.co_name
+    level = inspect.currentframe().f_back.f_code.co_name
     upper_frame = inspect.currentframe().f_back.f_back
     module_frame = inspect.getmodule(upper_frame)
     package = (
@@ -38,7 +38,7 @@ def _get_name():
     else inspect.getmodule(upper_frame.f_back).__name__
     )
     module_function = upper_frame.f_code.co_name
-    return f"{logging_function.upper()} - {package}:{file}:{module_function}()"
+    return f"{level.upper()} - {package}:{file}:{module_function}()"
 
 
 # Custom debug with custom level
