@@ -38,31 +38,31 @@ def debug2(message):
     )  # The () is for the empty args
 
 
-# Overwrite function
+# Wrap function
 def debug1(message):
     function = inspect.stack()[0].function
     logger.debug(f"{function.upper()}:{_get_name()}: {message}")
 
 
-# Overwrite function
+# Wrap function
 def info(message):
     function = inspect.stack()[0].function
     logger.info(f"{function.upper()}:{_get_name()}: {message}")
 
 
-# Overwrite function
+# Wrap function
 def error(message):
     function = inspect.stack()[0].function
     logger.error(f"{function.upper()}:{_get_name()}: {message}")
 
 
-# Overwrite function
+# Wrap function
 def warning(message):
     function = inspect.stack()[0].function
     logger.warning(f"{function.upper()}:{_get_name()}: {message}")
 
 
-# Overwrite function
+# Wrap function
 def critical(message):
     function = inspect.stack()[0].function
     logger.critical(f"{function.upper()}:{_get_name()}: {message}")
