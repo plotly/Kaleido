@@ -19,6 +19,7 @@ logger.addHandler(handler)
 
 # Improve the name
 def _get_name():
+    logging_function = inspect.currentframe().f_back.f_code.co_name
     upper_frame = inspect.currentframe().f_back.f_back
     module_frame = inspect.getmodule(upper_frame)
     module = (
@@ -27,40 +28,34 @@ def _get_name():
         else inspect.getmodule(upper_frame.f_back).__name__
     )
     module_function = upper_frame.f_code.co_name
-    return f"{module}:{module_function}()"
+    return f"{logging_function.upper()}:{module}:{module_function}()"
 
 
 # Custom debug with custom level
 def debug2(message):
-    function = inspect.stack()[0].function
-    logger.log(DEBUG2, f"{function.upper()}:{_get_name()}: {message}")
+    logger.log(DEBUG2, f"{_get_name()}: {message}")
 
 
 # Wrap function
 def debug1(message):
-    function = inspect.stack()[0].function
-    logger.debug(f"{function.upper()}:{_get_name()}: {message}")
+    logger.debug(f"{_get_name()}: {message}")
 
 
 # Wrap function
 def info(message):
-    function = inspect.stack()[0].function
-    logger.info(f"{function.upper()}:{_get_name()}: {message}")
+    logger.info(f"{_get_name()}: {message}")
 
 
 # Wrap function
 def warning(message):
-    function = inspect.stack()[0].function
-    logger.warning(f"{function.upper()}:{_get_name()}: {message}")
+    logger.warning(f"{_get_name()}: {message}")
 
 
 # Wrap function
 def error(message):
-    function = inspect.stack()[0].function
-    logger.error(f"{function.upper()}:{_get_name()}: {message}")
+    logger.error(f"{_get_name()}: {message}")
 
 
 # Wrap function
 def critical(message):
-    function = inspect.stack()[0].function
-    logger.critical(f"{function.upper()}:{_get_name()}: {message}")
+    logger.critical(f"{_get_name()}: {message}")
