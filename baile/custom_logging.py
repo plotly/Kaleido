@@ -51,15 +51,15 @@ def info(message):
 
 
 # Wrap function
-def error(message):
-    function = inspect.stack()[0].function
-    logger.error(f"{function.upper()}:{_get_name()}: {message}")
-
-
-# Wrap function
 def warning(message):
     function = inspect.stack()[0].function
     logger.warning(f"{function.upper()}:{_get_name()}: {message}")
+
+
+# Wrap function
+def error(message):
+    function = inspect.stack()[0].function
+    logger.error(f"{function.upper()}:{_get_name()}: {message}")
 
 
 # Wrap function
