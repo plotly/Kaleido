@@ -7,7 +7,7 @@ import async_timeout as atimeout
 
 from .fig_properties import to_spec, from_response, _write_file, DEFAULT_FORMAT
 from .browser import Browser
-import chereographer as choreo
+import choreographer as choreo
 
 from . import custom_logging as logging
 
