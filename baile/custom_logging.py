@@ -16,20 +16,27 @@ logger = logging.getLogger(__name__)
 handler = logging.StreamHandler(stream=sys.stderr)
 
 # Create Formatter
-formatter = logging.Formatter('%(asctime)s - %(message)s') #TODO
+formatter = logging.Formatter("%(asctime)s - %(message)s")  # TODO
 
 # Customize logger
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
+
 # Improve the name
 def _get_name():
     level = inspect.currentframe().f_back.f_code.co_name
     upper_frame = inspect.currentframe().f_back.f_back
-    module_frame = inspect.getmodule(upper_frame) if inspect.getmodule(upper_frame) else inspect.getmodule(upper_frame.f_back)
+    module_frame = (
+        inspect.getmodule(upper_frame)
+        if inspect.getmodule(upper_frame)
+        else inspect.getmodule(upper_frame.f_back)
+    )
     package = module_frame.__package__
     file = module_frame.__name__
-    module_function = upper_frame.f_code.co_name if hasattr(upper_frame, "f_code") else None
+    module_function = (
+        upper_frame.f_code.co_name if hasattr(upper_frame, "f_code") else None
+    )
     if module_frame:
         return f"{level.upper()} - {package}:{file}:{module_function}()"
     return f"{level.upper()} - {package}:{file}"
