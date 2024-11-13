@@ -42,30 +42,48 @@ def _get_name():
 
 
 # Custom debug with custom level
-def debug2(message):
-    logger.log(DEBUG2, f"{_get_name()}: {message}")
+def debug2(message, tag=None):
+    if tag
+        logger.log(DEBUG2, f"{_get_name()}: {message} ({tag})")
+    else:
+        logger.log(DEBUG2, f"{_get_name()}: {message}")
 
 
 # Wrap function
-def debug1(message):
-    logger.debug(f"{_get_name()}: {message}")
+def debug1(message, tag=None):
+    if tag:
+        logger.debug(f"{_get_name()}: {message} ({tag})")
+    else:
+        logger.debug(f"{_get_name()}: {message}")
 
 
 # Wrap function
-def info(message):
-    logger.info(f"{_get_name()}: {message}")
+def info(message, tag=None):
+    if tag:
+        logger.info(f"{_get_name()}: {message} ({tag})")
+    else:
+        logger.info(f"{_get_name()}: {message}")
 
 
 # Wrap function
-def warning(message):
-    logger.warning(f"{_get_name()}: {message}")
+def warning(message, tag=None):
+    if tag:
+        logger.warning(f"{_get_name()}: {message} ({tag})")
+    else:
+        logger.warning(f"{_get_name()}: {message}")
 
 
 # Wrap function
-def error(message):
-    logger.error(f"{_get_name()}: {message}")
+def error(message, tag=None):
+    if tag:
+        logger.error(f"{_get_name()}: {message} ({tag})")
+    else:
+        logger.error(f"{_get_name()}: {message}")
 
 
 # Wrap function
-def critical(message):
-    logger.critical(f"{_get_name()}: {message}")
+def critical(message, tag=None):
+    if tag:
+        logger.critical(f"{_get_name()}: {message} ({tag})")
+    else:
+        logger.critical(f"{_get_name()}: {message}")
