@@ -37,7 +37,7 @@ def _get_name():
 
 # Custom debug with custom level
 def debug2(message, tag=None):
-    if tag
+    if tag:
         logger.log(DEBUG2, f"{_get_name()}: {message} ({tag})")
     else:
         logger.log(DEBUG2, f"{_get_name()}: {message}")
