@@ -91,6 +91,8 @@ with open(dirname+"log.log", 'w') as sys.stderr:
 shutil.make_archive("test-results", 'zip', dirname)
 print("Done!")
 print(f"Successes: {x}/{total}")
+print("Errors:")
+print(failures)
 print("Please send over test-results.zip")
 print(f"Logs and images in {dirname}")
 

@@ -7,6 +7,7 @@ import sys
 from plotly.graph_objects import Figure
 
 import kaleido # kaleido __init__.py, dislike
+from choreographer import which_browser
 
 # The original kaleido provided a global lock (instead of supporting concurrency)
 # So kaleido 2.0 will as well if it's used from scopes (old api)
@@ -28,10 +29,12 @@ class PlotlyScope():
     _scope_flags = kaleido._scope_flags_
 
 
-    def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, debug=None, **kwargs):
+    def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, debug=None, tmp_path=None, **kwargs):
         if debug is None:
             debug = "KALEIDO-DEBUG" in os.environ or "KALEIDO_DEBUG" in os.environ
         self.debug=debug
+        if tmp_path is None:
+            tmp_path = os.environ.get("KALEIDO_TMP_PATH", None)
         # TODO: #2 This is deprecated, this whole FILE is deprecated
         self._plotlyjs = plotlyjs
         self._topojson = topojson
@@ -54,8 +57,19 @@ class PlotlyScope():
             'vendor',
             'kaleido_scopes.js'
             )
+        path = os.environ.get("BROWSER_PATH", which_browser())
+        if tmp_path:
+            temp_args = dict(dir=self.tmp_path)
+        elif "snap" in path:
+            temp_path = Path.home()
+            if self.debug:
+                print("Snap detected, moving tmp directory to home", file=sys.stderr)
+            temp_args = dict(prefix=".kaleido-", dir=temp_path)
+        else:
+            self._snap = False
+            temp_args = {}
 
-        self._tempdir = tempfile.TemporaryDirectory(dir=Path.home(), prefix=".kaleido-")
+        self._tempdir = tempfile.TemporaryDirectory(**temp_args)
         if self.debug: print(f"Tempdir: {self._tempdir.name}", file=sys.stderr)
         self._tempfile = open(f"{self._tempdir.name}/index.html", "w")
         self._tempfile.write(self.make_page_string())

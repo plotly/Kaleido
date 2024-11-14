@@ -40,7 +40,7 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
     except RuntimeError:
         if debug: print("No loop, no thread", file=sys.stderr)
         pass
-    return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
+    return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug,))
 
 async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, timeout=60):
     if debug is None:
