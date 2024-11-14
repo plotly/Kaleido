@@ -19,7 +19,7 @@ _text_formats_ = ("svg", "json",) # eps is a text format? :-O
 
 _scope_flags_ = ("plotlyjs", "mathjax", "topojson", "mapbox_access_token")
 
-def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
+def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None, tmp_path=None):
     if debug is None:
         debug = "KALEIDO-DEBUG" in os.environ or "KALEIDO_DEBUG" in os.environ
     try:
@@ -30,7 +30,7 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
         def get_image():
             nonlocal image
             if debug: print("Calling to_image in thread", file=sys.stderr)
-            image = asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug))
+            image = asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug, tmp_path=tmp_path))
         t = Thread(target=get_image)
         if debug: print("Calling thread start", file=sys.stderr)
         t.start()
@@ -40,9 +40,9 @@ def to_image_block(spec, f=None, topojson=None, mapbox_token=None, debug=None):
     except RuntimeError:
         if debug: print("No loop, no thread", file=sys.stderr)
         pass
-    return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug,))
+    return asyncio.run(to_image(spec, f, topojson, mapbox_token, debug=debug, tmp_path=tmp_path))
 
-async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, timeout=60):
+async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, timeout=60, tmp_path=None):
     if debug is None:
         debug = "KALEIDO-DEBUG" in os.environ or "KALEIDO_DEBUG" in os.environ
     def check_error(res):
@@ -50,7 +50,7 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, t
             raise RuntimeError(str(res))
 
     async with (
-            Browser(headless=True, debug=debug, debug_browser=debug) as browser,
+            Browser(headless=True, debug=debug, debug_browser=debug, tmp_path=tmp_path) as browser,
             atimeout.timeout(timeout)):
         async def print_all(r):
             print(f"All subscription: {r}", file=sys.stderr)

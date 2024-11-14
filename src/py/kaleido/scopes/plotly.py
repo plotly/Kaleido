@@ -35,6 +35,7 @@ class PlotlyScope():
         self.debug=debug
         if tmp_path is None:
             tmp_path = os.environ.get("KALEIDO_TMP_PATH", None)
+        self._tmp_path = tmp_path
         # TODO: #2 This is deprecated, this whole FILE is deprecated
         self._plotlyjs = plotlyjs
         self._topojson = topojson
@@ -229,7 +230,7 @@ f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}" onerror=\"log
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with _proc_lock:
-            img = kaleido.to_image_block(spec, Path(self._tempfile.name).absolute(), self._topojson, self._mapbox_access_token, debug=debug)
+            img = kaleido.to_image_block(spec, Path(self._tempfile.name).absolute(), self._topojson, self._mapbox_access_token, debug=debug, tmp_path=self._tmp_path)
 
         return img
 
