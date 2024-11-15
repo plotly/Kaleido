@@ -61,7 +61,7 @@ class PlotlyScope():
         path = os.environ.get("BROWSER_PATH", which_browser())
         if tmp_path:
             temp_args = dict(dir=self.tmp_path)
-        elif "snap" in path:
+        elif path is not None and "snap" in path:
             temp_path = Path.home()
             if self.debug:
                 print("Snap detected, moving tmp directory to home", file=sys.stderr)
