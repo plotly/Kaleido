@@ -13,7 +13,7 @@
   "dependencies": {
     "fast-isnumeric": "^1.1.4",
     "is-plain-obj": "^2.1.0",
-    "semver": "^7.3.2"
+    "semver": "^7.5.2"
   },
   "devDependencies": {
     "browserify": "^16.5.2",
