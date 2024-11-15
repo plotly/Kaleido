@@ -13,14 +13,15 @@ enabled = true
 
 [project]
 name = "kaleido"
-description = "plotly graph export library"
-license = {file = "LICENSE.txt"}
+description = "Plotly graph export library"
+license = {file = "LICENSE.md"}
 readme = "README.md"
 requires-python = ">=3.9"
 dynamic = ["version"]
-dependencies = ["choreographer>=0.99.6",
-                "async_timeout"
-                ]
+dependencies = [
+    "choreographer>=0.99.6",
+    "async_timeout"
+]
 authors = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
@@ -31,7 +32,7 @@ maintainers = [
 [project.optional-dependencies]
 dev = [
   "pytest",
-  ]
+]
 
 [tool.ruff.lint]
 ignore = ["E701"] # E701 oneline if's
