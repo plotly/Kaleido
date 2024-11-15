@@ -23,6 +23,12 @@ Please see choreographer's documentation for details.
 > The new version of kaleido is a work on progress; we would be grateful for help testing it and improving it.
 > If you find a bug, please report it in [our GitHub repository][repo],
 > and please include a minimal reproducible example if you can.
+>
+> It would also be very helpful to run the script `src/py/tests/manual.py`
+> and attach its zipped output to your bug report.
+> This will give us detailed information about the precise versions of software you are using
+> and the platform you are running on,
+> which will help us track down problems more quickly.
 
 ## Installation
 
