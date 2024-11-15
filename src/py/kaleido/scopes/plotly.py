@@ -59,6 +59,8 @@ class PlotlyScope():
             'kaleido_scopes.js'
             )
         path = os.environ.get("BROWSER_PATH", which_browser())
+        if not path:
+            raise RuntimeError("Kaleido now requires that chrome/chromium is installed separately. Kaleido will try to detect it automatically, but the environmental error \"BROWSER_PATH\" can also be set")
         if tmp_path:
             temp_args = dict(dir=self.tmp_path)
         elif "snap" in path:
