@@ -8,8 +8,7 @@ import async_timeout as atimeout
 from .fig_properties import to_spec, from_response, _write_file, DEFAULT_FORMAT
 from .browser import Browser
 import choreographer as choreo
-
-from . import custom_logging as logging
+import logistro as logging
 
 
 def _get_json_path(path_figs):

@@ -1,6 +1,6 @@
 import base64
 import json
-from . import custom_logging as logging
+import logistro as logging
 
 
 # constants
