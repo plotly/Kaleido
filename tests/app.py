@@ -12,7 +12,7 @@ dir_in = Path(__file__).resolve().parent / "mocks"
 results_dir = Path(__file__).resolve().parent / "images"
 
 # Get custom parser
-paser_logging = logging.customize_parser(add_help=False)
+paser_logging = logging.customize_parser()
 
 # Set the arguments
 parser = argparse.ArgumentParser(parents=[paser_logging])
