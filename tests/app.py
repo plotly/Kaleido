@@ -4,13 +4,18 @@ import json
 import argparse
 import asyncio
 import baile
+import logistro as logging
 
 
 # Extract jsons of mocks
 dir_in = Path(__file__).resolve().parent / "mocks"
 results_dir = Path(__file__).resolve().parent / "images"
 
-parser = argparse.ArgumentParser()
+# Get custom parser
+paser_logging = logging.customize_parser(add_help=False)
+
+# Set the arguments
+parser = argparse.ArgumentParser(parents=[paser_logging])
 parser.add_argument("--n_tabs", type=int, help="Number of tabs")
 parser.add_argument(
     "--mock_path", type=str, default=dir_in, help="Directory of mock file/s"
