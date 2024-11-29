@@ -118,14 +118,15 @@ async def to_image(spec, f=None, topojson=None, mapbox_token=None, debug=None, t
         arguments = [dict(value=spec)]
         arguments.extend(extra_args)
         params = dict(
-                functionDeclaration=kaleido_jsfn,
-                arguments=arguments,
-                returnByValue=False,
-                userGesture=True,
-                awaitPromise=True,
-                executionContextId=execution_context_id,
-                )
-        if debug: print("Sending command", file=sys.stderr)
+            functionDeclaration=kaleido_jsfn,
+            arguments=arguments,
+            returnByValue=False,
+            userGesture=True,
+            awaitPromise=True,
+            executionContextId=execution_context_id,
+        )
+        if debug:
+            print("Sending command", file=sys.stderr)
         response = await tab.send_command("Runtime.callFunctionOn", params=params)
         check_error(response)
         # Check for export error, later can customize error messages for plotly Python users

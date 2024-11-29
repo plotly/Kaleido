@@ -6,11 +6,11 @@ import sys
 
 from plotly.graph_objects import Figure
 
-import kaleido # kaleido __init__.py, dislike
+import kaleido2 # kaleido __init__.py, dislike
 from choreographer import which_browser
 
 # The original kaleido provided a global lock (instead of supporting concurrency)
-# So kaleido 2.0 will as well if it's used from scopes (old api)
+# So kaleido2 uses it as well if it's used from scopes (old API)
 from threading import Lock
 _proc_lock = Lock()
 
@@ -23,10 +23,10 @@ class PlotlyScope():
     """
     Scope for transforming Plotly figures to static images
     """
-    _all_formats = kaleido._all_formats_
-    _text_formats = kaleido._text_formats_
+    _all_formats = kaleido2._all_formats_
+    _text_formats = kaleido2._text_formats_
 
-    _scope_flags = kaleido._scope_flags_
+    _scope_flags = kaleido2._scope_flags_
 
 
     def __init__(self, plotlyjs=None, mathjax=None, topojson=None, mapbox_access_token=None, debug=None, tmp_path=None, **kwargs):
@@ -67,7 +67,7 @@ class PlotlyScope():
             temp_path = Path.home()
             if self.debug:
                 print("Snap detected, moving tmp directory to home", file=sys.stderr)
-            temp_args = dict(prefix=".kaleido-", dir=temp_path)
+            temp_args = dict(prefix=".kaleido2-", dir=temp_path)
         else:
             self._snap = False
             temp_args = {}
@@ -92,8 +92,8 @@ class PlotlyScope():
         # There is something wild going on w/ mathjax, I think plotly is injecting it?
         mathjax_path = None
         if os.path.exists(vendored_mathjax_path):
-            # MathJax is vendored under kaleido/executable.
-            # It was probably install as a PyPI wheel
+            # MathJax is vendored under kaleido2/vendor.
+            # It was probably installed as a PyPI wheel
             mathjax_path = vendored_mathjax_path
 
         if mathjax_path:
@@ -232,7 +232,14 @@ f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}" onerror=\"log
         # Write to process and read result within a lock so that can be
         # sure we're reading the response to our request
         with _proc_lock:
-            img = kaleido.to_image_block(spec, Path(self._tempfile.name).absolute(), self._topojson, self._mapbox_access_token, debug=debug, tmp_path=self._tmp_path)
+            img = kaleido2.to_image_block(
+                spec,
+                Path(self._tempfile.name).absolute(),
+                self._topojson,
+                self._mapbox_access_token,
+                debug=debug,
+                tmp_path=self._tmp_path
+            )
 
         return img
 
