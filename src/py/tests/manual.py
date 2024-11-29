@@ -1,12 +1,12 @@
 import os
 import sys
 import shutil
+import time
 _all_formats = ("png", "jpg", "jpeg", "webp", "svg", "pdf", "json")
 dirname="./test-results/"
 os.makedirs(dirname, exist_ok=True)
 os.environ["KALEIDO-DEBUG"] = "true"
-
-total = len(_all_formats) * 5
+total = len(_all_formats) * 6
 failures = []
 x = 0
 def count():
@@ -16,6 +16,7 @@ def count():
 
 with open(dirname+"log.log", 'w') as sys.stderr:
     print("scope-old".center(50, "&"), file=sys.stderr)
+    print(time.time(), file=sys.stderr)
     debug=True
     import plotly.graph_objects as go
     fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])], layout=dict(title="$$\\text{Test} \\pi$$")) # whole thing needs to be mathjax?
@@ -43,6 +44,7 @@ with open(dirname+"log.log", 'w') as sys.stderr:
 
     import asyncio
     print("ASYNC w/ PRETEND BLOCKING".center(50, "&"), file=sys.stderr)
+    print(time.time(), file=sys.stderr)
 
     async def test_with_blocking_in_async():
         for extension in _all_formats:
@@ -56,9 +58,10 @@ with open(dirname+"log.log", 'w') as sys.stderr:
                 failures.append(e)
 
     asyncio.run(test_with_blocking_in_async())
+
+
     print("ASYNC w/ ASYNC NATIVE".center(50, "&"), file=sys.stderr)
-
-
+    print(time.time(), file=sys.stderr)
     import kaleido
     from kaleido.scopes.plotly import PlotlyScope
     async def test_with_async():
@@ -73,9 +76,28 @@ with open(dirname+"log.log", 'w') as sys.stderr:
                 print(e, file=sys.stderr)
                 failures.append(e)
     asyncio.run(test_with_async())
+
+    print("ASYNC w/ ASYNC NATIVE W/ CUSTOM BROWSER".center(50, "&"), file=sys.stderr)
+    print(time.time(), file=sys.stderr)
+    from choreographer import Browser
+    from kaleido.scopes.plotly import PlotlyScope
+    async def test_with_async():
+        async with Browser(headless=True, debug=True, debug_browser=True) as browser:
+            for extension in _all_formats:
+                try:
+                    print(f"Trying: {extension} w/ transform async".center(40, "*"), file=sys.stderr)
+                    spec = scope.make_spec(fig, format=extension)
+                    with open(dirname+"figure-async-native-1-browser."+extension, "wb") as f:
+                        f.write(await kaleido.to_image_w_browser(spec, browser, debug=debug))
+                        count()
+                except Exception as e:
+                    print(e, file=sys.stderr)
+                    failures.append(e)
+    asyncio.run(test_with_async())
     ## Other
 
     print("express-write".center(50, "&"), file=sys.stderr)
+    print(time.time(), file=sys.stderr)
 
     import plotly.express as px
     fig = px.scatter(px.data.iris(), x="sepal_length", y="sepal_width", color="species")
