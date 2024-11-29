@@ -6,13 +6,13 @@ build-backend = "setuptools.build_meta"
 find = {namespaces = false}
 
 [tool.setuptools.package-data]
-kaleido = ['vendor/*','vendor/mathjax/*', 'vendor/**', 'vendor/mathjax/**']
+kaleido2 = ['vendor/*','vendor/mathjax/*', 'vendor/**', 'vendor/mathjax/**']
 
 [tool.setuptools-git-versioning]
 enabled = true
 
 [project]
-name = "kaleido"
+name = "kaleido2"
 description = "Plotly graph export library"
 license = {file = "LICENSE.md"}
 readme = "README.md"

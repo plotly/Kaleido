@@ -21,7 +21,7 @@ with open(dirname+"log.log", 'w') as sys.stderr:
     fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])], layout=dict(title="$$\\text{Test} \\pi$$")) # whole thing needs to be mathjax?
     figgl = go.Figure(data=[go.Scattergl(y=[1, 3, 2])], layout=dict(title="$$\\text{Test} \\pi$$")) # whole thing needs to be mathjax?
 
-    from kaleido.scopes.plotly import PlotlyScope
+    from kaleido2.scopes.plotly import PlotlyScope
     scope = PlotlyScope(debug=debug,
         # plotlyjs="https://cdn.plot.ly/plotly-latest.min.js",
         # plotlyjs="/path/to/local/plotly.js",
@@ -59,15 +59,15 @@ with open(dirname+"log.log", 'w') as sys.stderr:
     print("ASYNC w/ ASYNC NATIVE".center(50, "&"), file=sys.stderr)
 
 
-    import kaleido
-    from kaleido.scopes.plotly import PlotlyScope
+    import kaleido2
+    from kaleido2.scopes.plotly import PlotlyScope
     async def test_with_async():
         for extension in _all_formats:
             try:
                 print(f"Trying: {extension} w/ transform async".center(40, "*"), file=sys.stderr)
                 spec = scope.make_spec(fig, format=extension)
                 with open(dirname+"figure-async-native."+extension, "wb") as f:
-                    f.write(await kaleido.to_image(spec, debug=debug))
+                    f.write(await kaleido2.to_image(spec, debug=debug))
                     count()
             except Exception as e:
                 print(e, file=sys.stderr)
