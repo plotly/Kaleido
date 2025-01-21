@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style id="head-style"></style>
+    <title>Kaleido-fier</title>
+    <script>
+        window.KaleidoReport = ["start"];
+        function logError(e) {
+            window.KaleidoReport.push("error");
+            window.KaleidoReport.push(e);
+            if (!navigator.onLine) {
+                window.KaleidoReport.push("offline");
+            }
+        }
+    </script>
+    <script>
+      window.PlotlyConfig = {MathJaxConfig: 'local'}
+    </script>
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8" onerror="logError('plotly')"></script>
+    <script type="text/javascript" id="MathJax-script" src="./mathjax/MathJax.js?config=TeX-AMS-MML_SVG" onerror="logError('mathjax')"></script>
+    <script src="./kaleido_scopes.js" onerror="logError('scopes')"></script>
+  </head>
+  <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+</html>
