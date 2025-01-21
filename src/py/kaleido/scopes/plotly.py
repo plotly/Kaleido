@@ -131,6 +131,7 @@ class PlotlyScope():
         page += f" <script src=\"{pjs}\" charset=\"utf-8\" onerror=\"logError('plotly')\"></script>\n"
 
         if self._mathjax:
+            page += f" <script type=\"text/x-mathjax-config\">MathJax.Hub.Config({{ \"SVG\": {{blacker: 0 }}}});</script>\n"
             page += f" <script type=\"text/javascript\" id=\"MathJax-script\" src=\"{self._mathjax}?config=TeX-AMS-MML_SVG\" onerror=\"logError('mathjax')\"></script>\n"
         page+= \
 f"""    <script src="{Path(self._plotlyfier).absolute().as_uri()}" onerror=\"logError('scoper')\"></script>"""+\
