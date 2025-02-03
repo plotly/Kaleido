@@ -1,4 +1,4 @@
-from .main import create_image
-from .tab import Tab
+"""Kaleido provides to convert plotly figures into various image formats."""
+from .kaleido import Kaleido
 
-__all__ = ["create_image", "Tab"]
+__all__ = ["Kaleido"]
