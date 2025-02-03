@@ -72,6 +72,10 @@ class KaleidoTab:
         while javascript_ready.done():
             _logger.debug2("Clearing an old Runtime.executionContextCreated")
             javascript_ready = tab.subscribe_once("Runtime.executionContextCreated")
+        page_ready = tab.subscribe_once("Page.loadEventFired")
+        while page_ready.done():
+            _logger.debug2("Clearing a old Page.loadEventFired")
+            page_ready = tab.subscribe_once("Page.loadEventFired")
 
         _logger.debug2(f"Calling Page.navigate on {tab}")
         _check_error(
@@ -96,6 +100,7 @@ class KaleidoTab:
                     "Refresh sequence didn't work for reload_tab_with_javascript."
                     "Result {javascript_ready.result()}."
                     ) from e
+        await page_ready
 
     async def reload(self):
         """Reload the tab, and set the javascript runtime id."""
@@ -111,7 +116,6 @@ class KaleidoTab:
             is_loaded = tab.subscribe_once("Page.loadEventFired")
         _logger.debug2(f"Calling Page.reload on {tab}")
         _check_error(await tab.send_command("Page.reload"))
-        await is_loaded
         await javascript_ready
         try:
             self._current_js_id = javascript_ready.result()["params"]["context"]["id"]
@@ -120,6 +124,7 @@ class KaleidoTab:
                     "Refresh sequence didn't work for reload_tab_with_javascript."
                     "Result {javascript_ready.result()}."
                     ) from e
+        await is_loaded
 
     async def console_print(self, message: str) -> None:
         """
