@@ -1,11 +1,12 @@
-from time import process_time
-from pathlib import Path
-import json
 import argparse
 import asyncio
-import baile
+import json
+from pathlib import Path
+from time import process_time
+
 import logistro as logging
 
+import baile
 
 # Extract jsons of mocks
 dir_in = Path(__file__).resolve().parent / "mocks"
