@@ -12,6 +12,8 @@ import choreographer as choreo
 import logistro
 from choreographer.errors import DevtoolsProtocolError
 
+from ._fig_tools import to_spec
+
 # Path of the page to use
 PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
 TEXT_FORMATS = ("svg", "json")  # eps
@@ -154,19 +156,42 @@ class KaleidoTab:
         _logger.debug(f"Sent javascript got result: {result}")
         _check_error(result)
 
-    async def _load_spec(self, spec, *, topojson, mapbox_token):
+    async def write_fig(
+            self,
+            fig,
+            path = None,
+            layout_opts = None,
+            *,
+            topojson=None,
+            mapbox_token=None
+            ):
         """
         Call the plotly renderer via javascript.
 
         Args:
-            spec: the processed plotly figure
+            fig: the processed plotly figure
+            path: the path to write the image too. if its a directory, we will try to
+                generate a name. If the path contains an extension,
+                "path/to/my_image.png", that extension will be the format used if not
+                overriden in `layout_opts`.
+            layout_opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
             mapbox_token: a mapbox api token for plotly to use
 
         """
+        if not layout_opts:
+            layout_opts = {}
+
+        if not path:
+            path = Path("fig.png")
+            # check to see if it exists
+
+        if hasattr(fig, "to_dict"):
+            fig = fig.to_dict()
+
+        spec = to_spec(fig, layout_opts)
         tab = self.tab
         execution_context_id = self._current_js_id
-
         # js script
         kaleido_jsfn = (
                 r"function(spec, ...args)"
@@ -194,7 +219,13 @@ class KaleidoTab:
         result = await tab.send_command("Runtime.callFunctionOn", params=params)
         _check_error(result)
 
-        return self._img_from_response(result)
+        img = self._img_from_response(result)
+
+        def write_image(binary):
+            with path.open("wb") as file:
+                file.write(binary)
+
+        await asyncio.to_thread(write_image, img)
 
     def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))

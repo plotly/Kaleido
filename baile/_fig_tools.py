@@ -41,9 +41,6 @@ def _get_format(extension):
 
 def to_spec(figure, layout_opts):
 
-    if hasattr(figure, "to_dict"):
-        figure = figure.to_dict()
-
     # Get figure layout
     layout = figure.get("layout", {})
 
