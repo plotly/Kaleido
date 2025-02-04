@@ -230,7 +230,7 @@ class KaleidoTab:
             full_path = path
             if not full_path.parent.is_dir():
                 raise RuntimeError(
-                        f"Cannot reach path {path}."
+                        f"Cannot reach path {path}. "
                         "Are all directories created?"
                         )
         if not full_path:
@@ -411,6 +411,16 @@ class Kaleido(choreo.Browser):
         self._tabs_in_use.remove(tab)
         await self.tabs_ready.put(tab)
 
+    async def _post_task(self, tab, args):
+        _logger.debug("Posting a task")
+        try:
+            await tab.write_fig(**args)
+        # TODO: should we fail here?
+        finally:
+            _logger.debug("Returning a tab.")
+            await self.return_kaleido_tab(tab)
+            _logger.debug("Task finished")
+
     async def write_fig(
             self,
             fig,
@@ -435,43 +445,82 @@ class Kaleido(choreo.Browser):
             mapbox_token: a mapbox api token for plotly to use
 
         """
-        if hasattr(fig, "to_dict"):
-            fig = [fig]
-        elif not isinstance(fig, Iterable): # this will fail sometimes
-            _logger.debug(f"Making iterable {type(fig)}")
+        if hasattr(fig, "to_dict") or not isinstance(fig, Iterable):
             fig = [fig]
         else:
             _logger.debug(f"Is iterable {type(fig)}")
 
-
-        async def post_task(tab, f):
-            _logger.debug("Posting a task")
-            try:
-                await tab.write_fig(f,
-                                    path = path,
-                                    opts = opts,
-                                    topojson=topojson,
-                                    mapbox_token=mapbox_token
-                                    )
-            # TODO: should we fail here?
-            finally:
-                _logger.debug("Returning a tab.")
-                await self.return_kaleido_tab(tab)
-                _logger.debug("Task finished")
 
         tasks = set()
         if hasattr(fig, "__aiter__"): # is async iterable
             _logger.debug("Is async for")
             async for f in fig:
                 tab = await self.get_kaleido_tab()
-                t = asyncio.create_task(post_task(tab, f))
+                t = asyncio.create_task(
+                        self._post_task(
+                            tab,
+                            args = {
+                                "fig" : f,
+                                "path" : path,
+                                "opts" : opts,
+                                "topojson" : topojson,
+                                "mapbox_token" : mapbox_token
+                                }
+                            )
+                        )
                 t.add_done_callback(_check_task)
                 tasks.add(t)
         else:
             _logger.debug("Is sync for")
             for f in fig:
                 tab = await self.get_kaleido_tab()
-                t = asyncio.create_task(post_task(tab, f))
+                t = asyncio.create_task(
+                        self._post_task(
+                            tab,
+                            args = {
+                                "fig" : f,
+                                "path" : path,
+                                "opts" : opts,
+                                "topojson" : topojson,
+                                "mapbox_token" : mapbox_token
+                                }
+                            )
+                        )
+                t.add_done_callback(_check_task)
+                tasks.add(t)
+        _logger.debug("awaiting tasks")
+        for task in tasks:
+            await task
+
+    async def write_fig_generate_all(
+            self,
+            generator,
+            ):
+        """
+        Equal to `write_fig` but allows the user to generate all arguments.
+
+        Args:
+            generator: an iterable or generator which supplies a dictionary
+                       of arguments to pass to tab.write_fig.
+
+        """
+        tasks = set()
+        if hasattr(generator, "__aiter__"): # is async iterable
+            _logger.debug("Is async for")
+            async for args in generator:
+                tab = await self.get_kaleido_tab()
+                t = asyncio.create_task(
+                        self._post_task(tab, args = args)
+                        )
+                t.add_done_callback(_check_task)
+                tasks.add(t)
+        else:
+            _logger.debug("Is sync for")
+            for args in generator:
+                tab = await self.get_kaleido_tab()
+                t = asyncio.create_task(
+                        self._post_task(tab, args = args)
+                        )
                 t.add_done_callback(_check_task)
                 tasks.add(t)
         _logger.debug("awaiting tasks")
