@@ -10,8 +10,8 @@ import logistro
 
 import baile
 
+logistro.getLogger().setLevel(11)
 _logger = logistro.getLogger(__name__)
-_logger.setLevel(5)
 
 # Extract jsons of mocks
 in_dir = Path(__file__).resolve().parent / "mocks"
@@ -81,7 +81,13 @@ args = parser.parse_args()
 async def _main():
     paths = _get_jsons_in_paths(args.input)
     async with baile.Kaleido(n=args.n, headless=args.headless) as k:
-        await k.write_fig_generate_all(_load_figures_from_paths(paths[6:10]))
+        error_log = []
+        await k.write_fig_generate_all(
+                _load_figures_from_paths(paths[]),
+                error_log=error_log
+                )
+    for error in error_log:
+        print(error)
 
 def build_mocks():
     start = time.perf_counter()
