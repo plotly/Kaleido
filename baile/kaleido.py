@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
+import re
 import warnings
 from pathlib import Path
 from pprint import pformat
@@ -19,7 +20,7 @@ PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
 TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
-_logger.setLevel(9)
+_logger.setLevel(1)
 
 class JavascriptError(RuntimeError): # TODO(A): process better # noqa: TD003, FIX002
     """Used to report errors from javascript."""
@@ -160,7 +161,7 @@ class KaleidoTab:
             self,
             fig,
             path = None,
-            layout_opts = None,
+            opts = None,
             *,
             topojson=None,
             mapbox_token=None
@@ -173,25 +174,65 @@ class KaleidoTab:
             path: the path to write the image too. if its a directory, we will try to
                 generate a name. If the path contains an extension,
                 "path/to/my_image.png", that extension will be the format used if not
-                overriden in `layout_opts`.
-            layout_opts: dictionary describing format, width, height, and scale of image
+                overriden in `opts`.
+            opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
             mapbox_token: a mapbox api token for plotly to use
 
         """
-        if not layout_opts:
-            layout_opts = {}
+        tab = self.tab
+        execution_context_id = self._current_js_id
 
-        if not path:
-            path = Path("fig.png")
-            # check to see if it exists
+
+        if not opts:
+            opts = {}
 
         if hasattr(fig, "to_dict"):
             fig = fig.to_dict()
 
-        spec = to_spec(fig, layout_opts)
-        tab = self.tab
-        execution_context_id = self._current_js_id
+        if path and path.suffix and not opts.get("format"):
+            opts["format"] = path.suffix
+
+        spec = to_spec(fig, opts)
+
+
+        def next_filename(path, prefix, ext):
+            default = 1 if (path / f"{prefix}.{ext}").exists() else 0
+            re_number = re.compile(r"^"+prefix+r"-(\d+)\."+ext+r"$")
+            numbers = [
+                       int(match.group(1))
+                       for name in path.glob(f"{prefix}-*.{ext}")
+                       if (match := re_number.match(Path(name).name))
+                       ]
+            n =  max(numbers, default=default) + 1
+            return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
+
+        if path and isinstance(path, str):
+            path = Path(path)
+
+        ext = spec["format"]
+        full_path = None
+        if not path:
+            directory = Path()
+        elif path and (not path.suffix or path.is_dir()):
+            directory = path
+        else:
+            full_path = path
+            if not full_path.parent.is_dir():
+                raise RuntimeError(
+                        f"Cannot reach path {path}."
+                        "Are all directories created?"
+                        )
+        if not full_path:
+            prefix = ( fig
+                      .get("layout", {})
+                      .get("title", {})
+                      .get("text", "fig")
+                      .replace(" ", "_")
+                      )
+            name = next_filename(directory, prefix, ext)
+            full_path = directory / name
+
         # js script
         kaleido_jsfn = (
                 r"function(spec, ...args)"
@@ -222,7 +263,7 @@ class KaleidoTab:
         img = self._img_from_response(result)
 
         def write_image(binary):
-            with path.open("wb") as file:
+            with full_path.open("wb") as file:
                 file.write(binary)
 
         await asyncio.to_thread(write_image, img)
