@@ -10,6 +10,7 @@ import warnings
 from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
+from pprint import pformat
 
 import choreographer as choreo
 import logistro
@@ -71,7 +72,7 @@ def _make_console_logger(name, log):
                     f'{event["params"]["args"][1]["value"]}'
                     )
         else:
-            log.append(event)
+            log.append(pformat(event))
     return console_printer
 
 def _check_error_ret(result): # Utility
