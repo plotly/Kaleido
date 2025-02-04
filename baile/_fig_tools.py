@@ -1,3 +1,9 @@
+from pathlib import Path
+
+import logistro
+
+_logger = logistro.getLogger(__name__)
+
 # constants
 DEFAULT_EXT = "png"
 DEFAULT_SCALE = 1
@@ -63,3 +69,47 @@ def to_spec(figure, layout_opts):
             "scale":scale,
             "data": figure
             }
+
+def build_fig_spec(self, fig, path, opts):
+    if not opts:
+        opts = {}
+
+    if hasattr(fig, "to_dict"):
+        fig = fig.to_dict()
+
+    if isinstance(path, str):
+        path = Path(path)
+
+    if path and path.suffix and not opts.get("format"):
+        opts["format"] = path.suffix.removeprefix(".")
+
+    spec = to_spec(fig, opts)
+
+    ext = spec["format"]
+    full_path = None
+    if not path:
+        directory = Path()
+    elif path and (not path.suffix or path.is_dir()):
+        if not path.is_dir():
+            raise ValueError(f"Directories will not be created for you: {path}")
+        directory = path
+    else:
+        full_path = path
+        if not full_path.parent.is_dir():
+            raise RuntimeError(
+                    f"Cannot reach path {path}. "
+                    "Are all directories created?"
+                    )
+    if not full_path:
+        _logger.debug("Looking for title")
+        prefix = ( fig
+                  .get("layout", {})
+                  .get("title", {})
+                  .get("text", "fig")
+                  .replace(" ", "_")
+                  )
+        _logger.debug(f"Found: {prefix}")
+        name = self._next_filename(directory, prefix, ext)
+        full_path = directory / name
+
+    return spec, full_path

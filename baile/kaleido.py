@@ -16,7 +16,7 @@ import choreographer as choreo
 import logistro
 from choreographer.errors import DevtoolsProtocolError
 
-from ._fig_tools import to_spec
+from ._fig_tools import build_fig_spec
 
 # Path of the page to use
 PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
@@ -225,11 +225,22 @@ class KaleidoTab:
         _logger.debug(f"Sent javascript got result: {result}")
         _check_error(result)
 
+    def _next_filename(self, path, prefix, ext):
+        default = 1 if (path / f"{prefix}.{ext}").exists() else 0
+        re_number = re.compile(r"^"+prefix+r"-(\d+)\."+ext+r"$")
+        numbers = [
+                   int(match.group(1))
+                   for name in path.glob(f"{prefix}-*.{ext}")
+                   if (match := re_number.match(Path(name).name))
+                   ]
+        n =  max(numbers, default=default) + 1
+        return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
+
+
     async def write_fig(
             self,
-            fig,
-            path = None,
-            opts = None,
+            spec,
+            full_path,
             *,
             topojson=None,
             mapbox_token=None,
@@ -254,64 +265,7 @@ class KaleidoTab:
         execution_context_id = self._current_js_id
 
 
-        if not opts:
-            opts = {}
-
-        if hasattr(fig, "to_dict"):
-            fig = fig.to_dict()
-
-        if isinstance(path, str):
-            path = Path(path)
-
-        if path and path.suffix and not opts.get("format"):
-            opts["format"] = path.suffix.removeprefix(".")
-
-        spec = to_spec(fig, opts)
-
-
-        def next_filename(path, prefix, ext):
-            default = 1 if (path / f"{prefix}.{ext}").exists() else 0
-            re_number = re.compile(r"^"+prefix+r"-(\d+)\."+ext+r"$")
-            numbers = [
-                       int(match.group(1))
-                       for name in path.glob(f"{prefix}-*.{ext}")
-                       if (match := re_number.match(Path(name).name))
-                       ]
-            n =  max(numbers, default=default) + 1
-            return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
-
-        if path and isinstance(path, str):
-            path = Path(path)
-
-        ext = spec["format"]
-        full_path = None
-        if not path:
-            directory = Path()
-        elif path and (not path.suffix or path.is_dir()):
-            if not path.is_dir():
-                raise ValueError(f"Directories will not be created for you: {path}")
-            directory = path
-        else:
-            full_path = path
-            if not full_path.parent.is_dir():
-                raise RuntimeError(
-                        f"Cannot reach path {path}. "
-                        "Are all directories created?"
-                        )
-        if not full_path:
-            _logger.debug("Looking for title")
-            prefix = ( fig
-                      .get("layout", {})
-                      .get("title", {})
-                      .get("text", "fig")
-                      .replace(" ", "_")
-                      )
-            _logger.debug(f"Found: {prefix}")
-            name = next_filename(directory, prefix, ext)
-            full_path = directory / name
-        else:
-            name = full_path.name
-        _logger.info(f"Processing {name}")
+        _logger.info(f"Processing {full_path.name}")
         # js script
         kaleido_jsfn = (
                 r"function(spec, ...args)"
@@ -340,8 +294,8 @@ class KaleidoTab:
         e = _check_error_ret(result)
         if e:
             if error_log is not None:
-                error_log.append(ErrorEntry(name, e, self.javascript_log))
-                _logger.info(f"Failed {name}")
+                error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
+                _logger.info(f"Failed {full_path.name}")
                 return
             else:
                 raise e
@@ -350,8 +304,8 @@ class KaleidoTab:
         img = self._img_from_response(result)
         if isinstance(img, BaseException):
             if error_log is not None:
-                error_log.append(ErrorEntry(name, img, self.javascript_log))
-                _logger.info(f"Failed {name}")
+                error_log.append(ErrorEntry(full_path.name, img, self.javascript_log))
+                _logger.info(f"Failed {full_path.name}")
                 return
             else:
                 raise img
@@ -361,7 +315,7 @@ class KaleidoTab:
                 file.write(binary)
 
         await asyncio.to_thread(write_image, img)
-        _logger.info(f"Wrote {name}")
+        _logger.info(f"Wrote {full_path.name}")
 
     def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))
@@ -554,14 +508,14 @@ class Kaleido(choreo.Browser):
         if hasattr(fig, "__aiter__"): # is async iterable
             _logger.debug("Is async for")
             async for f in fig:
+                spec, full_path = build_fig_spec(self, f, path, opts)
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(
                         self._post_task(
                             tab,
                             args = {
-                                "fig" : f,
-                                "path" : path,
-                                "opts" : opts,
+                                "spec" : spec,
+                                "full_path" : full_path,
                                 "topojson" : topojson,
                                 "mapbox_token" : mapbox_token
                                 },
@@ -571,7 +525,7 @@ class Kaleido(choreo.Browser):
                 t.add_done_callback(
                         partial(
                             self._check_render_task,
-                            "",
+                            full_path.name,
                             tab,
                             main_task
                             )
@@ -580,14 +534,14 @@ class Kaleido(choreo.Browser):
         else:
             _logger.debug("Is sync for")
             for f in fig:
+                spec, full_path = build_fig_spec(self, f, path, opts)
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(
                         self._post_task(
                             tab,
                             args = {
-                                "fig" : f,
-                                "path" : path,
-                                "opts" : opts,
+                                "spec" : spec,
+                                "full_path" : full_path,
                                 "topojson" : topojson,
                                 "mapbox_token" : mapbox_token
                                 },
@@ -597,7 +551,7 @@ class Kaleido(choreo.Browser):
                 t.add_done_callback(
                         partial(
                             self._check_render_task,
-                            "",
+                            full_path.name,
                             tab,
                             main_task
                             )
@@ -622,7 +576,6 @@ class Kaleido(choreo.Browser):
                        collected in that list instead of thrown.
 
         """
-
         main_task = asyncio.current_task()
         if error_log is not None:
             _logger.info("Using error log.")
@@ -630,6 +583,14 @@ class Kaleido(choreo.Browser):
         if hasattr(generator, "__aiter__"): # is async iterable
             _logger.debug("Is async for")
             async for args in generator:
+                spec, full_path = build_fig_spec(
+                        self,
+                        args.pop("fig"),
+                        args.pop("path", None),
+                        args.pop("opts", None)
+                        )
+                args["spec"] = spec
+                args["full_path"] = full_path
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(
                         self._post_task(tab, args = args, error_log=error_log)
@@ -637,7 +598,7 @@ class Kaleido(choreo.Browser):
                 t.add_done_callback(
                         partial(
                             self._check_render_task,
-                            "",
+                            full_path.name,
                             tab,
                             main_task
                             )
@@ -646,6 +607,14 @@ class Kaleido(choreo.Browser):
         else:
             _logger.debug("Is sync for")
             for args in generator:
+                spec, full_path = build_fig_spec(
+                        self,
+                        args.pop("fig"),
+                        args.pop("path", None),
+                        args.pop("opts", None)
+                        )
+                args["spec"] = spec
+                args["full_path"] = full_path
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(
                         self._post_task(tab, args = args, error_log=error_log)
@@ -653,7 +622,7 @@ class Kaleido(choreo.Browser):
                 t.add_done_callback(
                         partial(
                             self._check_render_task,
-                            "",
+                            full_path.name,
                             tab,
                             main_task
                             )
