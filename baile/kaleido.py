@@ -6,8 +6,8 @@ import base64
 import json
 import re
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
-from pprint import pformat
 
 import choreographer as choreo
 import logistro
@@ -20,7 +20,7 @@ PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
 TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
-_logger.setLevel(1)
+_logger.setLevel(7)
 
 class JavascriptError(RuntimeError): # TODO(A): process better # noqa: TD003, FIX002
     """Used to report errors from javascript."""
@@ -28,7 +28,7 @@ class JavascriptError(RuntimeError): # TODO(A): process better # noqa: TD003, FI
 def _make_printer(name):
     """Create event printer for generic events. Helper function."""
     async def print_all(response):
-        _logger.debug2(f"{name}:{pformat(response)}")
+        _logger.debug2(f"{name}:{response}")
     return print_all
 
 def _make_console_printer(name):
@@ -43,6 +43,11 @@ def _check_error(result): # Utility
         raise DevtoolsProtocolError(result)
     if result.get("result", {}).get("result", {}).get("subtype", None) == "error":
         raise JavascriptError(str(result.get("result")))
+
+def _check_task(task):
+    if e := task.exception():
+        _logger.exception(e, stacklevel=2) # stacklevel skip this wrapper
+
 
 # Add note about composition/inheritance
 class KaleidoTab:
@@ -180,6 +185,7 @@ class KaleidoTab:
             mapbox_token: a mapbox api token for plotly to use
 
         """
+        _logger.debug("In tab's write_fig")
         tab = self.tab
         execution_context_id = self._current_js_id
 
@@ -224,12 +230,14 @@ class KaleidoTab:
                         "Are all directories created?"
                         )
         if not full_path:
+            _logger.debug("Looking for title")
             prefix = ( fig
                       .get("layout", {})
                       .get("title", {})
                       .get("text", "fig")
                       .replace(" ", "_")
                       )
+            _logger.debug(f"Found: {prefix}")
             name = next_filename(directory, prefix, ext)
             full_path = directory / name
 
@@ -325,6 +333,10 @@ class Kaleido(choreo.Browser):
                      (tab, asyncio.create_task(tab.navigate(url)))
                      for tab in kaleido_tabs
                      ]
+
+        for _, task in tab_tasks:
+            task.add_done_callback(_check_task)
+
         for tab, task in tab_tasks:
             await task
             await self.tabs_ready.put(tab)
@@ -341,6 +353,10 @@ class Kaleido(choreo.Browser):
                  asyncio.create_task(self.create_kaleido_tab())
                  for _ in range(needed_tabs)
                  ]
+
+        for task in tasks:
+            task.add_done_callback(_check_task)
+
         for task in tasks:
             await task
 
@@ -390,3 +406,70 @@ class Kaleido(choreo.Browser):
         await tab.reload()
         self._tabs_in_use.remove(tab)
         await self.tabs_ready.put(tab)
+
+    async def write_fig(
+            self,
+            fig,
+            path = None,
+            opts = None,
+            *,
+            topojson=None,
+            mapbox_token=None
+            ):
+        """
+        Call the plotly renderer via javascript on first available tab.
+
+        Args:
+            fig: the plotly figure or an iterable of plotly figures
+            path: the path to write the image too. if its a directory, we will try to
+                generate a name. If the path contains an extension,
+                "path/to/my_image.png", that extension will be the format used if not
+                overriden in `opts`. If you pass a complete path (filename), for
+                multiple figures, you will overwrite every previous figure.
+            opts: dictionary describing format, width, height, and scale of image
+            topojson: a link ??? TODO
+            mapbox_token: a mapbox api token for plotly to use
+
+        """
+        if hasattr(fig, "to_dict"):
+            fig = [fig]
+        elif not isinstance(fig, Iterable): # this will fail sometimes
+            _logger.debug(f"Making iterable {type(fig)}")
+            fig = [fig]
+        else:
+            _logger.debug(f"Is iterable {type(fig)}")
+
+
+        async def post_task(tab, f):
+            _logger.debug("Posting a task")
+            try:
+                await tab.write_fig(f,
+                                    path = path,
+                                    opts = opts,
+                                    topojson=topojson,
+                                    mapbox_token=mapbox_token
+                                    )
+            # TODO: should we fail here?
+            finally:
+                _logger.debug("Returning a tab.")
+                await self.return_kaleido_tab(tab)
+                _logger.debug("Task finished")
+
+        tasks = set()
+        if hasattr(fig, "__aiter__"): # is async iterable
+            _logger.debug("Is async for w/ {len(fig)} figs")
+            async for f in fig:
+                tab = await self.get_kaleido_tab()
+                t = asyncio.create_task(post_task(tab, f))
+                t.add_done_callback(_check_task)
+                tasks.add(t)
+        else:
+            _logger.debug(f"Is sync for w/ {len(fig)} figs")
+            for f in fig:
+                tab = await self.get_kaleido_tab()
+                t = asyncio.create_task(post_task(tab, f))
+                t.add_done_callback(_check_task)
+                tasks.add(t)
+        _logger.debug("awaiting tasks")
+        for task in tasks:
+            await task

@@ -15,13 +15,9 @@ async def make_fig(kaleido):
     await kaleido.return_kaleido_tab(tab)
 
 async def main():
-    tasks = set()
     num = 1
     async with baile.Kaleido(headless=False, n=num) as k:
-        for _ in range(num):
-            tasks.add(asyncio.create_task(make_fig(k)))
-        for task in tasks:
-          await task
+        await k.write_fig(fig)
 
 start = time.perf_counter()
 try:
