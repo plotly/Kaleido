@@ -48,7 +48,7 @@ dev = [
 
 [tool.uv.sources]
 mkquixote = { path = "../mkquixote", editable = true }
-choreographer = { path = "../devtools_protocol" }
+choreographer = { path = "../devtools_protocol", editable = true }
 
 [tool.ruff.lint]
 select = ["ALL"]

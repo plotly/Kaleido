@@ -1,23 +1,23 @@
 # ruff: noqa
 
 import asyncio
+import random
 import time
 
 import baile
 
 import plotly.express as px
-fig = px.bar(x=["a", "b", "c"], y=[1, 3, 2], title="test_title")
 
+def make_figs():
+    sample_range = range(1, 101)
+    for _ in range(1):
+        yield px.bar(x=["a", "b", "c"], y=random.sample(sample_range, 3), title="test_title")
 
-async def make_fig(kaleido):
-    tab = await kaleido.get_kaleido_tab()
-    await tab.write_fig(fig)
-    await kaleido.return_kaleido_tab(tab)
 
 async def main():
-    num = 1
-    async with baile.Kaleido(headless=False, n=num) as k:
-        await k.write_fig(fig)
+    num = 12
+    async with baile.Kaleido(n=num) as k:
+        await k.write_fig(make_figs(), path="./hello/test.jpg")
 
 start = time.perf_counter()
 try:

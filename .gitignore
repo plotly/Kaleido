@@ -5,10 +5,10 @@ __pycache__
 *.egg-info/
 
 # builds
-tests/images/*
+tests/renders/*
 
 # avoid ignore .gitkeep
-!tests/images/.gitkeep
+!tests/renders/.gitkeep
 
 # ipynb
 .ipynb_checkpoints/

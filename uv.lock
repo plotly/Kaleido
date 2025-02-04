@@ -30,7 +30,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "choreographer", directory = "../devtools_protocol" },
+    { name = "choreographer", editable = "../devtools_protocol" },
     { name = "logistro", specifier = ">=1.0.8" },
 ]
 
@@ -46,7 +46,8 @@ dev = [
 
 [[package]]
 name = "choreographer"
-source = { directory = "../devtools_protocol" }
+version = "1.0.0a2.post0+git.eabca906.dirty"
+source = { editable = "../devtools_protocol" }
 dependencies = [
     { name = "logistro" },
     { name = "simplejson" },

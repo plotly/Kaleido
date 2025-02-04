@@ -1,89 +1,96 @@
+from __future__ import annotations
+
 import argparse
 import asyncio
 import json
+import time
 from pathlib import Path
-from time import process_time
 
-import logistro as logging
+import logistro
 
 import baile
 
-# Extract jsons of mocks
-dir_in = Path(__file__).resolve().parent / "mocks"
-results_dir = Path(__file__).resolve().parent / "images"
+_logger = logistro.getLogger(__name__)
+_logger.setLevel(5)
 
-# Get custom parser
-paser_logging = logging.customize_parser()
+# Extract jsons of mocks
+in_dir = Path(__file__).resolve().parent / "mocks"
+out_dir = Path(__file__).resolve().parent / "renders"
+
+
+def _get_jsons_in_paths(path: str | Path) -> list[Path]:
+    # Work with Paths and directories
+    path = Path(path) if isinstance(path, str) else path
+
+    if path.is_dir():
+        return [ path / a for a in path.glob("*.json") ]
+    else:
+        return [ path ]
+
+def _load_figures_from_paths(paths: list[Path]):
+    # Set json
+    for path in paths:
+        if path.is_file():
+            with path.open() as file:
+                figure = json.load(file) # TODO use faster json reader
+                _logger.info(f"Rendering {path.stem}")
+                yield { "fig": figure, "path": args.output / f"{path.stem}.png" }
+        else:
+            raise RuntimeError(f"Path {path} is not a file.")
 
 # Set the arguments
-parser = argparse.ArgumentParser(parents=[paser_logging])
-parser.add_argument("--n_tabs", type=int, help="Number of tabs")
+parser = argparse.ArgumentParser()
 parser.add_argument(
-    "--mock_path", type=str, default=dir_in, help="Directory of mock file/s"
-)
-parser.add_argument("--benchmark", action="store_true", help="Enable benchmarking")
+        "--n",
+        type=int,
+        default=4,
+        help="Number of tabs"
+        )
+
 parser.add_argument(
-    "--headless",
-    action="store_true",
-    dest="headless",
-    default=True,
-    help="Set headless as True",
-)
+        "--input",
+        type=str,
+        default=in_dir,
+        help="Directory of mock file/s"
+        )
+
 parser.add_argument(
-    "--no_headless", action="store_false", dest="headless", help="Set headless as False"
-)
+        "--output",
+        type=str,
+        default=out_dir,
+        help="Directory of mock file/s"
+        )
+
+parser.add_argument(
+        "--headless",
+        action="store_true",
+        default=True,
+        help="Set headless as True",
+        )
+
+parser.add_argument(
+        "--no_headless",
+        action="store_false",
+        dest="headless",
+        help="Set headless as False"
+        )
+
 args = parser.parse_args()
-arg_dict = vars(args)
-
-# Improve the defaults
-if arg_dict["benchmark"] and not arg_dict["n_tabs"]:
-    arg_dict["n_tabs"] = 1
-elif not arg_dict["benchmark"] and not arg_dict["n_tabs"]:
-    arg_dict["n_tabs"] = 4
-
 
 # Function to process the images
-async def process_images():
+async def _main():
+    paths = _get_jsons_in_paths(args.input)
+    async with baile.Kaleido(n=args.n, headless=args.headless) as k:
+        await k.write_fig_generate_all(_load_figures_from_paths(paths))
+
+def build_mocks():
+    start = time.perf_counter()
     try:
-        await baile.create_image(
-            path_figs=arg_dict["mock_path"],
-            path=str(results_dir),
-            debug=True,
-            num_tabs=arg_dict["n_tabs"],
-            headless=arg_dict["headless"],
-        )
-        return "Successful"
-    except Exception as e:
-        print("No to image".center(30, "%"))
-        print(e)
-        print("***")
-        return e
+        asyncio.run(_main())
+    finally:
+        end = time.perf_counter()
+        elapsed = end - start
+        print(f"Time taken: {elapsed:.6f} seconds")
 
-
-# Run the loop
 if __name__ == "__main__":
-    if arg_dict["benchmark"]:
-        # Set the dictionary
-        results = {
-            "execution_time": None,
-            "unit": "seconds",
-            "mock_path": arg_dict["mock_path"],
-        }
-
-        t1_start = process_time()  # Start timing
-
-        # Measure the execution of process_images
-        result_message = asyncio.run(process_images())
-
-        t2_stop = process_time()  # Stop timing
-        results["execution_time"] = t2_stop - t1_start
-        if result_message == "Successful":
-            results["result"] = result_message
-        else:
-            results["error"] = result_message
-
-        # Convert results to JSON and print
-        print("Benchmark".center(30, "*"))
-        print(json.dumps(results, indent=4))
-    else:
-        asyncio.run(process_images())
+    build_mocks()
