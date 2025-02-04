@@ -21,6 +21,16 @@ TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
 
+class KaleidoError(Exception):
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+        self.message = message
+
+    def __str__(self):
+        return f"Error {self.code}: {self.message}"
+
+
 class JavascriptError(RuntimeError): # TODO(A): process better # noqa: TD003, FIX002
     """Used to report errors from javascript."""
 
@@ -30,10 +40,12 @@ def _make_printer(name):
         _logger.debug2(f"{name}:{response}")
     return print_all
 
-def _make_console_printer(name):
+def _make_console_logger(name, log):
     """Create printer specifically for console events. Helper function."""
     async def console_printer(event):
-        _logger.info(f"{name}:{event}") # TODO(A): process better # noqa: TD003, FIX002
+        _logger.debug2(f"{name}:{event}") # TODO(A): parse # noqa: TD003, FIX002
+        # TODO change levels depending on that first argument WARN: ERROR:
+        log.append(f"{event['params']['args'][0]['value']} {event['params']['args'][1]['value']}")
     return console_printer
 
 def _check_error(result): # Utility
@@ -69,6 +81,23 @@ class KaleidoTab:
 
         """
         self.tab = tab
+        self.javascript_log = []
+
+    def _regenerate_javascript_console(self):
+        tab = self.tab
+        self.javascript_log.clear()
+        _logger.debug2("Subscribing to all console prints for tab {tab}.")
+        try:
+            tab.unsubscribe("Runtime.consoleAPICalled")
+        except ValueError:
+            pass
+        tab.subscribe(
+                "Runtime.consoleAPICalled",
+                _make_console_logger(
+                    "tab js console",
+                    self.javascript_log
+                    )
+                )
 
     async def navigate(self, url: str | Path = PAGE_PATH):
         """
@@ -112,6 +141,7 @@ class KaleidoTab:
                     "Result {javascript_ready.result()}."
                     ) from e
         await page_ready
+        self._regenerate_javascript_console()
 
     async def reload(self):
         """Reload the tab, and set the javascript runtime id."""
@@ -136,6 +166,7 @@ class KaleidoTab:
                     "Result {javascript_ready.result()}."
                     ) from e
         await is_loaded
+        self._regenerate_javascript_console()
 
     async def console_print(self, message: str) -> None:
         """
@@ -287,8 +318,13 @@ class KaleidoTab:
 
     def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))
+
+        if js_response["code"] != 0:
+            raise KaleidoError(js_response["code"], js_response["message"])
+
         response_format = js_response.get("format")
         img = js_response.get("result")
+
 
         # Base64 decode binary types
         if response_format not in TEXT_FORMATS:
@@ -330,8 +366,6 @@ class Kaleido(choreo.Browser):
             n = f"tab-{i!s}"
             _logger.debug2(f"Subscribing * to tab: {tab}.")
             tab.subscribe("*", _make_printer(n + " event"))
-            _logger.debug2("Subscribing to all console prints for tab {tab}.")
-            tab.subscribe("Runtime.consoleAPICalled", _make_console_printer(n))
 
         _logger.debug("Navigating all tabs")
 
@@ -420,12 +454,13 @@ class Kaleido(choreo.Browser):
         _logger.debug("Posting a task")
         try:
             await tab.write_fig(**args)
-        except Exception as e:
-            _logger.exception(f"Error in {args['path']}")
+        except Exception:
+            for line in tab.javascript_log:
+                _logger.error(f"js log: {line}") # noqa: TRY400 don't over-use exception
             if fail_fast:
                 raise
             else:
-                _logger.exception(e) # noqa: TRY401 it is not redundant because we don't raise.
+                _logger.exception(f"Error in {args['path']}")
         finally:
             _logger.debug("Returning a tab.")
             await self.return_kaleido_tab(tab)
