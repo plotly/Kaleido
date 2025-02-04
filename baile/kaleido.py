@@ -20,7 +20,6 @@ PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
 TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
-_logger.setLevel(7)
 
 class JavascriptError(RuntimeError): # TODO(A): process better # noqa: TD003, FIX002
     """Used to report errors from javascript."""
@@ -196,8 +195,11 @@ class KaleidoTab:
         if hasattr(fig, "to_dict"):
             fig = fig.to_dict()
 
+        if isinstance(path, str):
+            path = Path(path)
+
         if path and path.suffix and not opts.get("format"):
-            opts["format"] = path.suffix
+            opts["format"] = path.suffix.removeprefix(".")
 
         spec = to_spec(fig, opts)
 
@@ -221,6 +223,8 @@ class KaleidoTab:
         if not path:
             directory = Path()
         elif path and (not path.suffix or path.is_dir()):
+            if not path.is_dir():
+                raise ValueError(f"Directories will not be created for you: {path}")
             directory = path
         else:
             full_path = path
@@ -457,14 +461,14 @@ class Kaleido(choreo.Browser):
 
         tasks = set()
         if hasattr(fig, "__aiter__"): # is async iterable
-            _logger.debug("Is async for w/ {len(fig)} figs")
+            _logger.debug("Is async for")
             async for f in fig:
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(post_task(tab, f))
                 t.add_done_callback(_check_task)
                 tasks.add(t)
         else:
-            _logger.debug(f"Is sync for w/ {len(fig)} figs")
+            _logger.debug("Is sync for")
             for f in fig:
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(post_task(tab, f))
