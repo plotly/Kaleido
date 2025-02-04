@@ -69,7 +69,7 @@ parser.add_argument(
         )
 
 parser.add_argument(
-        "--no_headless",
+        "--no-headless",
         action="store_false",
         dest="headless",
         help="Set headless as False"
@@ -83,7 +83,7 @@ async def _main():
     async with baile.Kaleido(n=args.n, headless=args.headless) as k:
         error_log = []
         await k.write_fig_generate_all(
-                _load_figures_from_paths(paths[]),
+                _load_figures_from_paths(paths),
                 error_log=error_log
                 )
     for error in error_log:
