@@ -45,7 +45,11 @@ def _check_error(result): # Utility
 
 def _check_task(task):
     if e := task.exception():
-        _logger.exception(e, stacklevel=2) # stacklevel skip this wrapper
+        try:
+            raise e
+        except:
+            _logger.exception(f"Checking task {task} led to exception", stacklevel=2)
+            raise
 
 
 # Add note about composition/inheritance
@@ -271,6 +275,7 @@ class KaleidoTab:
         # send request to run script in chromium
         result = await tab.send_command("Runtime.callFunctionOn", params=params)
         _check_error(result)
+        _logger.debug2(f"Result of function call: {result}")
 
         img = self._img_from_response(result)
 
@@ -411,11 +416,16 @@ class Kaleido(choreo.Browser):
         self._tabs_in_use.remove(tab)
         await self.tabs_ready.put(tab)
 
-    async def _post_task(self, tab, args):
+    async def _post_task(self, tab, args, fail_fast):
         _logger.debug("Posting a task")
         try:
             await tab.write_fig(**args)
-        # TODO: should we fail here?
+        except Exception as e:
+            _logger.exception(f"Error in {args['path']}")
+            if fail_fast:
+                raise
+            else:
+                _logger.exception(e) # noqa: TRY401 it is not redundant because we don't raise.
         finally:
             _logger.debug("Returning a tab.")
             await self.return_kaleido_tab(tab)
@@ -428,7 +438,8 @@ class Kaleido(choreo.Browser):
             opts = None,
             *,
             topojson=None,
-            mapbox_token=None
+            mapbox_token=None,
+            fail_fast=False,
             ):
         """
         Call the plotly renderer via javascript on first available tab.
@@ -465,7 +476,8 @@ class Kaleido(choreo.Browser):
                                 "opts" : opts,
                                 "topojson" : topojson,
                                 "mapbox_token" : mapbox_token
-                                }
+                                },
+                            fail_fast = fail_fast
                             )
                         )
                 t.add_done_callback(_check_task)
@@ -483,7 +495,8 @@ class Kaleido(choreo.Browser):
                                 "opts" : opts,
                                 "topojson" : topojson,
                                 "mapbox_token" : mapbox_token
-                                }
+                                },
+                            fail_fast = fail_fast
                             )
                         )
                 t.add_done_callback(_check_task)
@@ -495,6 +508,8 @@ class Kaleido(choreo.Browser):
     async def write_fig_generate_all(
             self,
             generator,
+            *,
+            fail_fast=False,
             ):
         """
         Equal to `write_fig` but allows the user to generate all arguments.
@@ -510,7 +525,7 @@ class Kaleido(choreo.Browser):
             async for args in generator:
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(
-                        self._post_task(tab, args = args)
+                        self._post_task(tab, args = args, fail_fast=fail_fast)
                         )
                 t.add_done_callback(_check_task)
                 tasks.add(t)
@@ -519,7 +534,7 @@ class Kaleido(choreo.Browser):
             for args in generator:
                 tab = await self.get_kaleido_tab()
                 t = asyncio.create_task(
-                        self._post_task(tab, args = args)
+                        self._post_task(tab, args = args, fail_fast=fail_fast)
                         )
                 t.add_done_callback(_check_task)
                 tasks.add(t)

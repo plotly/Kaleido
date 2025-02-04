@@ -33,7 +33,7 @@ def _load_figures_from_paths(paths: list[Path]):
         if path.is_file():
             with path.open() as file:
                 figure = json.load(file) # TODO use faster json reader
-                _logger.info(f"Rendering {path.stem}")
+                _logger.info(f"Yielding {path.stem}")
                 yield { "fig": figure, "path": args.output / f"{path.stem}.png" }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
@@ -81,7 +81,7 @@ args = parser.parse_args()
 async def _main():
     paths = _get_jsons_in_paths(args.input)
     async with baile.Kaleido(n=args.n, headless=args.headless) as k:
-        await k.write_fig_generate_all(_load_figures_from_paths(paths))
+        await k.write_fig_generate_all(_load_figures_from_paths(paths[6:10]))
 
 def build_mocks():
     start = time.perf_counter()
