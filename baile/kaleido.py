@@ -280,7 +280,7 @@ class KaleidoTab:
                     "name":full_path.name,
                     "start":time.perf_counter(),
                     }
-        async with timeout(60) as timer:
+        async with timeout(.5) as timer:
             tab = self.tab
             _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
             execution_context_id = self._current_js_id
@@ -385,31 +385,48 @@ class Kaleido(choreo.Browser):
     """Kaleido manages a set of image processors."""
 
     tabs_ready: asyncio.Queue[KaleidoTab]
+    _background_render_tasks: set[asyncio.Task]
+    _main_tasks: set[asyncio.Task]
+
+    async def close(self):
+        """Close the browser."""
+        _logger.info("Cancelling tasks.")
+        for task in self._main_tasks:
+            if not task.done():
+                task.cancel()
+        for task in self._background_render_tasks:
+            if not task.done()
+                task.cancel()
+        _logger.info("Exiting Kaleido/Choreo")
+        return await super().close()
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
+        """Close the browser."""
         _logger.info("Waiting for all cleanups to finish.")
         await asyncio.gather(*self._background_render_tasks, return_exceptions=True)
         _logger.info("Exiting Kaleido")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
 
-    def _clean_task(self, task):
-        self._background_render_tasks.remove(task)
-        if task.exception():
-            raise task.exception()
+    def __init__(self, *args, **kwargs): # noqa: D417 no args/kwargs in description
+        """
+        Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
 
-    def _check_render_task(self, name, tab, main_task, task):
-        _logger.info(f"Returning {name} tab after render.")
-        t = asyncio.create_task(self._return_kaleido_tab(tab))
-        self._background_render_tasks.add(t)
-        t.add_done_callback(self._clean_task)
-        if e := task.exception():
-            _logger.error(f"Render Task: {name}- ", exc_info=e)
-            main_task.cancel()
+        It takes all choreo.Browser args, plus some extra. Extra listed, see
+        choreographer for that documentation.
 
-    def __init__(self, *args, **kwargs):
-        """Initialize Kaleido, a choero.Browser wrapper adding kaleido functionality."""
+        Note: Chrome will throttle background tabs and windows, so non-headless
+        multi-process configurations don't work well.
+
+        Args:
+            n: the number of separate processes (windows, not seen) to use.
+            timeout: limit on any ONE render.
+            width: width of window (headless only)
+            height: height of window (headless only)
+
+        """
         self._background_render_tasks = set()
 
+        self.timeout = kwargs.pop("timeout", 60)
         self.n = kwargs.pop("n", 1)
         self.height = kwargs.pop("height", None)
         self.width = kwargs.pop("width", None)
@@ -422,7 +439,6 @@ class Kaleido(choreo.Browser):
             self.height = None
             self.width = None
         self.tabs_ready = asyncio.Queue(maxsize=0)
-        self._tabs_in_use = set()
         super().__init__(*args, **kwargs)
 
     async def _conform_tabs(self, tabs = None, url: str | Path = PAGE_PATH) -> None:
@@ -484,7 +500,12 @@ class Kaleido(choreo.Browser):
             The kaleido-tab created.
 
         """
-        tab = await super().create_tab(url=url, width=self.width, height=self.height, window=True)
+        tab = await super().create_tab(
+                url=url,
+                width=self.width,
+                height=self.height,
+                window=True
+                )
         await self._conform_tabs([tab])
 
 
@@ -516,19 +537,42 @@ class Kaleido(choreo.Browser):
         await self.tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
-    async def _post_task(self, tab, args, error_log = None, profiler = None):
+    def _clean_tab_return_task(self, main_task, task):
+        _logger.info("Cleaning out background tasks.")
+        self._background_render_tasks.remove(task)
+        e = task.exception()
+        if e:
+            _logger.error("Clean tab return task found exception", exc_info=e)
+            if not main_task.done():
+                main_task.cancel()
+            raise e
+
+    def _check_render_task(self, name, tab, main_task, task):
+        if e := task.exception():
+            if isinstance(e, (asyncio.CancelledError, asyncio.TimeoutError)):
+                _logger.info("Something timedout or cancelled.")
+            _logger.error(f"Render Task Error In {name}- ", exc_info=e)
+            if not main_task.done():
+                main_task.cancel()
+            raise e
+        _logger.info(f"Returning {name} tab after render.")
+        t = asyncio.create_task(self._return_kaleido_tab(tab))
+        self._background_render_tasks.add(t)
+        t.add_done_callback(partial(self._clean_tab_return_task, main_task))
+
+    async def _render_task(self, tab, args, error_log = None, profiler = None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         await tab.write_fig(**args, error_log=error_log, profiler=profiler)
         _logger.info(f"Posted task ending for {args['full_path'].name}")
 
-    async def write_fig(
+    async def write_fig( # noqa: PLR0913, C901 (too many args, complexity)
             self,
             fig,
             path = None,
             opts = None,
             *,
-            topojson=None,
-            mapbox_token=None,
+            topojson = None,
+            mapbox_token = None,
             error_log = None,
             profiler = None,
             ):
@@ -537,7 +581,7 @@ class Kaleido(choreo.Browser):
 
         Args:
             fig: the plotly figure or an iterable of plotly figures
-            path: the path to write the image too. if its a directory, we will try to
+            path: the path to write the images to. if its a directory, we will try to
                 generate a name. If the path contains an extension,
                 "path/to/my_image.png", that extension will be the format used if not
                 overriden in `opts`. If you pass a complete path (filename), for
@@ -545,6 +589,13 @@ class Kaleido(choreo.Browser):
             opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
             mapbox_token: a mapbox api token for plotly to use
+            error_log: A supplied list, will be populated with `ErrorEntry`s
+                       which can be converted to strings. Note, this is for
+                       collections errors that have to do with plotly. They will
+                       not be thrown. Lower level errors (kaleido, choreographer)
+                       will still be thrown.
+            profiler: A supplied empty dictionary, will be populated with information
+                      about tabs, runtimes, etc.
 
         """
         if error_log is not None:
@@ -559,69 +610,57 @@ class Kaleido(choreo.Browser):
 
 
         main_task = asyncio.current_task()
+        self._main_tasks.add(main_task)
         tasks = set()
-        if hasattr(fig, "__aiter__"): # is async iterable
-            _logger.debug("Is async for")
-            async for f in fig:
-                spec, full_path = build_fig_spec(f, path, opts)
-                tab = await self._get_kaleido_tab()
-                if profiler is not None and tab.tab.target_id not in profiler:
-                    profiler[tab.tab.target_id] = []
-                t = asyncio.create_task(
-                        self._post_task(
-                            tab,
-                            args = {
-                                "spec" : spec,
-                                "full_path" : full_path,
-                                "topojson" : topojson,
-                                "mapbox_token" : mapbox_token
-                                },
-                            ),
-                        error_log = error_log,
-                        profiler = profiler
-                        )
-                t.add_done_callback(
-                        partial(
-                            self._check_render_task,
-                            full_path.name,
-                            tab,
-                            main_task
-                            )
-                        )
-                tasks.add(t)
-        else:
-            _logger.debug("Is sync for")
-            for f in fig:
-                spec, full_path = build_fig_spec(f, path, opts)
-                tab = await self._get_kaleido_tab()
-                if profiler is not None and tab.tab.target_id not in profiler:
-                    profiler[tab.tab.target_id] = []
-                t = asyncio.create_task(
-                        self._post_task(
-                            tab,
-                            args = {
-                                "spec" : spec,
-                                "full_path" : full_path,
-                                "topojson" : topojson,
-                                "mapbox_token" : mapbox_token
-                                },
-                            ),
-                        error_log = error_log,
-                        profiler = profiler,
-                        )
-                t.add_done_callback(
-                        partial(
-                            self._check_render_task,
-                            full_path.name,
-                            tab,
-                            main_task
-                            )
-                        )
-                tasks.add(t)
-        _logger.debug("awaiting tasks")
-        await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def write_fig_generate_all(
+        async def _loop(f):
+            spec, full_path = build_fig_spec(f, path, opts)
+            tab = await self._get_kaleido_tab()
+            if profiler is not None and tab.tab.target_id not in profiler:
+                profiler[tab.tab.target_id] = []
+            t = asyncio.create_task(
+                    self._render_task(
+                        tab,
+                        args = {
+                            "spec" : spec,
+                            "full_path" : full_path,
+                            "topojson" : topojson,
+                            "mapbox_token" : mapbox_token
+                            },
+                        ),
+                    error_log = error_log,
+                    profiler = profiler
+                    )
+            t.add_done_callback(
+                    partial(
+                        self._check_render_task,
+                        full_path.name,
+                        tab,
+                        main_task
+                        )
+                    )
+            tasks.add(t)
+        try:
+            if hasattr(fig, "__aiter__"): # is async iterable
+                _logger.debug("Is async for")
+                async for f in fig:
+                    await _loop(f)
+            else:
+                _logger.debug("Is sync for")
+                for f in fig:
+                    await _loop(f)
+            _logger.debug("awaiting tasks")
+            await asyncio.gather(*tasks, return_exceptions=True)
+        except:
+            _logger.exception("Cleaning tasks after error.")
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            raise
+        finally:
+            self._main_tasks.remove(main_task)
+
+    async def write_fig_generate_all( # noqa: C901 too complex
             self,
             generator,
             *,
@@ -634,67 +673,67 @@ class Kaleido(choreo.Browser):
         Args:
             generator: an iterable or generator which supplies a dictionary
                        of arguments to pass to tab.write_fig.
-            error_log: an optional empty list, that if included, means errors are
-                       collected in that list instead of thrown.
+            error_log: A supplied list, will be populated with `ErrorEntry`s
+                       which can be converted to strings. Note, this is for
+                       collections errors that have to do with plotly. They will
+                       not be thrown. Lower level errors (kaleido, choreographer)
+                       will still be thrown.
+            profiler: A supplied dictionary, will be populated with information
+                      about tabs, runtimes, etc.
 
         """
-        main_task = asyncio.current_task()
         if error_log is not None:
             _logger.info("Using error log.")
         if profiler is not None:
             _logger.info("Using profiler.")
+
+        main_task = asyncio.current_task()
+        self._main_tasks.add(main_task)
         tasks = set()
-        if hasattr(generator, "__aiter__"): # is async iterable
-            _logger.debug("Is async for")
-            async for args in generator:
-                spec, full_path = build_fig_spec(
-                        args.pop("fig"),
-                        args.pop("path", None),
-                        args.pop("opts", None)
+
+        async def _loop(args):
+            spec, full_path = build_fig_spec(
+                    args.pop("fig"),
+                    args.pop("path", None),
+                    args.pop("opts", None)
+                    )
+            args["spec"] = spec
+            args["full_path"] = full_path
+            tab = await self._get_kaleido_tab()
+            if profiler is not None and tab.tab.target_id not in profiler:
+                profiler[tab.tab.target_id] = []
+            t = asyncio.create_task(
+                    self._render_task(
+                        tab,
+                        args = args,
+                        error_log=error_log,
+                        profiler=profiler)
+                    )
+            t.add_done_callback(
+                    partial(
+                        self._check_render_task,
+                        full_path.name,
+                        tab,
+                        main_task
                         )
-                args["spec"] = spec
-                args["full_path"] = full_path
-                tab = await self._get_kaleido_tab()
-                if profiler is not None and tab.tab.target_id not in profiler:
-                    profiler[tab.tab.target_id] = []
-                t = asyncio.create_task(
-                        self._post_task(tab, args = args, error_log=error_log, profiler=profiler)
-                        )
-                t.add_done_callback(
-                        partial(
-                            self._check_render_task,
-                            full_path.name,
-                            tab,
-                            main_task
-                            )
-                        )
-                tasks.add(t)
-        else:
-            _logger.debug("Is sync for")
-            for args in generator:
-                spec, full_path = build_fig_spec(
-                        args.pop("fig"),
-                        args.pop("path", None),
-                        args.pop("opts", None)
-                        )
-                args["spec"] = spec
-                args["full_path"] = full_path
-                _logger.info(f"Calling _get_kaleido_tab for {full_path.name}")
-                tab = await self._get_kaleido_tab()
-                _logger.info(f"Got {tab.tab.target_id[:4]} for {full_path.name}")
-                if profiler is not None and tab.tab.target_id not in profiler:
-                    profiler[tab.tab.target_id] = []
-                t = asyncio.create_task(
-                        self._post_task(tab, args = args, error_log=error_log, profiler=profiler)
-                        )
-                t.add_done_callback(
-                        partial(
-                            self._check_render_task,
-                            full_path.name,
-                            tab,
-                            main_task
-                            )
-                        )
-                tasks.add(t)
-        _logger.debug("awaiting tasks")
-        await asyncio.gather(*tasks, return_exceptions=True)
+                    )
+            tasks.add(t)
+        try:
+            if hasattr(generator, "__aiter__"): # is async iterable
+                _logger.debug("Is async for")
+                async for args in generator:
+                    await _loop(args)
+            else:
+                _logger.debug("Is sync for")
+                for args in generator:
+                    await _loop(args)
+            _logger.debug("awaiting tasks")
+            await asyncio.gather(*tasks, return_exceptions=True)
+        except:
+            _logger.exception("Cleaning tasks after error.")
+            for task in tasks:
+                if not task.done():
+                    task.cancel()
+            raise
+        finally:
+            self._main_tasks.remove(main_task)

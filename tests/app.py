@@ -2,19 +2,17 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import json
 import time
 from pathlib import Path
 from pprint import pformat
 
 import logistro
+import orjson
 
 import baile
 
-logistro.getLogger().setLevel(9)
+logistro.getLogger().setLevel(8)
 _logger = logistro.getLogger(__name__)
-#logistro.getLogger("baile").setLevel(11)
-#_logger.setLevel(11)
 
 # Extract jsons of mocks
 in_dir = Path(__file__).resolve().parent / "mocks"
@@ -35,7 +33,7 @@ def _load_figures_from_paths(paths: list[Path]):
     for path in paths:
         if path.is_file():
             with path.open() as file:
-                figure = json.load(file) # TODO use faster json reader
+                figure = orjson.loads(file.read())
                 _logger.info(f"Yielding {path.stem}")
                 yield { "fig": figure, "path": args.output / f"{path.stem}.png" }
         else:
@@ -96,12 +94,18 @@ async def _main():
         print(f"Num of errors: {len(error_log)}")
         from operator import itemgetter
         for tab, tab_profile in profiler.items():
-            profiler[tab] = sorted(tab_profile, key=itemgetter("duration"), reverse=True)
-        with Path("errors.log").open("w") as file:
-            for line in error_log:
-                file.write("\n\n" + str(line))
-        with Path("profiler.log").open("w") as file:
-            file.write(pformat(profiler))
+            profiler[tab] = sorted(
+                    tab_profile,
+                    key=itemgetter("duration"),
+                    reverse=True
+                    )
+        def write_results():
+            with Path("errors.log").open("w") as file:
+                for line in error_log:
+                    file.write("\n\n" + str(line))
+            with Path("profiler.log").open("w") as file:
+                file.write(pformat(profiler))
+        await asyncio.to_thread(write_results)
 
 def build_mocks():
     start = time.perf_counter()
