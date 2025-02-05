@@ -20,7 +20,7 @@ from pprint import pformat
 
 import choreographer as choreo
 import logistro
-from choreographer.errors import DevtoolsProtocolError
+from choreographer.errors import DevtoolsProtocolError, ChromeNotFoundError
 
 from ._fig_tools import build_fig_spec
 
@@ -433,7 +433,17 @@ class Kaleido(choreo.Browser):
             self.height = None
             self.width = None
         self._tabs_ready = asyncio.Queue(maxsize=0)
-        super().__init__(*args, **kwargs)
+        try:
+            super().__init__(*args, **kwargs)
+        except ChromeNotFoundError:
+            raise ChromeNotFoundError(
+                    "Versions 1.0.0 and higher of Kaleido do not include chrome by"
+                    "default. Earlier versions, we can be pinned, did but they were "
+                    "much smaller. Kaleido's dependency, choreographer, supplies a "
+                    "choreo_get_chrome CLI command as well as a `get_chrome()` and "
+                    "`get_chrome_sync()` function from "
+                    "`choreographer import cli as cli; cli.get_chrome()`"
+                    ) from ChromeNotFoundError
 
     async def _conform_tabs(self, tabs = None, url: str | Path = PAGE_PATH) -> None:
         if not tabs:
