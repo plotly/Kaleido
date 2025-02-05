@@ -231,7 +231,7 @@ class KaleidoTab:
         _logger.debug(f"Sent javascript got result: {result}")
         _check_error(result)
 
-    def _finish_profile(self, profile, error=None):
+    def _finish_profile(self, profile, error=None, size_mb=None):
         _logger.debug("Finishing profile")
         profile["duration"] = float(f"{time.perf_counter() - profile['start']:.6f}")
         del profile["start"]
@@ -239,6 +239,8 @@ class KaleidoTab:
             profile["js_console"] = self.javascript_log
         if error:
             profile["error"] = error
+        if size_mb:
+            profile["megabytes"]  = size_mb
 
     async def write_fig(
             self,
@@ -268,7 +270,7 @@ class KaleidoTab:
             _logger.debug("Using profiler")
             profile = {
                     "name":full_path.name,
-                    "start":time.perf_counter()
+                    "start":time.perf_counter(),
                     }
         async with timeout(60) as timer:
             tab = self.tab
@@ -346,7 +348,7 @@ class KaleidoTab:
             await asyncio.to_thread(write_image, img)
             _logger.info(f"Wrote {full_path.name}")
         if profiler is not None:
-            self._finish_profile(profile, e)
+            self._finish_profile(profile, e, full_path.stat().st_size/1000000)
             profiler[tab.target_id].append(profile)
         if timer.expired:
             _logger.error(f"{full_path.name} timed out.\n"

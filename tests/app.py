@@ -11,10 +11,10 @@ import logistro
 
 import baile
 
-#logistro.getLogger().setLevel(1)
+logistro.getLogger().setLevel(9)
 _logger = logistro.getLogger(__name__)
-logistro.getLogger("baile").setLevel(11)
-_logger.setLevel(11)
+#logistro.getLogger("baile").setLevel(11)
+#_logger.setLevel(11)
 
 # Extract jsons of mocks
 in_dir = Path(__file__).resolve().parent / "mocks"
