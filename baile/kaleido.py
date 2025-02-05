@@ -301,6 +301,15 @@ class KaleidoTab:
                 }
 
             # send request to run script in chromium
+            #_logger.info(f"Activating tab for {full_path.name}.")
+            #_check_error(
+            #        await tab.send_command(
+            #            "Target.activateTarget",
+            #            params={"targetId":tab.target_id}
+            #            )
+            #        )
+            #_logger.info(f"Activated tab for {full_path.name}.")
+            _logger.info(f"Sending big command for {full_path.name}.")
             result = await tab.send_command("Runtime.callFunctionOn", params=params)
             _logger.info(f"Sent big command for {full_path.name}.")
             e = _check_error_ret(result)
@@ -366,7 +375,6 @@ class Kaleido(choreo.Browser):
     """Kaleido manages a set of image processors."""
 
     tabs_ready: asyncio.Queue[KaleidoTab]
-    _tabs_in_use: set[KaleidoTab]
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
         _logger.info("Waiting for all cleanups to finish.")
@@ -381,7 +389,7 @@ class Kaleido(choreo.Browser):
 
     def _check_render_task(self, name, tab, main_task, task):
         _logger.info(f"Returning {name} tab after render.")
-        t = asyncio.create_task(self.return_kaleido_tab(tab))
+        t = asyncio.create_task(self._return_kaleido_tab(tab))
         self._background_render_tasks.add(t)
         t.add_done_callback(self._clean_task)
         if e := task.exception():
@@ -448,6 +456,8 @@ class Kaleido(choreo.Browser):
                  ]
 
         await asyncio.gather(*tasks)
+        for tab in self.tabs.values():
+            _logger.info(f"Tab ready: {tab.target_id}")
 
 
     async def create_kaleido_tab(
@@ -464,11 +474,11 @@ class Kaleido(choreo.Browser):
             The kaleido-tab created.
 
         """
-        tab = await super().create_tab(url=url, width=self.width, height=self.height)
+        tab = await super().create_tab(url=url, width=self.width, height=self.height, window=True)
         await self._conform_tabs([tab])
 
 
-    async def get_kaleido_tab(self) -> KaleidoTab:
+    async def _get_kaleido_tab(self) -> KaleidoTab:
         """
         Retreive an available tab from queue.
 
@@ -478,15 +488,11 @@ class Kaleido(choreo.Browser):
         """
         _logger.info(f"Getting tab from queue (has {self.tabs_ready.qsize()})")
         tab = await self.tabs_ready.get()
-        while tab in self._tabs_in_use:
-            _logger.error("Tab was in queue but busy? What?")
-            tab = await self.tabs_ready.get()
-        self._tabs_in_use.add(tab)
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
 
-    async def return_kaleido_tab(self, tab):
+    async def _return_kaleido_tab(self, tab):
         """
         Refresh tab and put it back into the available queue.
 
@@ -496,7 +502,6 @@ class Kaleido(choreo.Browser):
         """
         _logger.info(f"Reloading tab {tab.tab.target_id[:4]} before return.")
         await tab.reload()
-        self._tabs_in_use.remove(tab)
         _logger.info(f"Putting tab {tab.tab.target_id[:4]} back (queue size: {self.tabs_ready.qsize()}).")
         await self.tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
@@ -549,7 +554,7 @@ class Kaleido(choreo.Browser):
             _logger.debug("Is async for")
             async for f in fig:
                 spec, full_path = build_fig_spec(f, path, opts)
-                tab = await self.get_kaleido_tab()
+                tab = await self._get_kaleido_tab()
                 if profiler is not None and tab.tab.target_id not in profiler:
                     profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
@@ -578,7 +583,7 @@ class Kaleido(choreo.Browser):
             _logger.debug("Is sync for")
             for f in fig:
                 spec, full_path = build_fig_spec(f, path, opts)
-                tab = await self.get_kaleido_tab()
+                tab = await self._get_kaleido_tab()
                 if profiler is not None and tab.tab.target_id not in profiler:
                     profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
@@ -639,7 +644,7 @@ class Kaleido(choreo.Browser):
                         )
                 args["spec"] = spec
                 args["full_path"] = full_path
-                tab = await self.get_kaleido_tab()
+                tab = await self._get_kaleido_tab()
                 if profiler is not None and tab.tab.target_id not in profiler:
                     profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
@@ -664,8 +669,8 @@ class Kaleido(choreo.Browser):
                         )
                 args["spec"] = spec
                 args["full_path"] = full_path
-                _logger.info(f"Calling get_kaleido_tab for {full_path.name}")
-                tab = await self.get_kaleido_tab()
+                _logger.info(f"Calling _get_kaleido_tab for {full_path.name}")
+                tab = await self._get_kaleido_tab()
                 _logger.info(f"Got {tab.tab.target_id[:4]} for {full_path.name}")
                 if profiler is not None and tab.tab.target_id not in profiler:
                     profiler[tab.tab.target_id] = []
