@@ -68,16 +68,24 @@ def _make_console_logger(name, log):
     async def console_printer(event):
         _logger.debug2(f"{name}:{event}") # TODO(A): parse # noqa: TD003, FIX002
         # TODO change levels depending on that first argument WARN: ERROR:
-        if (
-                "params" in event
-                and "args" in event["params"]
-                and len(event["params"]["args"]) >= 2
-                ):
-            log.append(
-                    f'{event["params"]["args"][0]["value"]} '
-                    f'{event["params"]["args"][1]["value"]}'
-                    )
+        if "params" in event and "args" in event["params"]:
+            args = event["params"]["args"]
+            for arg in args:
+                if "type" in arg and arg["type"] == "string":
+                    log.append("****string: " + arg["value"])
+                elif "type" in arg and arg["type"] == "object" and "preview" in arg:
+                        if arg["preview"]["description"] == "Error":
+                            log.append("****Error as object:")
+                            for prop in arg["preview"]["properties"]:
+                                log.append(f"{prop['name']!s}: {prop['value']!s}")
+                        else:
+                            log.append("****Printing whole object preview")
+                            log.append(str(arg["preview"]))
+                else:
+                    log.append("****Whole arg:")
+                    log.append(str(arg))
         else:
+            log.append("****Printing whole event")
             log.append(pformat(event))
     return console_printer
 
