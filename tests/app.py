@@ -88,6 +88,7 @@ async def _main():
                 )
     for error in error_log:
         print(error)
+    print(f"Num of errors: {len(error_log)})")
 
 def build_mocks():
     start = time.perf_counter()

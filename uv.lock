@@ -14,6 +14,7 @@ wheels = [
 name = "baile"
 source = { editable = "." }
 dependencies = [
+    { name = "async-timeout" },
     { name = "choreographer" },
     { name = "logistro" },
 ]
@@ -30,6 +31,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "async-timeout", specifier = ">=5.0.1" },
     { name = "choreographer", editable = "../devtools_protocol" },
     { name = "logistro", editable = "../logistro" },
 ]
@@ -46,6 +48,7 @@ dev = [
 
 [[package]]
 name = "choreographer"
+version = "1.0.0a10.post6+git.1f06ee0f.dirty"
 source = { editable = "../devtools_protocol" }
 dependencies = [
     { name = "logistro" },
@@ -108,6 +111,7 @@ wheels = [
 
 [[package]]
 name = "logistro"
+version = "1.0.8.post0+git.2856eeb6.dirty"
 source = { editable = "../logistro" }
 
 [package.metadata]

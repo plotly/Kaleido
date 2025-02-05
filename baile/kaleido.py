@@ -7,6 +7,11 @@ import json
 import re
 import traceback
 import warnings
+import sys
+if sys.version_info >= (3, 11):
+    from asyncio import timeout
+else:
+    from async_timeout import timeout
 from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
@@ -260,62 +265,69 @@ class KaleidoTab:
             mapbox_token: a mapbox api token for plotly to use
 
         """
-        _logger.debug("In tab's write_fig")
-        tab = self.tab
-        execution_context_id = self._current_js_id
+        async with timeout(60) as timer:
+            _logger.debug("In tab's write_fig")
+            tab = self.tab
+            execution_context_id = self._current_js_id
 
 
-        _logger.info(f"Processing {full_path.name}")
-        # js script
-        kaleido_jsfn = (
-                r"function(spec, ...args)"
-                r"{"
-                r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
-                r"}"
-                )
+            _logger.info(f"Processing {full_path.name}")
+            # js script
+            kaleido_jsfn = (
+                    r"function(spec, ...args)"
+                    r"{"
+                    r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
+                    r"}"
+                    )
 
-        # params
-        arguments = [{"value":spec}]
-        if topojson:
-            arguments.append({"value":topojson})
-        if mapbox_token:
-            arguments.append({"value":mapbox_token})
-        params = {
-            "functionDeclaration":kaleido_jsfn,
-            "arguments":arguments,
-            "returnByValue":False,
-            "userGesture":True,
-            "awaitPromise":True,
-            "executionContextId":execution_context_id,
-            }
+            # params
+            arguments = [{"value":spec}]
+            if topojson:
+                arguments.append({"value":topojson})
+            if mapbox_token:
+                arguments.append({"value":mapbox_token})
+            params = {
+                "functionDeclaration":kaleido_jsfn,
+                "arguments":arguments,
+                "returnByValue":False,
+                "userGesture":True,
+                "awaitPromise":True,
+                "executionContextId":execution_context_id,
+                }
 
-        # send request to run script in chromium
-        result = await tab.send_command("Runtime.callFunctionOn", params=params)
-        e = _check_error_ret(result)
-        if e:
-            if error_log is not None:
-                error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
-                _logger.info(f"Failed {full_path.name}")
-                return
-            else:
-                raise e
-        _logger.debug2(f"Result of function call: {result}")
+            # send request to run script in chromium
+            result = await tab.send_command("Runtime.callFunctionOn", params=params)
+            e = _check_error_ret(result)
+            if e:
+                if error_log is not None:
+                    error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
+                    _logger.info(f"Failed {full_path.name}")
+                    return
+                else:
+                    raise e
+            _logger.debug2(f"Result of function call: {result}")
 
-        img = self._img_from_response(result)
-        if isinstance(img, BaseException):
-            if error_log is not None:
-                error_log.append(ErrorEntry(full_path.name, img, self.javascript_log))
-                _logger.info(f"Failed {full_path.name}")
-                return
-            else:
-                raise img
+            img = self._img_from_response(result)
+            if isinstance(img, BaseException):
+                if error_log is not None:
+                    error_log.append(
+                            ErrorEntry(full_path.name, img, self.javascript_log)
+                            )
+                    _logger.info(f"Failed {full_path.name}")
+                    return
+                else:
+                    raise img
 
-        def write_image(binary):
-            with full_path.open("wb") as file:
-                file.write(binary)
+            def write_image(binary):
+                with full_path.open("wb") as file:
+                    file.write(binary)
 
-        await asyncio.to_thread(write_image, img)
-        _logger.info(f"Wrote {full_path.name}")
+            await asyncio.to_thread(write_image, img)
+            _logger.info(f"Wrote {full_path.name}")
+        if timer.expired:
+            _logger.error(f"{full_path.name} timed out.\n"
+                          "\n".join(self.javascript_log))
+            raise TimeoutError(f"From {full_path.name}")
 
     def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))
@@ -400,7 +412,7 @@ class Kaleido(choreo.Browser):
                      ]
         await asyncio.gather(*tasks)
         for tab in kaleido_tabs:
-            await self.tabs_ready.put(tab)
+            await asyncio.wait_for(self.tabs_ready.put(tab), 60)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
     async def populate_targets(self) -> None:
@@ -444,9 +456,10 @@ class Kaleido(choreo.Browser):
             A kaleido-tab from the queue.
 
         """
-        tab = await self.tabs_ready.get()
+        tab = await asyncio.wait_for(self.tabs_ready.get(), 60)
         while tab in self._tabs_in_use:
-            tab = await self.tabs_ready.get()
+            _logger.error("Tab was in quee but busy? What?")
+            tab = await asyncio.wait_for(self.tabs_ready.get(), 60)
         self._tabs_in_use.add(tab)
         _logger.debug(f"Got {tab}")
         return tab
