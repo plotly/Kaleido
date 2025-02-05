@@ -40,8 +40,8 @@ class ErrorEntry:
         ret = f"{self.name}:\n"
         e = self.error
         ret += " ".join(traceback.format_exception(type(e), e, e.__traceback__))
-        ret += "Javascript Log:\n"
-        ret += "\n".join(self.javascript_log)
+        ret += " javascript Log:\n"
+        ret += "\n ".join(self.javascript_log)
         return ret
 
 class KaleidoError(Exception):

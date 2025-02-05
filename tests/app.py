@@ -99,7 +99,7 @@ async def _main():
             profiler[tab] = sorted(tab_profile, key=itemgetter("duration"), reverse=True)
         with Path("errors.log").open("w") as file:
             for line in error_log:
-                file.write(str(line))
+                file.write("\n\n" + str(line))
         with Path("profiler.log").open("w") as file:
             file.write(pformat(profiler))
 
