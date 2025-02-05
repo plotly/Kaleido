@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import logistro
@@ -70,7 +71,18 @@ def to_spec(figure, layout_opts):
             "data": figure
             }
 
-def build_fig_spec(self, fig, path, opts):
+def _next_filename(path, prefix, ext):
+    default = 1 if (path / f"{prefix}.{ext}").exists() else 0
+    re_number = re.compile(r"^"+prefix+r"-(\d+)\."+ext+r"$")
+    numbers = [
+               int(match.group(1))
+               for name in path.glob(f"{prefix}-*.{ext}")
+               if (match := re_number.match(Path(name).name))
+               ]
+    n =  max(numbers, default=default) + 1
+    return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
+
+def build_fig_spec(fig, path, opts):
     if not opts:
         opts = {}
 
@@ -109,7 +121,7 @@ def build_fig_spec(self, fig, path, opts):
                   .replace(" ", "_")
                   )
         _logger.debug(f"Found: {prefix}")
-        name = self._next_filename(directory, prefix, ext)
+        name = _next_filename(directory, prefix, ext)
         full_path = directory / name
 
     return spec, full_path

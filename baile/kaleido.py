@@ -4,14 +4,15 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
-import re
 import traceback
 import warnings
 import sys
+import time
 if sys.version_info >= (3, 11):
     from asyncio import timeout
 else:
     from async_timeout import timeout
+
 from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
@@ -230,17 +231,14 @@ class KaleidoTab:
         _logger.debug(f"Sent javascript got result: {result}")
         _check_error(result)
 
-    def _next_filename(self, path, prefix, ext):
-        default = 1 if (path / f"{prefix}.{ext}").exists() else 0
-        re_number = re.compile(r"^"+prefix+r"-(\d+)\."+ext+r"$")
-        numbers = [
-                   int(match.group(1))
-                   for name in path.glob(f"{prefix}-*.{ext}")
-                   if (match := re_number.match(Path(name).name))
-                   ]
-        n =  max(numbers, default=default) + 1
-        return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
-
+    def _finish_profile(self, profile, error=None):
+        _logger.debug("Finishing profile")
+        profile["duration"] = float(f"{time.perf_counter() - profile['start']:.6f}")
+        del profile["start"]
+        if self.javascript_log:
+            profile["js_console"] = self.javascript_log
+        if error:
+            profile["error"] = error
 
     async def write_fig(
             self,
@@ -250,6 +248,7 @@ class KaleidoTab:
             topojson=None,
             mapbox_token=None,
             error_log=None,
+            profiler=None,
             ):
         """
         Call the plotly renderer via javascript.
@@ -265,9 +264,15 @@ class KaleidoTab:
             mapbox_token: a mapbox api token for plotly to use
 
         """
+        if profiler is not None:
+            _logger.debug("Using profiler")
+            profile = {
+                    "name":full_path.name,
+                    "start":time.perf_counter()
+                    }
         async with timeout(60) as timer:
-            _logger.debug("In tab's write_fig")
             tab = self.tab
+            _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
             execution_context_id = self._current_js_id
 
 
@@ -297,8 +302,12 @@ class KaleidoTab:
 
             # send request to run script in chromium
             result = await tab.send_command("Runtime.callFunctionOn", params=params)
+            _logger.info(f"Sent big command for {full_path.name}.")
             e = _check_error_ret(result)
             if e:
+                if profiler is not None:
+                    self._finish_profile(profile, e)
+                    profiler[tab.target_id].append(profile)
                 if error_log is not None:
                     error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
                     _logger.info(f"Failed {full_path.name}")
@@ -309,6 +318,9 @@ class KaleidoTab:
 
             img = self._img_from_response(result)
             if isinstance(img, BaseException):
+                if profiler is not None:
+                    self._finish_profile(profile, img)
+                    profiler[tab.target_id].append(profile)
                 if error_log is not None:
                     error_log.append(
                             ErrorEntry(full_path.name, img, self.javascript_log)
@@ -321,9 +333,12 @@ class KaleidoTab:
             def write_image(binary):
                 with full_path.open("wb") as file:
                     file.write(binary)
-
+            _logger.info(f"Starting write of {full_path.name}")
             await asyncio.to_thread(write_image, img)
             _logger.info(f"Wrote {full_path.name}")
+        if profiler is not None:
+            self._finish_profile(profile, e)
+            profiler[tab.target_id].append(profile)
         if timer.expired:
             _logger.error(f"{full_path.name} timed out.\n"
                           "\n".join(self.javascript_log))
@@ -354,8 +369,9 @@ class Kaleido(choreo.Browser):
     _tabs_in_use: set[KaleidoTab]
 
     async def __aexit__(self, exc_type, exc_value, exc_tb):
-        _logger.info("Exiting Kaleido")
+        _logger.info("Waiting for all cleanups to finish.")
         await asyncio.gather(*self._background_render_tasks, return_exceptions=True)
+        _logger.info("Exiting Kaleido")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
 
     def _clean_task(self, task):
@@ -364,12 +380,12 @@ class Kaleido(choreo.Browser):
             raise task.exception()
 
     def _check_render_task(self, name, tab, main_task, task):
-        _logger.info(f"Returning tab/checking error after {name}.")
+        _logger.info(f"Returning {name} tab after render.")
         t = asyncio.create_task(self.return_kaleido_tab(tab))
         self._background_render_tasks.add(t)
         t.add_done_callback(self._clean_task)
         if e := task.exception():
-            _logger.error(f"Task {name}:", exc_info=e)
+            _logger.error(f"Render Task: {name}- ", exc_info=e)
             main_task.cancel()
 
     def __init__(self, *args, **kwargs):
@@ -394,7 +410,7 @@ class Kaleido(choreo.Browser):
     async def _conform_tabs(self, tabs = None, url: str | Path = PAGE_PATH) -> None:
         if not tabs:
             tabs = list(self.tabs.values())
-        _logger.info(f"Conforming {len(self.tabs)} to {url}")
+        _logger.info(f"Conforming {len(tabs)} to {url}")
 
         for i, tab in enumerate(tabs):
             n = f"tab-{i!s}"
@@ -410,9 +426,11 @@ class Kaleido(choreo.Browser):
                      asyncio.create_task(tab.navigate(url))
                      for tab in kaleido_tabs
                      ]
+        _logger.info("Waiting on all navigates")
         await asyncio.gather(*tasks)
+        _logger.info("All navigates done, putting them all in queue.")
         for tab in kaleido_tabs:
-            await asyncio.wait_for(self.tabs_ready.put(tab), 60)
+            await self.tabs_ready.put(tab)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
     async def populate_targets(self) -> None:
@@ -420,6 +438,8 @@ class Kaleido(choreo.Browser):
         await super().populate_targets()
         await self._conform_tabs()
         needed_tabs = self.n - len(self.tabs)
+        if needed_tabs < 0:
+            raise RuntimeError("Did you set 0 or less tabs?")
         if not needed_tabs:
             return
         tasks = [
@@ -456,12 +476,13 @@ class Kaleido(choreo.Browser):
             A kaleido-tab from the queue.
 
         """
-        tab = await asyncio.wait_for(self.tabs_ready.get(), 60)
+        _logger.info(f"Getting tab from queue (has {self.tabs_ready.qsize()})")
+        tab = await self.tabs_ready.get()
         while tab in self._tabs_in_use:
-            _logger.error("Tab was in quee but busy? What?")
-            tab = await asyncio.wait_for(self.tabs_ready.get(), 60)
+            _logger.error("Tab was in queue but busy? What?")
+            tab = await self.tabs_ready.get()
         self._tabs_in_use.add(tab)
-        _logger.debug(f"Got {tab}")
+        _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
 
@@ -473,14 +494,17 @@ class Kaleido(choreo.Browser):
             tab: the kaleido tab to return.
 
         """
+        _logger.info(f"Reloading tab {tab.tab.target_id[:4]} before return.")
         await tab.reload()
         self._tabs_in_use.remove(tab)
+        _logger.info(f"Putting tab {tab.tab.target_id[:4]} back (queue size: {self.tabs_ready.qsize()}).")
         await self.tabs_ready.put(tab)
+        _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
-    async def _post_task(self, tab, args, error_log = None):
-        _logger.debug("Posting a task")
-        await tab.write_fig(**args, error_log=error_log)
-        _logger.debug("Task finished")
+    async def _post_task(self, tab, args, error_log = None, profiler = None):
+        _logger.info(f"Posting a task for {args['full_path'].name}")
+        await tab.write_fig(**args, error_log=error_log, profiler=profiler)
+        _logger.info(f"Posted task ending for {args['full_path'].name}")
 
     async def write_fig(
             self,
@@ -490,7 +514,8 @@ class Kaleido(choreo.Browser):
             *,
             topojson=None,
             mapbox_token=None,
-            error_log = None
+            error_log = None,
+            profiler = None,
             ):
         """
         Call the plotly renderer via javascript on first available tab.
@@ -509,6 +534,8 @@ class Kaleido(choreo.Browser):
         """
         if error_log is not None:
             _logger.info("Using error log.")
+        if profiler is not None:
+            _logger.info("Using profiler.")
 
         if hasattr(fig, "to_dict") or not isinstance(fig, Iterable):
             fig = [fig]
@@ -521,8 +548,10 @@ class Kaleido(choreo.Browser):
         if hasattr(fig, "__aiter__"): # is async iterable
             _logger.debug("Is async for")
             async for f in fig:
-                spec, full_path = build_fig_spec(self, f, path, opts)
+                spec, full_path = build_fig_spec(f, path, opts)
                 tab = await self.get_kaleido_tab()
+                if profiler is not None and tab.tab.target_id not in profiler:
+                    profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
                         self._post_task(
                             tab,
@@ -533,7 +562,8 @@ class Kaleido(choreo.Browser):
                                 "mapbox_token" : mapbox_token
                                 },
                             ),
-                        error_log = error_log
+                        error_log = error_log,
+                        profiler = profiler
                         )
                 t.add_done_callback(
                         partial(
@@ -547,8 +577,10 @@ class Kaleido(choreo.Browser):
         else:
             _logger.debug("Is sync for")
             for f in fig:
-                spec, full_path = build_fig_spec(self, f, path, opts)
+                spec, full_path = build_fig_spec(f, path, opts)
                 tab = await self.get_kaleido_tab()
+                if profiler is not None and tab.tab.target_id not in profiler:
+                    profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
                         self._post_task(
                             tab,
@@ -559,7 +591,8 @@ class Kaleido(choreo.Browser):
                                 "mapbox_token" : mapbox_token
                                 },
                             ),
-                        error_log = error_log
+                        error_log = error_log,
+                        profiler = profiler,
                         )
                 t.add_done_callback(
                         partial(
@@ -577,7 +610,8 @@ class Kaleido(choreo.Browser):
             self,
             generator,
             *,
-            error_log = None
+            error_log = None,
+            profiler = None,
             ):
         """
         Equal to `write_fig` but allows the user to generate all arguments.
@@ -592,12 +626,13 @@ class Kaleido(choreo.Browser):
         main_task = asyncio.current_task()
         if error_log is not None:
             _logger.info("Using error log.")
+        if profiler is not None:
+            _logger.info("Using profiler.")
         tasks = set()
         if hasattr(generator, "__aiter__"): # is async iterable
             _logger.debug("Is async for")
             async for args in generator:
                 spec, full_path = build_fig_spec(
-                        self,
                         args.pop("fig"),
                         args.pop("path", None),
                         args.pop("opts", None)
@@ -605,8 +640,10 @@ class Kaleido(choreo.Browser):
                 args["spec"] = spec
                 args["full_path"] = full_path
                 tab = await self.get_kaleido_tab()
+                if profiler is not None and tab.tab.target_id not in profiler:
+                    profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
-                        self._post_task(tab, args = args, error_log=error_log)
+                        self._post_task(tab, args = args, error_log=error_log, profiler=profiler)
                         )
                 t.add_done_callback(
                         partial(
@@ -621,16 +658,19 @@ class Kaleido(choreo.Browser):
             _logger.debug("Is sync for")
             for args in generator:
                 spec, full_path = build_fig_spec(
-                        self,
                         args.pop("fig"),
                         args.pop("path", None),
                         args.pop("opts", None)
                         )
                 args["spec"] = spec
                 args["full_path"] = full_path
+                _logger.info(f"Calling get_kaleido_tab for {full_path.name}")
                 tab = await self.get_kaleido_tab()
+                _logger.info(f"Got {tab.tab.target_id[:4]} for {full_path.name}")
+                if profiler is not None and tab.tab.target_id not in profiler:
+                    profiler[tab.tab.target_id] = []
                 t = asyncio.create_task(
-                        self._post_task(tab, args = args, error_log=error_log)
+                        self._post_task(tab, args = args, error_log=error_log, profiler=profiler)
                         )
                 t.add_done_callback(
                         partial(
