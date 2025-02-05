@@ -67,7 +67,6 @@ def _make_console_logger(name, log):
     """Create printer specifically for console events. Helper function."""
     async def console_printer(event):
         _logger.debug2(f"{name}:{event}") # TODO(A): parse # noqa: TD003, FIX002
-        # TODO change levels depending on that first argument WARN: ERROR:
         if "params" in event and "args" in event["params"]:
             args = event["params"]["args"]
             for arg in args:
@@ -250,7 +249,7 @@ class KaleidoTab:
         if size_mb:
             profile["megabytes"]  = size_mb
 
-    async def write_fig(
+    async def _write_fig( # noqa: PLR0915, PLR0912, PLR0913, C901 too many statements, branches, arguments, complexity
             self,
             spec,
             full_path,
@@ -264,14 +263,17 @@ class KaleidoTab:
         Call the plotly renderer via javascript.
 
         Args:
-            fig: the processed plotly figure
-            path: the path to write the image too. if its a directory, we will try to
-                generate a name. If the path contains an extension,
+            spec: the processed plotly figure
+            full_path: the path to write the image too. if its a directory, we will try
+                to generate a name. If the path contains an extension,
                 "path/to/my_image.png", that extension will be the format used if not
                 overriden in `opts`.
             opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
             mapbox_token: a mapbox api token for plotly to use
+            error_log: a supplied array that plotly errors will be appended to
+                       intead of raised
+            profiler: a supplied dictionary to add stats about the operation to
 
         """
         if profiler is not None:
@@ -310,15 +312,6 @@ class KaleidoTab:
                 "executionContextId":execution_context_id,
                 }
 
-            # send request to run script in chromium
-            #_logger.info(f"Activating tab for {full_path.name}.")
-            #_check_error(
-            #        await tab.send_command(
-            #            "Target.activateTarget",
-            #            params={"targetId":tab.target_id}
-            #            )
-            #        )
-            #_logger.info(f"Activated tab for {full_path.name}.")
             _logger.info(f"Sending big command for {full_path.name}.")
             result = await tab.send_command("Runtime.callFunctionOn", params=params)
             _logger.info(f"Sent big command for {full_path.name}.")
@@ -384,8 +377,9 @@ class KaleidoTab:
 class Kaleido(choreo.Browser):
     """Kaleido manages a set of image processors."""
 
-    tabs_ready: asyncio.Queue[KaleidoTab]
+    _tabs_ready: asyncio.Queue[KaleidoTab]
     _background_render_tasks: set[asyncio.Task]
+    # not really render tasks
     _main_tasks: set[asyncio.Task]
 
     async def close(self):
@@ -395,7 +389,7 @@ class Kaleido(choreo.Browser):
             if not task.done():
                 task.cancel()
         for task in self._background_render_tasks:
-            if not task.done()
+            if not task.done():
                 task.cancel()
         _logger.info("Exiting Kaleido/Choreo")
         return await super().close()
@@ -438,7 +432,7 @@ class Kaleido(choreo.Browser):
                     )
             self.height = None
             self.width = None
-        self.tabs_ready = asyncio.Queue(maxsize=0)
+        self._tabs_ready = asyncio.Queue(maxsize=0)
         super().__init__(*args, **kwargs)
 
     async def _conform_tabs(self, tabs = None, url: str | Path = PAGE_PATH) -> None:
@@ -464,7 +458,7 @@ class Kaleido(choreo.Browser):
         await asyncio.gather(*tasks)
         _logger.info("All navigates done, putting them all in queue.")
         for tab in kaleido_tabs:
-            await self.tabs_ready.put(tab)
+            await self._tabs_ready.put(tab)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
     async def populate_targets(self) -> None:
@@ -517,8 +511,8 @@ class Kaleido(choreo.Browser):
             A kaleido-tab from the queue.
 
         """
-        _logger.info(f"Getting tab from queue (has {self.tabs_ready.qsize()})")
-        tab = await self.tabs_ready.get()
+        _logger.info(f"Getting tab from queue (has {self._tabs_ready.qsize()})")
+        tab = await self._tabs_ready.get()
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
@@ -533,8 +527,9 @@ class Kaleido(choreo.Browser):
         """
         _logger.info(f"Reloading tab {tab.tab.target_id[:4]} before return.")
         await tab.reload()
-        _logger.info(f"Putting tab {tab.tab.target_id[:4]} back (queue size: {self.tabs_ready.qsize()}).")
-        await self.tabs_ready.put(tab)
+        _logger.info(f"Putting tab {tab.tab.target_id[:4]} back (queue size: "
+                     f"{self._tabs_ready.qsize()}).")
+        await self._tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
     def _clean_tab_return_task(self, main_task, task):
@@ -562,7 +557,10 @@ class Kaleido(choreo.Browser):
 
     async def _render_task(self, tab, args, error_log = None, profiler = None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
-        await tab.write_fig(**args, error_log=error_log, profiler=profiler)
+        await tab._write_fig(**args, # noqa: SLF001 I don't want it documented, too complex for user
+                            timeout=self.timeout,
+                            error_log=error_log,
+                            profiler=profiler)
         _logger.info(f"Posted task ending for {args['full_path'].name}")
 
     async def write_fig( # noqa: PLR0913, C901 (too many args, complexity)

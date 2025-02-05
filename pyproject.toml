@@ -25,6 +25,7 @@ dependencies = [
   "async-timeout>=5.0.1",
   "choreographer>=1.0.0",
   "logistro>=1.0.8",
+  "orjson>=3.10.15",
 ]
 
 [project.urls]
