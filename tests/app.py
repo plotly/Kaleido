@@ -5,13 +5,16 @@ import asyncio
 import json
 import time
 from pathlib import Path
+from pprint import pformat
 
 import logistro
 
 import baile
 
-logistro.getLogger().setLevel(11)
+#logistro.getLogger().setLevel(1)
 _logger = logistro.getLogger(__name__)
+logistro.getLogger("baile").setLevel(11)
+_logger.setLevel(11)
 
 # Extract jsons of mocks
 in_dir = Path(__file__).resolve().parent / "mocks"
@@ -79,16 +82,26 @@ args = parser.parse_args()
 
 # Function to process the images
 async def _main():
-    paths = _get_jsons_in_paths(args.input)
-    async with baile.Kaleido(n=args.n, headless=args.headless) as k:
-        error_log = []
-        await k.write_fig_generate_all(
-                _load_figures_from_paths(paths),
-                error_log=error_log
-                )
-    for error in error_log:
-        print(error)
-    print(f"Num of errors: {len(error_log)})")
+    try:
+        paths = _get_jsons_in_paths(args.input)
+        async with baile.Kaleido(n=args.n, headless=args.headless) as k:
+            error_log = []
+            profiler={}
+            await k.write_fig_generate_all(
+                    _load_figures_from_paths(paths),
+                    error_log=error_log,
+                    profiler=profiler,
+                    )
+    finally:
+        print(f"Num of errors: {len(error_log)}")
+        from operator import itemgetter
+        for tab, tab_profile in profiler.items():
+            profiler[tab] = sorted(tab_profile, key=itemgetter("duration"), reverse=True)
+        with Path("errors.log").open("w") as file:
+            for line in error_log:
+                file.write(str(line))
+        with Path("profiler.log").open("w") as file:
+            file.write(pformat(profiler))
 
 def build_mocks():
     start = time.perf_counter()
