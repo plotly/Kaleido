@@ -380,9 +380,6 @@ class KaleidoTab:
         if profiler is not None:
             self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
             profiler[tab.target_id].append(profile)
-        if timer.expired:
-            _logger.error(f"{full_path.name} timed out.\n\n".join(self.javascript_log))
-            raise TimeoutError(f"From {full_path.name}")
 
     def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))

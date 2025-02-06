@@ -36,6 +36,9 @@ dependencies = [
 Homepage = "https://github.com/plotly/kaleido"
 Repository = "https://github.com/plotly/kaleido"
 
+[project.scripts]
+kaleido_mocker = "kaleido._mocker:build_mocks"
+
 [dependency-groups]
 dev = [
   "pytest",

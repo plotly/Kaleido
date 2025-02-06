@@ -12,7 +12,6 @@ wheels = [
 
 [[package]]
 name = "choreographer"
-version = "1.0.0a10.post14+git.21c7f1cf.dirty"
 source = { editable = "../../../devtools_protocol" }
 dependencies = [
     { name = "logistro" },
@@ -113,7 +112,6 @@ dev = [
 
 [[package]]
 name = "logistro"
-version = "1.0.8.post2+git.9f7b9306"
 source = { editable = "../../../logistro" }
 
 [package.metadata]
