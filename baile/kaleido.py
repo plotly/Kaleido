@@ -4,14 +4,15 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
-import traceback
-import warnings
 import sys
 import time
+import traceback
+import warnings
+
 if sys.version_info >= (3, 11):
-    from asyncio import timeout
+    from asyncio import timeout as Timer  # noqa: N812: its correct.
 else:
-    from async_timeout import timeout
+    from async_timeout import timeout as Timer  # noqa: N812
 
 from collections.abc import Iterable
 from functools import partial
@@ -20,7 +21,7 @@ from pprint import pformat
 
 import choreographer as choreo
 import logistro
-from choreographer.errors import DevtoolsProtocolError, ChromeNotFoundError
+from choreographer.errors import ChromeNotFoundError, DevtoolsProtocolError
 
 from ._fig_tools import build_fig_spec
 
@@ -284,7 +285,7 @@ class KaleidoTab:
                     "name":full_path.name,
                     "start":time.perf_counter(),
                     }
-        async with timeout(timeout) as timer:
+        async with Timer(timeout) as timer:
             tab = self.tab
             _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
             execution_context_id = self._current_js_id
