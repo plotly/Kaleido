@@ -135,7 +135,7 @@ def build_mocks():
 
         elapsed = time.perf_counter() - start
         results = {
-                "error_log": str(error_log),
+                "error_log": [str(log) for log in error_log],
                 "profiles": profiler,
                 "total_time": f"Time taken: {elapsed:.6f} seconds",
                 "total_errors": len(error_log)
