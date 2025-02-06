@@ -16,7 +16,7 @@ src/js/build
 test-results*
 
 # builds
-tests/renders/*
+src/py/tests/renders/*
 
 # avoid ignore .gitkeep
-!tests/renders/.gitkeep
+!src/py/tests/renders/.gitkeep
