@@ -12,14 +12,14 @@ from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
 from pprint import pformat
-from typing import CHECKING_TYPE
+from typing import TYPE_CHECKING
 
 import choreographer as choreo
 import logistro
 from choreographer.errors import ChromeNotFoundError, DevtoolsProtocolError
 from choreographer.utils import TmpDirectory
 
-if CHECKING_TYPE:
+if TYPE_CHECKING:
     from typing import Any
 
 from ._fig_tools import build_fig_spec
