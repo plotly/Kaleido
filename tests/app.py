@@ -20,8 +20,7 @@ out_dir = Path(__file__).resolve().parent / "renders"
 
 scripts = [
     "https://cdn.plot.ly/plotly-3.0.0.min.js",
-    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
-    "test"
+    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js",
         ]
 def _get_jsons_in_paths(path: str | Path) -> list[Path]:
     # Work with Paths and directories

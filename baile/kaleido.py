@@ -440,7 +440,7 @@ class Kaleido(choreo.Browser):
 """
         script_template = '\n        <script src="%s"></script>'
         footer = """
-        <script src="./kaleido_scopes.js"></script>
+        <script src="../kaleido_scopes.js"></script>
     </head>
     <body></body>
 </html>
