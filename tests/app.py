@@ -11,7 +11,7 @@ import orjson
 
 import baile
 
-logistro.getLogger().setLevel(8)
+logistro.getLogger().setLevel(15)
 _logger = logistro.getLogger(__name__)
 
 # Extract jsons of mocks
