@@ -18,7 +18,11 @@ _logger = logistro.getLogger(__name__)
 in_dir = Path(__file__).resolve().parent / "mocks"
 out_dir = Path(__file__).resolve().parent / "renders"
 
-
+scripts = [
+    "https://cdn.plot.ly/plotly-3.0.0.min.js",
+    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
+    "test"
+        ]
 def _get_jsons_in_paths(path: str | Path) -> list[Path]:
     # Work with Paths and directories
     path = Path(path) if isinstance(path, str) else path
@@ -82,9 +86,9 @@ args = parser.parse_args()
 async def _main():
     try:
         paths = _get_jsons_in_paths(args.input)
-        async with baile.Kaleido(n=args.n, headless=args.headless) as k:
-            error_log = []
-            profiler={}
+        error_log = []
+        profiler={}
+        async with baile.Kaleido(n=args.n, page_scripts=scripts, headless=args.headless) as k:
             await k.write_fig_generate_all(
                     _load_figures_from_paths(paths),
                     error_log=error_log,

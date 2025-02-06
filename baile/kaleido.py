@@ -22,6 +22,7 @@ from pprint import pformat
 import choreographer as choreo
 import logistro
 from choreographer.errors import ChromeNotFoundError, DevtoolsProtocolError
+from choreographer.utils import TmpDirectory
 
 from ._fig_tools import build_fig_spec
 
@@ -32,12 +33,24 @@ TEXT_FORMATS = ("svg", "json")  # eps
 _logger = logistro.getLogger(__name__)
 
 class ErrorEntry:
+    """A simple object to record errors and context."""
+
     def __init__(self, name, error, javascript_log):
+        """
+        Construct an error entry.
+
+        Args:
+            name: the name of the image with the error
+            error: the error object (from class BaseException)
+            javascript_log: an array of entries from the javascript console
+
+        """
         self.name = name
         self.error = error
         self.javascript_log = javascript_log
 
     def __str__(self):
+        """Display the error object in a concise way."""
         ret = f"{self.name}:\n"
         e = self.error
         ret += " ".join(traceback.format_exception(type(e), e, e.__traceback__))
@@ -46,12 +59,23 @@ class ErrorEntry:
         return ret
 
 class KaleidoError(Exception):
+    """An error to interpret errors from Kaleido's JS side."""
+
     def __init__(self, code, message):
+        """
+        Construct an error object.
+
+        Args:
+            code: the number code of the error.
+            message: the message of the error.
+
+        """
         super().__init__(message)
         self.code = code
         self.message = message
 
     def __str__(self):
+        """Display the KaleidoError nicely."""
         return f"Error {self.code}: {self.message}"
 
 
@@ -134,9 +158,9 @@ class KaleidoTab:
                     )
                 )
 
-    async def navigate(self, url: str | Path = PAGE_PATH):
+    async def navigate(self, url: str | Path = ""):
         """
-        Navigate to the kaleidofier script. This is effective the real initialization.
+        Navigate to the kaleidofier script. This is effectively the real initialization.
 
         Args:
             url: Override the location of the kaleidofier script if necessary.
@@ -387,6 +411,8 @@ class Kaleido(choreo.Browser):
 
     async def close(self):
         """Close the browser."""
+        if self.tmp_dir:
+            self.tmp_dir.clean()
         _logger.info("Cancelling tasks.")
         for task in self._main_tasks:
             if not task.done():
@@ -404,6 +430,29 @@ class Kaleido(choreo.Browser):
         _logger.info("Exiting Kaleido")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
 
+    def _generate_index(self, page_scripts):
+        self.tmp_dir = TmpDirectory(path=Path(__file__).resolve().parent / "vendor")
+        page = """
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Kaleido-fier</title>
+"""
+        script_template = '\n        <script src="%s"></script>'
+        footer = """
+        <script src="./kaleido_scopes.js"></script>
+    </head>
+    <body></body>
+</html>
+"""
+        for script in page_scripts:
+            page += script_template % script
+        page += footer
+        _logger.debug(page)
+        with (self.tmp_dir.path / "index.html").open("w") as f:
+            f.write(page)
+        return (self.tmp_dir.path / "index.html").as_uri()
+
     def __init__(self, *args, **kwargs): # noqa: D417 no args/kwargs in description
         """
         Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
@@ -416,15 +465,23 @@ class Kaleido(choreo.Browser):
 
         Args:
             n: the number of separate processes (windows, not seen) to use.
-            timeout: limit on any ONE render.
+            timeout: limit on any single render.
             width: width of window (headless only)
             height: height of window (headless only)
+            page_scripts: a list of urls when building a plotly page instead
+                          of the defaults.
 
         """
         self._background_render_tasks = set()
         self._main_tasks = set()
         self._tabs_ready = asyncio.Queue(maxsize=0)
+        self._tmp_dir = None
 
+        page_scripts = kwargs.pop("page_scripts", None)
+        if page_scripts:
+            self._index = self._generate_index(page_scripts)
+        else:
+            self._index = PAGE_PATH
         self.timeout = kwargs.pop("timeout", 60)
         self.n = kwargs.pop("n", 1)
         self.height = kwargs.pop("height", None)
@@ -450,10 +507,10 @@ class Kaleido(choreo.Browser):
                     "`choreographer import cli as cli; cli.get_chrome()`"
                     ) from ChromeNotFoundError
 
-    async def _conform_tabs(self, tabs = None, url: str | Path = PAGE_PATH) -> None:
+    async def _conform_tabs(self, tabs = None ) -> None:
         if not tabs:
             tabs = list(self.tabs.values())
-        _logger.info(f"Conforming {len(tabs)} to {url}")
+        _logger.info(f"Conforming {len(tabs)} to {self._index}")
 
         for i, tab in enumerate(tabs):
             n = f"tab-{i!s}"
@@ -466,7 +523,7 @@ class Kaleido(choreo.Browser):
 
         # A little hard to read because we don't have TaskGroup in this version
         tasks = [
-                     asyncio.create_task(tab.navigate(url))
+                     asyncio.create_task(tab.navigate(self._index))
                      for tab in kaleido_tabs
                      ]
         _logger.info("Waiting on all navigates")
@@ -682,6 +739,19 @@ class Kaleido(choreo.Browser):
             ):
         """
         Equal to `write_fig` but allows the user to generate all arguments.
+
+        Generator must yield dictionaries with keys:
+        - fig: the plotly figure
+        - path: (optional, string or pathlib.Path) the path
+        - opts: dictionary with: format (string), scale, height, and width (numbers)
+        - topojson: TODO
+        - mapbox_token: TODO
+
+        Generators are good because, if rendering many images, one doesn't need to
+        prerender them all. They can be rendered and yielded asynchronously.
+
+        While `write_fig` can also take generators, only for the figure.
+        In this case, the generator can specify all render-related arguments.
 
         Args:
             generator: an iterable or generator which supplies a dictionary
