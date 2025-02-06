@@ -1,4 +1,8 @@
-"""Kaleido provides to convert plotly figures into various image formats."""
+"""
+Kaleido provides to convert plotly figures into various image formats.
+
+Please see the README.md for more information and a quickstart.
+"""
 
 from choreographer.cli import get_chrome, get_chrome_sync
 
@@ -19,7 +23,6 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     opts=None,
     *,
     topojson=None,
-    mapbox_token=None,
     error_log=None,
     profiler=None,
     n=1,
@@ -27,11 +30,12 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     """
     Write a plotly figure(s) to a file.
 
-    A convenience wrapper for `Kaleido.write_fig` which starts a `Kaleido`.
+    A convenience wrapper for `Kaleido.write_fig()` which starts a `Kaleido` and
+    executes the `write_fig()`.
     It takes one additional argument, `n`, which can be used to set the number
     of processes.
 
-    See documentation for `Kaleido.write_fig`.
+    See documentation for `Kaleido.write_fig()`.
 
     """
     async with Kaleido(n=n) as k:
@@ -40,7 +44,6 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
             path=path,
             opts=opts,
             topojson=topojson,
-            mapbox_token=mapbox_token,
             error_log=error_log,
             profiler=profiler,
         )
@@ -56,11 +59,12 @@ async def write_fig_generate_all(
     """
     Write a plotly figure(s) to a file.
 
-    A convenience wrapper for `Kaleido.write_fig_generate_all` which starts a `Kaleido`.
+    A convenience wrapper for `Kaleido.write_fig_generate_all()` which starts a
+    `Kaleido` and executes the `write_fig_generate_all()`
     It takes one additional argument, `n`, which can be used to set the number
     of processes.
 
-    See documentation for `Kaleido.write_fig_generate_all`.
+    See documentation for `Kaleido.write_fig_generate_all()`.
 
     """
     async with Kaleido(n=n) as k:

@@ -1,0 +1,38 @@
+---
+### Site metadata ###
+
+site_name: kaleido
+repo_name: github
+
+
+### Build settings ###
+
+docs_dir: 'docs/'
+nav:
+  - Readme: >-
+      {
+        "dest": "README.md",
+        "src": "../README.md",
+        "replace": {"src='docs/": "src='"}
+      }
+  - User API: >-
+      {
+        "api": "kaleido",
+        "test": ["exports", "_prefix_local"],
+        "tree": "packages"
+      }
+
+theme:
+  name: material
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+plugins:
+  - quimeta
+  - quicopy
+  - quiapi

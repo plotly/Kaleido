@@ -5,31 +5,28 @@ from __future__ import annotations
 import asyncio
 import base64
 import json
-import sys
 import time
 import traceback
 import warnings
-
-if sys.version_info >= (3, 11):
-    from asyncio import timeout as Timer  # noqa: N812: its correct.
-else:
-    from async_timeout import timeout as Timer  # noqa: N812
-
 from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
 from pprint import pformat
+from typing import CHECKING_TYPE
 
 import choreographer as choreo
 import logistro
 from choreographer.errors import ChromeNotFoundError, DevtoolsProtocolError
 from choreographer.utils import TmpDirectory
 
+if CHECKING_TYPE:
+    from typing import Any
+
 from ._fig_tools import build_fig_spec
 
 # Path of the page to use
-PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
-TEXT_FORMATS = ("svg", "json")  # eps
+_PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
+_TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
 
@@ -145,6 +142,12 @@ class KaleidoTab:
 
     The choreographer tab can be access through the `self.tab` attribute.
     """
+
+    tab: choreo.Tab
+    """The underlying choreographer tab."""
+
+    javascript_log: list[Any]
+    """A list of console outputs from the tab."""
 
     def __init__(self, tab):
         """
@@ -276,14 +279,12 @@ class KaleidoTab:
         if size_mb:
             profile["megabytes"] = size_mb
 
-    async def _write_fig(  # noqa: PLR0915, PLR0912, PLR0913, C901 too many statements, branches, arguments, complexity
+    async def _write_fig(  # noqa: C901 too many complexity
         self,
         spec,
         full_path,
         *,
         topojson=None,
-        mapbox_token=None,
-        timeout=60,
         error_log=None,
         profiler=None,
     ):
@@ -297,12 +298,13 @@ class KaleidoTab:
                 "path/to/my_image.png", that extension will be the format used if not
                 overriden in `opts`.
             opts: dictionary describing format, width, height, and scale of image
-            topojson: a link ??? TODO
-            mapbox_token: a mapbox api token for plotly to use
-            timeout: the length in seconds for any one render, default 60.
-            error_log: a supplied array that plotly errors will be appended to
-                       intead of raised
-            profiler: a supplied dictionary to add stats about the operation to
+            topojson: topojsons are used to customize choropleths
+            error_log: A supplied list, will be populated with `ErrorEntry`s
+                       which can be converted to strings. Note, this is for
+                       collections errors that have to do with plotly. They will
+                       not be thrown. Lower level errors (kaleido, choreographer)
+                       will still be thrown. If not passed, all errors raise.
+            profiler: a supplied dictionary to collect stats about the operation
 
         """
         if profiler is not None:
@@ -311,72 +313,69 @@ class KaleidoTab:
                 "name": full_path.name,
                 "start": time.perf_counter(),
             }
-        async with Timer(timeout) as timer:
-            tab = self.tab
-            _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
-            execution_context_id = self._current_js_id
+        tab = self.tab
+        _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
+        execution_context_id = self._current_js_id
 
-            _logger.info(f"Processing {full_path.name}")
-            # js script
-            kaleido_jsfn = (
-                r"function(spec, ...args)"
-                r"{"
-                r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
-                r"}"
-            )
+        _logger.info(f"Processing {full_path.name}")
+        # js script
+        kaleido_jsfn = (
+            r"function(spec, ...args)"
+            r"{"
+            r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
+            r"}"
+        )
 
-            # params
-            arguments = [{"value": spec}]
-            if topojson:
-                arguments.append({"value": topojson})
-            if mapbox_token:
-                arguments.append({"value": mapbox_token})
-            params = {
-                "functionDeclaration": kaleido_jsfn,
-                "arguments": arguments,
-                "returnByValue": False,
-                "userGesture": True,
-                "awaitPromise": True,
-                "executionContextId": execution_context_id,
-            }
+        # params
+        arguments = [{"value": spec}]
+        if topojson:
+            arguments.append({"value": topojson})
+        params = {
+            "functionDeclaration": kaleido_jsfn,
+            "arguments": arguments,
+            "returnByValue": False,
+            "userGesture": True,
+            "awaitPromise": True,
+            "executionContextId": execution_context_id,
+        }
 
-            _logger.info(f"Sending big command for {full_path.name}.")
-            result = await tab.send_command("Runtime.callFunctionOn", params=params)
-            _logger.info(f"Sent big command for {full_path.name}.")
-            e = _check_error_ret(result)
-            if e:
-                if profiler is not None:
-                    self._finish_profile(profile, e)
-                    profiler[tab.target_id].append(profile)
-                if error_log is not None:
-                    error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
-                    _logger.info(f"Failed {full_path.name}")
-                    return
-                else:
-                    raise e
-            _logger.debug2(f"Result of function call: {result}")
+        _logger.info(f"Sending big command for {full_path.name}.")
+        result = await tab.send_command("Runtime.callFunctionOn", params=params)
+        _logger.info(f"Sent big command for {full_path.name}.")
+        e = _check_error_ret(result)
+        if e:
+            if profiler is not None:
+                self._finish_profile(profile, e)
+                profiler[tab.target_id].append(profile)
+            if error_log is not None:
+                error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
+                _logger.info(f"Failed {full_path.name}")
+                return
+            else:
+                raise e
+        _logger.debug2(f"Result of function call: {result}")
 
-            img = self._img_from_response(result)
-            if isinstance(img, BaseException):
-                if profiler is not None:
-                    self._finish_profile(profile, img)
-                    profiler[tab.target_id].append(profile)
-                if error_log is not None:
-                    error_log.append(
-                        ErrorEntry(full_path.name, img, self.javascript_log)
-                    )
-                    _logger.info(f"Failed {full_path.name}")
-                    return
-                else:
-                    raise img
+        img = self._img_from_response(result)
+        if isinstance(img, BaseException):
+            if profiler is not None:
+                self._finish_profile(profile, img)
+                profiler[tab.target_id].append(profile)
+            if error_log is not None:
+                error_log.append(
+                    ErrorEntry(full_path.name, img, self.javascript_log)
+                )
+                _logger.info(f"Failed {full_path.name}")
+                return
+            else:
+                raise img
 
-            def write_image(binary):
-                with full_path.open("wb") as file:
-                    file.write(binary)
+        def write_image(binary):
+            with full_path.open("wb") as file:
+                file.write(binary)
 
-            _logger.info(f"Starting write of {full_path.name}")
-            await asyncio.to_thread(write_image, img)
-            _logger.info(f"Wrote {full_path.name}")
+        _logger.info(f"Starting write of {full_path.name}")
+        await asyncio.to_thread(write_image, img)
+        _logger.info(f"Wrote {full_path.name}")
         if profiler is not None:
             self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
             profiler[tab.target_id].append(profile)
@@ -391,7 +390,7 @@ class KaleidoTab:
         img = js_response.get("result")
 
         # Base64 decode binary types
-        if response_format not in TEXT_FORMATS:
+        if response_format not in _TEXT_FORMATS:
             img = base64.b64decode(img)
         else:
             img = str.encode(img)
@@ -454,8 +453,8 @@ class Kaleido(choreo.Browser):
         """
         Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
 
-        It takes all choreo.Browser args, plus some extra. Extra listed, see
-        choreographer for that documentation.
+        It takes all `choreo.Browser` args, plus some extra. The extra
+        are listed, see choreographer for more documentation.
 
         Note: Chrome will throttle background tabs and windows, so non-headless
         multi-process configurations don't work well.
@@ -478,19 +477,19 @@ class Kaleido(choreo.Browser):
         if page_scripts:
             self._index = self._generate_index(page_scripts)
         else:
-            self._index = PAGE_PATH
-        self.timeout = kwargs.pop("timeout", 60)
-        self.n = kwargs.pop("n", 1)
-        self.height = kwargs.pop("height", None)
-        self.width = kwargs.pop("width", None)
-        if not kwargs.get("headless", True) and (self.height or self.width):
+            self._index = _PAGE_PATH
+        self._timeout = kwargs.pop("timeout", 60)
+        self._n = kwargs.pop("n", 1)
+        self._height = kwargs.pop("height", None)
+        self._width = kwargs.pop("width", None)
+        if not kwargs.get("headless", True) and (self._height or self._width):
             warnings.warn(
                 "Height and Width can only be used if headless=True, "
                 "ignoring both sizes.",
                 stacklevel=1,
             )
-            self.height = None
-            self.width = None
+            self._height = None
+            self._width = None
 
         try:
             super().__init__(*args, **kwargs)
@@ -531,7 +530,7 @@ class Kaleido(choreo.Browser):
         """Override the browser populate_targets to ensure the correct page."""
         await super().populate_targets()
         await self._conform_tabs()
-        needed_tabs = self.n - len(self.tabs)
+        needed_tabs = self._n - len(self.tabs)
         if needed_tabs < 0:
             raise RuntimeError("Did you set 0 or less tabs?")
         if not needed_tabs:
@@ -546,20 +545,16 @@ class Kaleido(choreo.Browser):
 
     async def create_kaleido_tab(
         self,
-        url: str = PAGE_PATH,
     ) -> None:
         """
         Create a tab with the kaleido script.
-
-        Args:
-            url: override the url of the kaleidofier script if desired.
 
         Returns:
             The kaleido-tab created.
 
         """
         tab = await super().create_tab(
-            url=url, width=self.width, height=self.height, window=True
+            url="", width=self._width, height=self._height, window=True
         )
         await self._conform_tabs([tab])
 
@@ -620,7 +615,6 @@ class Kaleido(choreo.Browser):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         await tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
             **args,
-            timeout=self.timeout,
             error_log=error_log,
             profiler=profiler,
         )
@@ -633,7 +627,6 @@ class Kaleido(choreo.Browser):
         opts=None,
         *,
         topojson=None,
-        mapbox_token=None,
         error_log=None,
         profiler=None,
     ):
@@ -649,13 +642,12 @@ class Kaleido(choreo.Browser):
                 multiple figures, you will overwrite every previous figure.
             opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
-            mapbox_token: a mapbox api token for plotly to use
-            error_log: A supplied list, will be populated with `ErrorEntry`s
+            error_log: a supplied list, will be populated with `ErrorEntry`s
                        which can be converted to strings. Note, this is for
                        collections errors that have to do with plotly. They will
                        not be thrown. Lower level errors (kaleido, choreographer)
-                       will still be thrown.
-            profiler: A supplied empty dictionary, will be populated with information
+                       will still be thrown. If not passed, all errors raise.
+            profiler: a supplied dictionary to collect stats about the operation
                       about tabs, runtimes, etc.
 
         """
@@ -685,7 +677,6 @@ class Kaleido(choreo.Browser):
                         "spec": spec,
                         "full_path": full_path,
                         "topojson": topojson,
-                        "mapbox_token": mapbox_token,
                     },
                 ),
                 error_log=error_log,
@@ -729,15 +720,18 @@ class Kaleido(choreo.Browser):
         Generator must yield dictionaries with keys:
         - fig: the plotly figure
         - path: (optional, string or pathlib.Path) the path
-        - opts: dictionary with: format (string), scale, height, and width (numbers)
-        - topojson: TODO
-        - mapbox_token: TODO
+        - opts: (optional) dictionary with:
+            - format (string)
+            - scale (number)
+            - height (number)
+            - and width (number)
+        - topojson: (optional) topojsons are used to customize choropleths
 
         Generators are good because, if rendering many images, one doesn't need to
         prerender them all. They can be rendered and yielded asynchronously.
 
-        While `write_fig` can also take generators, only for the figure.
-        In this case, the generator can specify all render-related arguments.
+        While `write_fig` can also take generators, but only for the figure.
+        In this case, the generator will specify all render-related arguments.
 
         Args:
             generator: an iterable or generator which supplies a dictionary
