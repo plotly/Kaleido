@@ -1,4 +1,5 @@
 """the kaleido module kaleido.py provides the main classes for the kaleido package."""
+
 from __future__ import annotations
 
 import asyncio
@@ -32,6 +33,7 @@ TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
 
+
 class ErrorEntry:
     """A simple object to record errors and context."""
 
@@ -58,6 +60,7 @@ class ErrorEntry:
         ret += "\n ".join(self.javascript_log)
         return ret
 
+
 class KaleidoError(Exception):
     """An error to interpret errors from Kaleido's JS side."""
 
@@ -79,41 +82,48 @@ class KaleidoError(Exception):
         return f"Error {self.code}: {self.message}"
 
 
-class JavascriptError(RuntimeError): # TODO(A): process better # noqa: TD003, FIX002
+class JavascriptError(RuntimeError):  # TODO(A): process better # noqa: TD003, FIX002
     """Used to report errors from javascript."""
+
 
 def _make_printer(name):
     """Create event printer for generic events. Helper function."""
+
     async def print_all(response):
         _logger.debug2(f"{name}:{response}")
+
     return print_all
+
 
 def _make_console_logger(name, log):
     """Create printer specifically for console events. Helper function."""
+
     async def console_printer(event):
-        _logger.debug2(f"{name}:{event}") # TODO(A): parse # noqa: TD003, FIX002
+        _logger.debug2(f"{name}:{event}")  # TODO(A): parse # noqa: TD003, FIX002
         if "params" in event and "args" in event["params"]:
             args = event["params"]["args"]
             for arg in args:
                 if "type" in arg and arg["type"] == "string":
                     log.append("****string: " + arg["value"])
                 elif "type" in arg and arg["type"] == "object" and "preview" in arg:
-                        if arg["preview"]["description"] == "Error":
-                            log.append("****Error as object:")
-                            for prop in arg["preview"]["properties"]:
-                                log.append(f"{prop['name']!s}: {prop['value']!s}")
-                        else:
-                            log.append("****Printing whole object preview")
-                            log.append(str(arg["preview"]))
+                    if arg["preview"]["description"] == "Error":
+                        log.append("****Error as object:")
+                        for prop in arg["preview"]["properties"]:
+                            log.append(f"{prop['name']!s}: {prop['value']!s}")
+                    else:
+                        log.append("****Printing whole object preview")
+                        log.append(str(arg["preview"]))
                 else:
                     log.append("****Whole arg:")
                     log.append(str(arg))
         else:
             log.append("****Printing whole event")
             log.append(pformat(event))
+
     return console_printer
 
-def _check_error_ret(result): # Utility
+
+def _check_error_ret(result):  # Utility
     """Check browser response for errors. Helper function."""
     if "error" in result:
         return DevtoolsProtocolError(result)
@@ -121,10 +131,12 @@ def _check_error_ret(result): # Utility
         return JavascriptError(str(result.get("result")))
     return None
 
+
 def _check_error(result):
     e = _check_error_ret(result)
     if e:
         raise e
+
 
 # Add note about composition/inheritance
 class KaleidoTab:
@@ -151,12 +163,9 @@ class KaleidoTab:
         _logger.debug2("Subscribing to all console prints for tab {tab}.")
         tab.unsubscribe("Runtime.consoleAPICalled")
         tab.subscribe(
-                "Runtime.consoleAPICalled",
-                _make_console_logger(
-                    "tab js console",
-                    self.javascript_log
-                    )
-                )
+            "Runtime.consoleAPICalled",
+            _make_console_logger("tab js console", self.javascript_log),
+        )
 
     async def navigate(self, url: str | Path = ""):
         """
@@ -177,14 +186,7 @@ class KaleidoTab:
             page_ready = tab.subscribe_once("Page.loadEventFired")
 
         _logger.debug2(f"Calling Page.navigate on {tab}")
-        _check_error(
-                await tab.send_command(
-                    "Page.navigate",
-                    params = {
-                        "url" : url
-                        }
-                    )
-                )
+        _check_error(await tab.send_command("Page.navigate", params={"url": url}))
         # Must enable after navigating.
         _logger.debug2(f"Calling Page.enable on {tab}")
         _check_error(await tab.send_command("Page.enable"))
@@ -193,16 +195,16 @@ class KaleidoTab:
 
         await javascript_ready
         self._current_js_id = (
-                javascript_ready.result()
-                .get("params", {})
-                .get("context", {})
-                .get("id", None)
-                )
+            javascript_ready.result()
+            .get("params", {})
+            .get("context", {})
+            .get("id", None)
+        )
         if not self._current_js_id:
             raise RuntimeError(
-                    "Refresh sequence didn't work for reload_tab_with_javascript."
-                    "Result {javascript_ready.result()}."
-                    )
+                "Refresh sequence didn't work for reload_tab_with_javascript."
+                "Result {javascript_ready.result()}."
+            )
         await page_ready
         self._regenerate_javascript_console()
 
@@ -222,16 +224,16 @@ class KaleidoTab:
         _check_error(await tab.send_command("Page.reload"))
         await javascript_ready
         self._current_js_id = (
-                javascript_ready.result()
-                .get("params", {})
-                .get("context", {})
-                .get("id", None)
-                )
+            javascript_ready.result()
+            .get("params", {})
+            .get("context", {})
+            .get("id", None)
+        )
         if not self._current_js_id:
             raise RuntimeError(
-                    "Refresh sequence didn't work for reload_tab_with_javascript."
-                    "Result {javascript_ready.result()}."
-                    )
+                "Refresh sequence didn't work for reload_tab_with_javascript."
+                "Result {javascript_ready.result()}."
+            )
         await is_loaded
         self._regenerate_javascript_console()
 
@@ -244,18 +246,18 @@ class KaleidoTab:
 
         """
         jsfn = (
-                r"function()"
-                r"{"
-                f"console.log('{message}')"
-                r"}"
-                )
+            r"function()"
+            r"{"
+            f"console.log('{message}')"
+            r"}"
+        )
         params = {
-            "functionDeclaration":jsfn,
-            "returnByValue":False,
-            "userGesture":True,
-            "awaitPromise":True,
-            "executionContextId":self._current_js_id,
-            }
+            "functionDeclaration": jsfn,
+            "returnByValue": False,
+            "userGesture": True,
+            "awaitPromise": True,
+            "executionContextId": self._current_js_id,
+        }
 
         # send request to run script in chromium
         _logger.debug("Calling js function")
@@ -272,19 +274,19 @@ class KaleidoTab:
         if error:
             profile["error"] = error
         if size_mb:
-            profile["megabytes"]  = size_mb
+            profile["megabytes"] = size_mb
 
-    async def _write_fig( # noqa: PLR0915, PLR0912, PLR0913, C901 too many statements, branches, arguments, complexity
-            self,
-            spec,
-            full_path,
-            *,
-            topojson=None,
-            mapbox_token=None,
-            timeout=60,
-            error_log=None,
-            profiler=None,
-            ):
+    async def _write_fig(  # noqa: PLR0915, PLR0912, PLR0913, C901 too many statements, branches, arguments, complexity
+        self,
+        spec,
+        full_path,
+        *,
+        topojson=None,
+        mapbox_token=None,
+        timeout=60,
+        error_log=None,
+        profiler=None,
+    ):
         """
         Call the plotly renderer via javascript.
 
@@ -306,38 +308,37 @@ class KaleidoTab:
         if profiler is not None:
             _logger.debug("Using profiler")
             profile = {
-                    "name":full_path.name,
-                    "start":time.perf_counter(),
-                    }
+                "name": full_path.name,
+                "start": time.perf_counter(),
+            }
         async with Timer(timeout) as timer:
             tab = self.tab
             _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
             execution_context_id = self._current_js_id
 
-
             _logger.info(f"Processing {full_path.name}")
             # js script
             kaleido_jsfn = (
-                    r"function(spec, ...args)"
-                    r"{"
-                    r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
-                    r"}"
-                    )
+                r"function(spec, ...args)"
+                r"{"
+                r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
+                r"}"
+            )
 
             # params
-            arguments = [{"value":spec}]
+            arguments = [{"value": spec}]
             if topojson:
-                arguments.append({"value":topojson})
+                arguments.append({"value": topojson})
             if mapbox_token:
-                arguments.append({"value":mapbox_token})
+                arguments.append({"value": mapbox_token})
             params = {
-                "functionDeclaration":kaleido_jsfn,
-                "arguments":arguments,
-                "returnByValue":False,
-                "userGesture":True,
-                "awaitPromise":True,
-                "executionContextId":execution_context_id,
-                }
+                "functionDeclaration": kaleido_jsfn,
+                "arguments": arguments,
+                "returnByValue": False,
+                "userGesture": True,
+                "awaitPromise": True,
+                "executionContextId": execution_context_id,
+            }
 
             _logger.info(f"Sending big command for {full_path.name}.")
             result = await tab.send_command("Runtime.callFunctionOn", params=params)
@@ -362,8 +363,8 @@ class KaleidoTab:
                     profiler[tab.target_id].append(profile)
                 if error_log is not None:
                     error_log.append(
-                            ErrorEntry(full_path.name, img, self.javascript_log)
-                            )
+                        ErrorEntry(full_path.name, img, self.javascript_log)
+                    )
                     _logger.info(f"Failed {full_path.name}")
                     return
                 else:
@@ -372,15 +373,15 @@ class KaleidoTab:
             def write_image(binary):
                 with full_path.open("wb") as file:
                     file.write(binary)
+
             _logger.info(f"Starting write of {full_path.name}")
             await asyncio.to_thread(write_image, img)
             _logger.info(f"Wrote {full_path.name}")
         if profiler is not None:
-            self._finish_profile(profile, e, full_path.stat().st_size/1000000)
+            self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
             profiler[tab.target_id].append(profile)
         if timer.expired:
-            _logger.error(f"{full_path.name} timed out.\n"
-                          "\n".join(self.javascript_log))
+            _logger.error(f"{full_path.name} timed out.\n\n".join(self.javascript_log))
             raise TimeoutError(f"From {full_path.name}")
 
     def _img_from_response(self, response):
@@ -391,7 +392,6 @@ class KaleidoTab:
 
         response_format = js_response.get("format")
         img = js_response.get("result")
-
 
         # Base64 decode binary types
         if response_format not in TEXT_FORMATS:
@@ -453,7 +453,7 @@ class Kaleido(choreo.Browser):
             f.write(page)
         return (self.tmp_dir.path / "index.html").as_uri()
 
-    def __init__(self, *args, **kwargs): # noqa: D417 no args/kwargs in description
+    def __init__(self, *args, **kwargs):  # noqa: D417 no args/kwargs in description
         """
         Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
 
@@ -488,10 +488,10 @@ class Kaleido(choreo.Browser):
         self.width = kwargs.pop("width", None)
         if not kwargs.get("headless", True) and (self.height or self.width):
             warnings.warn(
-                    "Height and Width can only be used if headless=True, "
-                    "ignoring both sizes.",
-                    stacklevel=1
-                    )
+                "Height and Width can only be used if headless=True, "
+                "ignoring both sizes.",
+                stacklevel=1,
+            )
             self.height = None
             self.width = None
 
@@ -499,15 +499,15 @@ class Kaleido(choreo.Browser):
             super().__init__(*args, **kwargs)
         except ChromeNotFoundError:
             raise ChromeNotFoundError(
-                    "Versions 1.0.0 and higher of Kaleido do not include chrome by"
-                    "default. Earlier versions, we can be pinned, did but they were "
-                    "much smaller. Kaleido's dependency, choreographer, supplies a "
-                    "choreo_get_chrome CLI command as well as a `get_chrome()` and "
-                    "`get_chrome_sync()` function from "
-                    "`choreographer import cli as cli; cli.get_chrome()`"
-                    ) from ChromeNotFoundError
+                "Versions 1.0.0 and higher of Kaleido do not include chrome by"
+                "default. Earlier versions, we can be pinned, did but they were "
+                "much smaller. Kaleido's dependency, choreographer, supplies a "
+                "choreo_get_chrome CLI command as well as a `get_chrome()` and "
+                "`get_chrome_sync()` function from "
+                "`choreographer import cli as cli; cli.get_chrome()`"
+            ) from ChromeNotFoundError
 
-    async def _conform_tabs(self, tabs = None ) -> None:
+    async def _conform_tabs(self, tabs=None) -> None:
         if not tabs:
             tabs = list(self.tabs.values())
         _logger.info(f"Conforming {len(tabs)} to {self._index}")
@@ -519,13 +519,10 @@ class Kaleido(choreo.Browser):
 
         _logger.debug("Navigating all tabs")
 
-        kaleido_tabs = [ KaleidoTab(tab) for tab in tabs ]
+        kaleido_tabs = [KaleidoTab(tab) for tab in tabs]
 
         # A little hard to read because we don't have TaskGroup in this version
-        tasks = [
-                     asyncio.create_task(tab.navigate(self._index))
-                     for tab in kaleido_tabs
-                     ]
+        tasks = [asyncio.create_task(tab.navigate(self._index)) for tab in kaleido_tabs]
         _logger.info("Waiting on all navigates")
         await asyncio.gather(*tasks)
         _logger.info("All navigates done, putting them all in queue.")
@@ -543,19 +540,17 @@ class Kaleido(choreo.Browser):
         if not needed_tabs:
             return
         tasks = [
-                 asyncio.create_task(self.create_kaleido_tab())
-                 for _ in range(needed_tabs)
-                 ]
+            asyncio.create_task(self.create_kaleido_tab()) for _ in range(needed_tabs)
+        ]
 
         await asyncio.gather(*tasks)
         for tab in self.tabs.values():
             _logger.info(f"Tab ready: {tab.target_id}")
 
-
     async def create_kaleido_tab(
-            self,
-            url : str = PAGE_PATH,
-            ) -> None:
+        self,
+        url: str = PAGE_PATH,
+    ) -> None:
         """
         Create a tab with the kaleido script.
 
@@ -567,13 +562,9 @@ class Kaleido(choreo.Browser):
 
         """
         tab = await super().create_tab(
-                url=url,
-                width=self.width,
-                height=self.height,
-                window=True
-                )
+            url=url, width=self.width, height=self.height, window=True
+        )
         await self._conform_tabs([tab])
-
 
     async def _get_kaleido_tab(self) -> KaleidoTab:
         """
@@ -588,7 +579,6 @@ class Kaleido(choreo.Browser):
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
-
     async def _return_kaleido_tab(self, tab):
         """
         Refresh tab and put it back into the available queue.
@@ -599,8 +589,10 @@ class Kaleido(choreo.Browser):
         """
         _logger.info(f"Reloading tab {tab.tab.target_id[:4]} before return.")
         await tab.reload()
-        _logger.info(f"Putting tab {tab.tab.target_id[:4]} back (queue size: "
-                     f"{self._tabs_ready.qsize()}).")
+        _logger.info(
+            f"Putting tab {tab.tab.target_id[:4]} back (queue size: "
+            f"{self._tabs_ready.qsize()})."
+        )
         await self._tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
@@ -627,25 +619,27 @@ class Kaleido(choreo.Browser):
         self._background_render_tasks.add(t)
         t.add_done_callback(partial(self._clean_tab_return_task, main_task))
 
-    async def _render_task(self, tab, args, error_log = None, profiler = None):
+    async def _render_task(self, tab, args, error_log=None, profiler=None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
-        await tab._write_fig(**args, # noqa: SLF001 I don't want it documented, too complex for user
-                            timeout=self.timeout,
-                            error_log=error_log,
-                            profiler=profiler)
+        await tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
+            **args,
+            timeout=self.timeout,
+            error_log=error_log,
+            profiler=profiler,
+        )
         _logger.info(f"Posted task ending for {args['full_path'].name}")
 
-    async def write_fig( # noqa: PLR0913, C901 (too many args, complexity)
-            self,
-            fig,
-            path = None,
-            opts = None,
-            *,
-            topojson = None,
-            mapbox_token = None,
-            error_log = None,
-            profiler = None,
-            ):
+    async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
+        self,
+        fig,
+        path=None,
+        opts=None,
+        *,
+        topojson=None,
+        mapbox_token=None,
+        error_log=None,
+        profiler=None,
+    ):
         """
         Call the plotly renderer via javascript on first available tab.
 
@@ -678,7 +672,6 @@ class Kaleido(choreo.Browser):
         else:
             _logger.debug(f"Is iterable {type(fig)}")
 
-
         main_task = asyncio.current_task()
         self._main_tasks.add(main_task)
         tasks = set()
@@ -689,29 +682,25 @@ class Kaleido(choreo.Browser):
             if profiler is not None and tab.tab.target_id not in profiler:
                 profiler[tab.tab.target_id] = []
             t = asyncio.create_task(
-                    self._render_task(
-                        tab,
-                        args = {
-                            "spec" : spec,
-                            "full_path" : full_path,
-                            "topojson" : topojson,
-                            "mapbox_token" : mapbox_token
-                            },
-                        ),
-                    error_log = error_log,
-                    profiler = profiler
-                    )
+                self._render_task(
+                    tab,
+                    args={
+                        "spec": spec,
+                        "full_path": full_path,
+                        "topojson": topojson,
+                        "mapbox_token": mapbox_token,
+                    },
+                ),
+                error_log=error_log,
+                profiler=profiler,
+            )
             t.add_done_callback(
-                    partial(
-                        self._check_render_task,
-                        full_path.name,
-                        tab,
-                        main_task
-                        )
-                    )
+                partial(self._check_render_task, full_path.name, tab, main_task)
+            )
             tasks.add(t)
+
         try:
-            if hasattr(fig, "__aiter__"): # is async iterable
+            if hasattr(fig, "__aiter__"):  # is async iterable
                 _logger.debug("Is async for")
                 async for f in fig:
                     await _loop(f)
@@ -730,13 +719,13 @@ class Kaleido(choreo.Browser):
         finally:
             self._main_tasks.remove(main_task)
 
-    async def write_fig_generate_all( # noqa: C901 too complex
-            self,
-            generator,
-            *,
-            error_log = None,
-            profiler = None,
-            ):
+    async def write_fig_generate_all(  # noqa: C901 too complex
+        self,
+        generator,
+        *,
+        error_log=None,
+        profiler=None,
+    ):
         """
         Equal to `write_fig` but allows the user to generate all arguments.
 
@@ -776,33 +765,25 @@ class Kaleido(choreo.Browser):
 
         async def _loop(args):
             spec, full_path = build_fig_spec(
-                    args.pop("fig"),
-                    args.pop("path", None),
-                    args.pop("opts", None)
-                    )
+                args.pop("fig"), args.pop("path", None), args.pop("opts", None)
+            )
             args["spec"] = spec
             args["full_path"] = full_path
             tab = await self._get_kaleido_tab()
             if profiler is not None and tab.tab.target_id not in profiler:
                 profiler[tab.tab.target_id] = []
             t = asyncio.create_task(
-                    self._render_task(
-                        tab,
-                        args = args,
-                        error_log=error_log,
-                        profiler=profiler)
-                    )
+                self._render_task(
+                    tab, args=args, error_log=error_log, profiler=profiler
+                )
+            )
             t.add_done_callback(
-                    partial(
-                        self._check_render_task,
-                        full_path.name,
-                        tab,
-                        main_task
-                        )
-                    )
+                partial(self._check_render_task, full_path.name, tab, main_task)
+            )
             tasks.add(t)
+
         try:
-            if hasattr(generator, "__aiter__"): # is async iterable
+            if hasattr(generator, "__aiter__"):  # is async iterable
                 _logger.debug("Is async for")
                 async for args in generator:
                     await _loop(args)
