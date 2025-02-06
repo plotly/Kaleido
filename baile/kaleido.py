@@ -256,6 +256,7 @@ class KaleidoTab:
             *,
             topojson=None,
             mapbox_token=None,
+            timeout=60,
             error_log=None,
             profiler=None,
             ):
@@ -271,6 +272,7 @@ class KaleidoTab:
             opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
             mapbox_token: a mapbox api token for plotly to use
+            timeout: the length in seconds for any one render, default 60.
             error_log: a supplied array that plotly errors will be appended to
                        intead of raised
             profiler: a supplied dictionary to add stats about the operation to
@@ -282,7 +284,7 @@ class KaleidoTab:
                     "name":full_path.name,
                     "start":time.perf_counter(),
                     }
-        async with timeout(.5) as timer:
+        async with timeout(timeout) as timer:
             tab = self.tab
             _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
             execution_context_id = self._current_js_id
