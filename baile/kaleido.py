@@ -419,6 +419,8 @@ class Kaleido(choreo.Browser):
 
         """
         self._background_render_tasks = set()
+        self._main_tasks = set()
+        self._tabs_ready = asyncio.Queue(maxsize=0)
 
         self.timeout = kwargs.pop("timeout", 60)
         self.n = kwargs.pop("n", 1)
@@ -432,7 +434,7 @@ class Kaleido(choreo.Browser):
                     )
             self.height = None
             self.width = None
-        self._tabs_ready = asyncio.Queue(maxsize=0)
+
         try:
             super().__init__(*args, **kwargs)
         except ChromeNotFoundError:
