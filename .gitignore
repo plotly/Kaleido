@@ -14,3 +14,9 @@ __pycache__
 # Artifacts from Build
 src/js/build
 test-results*
+
+# builds
+tests/renders/*
+
+# avoid ignore .gitkeep
+!tests/renders/.gitkeep
