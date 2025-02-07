@@ -50,11 +50,11 @@ dev = [
   "mypy>=1.14.1",
 ]
 
-docs = [
-    "mkquixote @ git+ssh://git@github.com/geopozo/mkquixote; python_version>= '3.11'",
-    "mkdocs>=1.6.1",
-    "mkdocs-material>=9.5.49",
-]
+#docs = [
+#    "mkquixote @ git+ssh://git@github.com/geopozo/mkquixote; python_version>= '3.11'",
+#    "mkdocs>=1.6.1",
+#    "mkdocs-material>=9.5.49",
+#]
 
 [tool.uv.sources]
 mkquixote = { path = "../../../mkquixote", editable = true }
