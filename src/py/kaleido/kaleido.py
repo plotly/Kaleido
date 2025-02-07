@@ -389,11 +389,13 @@ class _KaleidoTab:
         img = js_response.get("result")
         if response_format == "pdf":
             pdf_params = {"printBackground":True,
-                          "marginTop":0,
-                          "marginBottom":0,
-                          "marginLeft":0,
-                          "marginRight":0,
-                          "preferCSSPageSize":True}
+                          "marginTop":0.1,
+                          "marginBottom":0.1,
+                          "marginLeft":0.1,
+                          "marginRight":0.1,
+                          "preferCSSPageSize":False,
+                          "pageRanges":"1",
+                          }
             pdf_response = await self.tab.send_command(
                     "Page.printToPDF",
                     params=pdf_params
