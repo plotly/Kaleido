@@ -12,7 +12,6 @@ import orjson
 
 import kaleido
 
-logistro.getLogger().setLevel(15)
 _logger = logistro.getLogger(__name__)
 
 # Extract jsons of mocks

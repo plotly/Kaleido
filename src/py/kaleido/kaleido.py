@@ -630,6 +630,7 @@ class Kaleido(choreo.Browser):
                     ErrorEntry(name, e, tab.javascript_log)
                 )
             else:
+                _logger.error("Cancelling all.")
                 if not main_task.done():
                     main_task.cancel()
                 raise e
