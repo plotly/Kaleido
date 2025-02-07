@@ -103,6 +103,13 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--timeout",
+    type=int,
+    default=60,
+    help="Set timeout in seconds for any 1 mock (default 60 seconds)"
+)
+
+parser.add_argument(
     "--headless",
     action="store_true",
     default=True,
@@ -121,7 +128,7 @@ args = parser.parse_args()
 async def _main(error_log = None, profiler = None):
     paths = _get_jsons_in_paths(args.input)
     async with kaleido.Kaleido(
-        n=args.n, page_scripts=scripts, headless=args.headless
+        n=args.n, page_scripts=scripts, headless=args.headless, timeout=args.timeout
     ) as k:
         await k.write_fig_generate_all(
             _load_figures_from_paths(paths),
