@@ -19,7 +19,13 @@ nav:
       {
         "api": "kaleido",
         "test": ["exports", "_prefix_local"],
-        "tree": "packages"
+        "tree": "none"
+      }
+  - kaleido.errors: >-
+      {
+        "api": "kaleido.errors",
+        "test": ["exports"],
+        "tree": "none"
       }
 
 theme:

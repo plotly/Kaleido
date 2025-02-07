@@ -71,12 +71,12 @@ class KaleidoError(Exception):
 
         """
         super().__init__(message)
-        self.code = code
-        self.message = message
+        self._code = code
+        self._message = message
 
     def __str__(self):
         """Display the KaleidoError nicely."""
-        return f"Error {self.code}: {self.message}"
+        return f"Error {self._code}: {self._message}"
 
 
 class JavascriptError(RuntimeError):  # TODO(A): process better # noqa: TD003, FIX002
@@ -527,7 +527,12 @@ class Kaleido(choreo.Browser):
         _logger.debug("Tabs fully navigated/enabled/ready")
 
     async def populate_targets(self) -> None:
-        """Override the browser populate_targets to ensure the correct page."""
+        """
+        Override the browser populate_targets to ensure the correct page.
+
+        Is called automatically during initialization, and should only be called
+        once ever per object.
+        """
         await super().populate_targets()
         await self._conform_tabs()
         needed_tabs = self._n - len(self.tabs)
@@ -536,14 +541,14 @@ class Kaleido(choreo.Browser):
         if not needed_tabs:
             return
         tasks = [
-            asyncio.create_task(self.create_kaleido_tab()) for _ in range(needed_tabs)
+            asyncio.create_task(self._create_kaleido_tab()) for _ in range(needed_tabs)
         ]
 
         await asyncio.gather(*tasks)
         for tab in self.tabs.values():
             _logger.info(f"Tab ready: {tab.target_id}")
 
-    async def create_kaleido_tab(
+    async def _create_kaleido_tab(
         self,
     ) -> None:
         """
