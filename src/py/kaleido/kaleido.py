@@ -136,7 +136,7 @@ def _check_error(result):
 
 
 # Add note about composition/inheritance
-class KaleidoTab:
+class _KaleidoTab:
     """
     A Kaleido tab is a wrapped choreographer tab providing the functions we need.
 
@@ -151,7 +151,7 @@ class KaleidoTab:
 
     def __init__(self, tab):
         """
-        Create a new KaleidoTab.
+        Create a new _KaleidoTab.
 
         Args:
             tab: the choreographer tab to wrap.
@@ -400,7 +400,7 @@ class KaleidoTab:
 class Kaleido(choreo.Browser):
     """Kaleido manages a set of image processors."""
 
-    _tabs_ready: asyncio.Queue[KaleidoTab]
+    _tabs_ready: asyncio.Queue[_KaleidoTab]
     _background_render_tasks: set[asyncio.Task]
     # not really render tasks
     _main_tasks: set[asyncio.Task]
@@ -515,7 +515,7 @@ class Kaleido(choreo.Browser):
 
         _logger.debug("Navigating all tabs")
 
-        kaleido_tabs = [KaleidoTab(tab) for tab in tabs]
+        kaleido_tabs = [_KaleidoTab(tab) for tab in tabs]
 
         # A little hard to read because we don't have TaskGroup in this version
         tasks = [asyncio.create_task(tab.navigate(self._index)) for tab in kaleido_tabs]
@@ -558,7 +558,7 @@ class Kaleido(choreo.Browser):
         )
         await self._conform_tabs([tab])
 
-    async def _get_kaleido_tab(self) -> KaleidoTab:
+    async def _get_kaleido_tab(self) -> _KaleidoTab:
         """
         Retreive an available tab from queue.
 
