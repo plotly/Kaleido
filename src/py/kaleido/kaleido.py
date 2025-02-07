@@ -354,8 +354,7 @@ class _KaleidoTab:
             else:
                 raise e
         _logger.debug2(f"Result of function call: {result}")
-
-        img = self._img_from_response(result)
+        img = await self._img_from_response(result)
         if isinstance(img, BaseException):
             if profiler is not None:
                 self._finish_profile(profile, img)
@@ -380,7 +379,7 @@ class _KaleidoTab:
             self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
             profiler[tab.target_id].append(profile)
 
-    def _img_from_response(self, response):
+    async def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))
 
         if js_response["code"] != 0:
@@ -388,7 +387,21 @@ class _KaleidoTab:
 
         response_format = js_response.get("format")
         img = js_response.get("result")
-
+        if response_format == "pdf":
+            pdf_params = {"printBackground":True,
+                          "marginTop":0,
+                          "marginBottom":0,
+                          "marginLeft":0,
+                          "marginRight":0,
+                          "preferCSSPageSize":True}
+            pdf_response = await self.tab.send_command(
+                    "Page.printToPDF",
+                    params=pdf_params
+                    )
+            e = _check_error_ret(pdf_response)
+            if e:
+                return e
+            img = pdf_response.get("result").get("data")
         # Base64 decode binary types
         if response_format not in _TEXT_FORMATS:
             img = base64.b64decode(img)
@@ -432,13 +445,17 @@ class Kaleido(choreo.Browser):
 <!DOCTYPE html>
 <html>
     <head>
+        <style id="head-style"></style>
         <title>Kaleido-fier</title>
+        <script>
+          window.PlotlyConfig = {MathJaxConfig: 'local'}
+        </script>
 """
         script_template = '\n        <script src="%s"></script>'
         footer = """
         <script src="../kaleido_scopes.js"></script>
     </head>
-    <body></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
 """
         for script in page_scripts:
