@@ -41,7 +41,7 @@ def _get_format(extension):
         supported_formats_str = repr(list(SUPPORTED_FORMATS))
         raise ValueError(
             f"Invalid format '{original_format}'.\n"
-            f"    Supported formats: {supported_formats_str}"
+            f"    Supported formats: {supported_formats_str}",
         )
     return extension
 
@@ -53,7 +53,9 @@ def to_spec(figure, layout_opts):
     # Extract info
     extension = _get_format(layout_opts.get("format", DEFAULT_EXT))
     width, height = _get_figure_dimensions(
-        layout, layout_opts.get("width"), layout_opts.get("height")
+        layout,
+        layout_opts.get("width"),
+        layout_opts.get("height"),
     )
     scale = layout_opts.get("scale", DEFAULT_SCALE)
 
@@ -105,7 +107,7 @@ def build_fig_spec(fig, path, opts):
         full_path = path
         if not full_path.parent.is_dir():
             raise RuntimeError(
-                f"Cannot reach path {path}. Are all directories created?"
+                f"Cannot reach path {path}. Are all directories created?",
             )
     if not full_path:
         _logger.debug("Looking for title")

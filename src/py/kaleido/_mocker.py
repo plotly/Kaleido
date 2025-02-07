@@ -43,9 +43,9 @@ def _load_figures_from_paths(paths: list[Path]):
                 figure = orjson.loads(file.read())
                 _logger.info(f"Yielding {path.stem}")
                 yield {
-                        "fig": figure,
-                        "path": args.output / f"{path.stem}.{args.format}"
-                        }
+                    "fig": figure,
+                    "path": args.output / f"{path.stem}.{args.format}",
+                }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
 
@@ -66,10 +66,11 @@ if "--headless" in sys.argv and "--no-headless" in sys.argv:
     )
 
 parser = argparse.ArgumentParser(
-        add_help=True,
-        parents=[logistro.parser],
-        conflict_handler="resolve",
-        description=description)
+    add_help=True,
+    parents=[logistro.parser],
+    conflict_handler="resolve",
+    description=description,
+)
 
 parser.add_argument(
     "--logistro-level",
@@ -84,28 +85,28 @@ parser.add_argument(
     "--input",
     type=str,
     default=in_dir,
-    help="Directory of mock file/s, default tests/mocks"
+    help="Directory of mock file/s, default tests/mocks",
 )
 
 parser.add_argument(
     "--output",
     type=str,
     default=out_dir,
-    help="Directory of mock file/s, default tests/renders"
+    help="Directory of mock file/s, default tests/renders",
 )
 
 parser.add_argument(
     "--format",
     type=str,
     default="png",
-    help="png (default), pdf, jpg, webp, svg, json"
+    help="png (default), pdf, jpg, webp, svg, json",
 )
 
 parser.add_argument(
     "--timeout",
     type=int,
     default=60,
-    help="Set timeout in seconds for any 1 mock (default 60 seconds)"
+    help="Set timeout in seconds for any 1 mock (default 60 seconds)",
 )
 
 parser.add_argument(
@@ -116,7 +117,10 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    "--no-headless", action="store_false", dest="headless", help="Set headless as False"
+    "--no-headless",
+    action="store_false",
+    dest="headless",
+    help="Set headless as False",
 )
 
 
@@ -124,7 +128,7 @@ args = parser.parse_args()
 
 
 # Function to process the images
-async def _main(error_log = None, profiler = None):
+async def _main(error_log=None, profiler=None):
     paths = _get_jsons_in_paths(args.input)
     async with kaleido.Kaleido(
         n=args.n,
@@ -138,6 +142,7 @@ async def _main(error_log = None, profiler = None):
             profiler=profiler,
         )
 
+
 def build_mocks():
     start = time.perf_counter()
     try:
@@ -149,16 +154,18 @@ def build_mocks():
 
         for tab, tab_profile in profiler.items():
             profiler[tab] = sorted(
-                tab_profile, key=itemgetter("duration"), reverse=True
+                tab_profile,
+                key=itemgetter("duration"),
+                reverse=True,
             )
 
         elapsed = time.perf_counter() - start
         results = {
-                "error_log": [str(log) for log in error_log],
-                "profiles": profiler,
-                "total_time": f"Time taken: {elapsed:.6f} seconds",
-                "total_errors": len(error_log)
-                }
+            "error_log": [str(log) for log in error_log],
+            "profiles": profiler,
+            "total_time": f"Time taken: {elapsed:.6f} seconds",
+            "total_errors": len(error_log),
+        }
         pp(results)
 
 

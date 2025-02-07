@@ -69,5 +69,8 @@ async def write_fig_generate_all(
     """
     async with Kaleido(n=n) as k:
         await k.write_fig_generate_all(
-            generator, error_log=error_log, profiler=profiler, n=n
+            generator,
+            error_log=error_log,
+            profiler=profiler,
+            n=n,
         )

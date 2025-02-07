@@ -206,7 +206,7 @@ class _KaleidoTab:
         if not self._current_js_id:
             raise RuntimeError(
                 "Refresh sequence didn't work for reload_tab_with_javascript."
-                "Result {javascript_ready.result()}."
+                "Result {javascript_ready.result()}.",
             )
         await page_ready
         self._regenerate_javascript_console()
@@ -235,7 +235,7 @@ class _KaleidoTab:
         if not self._current_js_id:
             raise RuntimeError(
                 "Refresh sequence didn't work for reload_tab_with_javascript."
-                "Result {javascript_ready.result()}."
+                "Result {javascript_ready.result()}.",
             )
         await is_loaded
         self._regenerate_javascript_console()
@@ -248,12 +248,7 @@ class _KaleidoTab:
             message: The thing to print.
 
         """
-        jsfn = (
-            r"function()"
-            r"{"
-            f"console.log('{message}')"
-            r"}"
-        )
+        jsfn = r"function()" r"{" f"console.log('{message}')" r"}"
         params = {
             "functionDeclaration": jsfn,
             "returnByValue": False,
@@ -296,7 +291,7 @@ class _KaleidoTab:
             full_path: the path to write the image too. if its a directory, we will try
                 to generate a name. If the path contains an extension,
                 "path/to/my_image.png", that extension will be the format used if not
-                overriden in `opts`.
+                overridden in `opts`.
             opts: dictionary describing format, width, height, and scale of image
             topojson: topojsons are used to customize choropleths
             error_log: A supplied list, will be populated with `ErrorEntry`s
@@ -361,7 +356,7 @@ class _KaleidoTab:
                 profiler[tab.target_id].append(profile)
             if error_log is not None:
                 error_log.append(
-                    ErrorEntry(full_path.name, img, self.javascript_log)
+                    ErrorEntry(full_path.name, img, self.javascript_log),
                 )
                 _logger.info(f"Failed {full_path.name}")
                 return
@@ -388,18 +383,19 @@ class _KaleidoTab:
         response_format = js_response.get("format")
         img = js_response.get("result")
         if response_format == "pdf":
-            pdf_params = {"printBackground":True,
-                          "marginTop":0.1,
-                          "marginBottom":0.1,
-                          "marginLeft":0.1,
-                          "marginRight":0.1,
-                          "preferCSSPageSize":False,
-                          "pageRanges":"1",
-                          }
+            pdf_params = {
+                "printBackground": True,
+                "marginTop": 0.1,
+                "marginBottom": 0.1,
+                "marginLeft": 0.1,
+                "marginRight": 0.1,
+                "preferCSSPageSize": False,
+                "pageRanges": "1",
+            }
             pdf_response = await self.tab.send_command(
-                    "Page.printToPDF",
-                    params=pdf_params
-                    )
+                "Page.printToPDF",
+                params=pdf_params,
+            )
             e = _check_error_ret(pdf_response)
             if e:
                 return e
@@ -519,7 +515,7 @@ class Kaleido(choreo.Browser):
                 "much smaller. Kaleido's dependency, choreographer, supplies a "
                 "choreo_get_chrome CLI command as well as a `get_chrome()` and "
                 "`get_chrome_sync()` function from "
-                "`choreographer import cli as cli; cli.get_chrome()`"
+                "`choreographer import cli as cli; cli.get_chrome()`",
             ) from ChromeNotFoundError
 
     async def _conform_tabs(self, tabs=None) -> None:
@@ -578,13 +574,16 @@ class Kaleido(choreo.Browser):
 
         """
         tab = await super().create_tab(
-            url="", width=self._width, height=self._height, window=True
+            url="",
+            width=self._width,
+            height=self._height,
+            window=True,
         )
         await self._conform_tabs([tab])
 
     async def _get_kaleido_tab(self) -> _KaleidoTab:
         """
-        Retreive an available tab from queue.
+        Retrieve an available tab from queue.
 
         Returns:
             A kaleido-tab from the queue.
@@ -607,7 +606,7 @@ class Kaleido(choreo.Browser):
         await tab.reload()
         _logger.info(
             f"Putting tab {tab.tab.target_id[:4]} back (queue size: "
-            f"{self._tabs_ready.qsize()})."
+            f"{self._tabs_ready.qsize()}).",
         )
         await self._tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
@@ -629,7 +628,7 @@ class Kaleido(choreo.Browser):
             _logger.error(f"Render Task Error In {name}- ", exc_info=e)
             if isinstance(e, (asyncio.TimeoutError, TimeoutError)) and error_log:
                 error_log.append(
-                    ErrorEntry(name, e, tab.javascript_log)
+                    ErrorEntry(name, e, tab.javascript_log),
                 )
             else:
                 _logger.error("Cancelling all.")
@@ -645,19 +644,19 @@ class Kaleido(choreo.Browser):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         if self._timeout:
             await asyncio.wait_for(
-                    tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
-                                   **args,
-                                   error_log=error_log,
-                                   profiler=profiler,
-                                   ),
-                    self._timeout
-                    )
+                tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
+                    **args,
+                    error_log=error_log,
+                    profiler=profiler,
+                ),
+                self._timeout,
+            )
         else:
-            await tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
-                           **args,
-                           error_log=error_log,
-                           profiler=profiler,
-                           )
+            await tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
+                **args,
+                error_log=error_log,
+                profiler=profiler,
+            )
         _logger.info(f"Posted task ending for {args['full_path'].name}")
 
     async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
@@ -678,7 +677,7 @@ class Kaleido(choreo.Browser):
             path: the path to write the images to. if its a directory, we will try to
                 generate a name. If the path contains an extension,
                 "path/to/my_image.png", that extension will be the format used if not
-                overriden in `opts`. If you pass a complete path (filename), for
+                overridden in `opts`. If you pass a complete path (filename), for
                 multiple figures, you will overwrite every previous figure.
             opts: dictionary describing format, width, height, and scale of image
             topojson: a link ??? TODO
@@ -723,13 +722,13 @@ class Kaleido(choreo.Browser):
                 profiler=profiler,
             )
             t.add_done_callback(
-                    partial(
-                        self._check_render_task,
-                        full_path.name,
-                        tab,
-                        main_task,
-                        error_log
-                        )
+                partial(
+                    self._check_render_task,
+                    full_path.name,
+                    tab,
+                    main_task,
+                    error_log,
+                ),
             )
             tasks.add(t)
 
@@ -802,7 +801,9 @@ class Kaleido(choreo.Browser):
 
         async def _loop(args):
             spec, full_path = build_fig_spec(
-                args.pop("fig"), args.pop("path", None), args.pop("opts", None)
+                args.pop("fig"),
+                args.pop("path", None),
+                args.pop("opts", None),
             )
             args["spec"] = spec
             args["full_path"] = full_path
@@ -811,8 +812,11 @@ class Kaleido(choreo.Browser):
                 profiler[tab.tab.target_id] = []
             t = asyncio.create_task(
                 self._render_task(
-                    tab, args=args, error_log=error_log, profiler=profiler
-                )
+                    tab,
+                    args=args,
+                    error_log=error_log,
+                    profiler=profiler,
+                ),
             )
             t.add_done_callback(
                 partial(
@@ -820,8 +824,8 @@ class Kaleido(choreo.Browser):
                     full_path.name,
                     tab,
                     main_task,
-                    error_log
-                    )
+                    error_log,
+                ),
             )
             tasks.add(t)
 
