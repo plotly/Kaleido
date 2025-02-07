@@ -43,7 +43,10 @@ def _load_figures_from_paths(paths: list[Path]):
             with path.open() as file:
                 figure = orjson.loads(file.read())
                 _logger.info(f"Yielding {path.stem}")
-                yield {"fig": figure, "path": args.output / f"{path.stem}.png"}
+                yield {
+                        "fig": figure,
+                        "path": args.output / f"{path.stem}.{args.format}"
+                        }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
 
@@ -90,6 +93,13 @@ parser.add_argument(
     type=str,
     default=out_dir,
     help="Directory of mock file/s, default tests/renders"
+)
+
+parser.add_argument(
+    "--format",
+    type=str,
+    default="png",
+    help="png (default), pdf, jpg, webp, svg, json"
 )
 
 parser.add_argument(
