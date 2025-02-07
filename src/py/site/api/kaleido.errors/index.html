@@ -10,19 +10,23 @@
       
       
       
+        <link rel="canonical" href="https://github.com/plotly/kaleido/api/kaleido.errors/">
+      
+      
+        <link rel="prev" href="../kaleido/">
       
       
       
-      <link rel="icon" href="/plotly/kaleido/assets/images/favicon.png">
+      <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.2">
     
     
       
-        <title>kaleido</title>
+        <title>kaleido.errors - kaleido</title>
       
     
     
-      <link rel="stylesheet" href="/plotly/kaleido/assets/stylesheets/main.d7758b05.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.d7758b05.min.css">
       
       
 
@@ -41,9 +45,9 @@
       
     
     
-      <link rel="stylesheet" href="/plotly/kaleido/css/api.css">
+      <link rel="stylesheet" href="../../css/api.css">
     
-    <script>__md_scope=new URL("/plotly/kaleido",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -61,6 +65,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#module-errors" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -73,7 +82,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/plotly/kaleido/." title="kaleido" class="md-header__button md-logo" aria-label="kaleido" data-md-component="logo">
+    <a href="../.." title="kaleido" class="md-header__button md-logo" aria-label="kaleido" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -93,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              
+              kaleido.errors
             
           </span>
         </div>
@@ -143,7 +152,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/plotly/kaleido/." title="kaleido" class="md-nav__button md-logo" aria-label="kaleido" data-md-component="logo">
+    <a href="../.." title="kaleido" class="md-nav__button md-logo" aria-label="kaleido" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -173,7 +182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/plotly/kaleido/." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -194,7 +203,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/plotly/kaleido/api/kaleido/" class="md-nav__link">
+      <a href="../kaleido/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -212,10 +221,31 @@
       
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="/plotly/kaleido/api/kaleido.errors/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    kaleido.errors
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -225,6 +255,89 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#JavascriptError" class="md-nav__link">
+    <span class="md-ellipsis">
+      class JavascriptError()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#KaleidoError" class="md-nav__link">
+    <span class="md-ellipsis">
+      class KaleidoError()
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class KaleidoError()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#KaleidoError-a__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __init__(...)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -246,6 +359,79 @@
   
   
   
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Classes
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Classes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#JavascriptError" class="md-nav__link">
+    <span class="md-ellipsis">
+      class JavascriptError()
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#KaleidoError" class="md-nav__link">
+    <span class="md-ellipsis">
+      class KaleidoError()
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="class KaleidoError()">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      methods
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="methods">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#KaleidoError-a__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __init__(...)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
   
 </nav>
                   </div>
@@ -257,8 +443,63 @@
             <div class="md-content" data-md-component="content">
               <article class="md-content__inner md-typeset">
                 
-  <h1>404 - Not found</h1>
+                  
 
+
+
+<p><span class="quixote-small_note" translate="no">
+kaleido.errors
+</span></p>
+<h1 id="module-errors">module: <code>errors</code></h1>
+<div class="long-description text">
+<p>A list of errors available from the kaleido package.</p>
+</div>
+<h2 id="classes">Classes</h2>
+<div class="individual-class">
+<h3 id="JavascriptError"><code>class JavascriptError(RuntimeError):</code></h3>
+<div class="long-description text">
+<p>Used to report errors from javascript.</p>
+</div>
+</div>
+<div class="individual-class">
+<h3 id="KaleidoError"><code>class KaleidoError(Exception):</code></h3>
+<div class="long-description text">
+<p>An error to interpret errors from Kaleido's JS side.</p>
+</div>
+<h4 id="methods">methods</h4>
+<div class="indent">
+<h5 id="KaleidoError-a__init__"><code>__init__(self, code, message)</code></h5>
+<div class="long-description">
+<div class="text">
+<p>Construct an error object.</p>
+</div>
+<p><span class="h7">arguments</span></p>
+<div class="indent">
+<div>
+<p><span class="code key" translate="no">code</span>
+<span class="text" markdown> -  the number code of the error.</span></p>
+</div>
+<div>
+<p><span class="code key" translate="no">message</span>
+<span class="text" markdown> -  the message of the error.</span></p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
               </article>
             </div>
           
@@ -292,10 +533,10 @@
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "/plotly/kaleido", "features": ["navigation.indexes"], "search": "/plotly/kaleido/assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.indexes"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="/plotly/kaleido/assets/javascripts/bundle.f13b1293.min.js"></script>
+      <script src="../../assets/javascripts/bundle.f13b1293.min.js"></script>
       
     
   </body>
