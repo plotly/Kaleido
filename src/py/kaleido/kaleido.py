@@ -598,14 +598,19 @@ class Kaleido(choreo.Browser):
                 main_task.cancel()
             raise e
 
-    def _check_render_task(self, name, tab, main_task, task):
+    def _check_render_task(self, name, tab, main_task, error_log, task):
         if e := task.exception():
-            if isinstance(e, (asyncio.CancelledError, asyncio.TimeoutError)):
-                _logger.info("Something timedout or cancelled.")
+            if isinstance(e, asyncio.CancelledError):
+                _logger.info(f"Something cancelled {name}.")
             _logger.error(f"Render Task Error In {name}- ", exc_info=e)
-            if not main_task.done():
-                main_task.cancel()
-            raise e
+            if isinstance(e, (asyncio.TimeoutError, TimeoutError)) and error_log:
+                error_log.append(
+                    ErrorEntry(name, e, tab.javascript_log)
+                )
+            else:
+                if not main_task.done():
+                    main_task.cancel()
+                raise e
         _logger.info(f"Returning {name} tab after render.")
         t = asyncio.create_task(self._return_kaleido_tab(tab))
         self._background_render_tasks.add(t)
@@ -613,11 +618,14 @@ class Kaleido(choreo.Browser):
 
     async def _render_task(self, tab, args, error_log=None, profiler=None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
-        await tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
-            **args,
-            error_log=error_log,
-            profiler=profiler,
-        )
+        await asyncio.wait_for(
+                tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
+                               **args,
+                               error_log=error_log,
+                               profiler=profiler,
+                               ),
+                self._timeout
+                )
         _logger.info(f"Posted task ending for {args['full_path'].name}")
 
     async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
@@ -683,7 +691,13 @@ class Kaleido(choreo.Browser):
                 profiler=profiler,
             )
             t.add_done_callback(
-                partial(self._check_render_task, full_path.name, tab, main_task)
+                    partial(
+                        self._check_render_task,
+                        full_path.name,
+                        tab,
+                        main_task,
+                        error_log
+                        )
             )
             tasks.add(t)
 
@@ -769,7 +783,13 @@ class Kaleido(choreo.Browser):
                 )
             )
             t.add_done_callback(
-                partial(self._check_render_task, full_path.name, tab, main_task)
+                partial(
+                    self._check_render_task,
+                    full_path.name,
+                    tab,
+                    main_task,
+                    error_log
+                    )
             )
             tasks.add(t)
 
