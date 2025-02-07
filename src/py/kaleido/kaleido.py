@@ -643,14 +643,21 @@ class Kaleido(choreo.Browser):
 
     async def _render_task(self, tab, args, error_log=None, profiler=None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
-        await asyncio.wait_for(
-                tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
-                               **args,
-                               error_log=error_log,
-                               profiler=profiler,
-                               ),
-                self._timeout
-                )
+        if self._timeout:
+            await asyncio.wait_for(
+                    tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
+                                   **args,
+                                   error_log=error_log,
+                                   profiler=profiler,
+                                   ),
+                    self._timeout
+                    )
+        else:
+            await tab._write_fig( # noqa: SLF001 I don't want it documented, too complex for user
+                           **args,
+                           error_log=error_log,
+                           profiler=profiler,
+                           )
         _logger.info(f"Posted task ending for {args['full_path'].name}")
 
     async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
