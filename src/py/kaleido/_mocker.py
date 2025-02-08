@@ -126,6 +126,9 @@ parser.add_argument(
 
 args = parser.parse_args()
 
+if not Path(args.output).is_dir():
+    raise ValueError("Specified output must be existing directory.")
+
 
 # Function to process the images
 async def _main(error_log=None, profiler=None):
