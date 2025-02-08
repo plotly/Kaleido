@@ -201,6 +201,8 @@ def build_mocks():
             "total_errors": len(error_log),
         }
         pp(results)
+        if error_log:
+            sys.exit(1)
 
 
 if __name__ == "__main__":
