@@ -24,11 +24,26 @@ if TYPE_CHECKING:
 
 from ._fig_tools import build_fig_spec
 
-# Path of the page to use
+# Path of the page to use (kaleido-fier)
 _PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
 _TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
+
+# This annoying little global can be used to help debugging
+# if set to True, will ask for user confirmation between each render
+_stepper = False
+
+
+# this is kinda public but undocumented
+def set_stepper():
+    """
+    Cause kaleido require keypress between rendering and exporting graphs.
+
+    If it is used with n>1, behavior is undefined.
+    """
+    global _stepper  # noqa: PLW0603
+    _stepper = True
 
 
 class ErrorEntry:
@@ -303,11 +318,11 @@ class _KaleidoTab:
 
         """
         if profiler is not None:
-            _logger.debug("Using profiler")
             profile = {
                 "name": full_path.name,
                 "start": time.perf_counter(),
             }
+        _logger.info(f"Value of stepper: {_stepper}")
         tab = self.tab
         _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
         execution_context_id = self._current_js_id
@@ -344,11 +359,16 @@ class _KaleidoTab:
                 profiler[tab.target_id].append(profile)
             if error_log is not None:
                 error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
-                _logger.info(f"Failed {full_path.name}")
+                _logger.error(f"Failed {full_path.name}", exc_info=e)
                 return
             else:
+                _logger.erroor(f"Raising error on {full_path.name}")
                 raise e
         _logger.debug2(f"Result of function call: {result}")
+        if _stepper:
+            print(f"Image {full_path.name} was sent to browser")  # noqa: T201
+            input("Press Enter to continue...")
+
         img = await self._img_from_response(result)
         if isinstance(img, BaseException):
             if profiler is not None:

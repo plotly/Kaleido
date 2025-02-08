@@ -123,6 +123,15 @@ parser.add_argument(
     help="Set headless as False",
 )
 
+parser.add_argument(
+    "--stepper",
+    action="store_true",
+    default=False,
+    dest="stepper",
+    help="Stepper sets n to 1, headless to False, "
+    "and asks for confirmation before printing.",
+)
+
 
 args = parser.parse_args()
 
@@ -133,6 +142,13 @@ if not Path(args.output).is_dir():
 # Function to process the images
 async def _main(error_log=None, profiler=None):
     paths = _get_jsons_in_paths(args.input)
+    if args.stepper:
+        _logger.info("Setting stepper.")
+        args.n = 1
+        args.headless = False
+        kaleido.kaleido.set_stepper()
+        # sets a global in kaleido, gross huh
+
     async with kaleido.Kaleido(
         n=args.n,
         page_scripts=scripts,
