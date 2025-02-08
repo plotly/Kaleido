@@ -22,3 +22,4 @@ src/py/integration_tests/report*
 
 # avoid ignore .gitkeep
 !src/py/integration_tests/renders/.gitkeep
+node_modules/
