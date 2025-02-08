@@ -13,7 +13,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     defaults:
       run:
-        working-directory: ./src/py/pyproject.toml
+        working-directory: ./src/py/
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
