@@ -6,6 +6,7 @@ import sys
 import time
 from pathlib import Path
 from pprint import pp
+from random import sample
 
 import logistro
 import orjson
@@ -132,6 +133,13 @@ parser.add_argument(
     "and asks for confirmation before printing.",
 )
 
+parser.add_argument(
+    "--random",
+    type=int,
+    default=0,
+    help="Will select N random jsons- or if 0 (default), all.",
+)
+
 
 args = parser.parse_args()
 
@@ -142,6 +150,13 @@ if not Path(args.output).is_dir():
 # Function to process the images
 async def _main(error_log=None, profiler=None):
     paths = _get_jsons_in_paths(args.input)
+    if args.random:
+        if args.random > len(paths):
+            raise ValueError(
+                f"Input discover {len(paths)} paths, but a sampling of"
+                f"{args.random} was asked for.",
+            )
+        paths = sample(paths, args.random)
     if args.stepper:
         _logger.info("Setting stepper.")
         args.n = 1
