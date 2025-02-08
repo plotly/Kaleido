@@ -16,7 +16,7 @@ jobs:
       - uses: astral-sh/setup-uv@v4
       - uses: actions/setup-python@v5
         with:
-          python-version-file: "pyproject.toml"
+          python-version-file: "src/py/pyproject.toml"
 
       - name: Install dependencies
         run:  uv sync --no-sources --all-extras
