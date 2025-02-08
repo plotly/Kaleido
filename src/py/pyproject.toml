@@ -56,7 +56,7 @@ dev = [
 #    "mkdocs-material>=9.5.49",
 #]
 
-[tool.uv.indexes]
+[tool.uv.index]
 name = "test.pypi"
 url = "https://test.pypi.org/simple/"
 
