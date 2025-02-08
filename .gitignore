@@ -16,8 +16,9 @@ src/js/build
 test-results*
 
 # builds
-src/py/tests/renders/*
+src/py/integration_tests/renders/*
+src/py/integration_tests/*.log
+src/py/integration_tests/report*
 
 # avoid ignore .gitkeep
-!src/py/tests/renders/.gitkeep
-src/py/tests/*.log
+!src/py/integration_tests/renders/.gitkeep

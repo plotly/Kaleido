@@ -16,7 +16,7 @@ import kaleido
 _logger = logistro.getLogger(__name__)
 
 # Extract jsons of mocks
-test_dir = Path(__file__).resolve().parent.parent / "tests"
+test_dir = Path(__file__).resolve().parent.parent / "integration_tests"
 in_dir = test_dir / "mocks"
 out_dir = test_dir / "renders"
 

@@ -5,8 +5,8 @@
 exclude: |
   (?x)(
   src/py/site/.*|
-  src/py/tests/mocks/.*|
-  src/py/tests/renders/.*|
+  src/py/integration_tests/mocks/.*|
+  src/py/intergation_tests/renders/.*|
   src/js/.*|
   \.js$
   )
