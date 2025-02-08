@@ -56,6 +56,11 @@ dev = [
 #    "mkdocs-material>=9.5.49",
 #]
 
+[tool.uv.indexes]
+name = "test.pypi"
+url = "https://test.pypi.org/simple/"
+
+
 [tool.uv.sources]
 mkquixote = { path = "../../../mkquixote", editable = true }
 choreographer = { path = "../../../devtools_protocol", editable = true }
