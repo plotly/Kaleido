@@ -11,12 +11,15 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: ./src/py/pyproject.toml
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
       - uses: actions/setup-python@v5
         with:
-          python-version-file: "src/py/pyproject.toml"
+          python-version-file: "./src/py/pyproject.toml"
 
       - name: Install dependencies
         run:  uv sync --no-sources --all-extras
