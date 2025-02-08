@@ -57,6 +57,10 @@ dev = [
 #]
 
 [[tool.uv.index]]
+name = "pypi"
+url = "https://pypi.org/simple/"
+
+[[tool.uv.index]]
 name = "test.pypi"
 url = "https://test.pypi.org/simple/"
 

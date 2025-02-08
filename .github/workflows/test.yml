@@ -22,7 +22,11 @@ jobs:
           python-version-file: "./src/py/pyproject.toml"
 
       - name: Install dependencies
-        run:  uv sync --no-sources --all-extras
+        run: >
+          uv sync
+          --index-strategy=unsafe-first-match
+          --no-sources
+          --all-extras
 
       - name: Install google-chrome-for-testing
         run: uv run --no-sources kaleido_get_chrome
