@@ -1739,7 +1739,7 @@ module.exports = {
 }
 
 },{}],34:[function(require,module,exports){
-(function (process){
+(function (process){(function (){
 const debug = (
   typeof process === 'object' &&
   process.env &&
@@ -1750,7 +1750,7 @@ const debug = (
 
 module.exports = debug
 
-}).call(this,require('_process'))
+}).call(this)}).call(this,require('_process'))
 },{"_process":4}],35:[function(require,module,exports){
 const numeric = /^[0-9]+$/
 const compareIdentifiers = (a, b) => {
