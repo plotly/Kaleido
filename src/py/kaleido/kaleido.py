@@ -270,7 +270,7 @@ class _KaleidoTab:
         if size_mb:
             profile["megabytes"] = size_mb
 
-    async def _write_fig(  # noqa: C901 too many complexity
+    async def _write_fig(  # noqa: C901, PLR0915 too much complexity, statements
         self,
         spec,
         full_path,
@@ -341,7 +341,6 @@ class _KaleidoTab:
             if error_log is not None:
                 error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
                 _logger.error(f"Failed {full_path.name}", exc_info=e)
-                return
             else:
                 _logger.erroor(f"Raising error on {full_path.name}")
                 raise e
@@ -349,6 +348,8 @@ class _KaleidoTab:
         if _stepper:
             print(f"Image {full_path.name} was sent to browser")  # noqa: T201
             input("Press Enter to continue...")
+        if e:
+            return
 
         img = await self._img_from_response(result)
         if isinstance(img, BaseException):

@@ -141,6 +141,12 @@ parser.add_argument(
     help="Will select N random jsons- or if 0 (default), all.",
 )
 
+parser.add_argument(
+    "--fail-fast",
+    action="store_true",
+    default=False,
+    help="Throw first error encountered and stop execution.",
+)
 
 args = parser.parse_args()
 
@@ -189,7 +195,7 @@ async def _main(error_log=None, profiler=None):
 def build_mocks():
     start = time.perf_counter()
     try:
-        error_log = []
+        error_log = [] if not args.fail_fast else None
         profiler = {}
         asyncio.run(_main(error_log, profiler))
     finally:
@@ -204,10 +210,10 @@ def build_mocks():
 
         elapsed = time.perf_counter() - start
         results = {
-            "error_log": [str(log) for log in error_log],
+            "error_log": [str(log) for log in error_log] if error_log else None,
             "profiles": profiler,
             "total_time": f"Time taken: {elapsed:.6f} seconds",
-            "total_errors": len(error_log),
+            "total_errors": len(error_log) if error_log else "untracked",
         }
         pp(results)
         if error_log:
