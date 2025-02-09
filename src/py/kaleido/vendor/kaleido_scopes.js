@@ -3109,6 +3109,7 @@ function render (info, topojsonURL, stepper) {
 
   return exportPromise
       .catch((err) => {
+        console.log(err)
         errorCode = 525
         errorMsg = err.message
         result = null;
