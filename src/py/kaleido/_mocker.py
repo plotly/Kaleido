@@ -129,7 +129,7 @@ parser.add_argument(
     action="store_true",
     default=False,
     dest="stepper",
-    help="Stepper sets n to 1, headless to False, "
+    help="Stepper sets n to 1, headless to False, no timeout "
     "and asks for confirmation before printing.",
 )
 
@@ -161,6 +161,7 @@ async def _main(error_log=None, profiler=None):
         _logger.info("Setting stepper.")
         args.n = 1
         args.headless = False
+        args.timeout = 0
         kaleido.kaleido.set_stepper()
         # sets a global in kaleido, gross huh
 
