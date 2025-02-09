@@ -517,11 +517,10 @@ class Kaleido(choreo.Browser):
         except ChromeNotFoundError:
             raise ChromeNotFoundError(
                 "Versions 1.0.0 and higher of Kaleido do not include chrome by"
-                "default. Earlier versions, we can be pinned, did but they were "
-                "much smaller. Kaleido's dependency, choreographer, supplies a "
-                "choreo_get_chrome CLI command as well as a `get_chrome()` and "
-                "`get_chrome_sync()` function from "
-                "`choreographer import cli as cli; cli.get_chrome()`",
+                "default. Earlier versions, which can be pinned, did but the strategy "
+                "is no longer tenable. Kaleido's supplies a kaleido_get_chrome CLI "
+                "command as well as a `get_chrome()` and `get_chrome_sync()` "
+                "functions in kaleido.",
             ) from ChromeNotFoundError
 
     async def _conform_tabs(self, tabs=None) -> None:
