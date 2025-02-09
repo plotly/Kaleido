@@ -22,7 +22,7 @@ in_dir = test_dir / "mocks"
 out_dir = test_dir / "renders"
 
 scripts = [
-    "https://cdn.plot.ly/plotly-3.0.0.min.js",
+    ("https://cdn.plot.ly/plotly-2.35.2.js", "utf-8"),
     "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js",
 ]
 

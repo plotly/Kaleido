@@ -451,6 +451,7 @@ class Kaleido(choreo.Browser):
         </script>
 """
         script_template = '\n        <script src="%s"></script>'
+        script_template2 = '\n        <script src="%s" charset="%s"></script>'
         footer = """
         <script src="../kaleido_scopes.js"></script>
     </head>
@@ -458,7 +459,10 @@ class Kaleido(choreo.Browser):
 </html>
 """
         for script in page_scripts:
-            page += script_template % script
+            if isinstance(script, str):
+                page += script_template % script
+            else:
+                page += script_template2 % script
         page += footer
         _logger.debug(page)
         with (self.tmp_dir.path / "index.html").open("w") as f:
