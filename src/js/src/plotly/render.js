@@ -15,13 +15,10 @@ const parse = require('./parse')
  * @param {string} mapboxAccessToken: mapboxAccessToken
  * @param {string} topojsonURL
  */
-function render (info, mapboxAccessToken, topojsonURL) {
+function render (info, topojsonURL, stepper) {
   let opts = {};
 
-  if (mapboxAccessToken !== undefined && mapboxAccessToken.length > 0) {
-    opts.mapboxAccessToken = mapboxAccessToken;
-  }
-  if (topojsonURL !== undefined && topojsonURL.length > 0) {
+  if (topojsonURL != undefined && topojsonURL.length > 0) {
     opts.topojsonURL = topojsonURL;
   }
 
@@ -143,7 +140,7 @@ function render (info, mapboxAccessToken, topojsonURL) {
             if (encoded) {
               return imgData
             } else {
-              return decodeSVG(imgData)
+              return decodeSVG(response.result)
             }
           case 'pdf':
           case 'eps':
@@ -165,22 +162,44 @@ function render (info, mapboxAccessToken, topojsonURL) {
     return done()
   })
 
-  if (PRINT_TO_PDF) {
+  if (PRINT_TO_PDF || stepper) {
     exportPromise = exportPromise.then((response) => {
       // Retrun promise that resolves when the image is loaded in the <img> element
       return new Promise((resolve, reject) => {
+        prefix = ""
+        switch (format) {
+          case 'png':
+          case 'jpeg':
+          case 'webp':
+            if (!encoded) {
+              prefix = `data:image/${format};base64,`
+            }
+            break;
+          case 'svg':
+            resolve(response, null)
+        }
+
         style.innerHTML = `
         @page { size: ${info.width * info.scale}px ${info.height * info.scale}px; }
         body { margin: 0; padding: 0; background-color: ${pdfBgColor} }
         `
-        img.onload = resolve
-        img.onerror = reject
-        img.src = response.result
+
+        img.onload = img.onerror = resolve.bind(null, response)
+        if (PRINT_TO_PDF) {
+          img.onerror = reject
+        }
+
+        img.src = prefix + response.result
+
         setTimeout(() => reject(new Error('too long to load image')), cst.pdfPageLoadImgTimeout)
-      }).then(() => {
+      }).then((response, e) => {
         // We don't need to transport image bytes back to C++ since PDF export will be performed
-        result = null;
-        return done()
+        if (PRINT_TO_PDF) {
+          result = null
+          return done()
+        } else {
+          return response
+        }
       })
     })
   }

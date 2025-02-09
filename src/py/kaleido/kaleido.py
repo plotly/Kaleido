@@ -319,8 +319,8 @@ class _KaleidoTab:
 
         # params
         arguments = [{"value": spec}]
-        if topojson:
-            arguments.append({"value": topojson})
+        arguments.append({"value": topojson if topojson else None})
+        arguments.append({"value": _stepper})
         params = {
             "functionDeclaration": kaleido_jsfn,
             "arguments": arguments,

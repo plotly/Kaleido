@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import sys
 import time
+import warnings
 from pathlib import Path
 from pprint import pp
 from random import sample
@@ -163,6 +164,13 @@ async def _main(error_log=None, profiler=None):
         args.headless = False
         args.timeout = 0
         kaleido.kaleido.set_stepper()
+        if args.format == "svg":
+            warnings.warn(
+                "Stepper won't render svgs. It's feasible, "
+                "but the adaption is just slightly more involved.",
+                stacklevel=1,
+            )
+            await asyncio.sleep(3)
         # sets a global in kaleido, gross huh
 
     async with kaleido.Kaleido(
