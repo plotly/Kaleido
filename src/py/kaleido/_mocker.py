@@ -40,7 +40,7 @@ def _load_figures_from_paths(paths: list[Path]):
     # Set json
     for path in paths:
         if path.is_file():
-            with path.open() as file:
+            with path.open(encoding="utf-8") as file:
                 figure = orjson.loads(file.read())
                 _logger.info(f"Yielding {path.stem}")
                 yield {
