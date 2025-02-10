@@ -1,3 +1,59 @@
+# Launch Kaleido v1.0.0
+
+Right now, Kaledio v1.0.0 is available as a release candidate:
+
+* download `v1.0.0rc1` explicitly
+* enable whatever installer you use (`pip --pre`?) to use release candidates
+
+Kaleido's strategy has changed: `chrome` is no longer included. On the other hand,
+it's *much* faster and supports parallel processing and memory-saving techniques.
+
+Kaleido will try to use your own platform's `chrome`, but we recommend the following:
+
+```
+$ kaleido_get_chrome
+```
+
+or
+
+```python
+
+import kaleido
+await kaleido.get_chrome()
+# or
+# kaleido.get_chrome_sync()
+```
+
+## Quickstart
+
+```python
+import kaleido
+
+# fig is a plotly figure or an iterable of plotly figures
+
+async with kaleido.Kaleido(n=4, timeout=60) as k: # Those are the defaults! 4 processes, 60 seconds.
+	await k.write_fig(fig, path="./", opts={"format":"jpg"}) # default format is `png`
+```
+
+If you have to print thousands of graphs, fig can be a generator to save memory.
+It can also just be a single graph.
+
+There is a shortcut function:
+
+```
+import asyncio
+import kaleido
+asyncio.run(kaleido.write_fig(fig, path="./", n=4))
+# this will spin the kaleido process for you with 4 processors
+```
+
+If you're not using async/await, wrap it all in an async function and:
+```
+asyncio.run(my_async_wrapper())
+```
+
+#### Older Readme Below ####
+
 # Kaleido
 
 Kaleido is a cross-platform library for generating static images for [Plotly][plotly]'s
