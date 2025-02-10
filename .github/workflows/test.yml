@@ -32,7 +32,11 @@ jobs:
         run: uv run --no-sources kaleido_get_chrome
 
       - name: Test mocker
-        run: uv run --no-sources kaleido_mocker --random 100
+        run: >
+          uv run
+          --no-sources kaleido_mocker
+          --random 100
+          --logistro-level INFO
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
