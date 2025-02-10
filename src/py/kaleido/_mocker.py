@@ -27,16 +27,20 @@ def _get_jsons_in_paths(path: str | Path) -> list[Path]:
     path = Path(path) if isinstance(path, str) else path
 
     if path.is_dir():
-        return [path / a for a in path.glob("*.json")]
-    else:
+        _logger.info(f"Input is path {path}")
+        return list(path.glob("*.json"))
+    elif path.is_file():
+        _logger.info(f"Input is file {path}")
         return [path]
+    else:
+        raise TypeError("--input must be file or directory")
 
 
 def _load_figures_from_paths(paths: list[Path]):
     # Set json
     for path in paths:
         if path.is_file():
-            with path.open() as file:
+            with path.open(encoding="utf-8") as file:
                 figure = orjson.loads(file.read())
                 _logger.info(f"Yielding {path.stem}")
                 yield {

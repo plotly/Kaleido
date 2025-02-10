@@ -51,7 +51,7 @@ class PageGenerator:
         self._scripts = []
         if not plotly:
             try:
-                import plotly
+                import plotly  # type: ignore [import-not-found]
 
                 plotly = (
                     (

@@ -24,7 +24,6 @@ jobs:
       - name: Install dependencies
         run: >
           uv sync
-          --index-strategy=unsafe-first-match
           --no-sources
           --all-extras
 

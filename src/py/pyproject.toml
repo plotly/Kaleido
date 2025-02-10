@@ -16,7 +16,7 @@ name = "kaleido"
 description = "Plotly graph export library"
 license = {file = "LICENSE.md"}
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.8"
 dynamic = ["version"]
 authors = [
   {name = "Andrew Pikul", email="ajpikul@gmail.com"},
@@ -27,7 +27,7 @@ maintainers = [
 ]
 dependencies = [
   "async-timeout>=5.0.1",
-  "choreographer>=1.0.0",
+  "choreographer>=1.0.3",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
 ]
@@ -46,8 +46,8 @@ dev = [
   "pytest-asyncio",
   "pytest-xdist",
   "async-timeout",
-  "poethepoet>=0.31.1",
   "mypy>=1.14.1",
+  "poethepoet>=0.30.0",
 ]
 
 #docs = [
@@ -56,19 +56,10 @@ dev = [
 #    "mkdocs-material>=9.5.49",
 #]
 
-[[tool.uv.index]]
-name = "pypi"
-url = "https://pypi.org/simple/"
-
-[[tool.uv.index]]
-name = "test.pypi"
-url = "https://test.pypi.org/simple/"
-
-
 [tool.uv.sources]
-mkquixote = { path = "../../../mkquixote", editable = true }
-choreographer = { path = "../../../devtools_protocol", editable = true }
-logistro = { path = "../../../logistro", editable = true }
+#mkquixote = { path = "../../../mkquixote", editable = true }
+#choreographer = { path = "../../../devtools_protocol", editable = true }
+#logistro = { path = "../../../logistro", editable = true }
 
 [tool.ruff.lint]
 select = ["ALL"]

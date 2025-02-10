@@ -91,7 +91,7 @@ def build_fig_spec(fig, path, opts):
         path = Path(path)
 
     if path and path.suffix and not opts.get("format"):
-        opts["format"] = path.suffix.removeprefix(".")
+        opts["format"] = path.suffix.lstrip(".")
 
     spec = to_spec(fig, opts)
 
