@@ -18,13 +18,13 @@ import logistro
 from choreographer.errors import ChromeNotFoundError, DevtoolsProtocolError
 from choreographer.utils import TmpDirectory
 
+from ._page_generator import PageGenerator
+
 if TYPE_CHECKING:
     from typing import Any
 
 from ._fig_tools import build_fig_spec
 
-# Path of the page to use (kaleido-fier)
-_PAGE_PATH = (Path(__file__).resolve().parent / "vendor" / "index.html").as_uri()
 _TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
@@ -411,7 +411,19 @@ class _KaleidoTab:
 
 
 class Kaleido(choreo.Browser):
-    """Kaleido manages a set of image processors."""
+    """
+    Kaleido manages a set of image processors.
+
+    It can be used as a context (`async with Kaleido(...)`), but can
+    also be used like:
+
+    ```
+    k = Kaleido(...)
+    k = await Kaleido.open()
+    ... # do stuff
+    k.close()
+    ```
+    """
 
     _tabs_ready: asyncio.Queue[_KaleidoTab]
     _background_render_tasks: set[asyncio.Task]
@@ -439,37 +451,6 @@ class Kaleido(choreo.Browser):
         _logger.info("Exiting Kaleido")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
 
-    def _generate_index(self, page_scripts):
-        self.tmp_dir = TmpDirectory(path=Path(__file__).resolve().parent / "vendor")
-        page = """
-<!DOCTYPE html>
-<html>
-    <head>
-        <style id="head-style"></style>
-        <title>Kaleido-fier</title>
-        <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-"""
-        script_template = '\n        <script src="%s"></script>'
-        script_template2 = '\n        <script src="%s" charset="%s"></script>'
-        footer = """
-        <script src="../kaleido_scopes.js"></script>
-    </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
-</html>
-"""
-        for script in page_scripts:
-            if isinstance(script, str):
-                page += script_template % script
-            else:
-                page += script_template2 % script
-        page += footer
-        _logger.debug(page)
-        with (self.tmp_dir.path / "index.html").open("w") as f:
-            f.write(page)
-        return (self.tmp_dir.path / "index.html").as_uri()
-
     def __init__(self, *args, **kwargs):  # noqa: D417 no args/kwargs in description
         """
         Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
@@ -480,13 +461,18 @@ class Kaleido(choreo.Browser):
         Note: Chrome will throttle background tabs and windows, so non-headless
         multi-process configurations don't work well.
 
+        For argument `page`, if it is a string, it must be passed as a fully-qualified
+        URI, like `file://` or `https://`.
+        If it is a `Path`, `Path`'s `as_uri()` will be called.
+        If it is a string or path, its expected to be an HTML file, one will not
+        be generated.
+
         Args:
             n: the number of separate processes (windows, not seen) to use.
             timeout: limit on any single render.
             width: width of window (headless only)
             height: height of window (headless only)
-            page_scripts: a list of urls when building a plotly page instead
-                          of the defaults.
+            page: This can be a `kaleido.PageGenerator`, a `pathlib.Path`, or a string.
 
         """
         self._background_render_tasks = set()
@@ -494,11 +480,19 @@ class Kaleido(choreo.Browser):
         self._tabs_ready = asyncio.Queue(maxsize=0)
         self._tmp_dir = None
 
-        page_scripts = kwargs.pop("page_scripts", None)
-        if page_scripts:
-            self._index = self._generate_index(page_scripts)
+        page = kwargs.pop("page_generator", None)
+
+        if page and isinstance(page, str) and Path(page).is_file():
+            self._index = page
+        elif page and hasattr(page, "is_file") and page.is_file():
+            self._index = page.as_uri()
         else:
-            self._index = _PAGE_PATH
+            self.tmp_dir = TmpDirectory(path=Path(__file__).resolve().parent / "vendor")
+            index = self.tmp_dir.path / "index.html"
+            self._index = index.as_uri()
+            if not page:
+                page = PageGenerator()
+            page.generate_index(index)
         self._timeout = kwargs.pop("timeout", 60)
         self._n = kwargs.pop("n", 1)
         self._height = kwargs.pop("height", None)
@@ -757,7 +751,7 @@ class Kaleido(choreo.Browser):
         finally:
             self._main_tasks.remove(main_task)
 
-    async def write_fig_generate_all(  # noqa: C901 too complex
+    async def write_fig_from_object(  # noqa: C901 too complex
         self,
         generator,
         *,

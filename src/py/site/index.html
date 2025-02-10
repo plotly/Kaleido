@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
     
     
       
@@ -376,39 +376,42 @@
 
 
 <h1 id="kaleido">Kaleido</h1>
-<p>Kaleido is a cross-platform library for generating static images for <a href="https://plotly.com/">Plotly</a>'s visualization library.
-After installing it, you can use <code>fig.write_image("filename.png")</code> to save a plot to a file.</p>
+<p>Kaleido is a cross-platform library for generating static images for <a href="https://plotly.com/">Plotly</a>'s
+visualization library. After installing it, you can use <code>fig.write_image("filename.png")</code>
+to save a plot to a file.</p>
 <div align="center">
   <a href="https://dash.plotly.com/project-maintenance">
-    <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png" width="400px" alt="Maintained by Plotly">
+    <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png"
+    width="400px" alt="Maintained by Plotly">
   </a>
 </div>
 
 <h2 id="how-it-works">How It Works</h2>
 <p>The original version of kaleido included a custom build of the Chrome web browser,
 which made it very large (hundreds of megabytes) and proved very difficult to maintain.
-In contrast,
-this version depends on <a href="https://pypi.org/project/choreographer/">choreographer</a>,
+In contrast, this version depends on <a href="https://pypi.org/project/choreographer/">choreographer</a>,
 a lightweight library that enables remote control of browsers from Python.
-When you ask kaleido to create an image,
-it uses choreographer to run a headless instance of Chrome to render and save your figure.
-Please see choreographer's documentation for details.</p>
+When you ask kaleido to create an image, it uses choreographer to run a headless
+instance of Chrome to render and save your figure. Please see choreographer's
+ocumentation for details.</p>
 <blockquote>
-<p>The new version of kaleido is a work on progress; we would be grateful for help testing it and improving it.
+<p>The new version of kaleido is a work on progress;
+we would be grateful for help testing it and improving it.
 If you find a bug, please report it in <a href="https://github.com/plotly/Kaleido">our GitHub repository</a>,
 and please include a minimal reproducible example if you can.</p>
 <p>It would also be very helpful to run the script <code>src/py/tests/manual.py</code>
 and attach its zipped output to your bug report.
-This will give us detailed information about the precise versions of software you are using
-and the platform you are running on,
+This will give us detailed information about the precise versions of software you
+are using and the platform you are running on,
 which will help us track down problems more quickly.</p>
 </blockquote>
 <h2 id="installation">Installation</h2>
 <p>You can install kaleido from <a href="https://pypi.org/">PyPI</a> using pip:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$ pip install kaleido
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip install kaleido
 </span></code></pre></div>
 <h2 id="use">Use</h2>
-<p>Versions 4.9 and above of the Plotly Python library will automatically use kaleido for static image export when kaleido is installed.
+<p>Versions 4.9 and above of the Plotly Python library will automatically use kaleido
+for static image export when kaleido is installed.
 For example:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">px</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">iris</span><span class="p">(),</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;sepal_length&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;sepal_width&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
@@ -464,7 +467,7 @@ For example:</p>
     <script id="__config" type="application/json">{"base": ".", "features": ["navigation.indexes"], "search": "assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="assets/javascripts/bundle.f13b1293.min.js"></script>
+      <script src="assets/javascripts/bundle.f1b6f286.min.js"></script>
       
     
   </body>

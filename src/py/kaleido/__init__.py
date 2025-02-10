@@ -6,14 +6,16 @@ Please see the README.md for more information and a quickstart.
 
 from choreographer.cli import get_chrome, get_chrome_sync
 
+from ._page_generator import PageGenerator
 from .kaleido import Kaleido
 
 __all__ = [
     "Kaleido",
+    "PageGenerator",
     "get_chrome",
     "get_chrome_sync",
     "write_fig",
-    "write_fig_generate_all",
+    "write_fig_from_object",
 ]
 
 
@@ -49,7 +51,7 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
         )
 
 
-async def write_fig_generate_all(
+async def write_fig_from_object(
     generator,
     *,
     error_log=None,
@@ -59,16 +61,16 @@ async def write_fig_generate_all(
     """
     Write a plotly figure(s) to a file.
 
-    A convenience wrapper for `Kaleido.write_fig_generate_all()` which starts a
-    `Kaleido` and executes the `write_fig_generate_all()`
+    A convenience wrapper for `Kaleido.write_fig_from_object()` which starts a
+    `Kaleido` and executes the `write_fig_from_object()`
     It takes one additional argument, `n`, which can be used to set the number
     of processes.
 
-    See documentation for `Kaleido.write_fig_generate_all()`.
+    See documentation for `Kaleido.write_fig_from_object()`.
 
     """
     async with Kaleido(n=n) as k:
-        await k.write_fig_generate_all(
+        await k.write_fig_from_object(
             generator,
             error_log=error_log,
             profiler=profiler,

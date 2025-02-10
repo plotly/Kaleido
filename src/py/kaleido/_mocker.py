@@ -21,11 +21,6 @@ test_dir = Path(__file__).resolve().parent.parent / "integration_tests"
 in_dir = test_dir / "mocks"
 out_dir = test_dir / "renders"
 
-scripts = [
-    ("https://cdn.plot.ly/plotly-2.35.2.js", "utf-8"),
-    "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js",
-]
-
 
 def _get_jsons_in_paths(path: str | Path) -> list[Path]:
     # Work with Paths and directories
@@ -181,11 +176,10 @@ async def _main(error_log=None, profiler=None):
 
     async with kaleido.Kaleido(
         n=args.n,
-        page_scripts=scripts,
         headless=args.headless,
         timeout=args.timeout,
     ) as k:
-        await k.write_fig_generate_all(
+        await k.write_fig_from_object(
             _load_figures_from_paths(paths),
             error_log=error_log,
             profiler=profiler,
