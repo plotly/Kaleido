@@ -203,11 +203,12 @@ def build_mocks():
             )
 
         elapsed = time.perf_counter() - start
+        with_error_log = error_log is not None
         results = {
-            "error_log": [str(log) for log in error_log] if error_log else None,
+            "error_log": [str(log) for log in error_log] if with_error_log else None,
             "profiles": profiler,
             "total_time": f"Time taken: {elapsed:.6f} seconds",
-            "total_errors": len(error_log) if error_log else "untracked",
+            "total_errors": len(error_log) if with_error_log else "untracked",
         }
         pp(results)
         if error_log:
