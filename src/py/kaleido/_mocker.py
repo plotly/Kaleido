@@ -28,7 +28,7 @@ def _get_jsons_in_paths(path: str | Path) -> list[Path]:
 
     if path.is_dir():
         _logger.info(f"Input is path {path}")
-        return path.glob("*.json")
+        return list(path.glob("*.json"))
     elif path.is_file():
         _logger.info(f"Input is file {path}")
         return [path]
