@@ -34,6 +34,12 @@ _logger = logistro.getLogger(__name__)
 _stepper = False
 
 
+def _to_thread(func, *args, **kwargs):
+    _loop = asyncio.get_running_loop()
+    fn = partial(func, *args, **kwargs)
+    _loop.run_in_executor(None, fn)
+
+
 # this is kinda public but undocumented
 def set_stepper():
     """
@@ -370,7 +376,7 @@ class _KaleidoTab:
                 file.write(binary)
 
         _logger.info(f"Starting write of {full_path.name}")
-        await asyncio.to_thread(write_image, img)
+        _to_thread(write_image, img)
         _logger.info(f"Wrote {full_path.name}")
         if profiler is not None:
             self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
