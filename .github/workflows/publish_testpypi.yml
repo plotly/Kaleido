@@ -70,13 +70,16 @@ jobs:
         timeout-minutes: 8
 
   testpypi-publish:
+    defaults:
+      run:
+        working-directory: ./src/py/
     name: Upload release to TestPyPI
     needs: super-test
     if: always() && !cancelled() && !failure()
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/choreographer
+      url: https://test.pypi.org/p/kaleido
     # Signs this workflow so pypi trusts it
     permissions:
       id-token: write
