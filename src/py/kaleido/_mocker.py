@@ -1,0 +1,219 @@
+from __future__ import annotations
+
+import argparse
+import asyncio
+import sys
+import time
+import warnings
+from pathlib import Path
+from pprint import pp
+from random import sample
+
+import logistro
+import orjson
+
+import kaleido
+
+_logger = logistro.getLogger(__name__)
+
+# Extract jsons of mocks
+test_dir = Path(__file__).resolve().parent.parent / "integration_tests"
+in_dir = test_dir / "mocks"
+out_dir = test_dir / "renders"
+
+
+def _get_jsons_in_paths(path: str | Path) -> list[Path]:
+    # Work with Paths and directories
+    path = Path(path) if isinstance(path, str) else path
+
+    if path.is_dir():
+        return [path / a for a in path.glob("*.json")]
+    else:
+        return [path]
+
+
+def _load_figures_from_paths(paths: list[Path]):
+    # Set json
+    for path in paths:
+        if path.is_file():
+            with path.open() as file:
+                figure = orjson.loads(file.read())
+                _logger.info(f"Yielding {path.stem}")
+                yield {
+                    "fig": figure,
+                    "path": args.output / f"{path.stem}.{args.format}",
+                }
+        else:
+            raise RuntimeError(f"Path {path} is not a file.")
+
+
+# Set the arguments
+description = """kaleido_mocker will load up json files of plotly figs and export them.
+
+If you set multiple process, -n, non-headless mode won't function well because
+chrome will actually throttle tabs or windows/visibile- unless that tab/window
+is headless.
+
+The export of the program is a json object containing information about the execution.
+"""
+
+if "--headless" in sys.argv and "--no-headless" in sys.argv:
+    raise ValueError(
+        "Choose either '--headless' or '--no-headless'.",
+    )
+
+parser = argparse.ArgumentParser(
+    add_help=True,
+    parents=[logistro.parser],
+    conflict_handler="resolve",
+    description=description,
+)
+
+parser.add_argument(
+    "--logistro-level",
+    default="INFO",
+    dest="log",
+    help="Set the logging level (default INFO)",
+)
+
+parser.add_argument("--n", type=int, default=4, help="Number of tabs, default 4")
+
+parser.add_argument(
+    "--input",
+    type=str,
+    default=in_dir,
+    help="Directory of mock file/s, default tests/mocks",
+)
+
+parser.add_argument(
+    "--output",
+    type=str,
+    default=out_dir,
+    help="Directory of mock file/s, default tests/renders",
+)
+
+parser.add_argument(
+    "--format",
+    type=str,
+    default="png",
+    help="png (default), pdf, jpg, webp, svg, json",
+)
+
+parser.add_argument(
+    "--timeout",
+    type=int,
+    default=60,
+    help="Set timeout in seconds for any 1 mock (default 60 seconds)",
+)
+
+parser.add_argument(
+    "--headless",
+    action="store_true",
+    default=True,
+    help="Set headless as True (default)",
+)
+
+parser.add_argument(
+    "--no-headless",
+    action="store_false",
+    dest="headless",
+    help="Set headless as False",
+)
+
+parser.add_argument(
+    "--stepper",
+    action="store_true",
+    default=False,
+    dest="stepper",
+    help="Stepper sets n to 1, headless to False, no timeout "
+    "and asks for confirmation before printing.",
+)
+
+parser.add_argument(
+    "--random",
+    type=int,
+    default=0,
+    help="Will select N random jsons- or if 0 (default), all.",
+)
+
+parser.add_argument(
+    "--fail-fast",
+    action="store_true",
+    default=False,
+    help="Throw first error encountered and stop execution.",
+)
+
+args = parser.parse_args()
+
+if not Path(args.output).is_dir():
+    raise ValueError("Specified output must be existing directory.")
+
+
+# Function to process the images
+async def _main(error_log=None, profiler=None):
+    paths = _get_jsons_in_paths(args.input)
+    if args.random:
+        if args.random > len(paths):
+            raise ValueError(
+                f"Input discover {len(paths)} paths, but a sampling of"
+                f"{args.random} was asked for.",
+            )
+        paths = sample(paths, args.random)
+    if args.stepper:
+        _logger.info("Setting stepper.")
+        args.n = 1
+        args.headless = False
+        args.timeout = 0
+        kaleido.kaleido.set_stepper()
+        if args.format == "svg":
+            warnings.warn(
+                "Stepper won't render svgs. It's feasible, "
+                "but the adaption is just slightly more involved.",
+                stacklevel=1,
+            )
+            await asyncio.sleep(3)
+        # sets a global in kaleido, gross huh
+
+    async with kaleido.Kaleido(
+        n=args.n,
+        headless=args.headless,
+        timeout=args.timeout,
+    ) as k:
+        await k.write_fig_from_object(
+            _load_figures_from_paths(paths),
+            error_log=error_log,
+            profiler=profiler,
+        )
+
+
+def build_mocks():
+    start = time.perf_counter()
+    try:
+        error_log = [] if not args.fail_fast else None
+        profiler = {}
+        asyncio.run(_main(error_log, profiler))
+    finally:
+        from operator import itemgetter
+
+        for tab, tab_profile in profiler.items():
+            profiler[tab] = sorted(
+                tab_profile,
+                key=itemgetter("duration"),
+                reverse=True,
+            )
+
+        elapsed = time.perf_counter() - start
+        with_error_log = error_log is not None
+        results = {
+            "error_log": [str(log) for log in error_log] if with_error_log else None,
+            "profiles": profiler,
+            "total_time": f"Time taken: {elapsed:.6f} seconds",
+            "total_errors": len(error_log) if with_error_log else "untracked",
+        }
+        pp(results)
+        if error_log:
+            sys.exit(1)
+
+
+if __name__ == "__main__":
+    build_mocks()
