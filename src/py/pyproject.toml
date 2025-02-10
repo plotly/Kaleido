@@ -56,19 +56,10 @@ dev = [
 #    "mkdocs-material>=9.5.49",
 #]
 
-[[tool.uv.index]]
-name = "pypi"
-url = "https://pypi.org/simple/"
-
-[[tool.uv.index]]
-name = "test.pypi"
-url = "https://test.pypi.org/simple/"
-
-
 [tool.uv.sources]
-mkquixote = { path = "../../../mkquixote", editable = true }
-choreographer = { path = "../../../devtools_protocol", editable = true }
-logistro = { path = "../../../logistro", editable = true }
+#mkquixote = { path = "../../../mkquixote", editable = true }
+#choreographer = { path = "../../../devtools_protocol", editable = true }
+#logistro = { path = "../../../logistro", editable = true }
 
 [tool.ruff.lint]
 select = ["ALL"]
