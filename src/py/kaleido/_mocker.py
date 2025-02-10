@@ -27,9 +27,13 @@ def _get_jsons_in_paths(path: str | Path) -> list[Path]:
     path = Path(path) if isinstance(path, str) else path
 
     if path.is_dir():
-        return [path / a for a in path.glob("*.json")]
-    else:
+        _logger.info(f"Input is path {path}")
+        return path.glob("*.json")
+    elif path.is_file():
+        _logger.info(f"Input is file {path}")
         return [path]
+    else:
+        raise TypeError("--input must be file or directory")
 
 
 def _load_figures_from_paths(paths: list[Path]):
