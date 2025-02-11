@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import multiprocessing
 import sys
 import time
 import warnings
@@ -15,6 +16,8 @@ import orjson
 import kaleido
 
 _logger = logistro.getLogger(__name__)
+
+cpus = multiprocessing.cpu_count()
 
 # Extract jsons of mocks
 test_dir = Path(__file__).resolve().parent.parent / "integration_tests"
@@ -80,7 +83,12 @@ parser.add_argument(
     help="Set the logging level (default INFO)",
 )
 
-parser.add_argument("--n", type=int, default=4, help="Number of tabs, default 4")
+parser.add_argument(
+    "--n",
+    type=int,
+    default=cpus,
+    help="Number of tabs, defaults to # of cpus",
+)
 
 parser.add_argument(
     "--input",
