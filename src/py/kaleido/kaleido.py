@@ -500,7 +500,7 @@ class Kaleido(choreo.Browser):
                 page = PageGenerator()
             page.generate_index(index)
         self._timeout = kwargs.pop("timeout", 90)
-        self._logger.debug(f"Timeout: {self._timeout}")
+        _logger.debug(f"Timeout: {self._timeout}")
         self._n = kwargs.pop("n", 1)
         self._height = kwargs.pop("height", None)
         self._width = kwargs.pop("width", None)
