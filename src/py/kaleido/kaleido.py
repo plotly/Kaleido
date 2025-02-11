@@ -475,7 +475,7 @@ class Kaleido(choreo.Browser):
 
         Args:
             n: the number of separate processes (windows, not seen) to use.
-            timeout: limit on any single render.
+            timeout: limit on any single render (default 90 seconds).
             width: width of window (headless only)
             height: height of window (headless only)
             page: This can be a `kaleido.PageGenerator`, a `pathlib.Path`, or a string.
@@ -499,7 +499,7 @@ class Kaleido(choreo.Browser):
             if not page:
                 page = PageGenerator()
             page.generate_index(index)
-        self._timeout = kwargs.pop("timeout", 60)
+        self._timeout = kwargs.pop("timeout", 90)
         self._n = kwargs.pop("n", 1)
         self._height = kwargs.pop("height", None)
         self._width = kwargs.pop("width", None)
