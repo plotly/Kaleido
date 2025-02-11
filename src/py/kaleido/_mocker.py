@@ -106,7 +106,7 @@ parser.add_argument(
 parser.add_argument(
     "--timeout",
     type=int,
-    default=60,
+    default=90,
     help="Set timeout in seconds for any 1 mock (default 60 seconds)",
 )
 
