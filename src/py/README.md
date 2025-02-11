@@ -1,3 +1,4 @@
+# Pre-Launch Kaleido v1.0.0
 
 <div align="center">
   <a href="https://dash.plotly.com/project-maintenance">
@@ -6,11 +7,11 @@
   </a>
 </div>
 
-# Pre-Launch Kaleido v1.0.0
-
 Kaleido allows you to convert plotly figures to images.
 
-`pip install kaleido`
+```
+$ pip install kaleido # use --pre for release candidates
+```
 
 Right now, Kaledio v1.0.0 is available as a release candidate:
 
@@ -41,31 +42,30 @@ await kaleido.get_chrome()
 ```python
 import kaleido
 
-# fig is a plotly figure or an iterable of plotly figures
+# fig is a plotly figure(s)
 
-# Those are the defaults! 4 processes, 90 seconds.
+# 4 processes, 90 seconds, "png" are defaults
 async with kaleido.Kaleido(n=4, timeout=90) as k:
-  await k.write_fig(fig, path="./", opts={"format":"jpg"}) # default format is `png`
+  await k.write_fig(fig, path="./", opts={"format":"jpg"})
 
 # Kaleido arguments:
-# - n: how many processors to use
-# - timeout: Set a timeout on any single image write
-# - page: Customize the version of mathjax/plotly used
+# - n:       Set number of processors to use.
+# - timeout: Set a timeout on any single image write.
+# - page:    Customize the version of mathjax/plotly used.
 
-# Kaleido.write_fig arguments:
-# - fig: a single plotly figure or an iterable
-# - path: A directory (names will be auto-generated based on title) or a single file
-# - opts: a dictionary with image options:
-#         {"scale":, "format":, "width":, "height":}
+# `Kaleido.write_fig` arguments:
+# - fig:       A single plotly figure or an iterable.
+# - path:      A directory (names based on fig title) or a single file.
+# - opts:      A dictionary with image options:
+#              {"scale":..., "format":..., "width":..., "height":...}
 # - error_log: If you pass a list here, image-generation errors will be appended
 #              to the list and generation continues. If left as None, the first error
 #              will cause failure.
 
-# You can also use Kaleido.write_fig_from_object:
+# Or use `Kaleido.write_fig_from_object`:
   await k.write_fig_from_object(fig_objects, error_log)
-
-# where fig_objects is an iterable of dictionaries that have
-# {"fig":, "path":, "opts":} keys corresponding to above.
+# where `fig_objects` is an iterable of dictionaries that have
+# {"fig":, "path":, "opts":} keys corresponding `write_fig`'s arguments.
 ```
 
 There are shortcut functions if just want dont want to create a `Kaleido()`.
@@ -74,15 +74,15 @@ There are shortcut functions if just want dont want to create a `Kaleido()`.
 import asyncio
 import kaleido
 asyncio.run(
-            kaleido.write_fig(
-                              fig,
-                              path="./",
-                              n=4
-                              )
-            )
+          kaleido.write_fig(
+                    fig,
+                    path="./",
+                    n=4
+          )
+)
 ```
 
-However, if you want to set timeout or custom page, you must use a `Kaleido()`.
+If you want to set timeout or custom page, use a `Kaleido()`.
 
 ## PageGenerators
 
