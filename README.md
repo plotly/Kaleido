@@ -1,8 +1,20 @@
-# Launch Kaleido v1.0.0
+
+<div align="center">
+  <a href="https://dash.plotly.com/project-maintenance">
+    <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png"
+    width="400px" alt="Maintained by Plotly">
+  </a>
+</div>
+
+# Pre-Launch Kaleido v1.0.0
+
+Kaleido allows you to convert plotly figures to images.
+
+`pip install kaleido`
 
 Right now, Kaledio v1.0.0 is available as a release candidate:
 
-* download `v1.0.0rc1` explicitly
+* download `v1.0.0rc2` explicitly **or**
 * enable whatever installer you use (`pip --pre`?) to use release candidates
 
 Kaleido's strategy has changed: `chrome` is no longer included. On the other hand,
@@ -31,82 +43,62 @@ import kaleido
 
 # fig is a plotly figure or an iterable of plotly figures
 
-async with kaleido.Kaleido(n=4, timeout=60) as k: # Those are the defaults! 4 processes, 60 seconds.
-	await k.write_fig(fig, path="./", opts={"format":"jpg"}) # default format is `png`
+# Those are the defaults! 4 processes, 90 seconds.
+async with kaleido.Kaleido(n=4, timeout=90) as k:
+  await k.write_fig(fig, path="./", opts={"format":"jpg"}) # default format is `png`
+
+# Kaleido arguments:
+# - n: how many processors to use
+# - timeout: Set a timeout on any single image write
+# - page: Customize the version of mathjax/plotly used
+
+# Kaleido.write_fig arguments:
+# - fig: a single plotly figure or an iterable
+# - path: A directory (names will be auto-generated based on title) or a single file
+# - opts: a dictionary with image options:
+#         {"scale":, "format":, "width":, "height":}
+# - error_log: If you pass a list here, image-generation errors will be appended
+#              to the list and generation continues. If left as None, the first error
+#              will cause failure.
+
+# You can also use Kaleido.write_fig_from_object:
+  await k.write_fig_from_object(fig_objects, error_log)
+
+# where fig_objects is an iterable of dictionaries that have
+# {"fig":, "path":, "opts":} keys corresponding to above.
 ```
 
-If you have to print thousands of graphs, fig can be a generator to save memory.
-It can also just be a single graph.
-
-There is a shortcut function:
+There are shortcut functions if just want dont want to create a `Kaleido()`.
 
 ```
 import asyncio
 import kaleido
-asyncio.run(kaleido.write_fig(fig, path="./", n=4))
-# this will spin the kaleido process for you with 4 processors
+asyncio.run(
+            kaleido.write_fig(
+                              fig,
+                              path="./",
+                              n=4
+                              )
+            )
 ```
 
-If you're not using async/await, wrap it all in an async function and:
-```
-asyncio.run(my_async_wrapper())
-```
+However, if you want to set timeout or custom page, you must use a `Kaleido()`.
 
-#### Older Readme Below ####
+## PageGenerators
 
-# Kaleido
-
-Kaleido is a cross-platform library for generating static images for [Plotly][plotly]'s
-visualization library. After installing it, you can use `fig.write_image("filename.png")`
-to save a plot to a file.
-
-<div align="center">
-  <a href="https://dash.plotly.com/project-maintenance">
-    <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png"
-    width="400px" alt="Maintained by Plotly">
-  </a>
-</div>
-
-## How It Works
-
-The original version of kaleido included a custom build of the Chrome web browser,
-which made it very large (hundreds of megabytes) and proved very difficult to maintain.
-In contrast, this version depends on [choreographer][choreographer],
-a lightweight library that enables remote control of browsers from Python.
-When you ask kaleido to create an image, it uses choreographer to run a headless
-instance of Chrome to render and save your figure. Please see choreographer's
-ocumentation for details.
-
-> The new version of kaleido is a work on progress;
-> we would be grateful for help testing it and improving it.
-> If you find a bug, please report it in [our GitHub repository][repo],
-> and please include a minimal reproducible example if you can.
->
-> It would also be very helpful to run the script `src/py/tests/manual.py`
-> and attach its zipped output to your bug report.
-> This will give us detailed information about the precise versions of software you
-> are using and the platform you are running on,
-> which will help us track down problems more quickly.
-
-## Installation
-
-You can install kaleido from [PyPI][pypi] using pip:
+`Kaleido(page=???)` takes a `kaleido.PageGenerator()` to customize versions.
 
 ```
-pip install kaleido
+my_page = kaleido.PageGenerator(
+                      plotly="A fully qualified link to plotly (https:// or file://)",
+                      mathjax=False # no mathjax, or another fully quality link
+                      others=["a list of other script links to include"]
+                      )
+async with kaleido.Kaleido(n=4, page=my_page) as k:
+  ...
 ```
 
-## Use
-
-Versions 4.9 and above of the Plotly Python library will automatically use kaleido
-for static image export when kaleido is installed.
-For example:
-
-```python
-import plotly.express as px
-fig = px.scatter(px.data.iris(), x="sepal_length", y="sepal_width", color="species")
-fig.write_image("figure.png", engine="kaleido")
-```
+## More info
 
 See the [Plotly static image export documentation][plotly-export] for more information.
 
