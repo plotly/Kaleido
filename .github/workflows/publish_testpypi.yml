@@ -12,7 +12,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python_v: ['3.8', '3.9', '3.10', '']
-        chrome_v: ['-1']
+        # chrome_v: ['-1']
     defaults:
       run:
         working-directory: ./src/py/
@@ -38,7 +38,7 @@ jobs:
           uv pip install dist/kaleido-$(uv
           run --no-sync --with setuptools-git-versioning
           setuptools-git-versioning)-py3-none-any.whl
-      - run: uv run --no-sync kaleido_get_chrome -v --i ${{ matrix.chrome_v }}
+      - run: uv run --no-sync kaleido_get_chrome -v # --i ${{ matrix.chrome_v }}
       - name: Diagnose
         run:  uv run --no-sync choreo_diagnose --no-run
 

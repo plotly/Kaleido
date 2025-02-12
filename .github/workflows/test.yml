@@ -28,7 +28,7 @@ jobs:
           --all-extras
 
       - name: Install google-chrome-for-testing
-        run: uv run --no-sources kaleido_get_chrome
+        run: uv run --no-sources kaleido_get_chrome -v
 
       - name: Test mocker
         run: >
