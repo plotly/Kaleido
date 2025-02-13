@@ -55,16 +55,11 @@ class PageGenerator:
 
                 plotly = (
                     (
-                        (
-                            Path(plotly.__file__).parent
-                            / "package_data"
-                            / "plotly.min.js"
-                        ).as_uri(),
-                        "utf-8",
-                    ),
+                        Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
+                    ).as_uri(),
                     "utf-8",
                 )
-                if not plotly.is_file():
+                if not Path(plotly[0]).is_file():
                     plotly = (DEFAULT_PLOTLY, "utf-8")
             except ImportError:
                 plotly = (DEFAULT_PLOTLY, "utf-8")

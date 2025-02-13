@@ -723,9 +723,9 @@ class Kaleido(choreo.Browser):
                         "full_path": full_path,
                         "topojson": topojson,
                     },
+                    error_log=error_log,
+                    profiler=profiler,
                 ),
-                error_log=error_log,
-                profiler=profiler,
             )
             t.add_done_callback(
                 partial(
