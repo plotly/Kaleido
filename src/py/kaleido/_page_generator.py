@@ -55,9 +55,13 @@ class PageGenerator:
 
                 plotly = (
                     (
-                        Path(plotly.__file__).parent / "package_data" / "plotly.min.js",
+                        (
+                            Path(plotly.__file__).parent
+                            / "package_data"
+                            / "plotly.min.js"
+                        ).as_uri(),
                         "utf-8",
-                    ).as_uri(),
+                    ),
                     "utf-8",
                 )
                 if not plotly.is_file():

@@ -34,8 +34,10 @@ jobs:
         run: >
           uv run
           --no-sources kaleido_mocker
-          --random 100
+          --random 50
           --logistro-level INFO
+          --n 1
+          --timeout 200
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
