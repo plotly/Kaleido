@@ -53,15 +53,22 @@ class PageGenerator:
             try:
                 import plotly as pltly  # type: ignore [import-not-found]
 
+                plotly_path = (
+                    Path(pltly.__file__).parent / "package_data" / "plotly.min.js"
+                )
                 plotly = (
-                    (
-                        Path(pltly.__file__).parent / "package_data" / "plotly.min.js"
-                    ).as_uri(),
+                    plotly_path.as_uri(),
                     "utf-8",
                 )
-                if not Path(plotly[0]).is_file():
+                if not plotly_path.is_file():
+                    _logger.warning(
+                        f"Found plotly but path to js is wrong? {plotly[0]}",
+                    )
                     plotly = (DEFAULT_PLOTLY, "utf-8")
+                else:
+                    plotly[0]
             except ImportError:
+                _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
         elif isinstance(plotly, str):
             plotly = (plotly, "utf-8")
