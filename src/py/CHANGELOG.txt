@@ -1,0 +1,3 @@
+v1.0.0rc5
+- Fix bug by which plotly's internal JS was ignored
+- Adds testing for page generators
