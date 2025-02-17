@@ -51,11 +51,11 @@ class PageGenerator:
         self._scripts = []
         if not plotly:
             try:
-                import plotly  # type: ignore [import-not-found]
+                import plotly as pltly  # type: ignore [import-not-found]
 
                 plotly = (
                     (
-                        Path(plotly.__file__).parent / "package_data" / "plotly.min.js"
+                        Path(pltly.__file__).parent / "package_data" / "plotly.min.js"
                     ).as_uri(),
                     "utf-8",
                 )

@@ -200,10 +200,11 @@ class _KaleidoTab:
         _logger.debug(f"Sent javascript got result: {result}")
         _check_error(result)
 
-    def _finish_profile(self, profile, error=None, size_mb=None):
+    def _finish_profile(self, profile, state, error=None, size_mb=None):
         _logger.debug("Finishing profile")
         profile["duration"] = float(f"{time.perf_counter() - profile['start']:.6f}")
         del profile["start"]
+        profile["state"] = state
         if self.javascript_log:
             profile["js_console"] = self.javascript_log
         if error:
@@ -243,6 +244,7 @@ class _KaleidoTab:
             profile = {
                 "name": full_path.name,
                 "start": time.perf_counter(),
+                "state": "INIT",
             }
         _logger.info(f"Value of stepper: {self._stepper}")
         tab = self.tab
@@ -272,18 +274,20 @@ class _KaleidoTab:
         }
 
         _logger.info(f"Sending big command for {full_path.name}.")
+        profile["state"] = "SENDING"
         result = await tab.send_command("Runtime.callFunctionOn", params=params)
+        profile["state"] = "SENT"
         _logger.info(f"Sent big command for {full_path.name}.")
         e = _check_error_ret(result)
         if e:
             if profiler is not None:
-                self._finish_profile(profile, e)
+                self._finish_profile(profile, "ERROR", e)
                 profiler[tab.target_id].append(profile)
             if error_log is not None:
                 error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
                 _logger.error(f"Failed {full_path.name}", exc_info=e)
             else:
-                _logger.erroor(f"Raising error on {full_path.name}")
+                _logger.error(f"Raising error on {full_path.name}")
                 raise e
         _logger.debug2(f"Result of function call: {result}")
         if self._stepper:
@@ -295,7 +299,7 @@ class _KaleidoTab:
         img = await self._img_from_response(result)
         if isinstance(img, BaseException):
             if profiler is not None:
-                self._finish_profile(profile, img)
+                self._finish_profile(profile, "ERROR", img)
                 profiler[tab.target_id].append(profile)
             if error_log is not None:
                 error_log.append(
@@ -314,7 +318,12 @@ class _KaleidoTab:
         await to_thread(write_image, img)
         _logger.info(f"Wrote {full_path.name}")
         if profiler is not None:
-            self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
+            self._finish_profile(
+                profile,
+                "WROTE",
+                None,
+                full_path.stat().st_size / 1000000,
+            )
             profiler[tab.target_id].append(profile)
 
     async def _img_from_response(self, response):
