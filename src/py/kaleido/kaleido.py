@@ -264,14 +264,32 @@ class Kaleido(choreo.Browser):
     async def _render_task(self, tab, args, error_log=None, profiler=None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         if self._timeout:
-            await asyncio.wait_for(
-                tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
-                    **args,
-                    error_log=error_log,
-                    profiler=profiler,
-                ),
-                self._timeout,
-            )
+            try:
+                await asyncio.wait_for(
+                    tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
+                        **args,
+                        error_log=error_log,
+                        profiler=profiler,
+                    ),
+                    self._timeout,
+                )
+            except BaseException as e:
+                if error_log:
+                    error_log.append(
+                        ErrorEntry(
+                            args["full_path"].name,
+                            e,
+                            tab.javascript_log
+                            if hasattr(
+                                tab,
+                                "javascript_log",
+                            )
+                            else [],
+                        ),
+                    )
+                else:
+                    raise
+
         else:
             await tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
                 **args,
