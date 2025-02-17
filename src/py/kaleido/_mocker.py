@@ -176,7 +176,6 @@ async def _main(error_log=None, profiler=None):
         args.n = 1
         args.headless = False
         args.timeout = 0
-        kaleido.kaleido.set_stepper()
         if args.format == "svg":
             warnings.warn(
                 "Stepper won't render svgs. It's feasible, "
@@ -190,6 +189,7 @@ async def _main(error_log=None, profiler=None):
         n=args.n,
         headless=args.headless,
         timeout=args.timeout,
+        stepper=args.stepper,
     ) as k:
         await k.write_fig_from_object(
             _load_figures_from_paths(paths),
