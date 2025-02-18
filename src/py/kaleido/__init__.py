@@ -12,6 +12,7 @@ from .kaleido import Kaleido
 __all__ = [
     "Kaleido",
     "PageGenerator",
+    "calc_fig",
     "get_chrome",
     "get_chrome_sync",
     "write_fig",
