@@ -3,104 +3,22 @@
 from __future__ import annotations
 
 import asyncio
-import base64
-import json
-import time
-import traceback
 import warnings
 from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import choreographer as choreo
 import logistro
-from choreographer.errors import ChromeNotFoundError, DevtoolsProtocolError
+from choreographer.errors import ChromeNotFoundError
 from choreographer.utils import TmpDirectory
 
-from ._page_generator import PageGenerator
-
-if TYPE_CHECKING:
-    from typing import Any
-
 from ._fig_tools import build_fig_spec
-
-_TEXT_FORMATS = ("svg", "json")  # eps
+from ._kaleido_tab import _KaleidoTab
+from ._page_generator import PageGenerator
+from ._utils import ErrorEntry
 
 _logger = logistro.getLogger(__name__)
-
-# This annoying little global can be used to help debugging
-# if set to True, will ask for user confirmation between each render
-_stepper = False
-
-
-async def _to_thread(func, *args, **kwargs):
-    _loop = asyncio.get_running_loop()
-    fn = partial(func, *args, **kwargs)
-    await _loop.run_in_executor(None, fn)
-
-
-# this is kinda public but undocumented
-def set_stepper():
-    """
-    Cause kaleido require keypress between rendering and exporting graphs.
-
-    If it is used with n>1, behavior is undefined.
-    """
-    global _stepper  # noqa: PLW0603
-    _stepper = True
-
-
-class ErrorEntry:
-    """A simple object to record errors and context."""
-
-    def __init__(self, name, error, javascript_log):
-        """
-        Construct an error entry.
-
-        Args:
-            name: the name of the image with the error
-            error: the error object (from class BaseException)
-            javascript_log: an array of entries from the javascript console
-
-        """
-        self.name = name
-        self.error = error
-        self.javascript_log = javascript_log
-
-    def __str__(self):
-        """Display the error object in a concise way."""
-        ret = f"{self.name}:\n"
-        e = self.error
-        ret += " ".join(traceback.format_exception(type(e), e, e.__traceback__))
-        ret += " javascript Log:\n"
-        ret += "\n ".join(self.javascript_log)
-        return ret
-
-
-class KaleidoError(Exception):
-    """An error to interpret errors from Kaleido's JS side."""
-
-    def __init__(self, code, message):
-        """
-        Construct an error object.
-
-        Args:
-            code: the number code of the error.
-            message: the message of the error.
-
-        """
-        super().__init__(message)
-        self._code = code
-        self._message = message
-
-    def __str__(self):
-        """Display the KaleidoError nicely."""
-        return f"Error {self._code}: {self._message}"
-
-
-class JavascriptError(RuntimeError):  # TODO(A): process better # noqa: TD003, FIX002
-    """Used to report errors from javascript."""
 
 
 def _make_printer(name):
@@ -110,310 +28,6 @@ def _make_printer(name):
         _logger.debug2(f"{name}:{response}")
 
     return print_all
-
-
-def _make_console_logger(name, log):
-    """Create printer specifically for console events. Helper function."""
-
-    async def console_printer(event):
-        _logger.debug2(f"{name}:{event}")  # TODO(A): parse # noqa: TD003, FIX002
-        log.append(str(event))
-
-    return console_printer
-
-
-def _check_error_ret(result):  # Utility
-    """Check browser response for errors. Helper function."""
-    if "error" in result:
-        return DevtoolsProtocolError(result)
-    if result.get("result", {}).get("result", {}).get("subtype", None) == "error":
-        return JavascriptError(str(result.get("result")))
-    return None
-
-
-def _check_error(result):
-    e = _check_error_ret(result)
-    if e:
-        raise e
-
-
-# Add note about composition/inheritance
-class _KaleidoTab:
-    """
-    A Kaleido tab is a wrapped choreographer tab providing the functions we need.
-
-    The choreographer tab can be access through the `self.tab` attribute.
-    """
-
-    tab: choreo.Tab
-    """The underlying choreographer tab."""
-
-    javascript_log: list[Any]
-    """A list of console outputs from the tab."""
-
-    def __init__(self, tab):
-        """
-        Create a new _KaleidoTab.
-
-        Args:
-            tab: the choreographer tab to wrap.
-
-        """
-        self.tab = tab
-        self.javascript_log = []
-
-    def _regenerate_javascript_console(self):
-        tab = self.tab
-        self.javascript_log = []
-        _logger.debug2("Subscribing to all console prints for tab {tab}.")
-        tab.unsubscribe("Runtime.consoleAPICalled")
-        tab.subscribe(
-            "Runtime.consoleAPICalled",
-            _make_console_logger("tab js console", self.javascript_log),
-        )
-
-    async def navigate(self, url: str | Path = ""):
-        """
-        Navigate to the kaleidofier script. This is effectively the real initialization.
-
-        Args:
-            url: Override the location of the kaleidofier script if necessary.
-
-        """
-        tab = self.tab
-        javascript_ready = tab.subscribe_once("Runtime.executionContextCreated")
-        while javascript_ready.done():
-            _logger.debug2("Clearing an old Runtime.executionContextCreated")
-            javascript_ready = tab.subscribe_once("Runtime.executionContextCreated")
-        page_ready = tab.subscribe_once("Page.loadEventFired")
-        while page_ready.done():
-            _logger.debug2("Clearing a old Page.loadEventFired")
-            page_ready = tab.subscribe_once("Page.loadEventFired")
-
-        _logger.debug2(f"Calling Page.navigate on {tab}")
-        _check_error(await tab.send_command("Page.navigate", params={"url": url}))
-        # Must enable after navigating.
-        _logger.debug2(f"Calling Page.enable on {tab}")
-        _check_error(await tab.send_command("Page.enable"))
-        _logger.debug2(f"Calling Runtime.enable on {tab}")
-        _check_error(await tab.send_command("Runtime.enable"))
-
-        await javascript_ready
-        self._current_js_id = (
-            javascript_ready.result()
-            .get("params", {})
-            .get("context", {})
-            .get("id", None)
-        )
-        if not self._current_js_id:
-            raise RuntimeError(
-                "Refresh sequence didn't work for reload_tab_with_javascript."
-                "Result {javascript_ready.result()}.",
-            )
-        await page_ready
-        self._regenerate_javascript_console()
-
-    async def reload(self):
-        """Reload the tab, and set the javascript runtime id."""
-        tab = self.tab
-        _logger.debug(f"Reloading tab {tab} with javascript.")
-        javascript_ready = tab.subscribe_once("Runtime.executionContextCreated")
-        while javascript_ready.done():
-            _logger.debug2("Clearing an old Runtime.executionContextCreated")
-            javascript_ready = tab.subscribe_once("Runtime.executionContextCreated")
-        is_loaded = tab.subscribe_once("Page.loadEventFired")
-        while is_loaded.done():
-            _logger.debug2("Clearing an old Page.loadEventFired")
-            is_loaded = tab.subscribe_once("Page.loadEventFired")
-        _logger.debug2(f"Calling Page.reload on {tab}")
-        _check_error(await tab.send_command("Page.reload"))
-        await javascript_ready
-        self._current_js_id = (
-            javascript_ready.result()
-            .get("params", {})
-            .get("context", {})
-            .get("id", None)
-        )
-        if not self._current_js_id:
-            raise RuntimeError(
-                "Refresh sequence didn't work for reload_tab_with_javascript."
-                "Result {javascript_ready.result()}.",
-            )
-        await is_loaded
-        self._regenerate_javascript_console()
-
-    async def console_print(self, message: str) -> None:
-        """
-        Print something to the javascript console.
-
-        Args:
-            message: The thing to print.
-
-        """
-        jsfn = r"function()" r"{" f"console.log('{message}')" r"}"
-        params = {
-            "functionDeclaration": jsfn,
-            "returnByValue": False,
-            "userGesture": True,
-            "awaitPromise": True,
-            "executionContextId": self._current_js_id,
-        }
-
-        # send request to run script in chromium
-        _logger.debug("Calling js function")
-        result = await self.tab.send_command("Runtime.callFunctionOn", params=params)
-        _logger.debug(f"Sent javascript got result: {result}")
-        _check_error(result)
-
-    def _finish_profile(self, profile, error=None, size_mb=None):
-        _logger.debug("Finishing profile")
-        profile["duration"] = float(f"{time.perf_counter() - profile['start']:.6f}")
-        del profile["start"]
-        if self.javascript_log:
-            profile["js_console"] = self.javascript_log
-        if error:
-            profile["error"] = error
-        if size_mb:
-            profile["megabytes"] = size_mb
-
-    async def _write_fig(  # noqa: C901, PLR0915 too much complexity, statements
-        self,
-        spec,
-        full_path,
-        *,
-        topojson=None,
-        error_log=None,
-        profiler=None,
-    ):
-        """
-        Call the plotly renderer via javascript.
-
-        Args:
-            spec: the processed plotly figure
-            full_path: the path to write the image too. if its a directory, we will try
-                to generate a name. If the path contains an extension,
-                "path/to/my_image.png", that extension will be the format used if not
-                overridden in `opts`.
-            opts: dictionary describing format, width, height, and scale of image
-            topojson: topojsons are used to customize choropleths
-            error_log: A supplied list, will be populated with `ErrorEntry`s
-                       which can be converted to strings. Note, this is for
-                       collections errors that have to do with plotly. They will
-                       not be thrown. Lower level errors (kaleido, choreographer)
-                       will still be thrown. If not passed, all errors raise.
-            profiler: a supplied dictionary to collect stats about the operation
-
-        """
-        if profiler is not None:
-            profile = {
-                "name": full_path.name,
-                "start": time.perf_counter(),
-            }
-        _logger.info(f"Value of stepper: {_stepper}")
-        tab = self.tab
-        _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
-        execution_context_id = self._current_js_id
-
-        _logger.info(f"Processing {full_path.name}")
-        # js script
-        kaleido_jsfn = (
-            r"function(spec, ...args)"
-            r"{"
-            r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
-            r"}"
-        )
-
-        # params
-        arguments = [{"value": spec}]
-        arguments.append({"value": topojson if topojson else None})
-        arguments.append({"value": _stepper})
-        params = {
-            "functionDeclaration": kaleido_jsfn,
-            "arguments": arguments,
-            "returnByValue": False,
-            "userGesture": True,
-            "awaitPromise": True,
-            "executionContextId": execution_context_id,
-        }
-
-        _logger.info(f"Sending big command for {full_path.name}.")
-        result = await tab.send_command("Runtime.callFunctionOn", params=params)
-        _logger.info(f"Sent big command for {full_path.name}.")
-        e = _check_error_ret(result)
-        if e:
-            if profiler is not None:
-                self._finish_profile(profile, e)
-                profiler[tab.target_id].append(profile)
-            if error_log is not None:
-                error_log.append(ErrorEntry(full_path.name, e, self.javascript_log))
-                _logger.error(f"Failed {full_path.name}", exc_info=e)
-            else:
-                _logger.erroor(f"Raising error on {full_path.name}")
-                raise e
-        _logger.debug2(f"Result of function call: {result}")
-        if _stepper:
-            print(f"Image {full_path.name} was sent to browser")  # noqa: T201
-            input("Press Enter to continue...")
-        if e:
-            return
-
-        img = await self._img_from_response(result)
-        if isinstance(img, BaseException):
-            if profiler is not None:
-                self._finish_profile(profile, img)
-                profiler[tab.target_id].append(profile)
-            if error_log is not None:
-                error_log.append(
-                    ErrorEntry(full_path.name, img, self.javascript_log),
-                )
-                _logger.info(f"Failed {full_path.name}")
-                return
-            else:
-                raise img
-
-        def write_image(binary):
-            with full_path.open("wb") as file:
-                file.write(binary)
-
-        _logger.info(f"Starting write of {full_path.name}")
-        await _to_thread(write_image, img)
-        _logger.info(f"Wrote {full_path.name}")
-        if profiler is not None:
-            self._finish_profile(profile, e, full_path.stat().st_size / 1000000)
-            profiler[tab.target_id].append(profile)
-
-    async def _img_from_response(self, response):
-        js_response = json.loads(response.get("result").get("result").get("value"))
-
-        if js_response["code"] != 0:
-            return KaleidoError(js_response["code"], js_response["message"])
-
-        response_format = js_response.get("format")
-        img = js_response.get("result")
-        if response_format == "pdf":
-            pdf_params = {
-                "printBackground": True,
-                "marginTop": 0.1,
-                "marginBottom": 0.1,
-                "marginLeft": 0.1,
-                "marginRight": 0.1,
-                "preferCSSPageSize": False,
-                "pageRanges": "1",
-            }
-            pdf_response = await self.tab.send_command(
-                "Page.printToPDF",
-                params=pdf_params,
-            )
-            e = _check_error_ret(pdf_response)
-            if e:
-                return e
-            img = pdf_response.get("result").get("data")
-        # Base64 decode binary types
-        if response_format not in _TEXT_FORMATS:
-            img = base64.b64decode(img)
-        else:
-            img = str.encode(img)
-        return img
 
 
 class Kaleido(choreo.Browser):
@@ -487,6 +101,20 @@ class Kaleido(choreo.Browser):
         self._tmp_dir = None
 
         page = kwargs.pop("page_generator", None)
+        self._timeout = kwargs.pop("timeout", 90)
+        self._n = kwargs.pop("n", 1)
+        self._height = kwargs.pop("height", None)
+        self._width = kwargs.pop("width", None)
+        self._stepper = kwargs.pop("stepper", False)
+        if not kwargs.get("headless", True) and (self._height or self._width):
+            warnings.warn(
+                "Height and Width can only be used if headless=True, "
+                "ignoring both sizes.",
+                stacklevel=1,
+            )
+            self._height = None
+            self._width = None
+        _logger.debug(f"Timeout: {self._timeout}")
 
         if page and isinstance(page, str) and Path(page).is_file():
             self._index = page
@@ -499,19 +127,6 @@ class Kaleido(choreo.Browser):
             if not page:
                 page = PageGenerator()
             page.generate_index(index)
-        self._timeout = kwargs.pop("timeout", 90)
-        _logger.debug(f"Timeout: {self._timeout}")
-        self._n = kwargs.pop("n", 1)
-        self._height = kwargs.pop("height", None)
-        self._width = kwargs.pop("width", None)
-        if not kwargs.get("headless", True) and (self._height or self._width):
-            warnings.warn(
-                "Height and Width can only be used if headless=True, "
-                "ignoring both sizes.",
-                stacklevel=1,
-            )
-            self._height = None
-            self._width = None
 
         try:
             super().__init__(*args, **kwargs)
@@ -536,7 +151,7 @@ class Kaleido(choreo.Browser):
 
         _logger.debug("Navigating all tabs")
 
-        kaleido_tabs = [_KaleidoTab(tab) for tab in tabs]
+        kaleido_tabs = [_KaleidoTab(tab, _stepper=self._stepper) for tab in tabs]
 
         # A little hard to read because we don't have TaskGroup in this version
         tasks = [asyncio.create_task(tab.navigate(self._index)) for tab in kaleido_tabs]
@@ -649,14 +264,32 @@ class Kaleido(choreo.Browser):
     async def _render_task(self, tab, args, error_log=None, profiler=None):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         if self._timeout:
-            await asyncio.wait_for(
-                tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
-                    **args,
-                    error_log=error_log,
-                    profiler=profiler,
-                ),
-                self._timeout,
-            )
+            try:
+                await asyncio.wait_for(
+                    tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
+                        **args,
+                        error_log=error_log,
+                        profiler=profiler,
+                    ),
+                    self._timeout,
+                )
+            except BaseException as e:
+                if error_log:
+                    error_log.append(
+                        ErrorEntry(
+                            args["full_path"].name,
+                            e,
+                            tab.javascript_log
+                            if hasattr(
+                                tab,
+                                "javascript_log",
+                            )
+                            else [],
+                        ),
+                    )
+                else:
+                    raise
+
         else:
             await tab._write_fig(  # noqa: SLF001 I don't want it documented, too complex for user
                 **args,
