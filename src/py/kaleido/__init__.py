@@ -19,6 +19,31 @@ __all__ = [
 ]
 
 
+async def calc_fig(
+    fig,
+    path=None,
+    opts=None,
+    *,
+    topojson=None,
+):
+    """
+    Return binary for plotly figure.
+
+    A convenience wrapper for `Kaleido.calc_fig()` which starts a `Kaleido` and
+    executes the `calc_fig()`.
+
+    See documentation for `Kaleido.calc_fig()`.
+
+    """
+    async with Kaleido(n=1) as k:
+        return await k.calc_fig(
+            fig,
+            path=path,
+            opts=opts,
+            topojson=topojson,
+        )
+
+
 async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     fig,
     path=None,
