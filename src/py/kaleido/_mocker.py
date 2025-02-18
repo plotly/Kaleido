@@ -186,6 +186,7 @@ async def _main(error_log=None, profiler=None):
         # sets a global in kaleido, gross huh
 
     async with kaleido.Kaleido(
+        page_generator=kaleido.PageGenerator(force_cdn=True),
         n=args.n,
         headless=args.headless,
         timeout=args.timeout,
