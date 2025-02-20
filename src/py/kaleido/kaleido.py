@@ -271,7 +271,7 @@ class Kaleido(choreo.Browser):
                         error_log=error_log,
                         profiler=profiler,
                     ),
-                    self._timeout,
+                    self._timeout,  # timeout can be None, no need for branches
                 )
             except BaseException as e:
                 if error_log:
@@ -297,6 +297,41 @@ class Kaleido(choreo.Browser):
                 profiler=profiler,
             )
         _logger.info(f"Posted task ending for {args['full_path'].name}")
+
+    async def calc_fig(
+        self,
+        fig,
+        path=None,
+        opts=None,
+        *,
+        topojson=None,
+    ):
+        """
+        Calculate the bytes for a figure.
+
+        This function does not support parallelism or multi-image processing like
+        `write_fig` does, although its arguments are a subset of those of `write_fig`.
+        This function is currently just meant to bridge the old and new API.
+        """
+        if not hasattr(fig, "to_dict") or isinstance(fig, Iterable):
+            raise TypeError("Calc fig can not process multiple images at a time.")
+        spec, full_path = build_fig_spec(fig, path, opts)
+        tab = await self._get_kaleido_tab()
+        args = {
+            "spec": spec,
+            "full_path": full_path,
+            "topojson": topojson,
+        }
+        data = None
+        timeout = self._timeout if self._timeout else None
+        data = await asyncio.wait_for(
+            tab._calc_fig(  # noqa: SLF001 I don't want it documented, too complex for user
+                **args,
+            ),
+            timeout,
+        )
+        await self._return_kaleido_tab(tab)
+        return data
 
     async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
         self,

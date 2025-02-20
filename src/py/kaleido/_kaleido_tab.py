@@ -200,7 +200,7 @@ class _KaleidoTab:
         _logger.debug(f"Sent javascript got result: {result}")
         _check_error(result)
 
-    def _finish_profile(self, profile, state, error=None, size_mb=None):
+    def _finish_profile(self, profile, state, error=None):
         _logger.debug("Finishing profile")
         profile["duration"] = float(f"{time.perf_counter() - profile['start']:.6f}")
         del profile["start"]
@@ -209,10 +209,38 @@ class _KaleidoTab:
             profile["js_console"] = self.javascript_log
         if error:
             profile["error"] = error
-        if size_mb:
-            profile["megabytes"] = size_mb
 
-    async def _write_fig(  # noqa: C901, PLR0915 too much complexity, statements
+    async def _write_fig(
+        self,
+        spec,
+        full_path,
+        *,
+        topojson=None,
+        error_log=None,
+        profiler=None,
+    ):
+        """Calculate and write figure to file. Wraps _calc_fig, and writes a file."""
+        img, profile = await self._calc_fig(
+            spec,
+            full_path,
+            topojson=topojson,
+            error_log=error_log,
+            profiler=profiler,
+        )
+
+        def write_image(binary):
+            with full_path.open("wb") as file:
+                file.write(binary)
+
+        _logger.info(f"Starting write of {full_path.name}")
+        await to_thread(write_image, img)
+        _logger.info(f"Wrote {full_path.name}")
+
+        if profile is not None:
+            profile["megabytes"] = full_path.stat().st_size / 1000000
+            profile["state"] = "WROTE"
+
+    async def _calc_fig(  # noqa: C901, complexity
         self,
         spec,
         full_path,
@@ -240,16 +268,16 @@ class _KaleidoTab:
             profiler: a supplied dictionary to collect stats about the operation
 
         """
+        tab = self.tab
+        execution_context_id = self._current_js_id
         if profiler is not None:
             profile = {
                 "name": full_path.name,
                 "start": time.perf_counter(),
                 "state": "INIT",
             }
-        _logger.info(f"Value of stepper: {self._stepper}")
-        tab = self.tab
-        _logger.debug(f"In tab {tab.target_id[:4]} write_fig for {full_path.name}.")
-        execution_context_id = self._current_js_id
+
+        _logger.debug(f"In tab {tab.target_id[:4]} calc_fig for {full_path.name}.")
 
         _logger.info(f"Processing {full_path.name}")
         # js script
@@ -294,7 +322,7 @@ class _KaleidoTab:
             print(f"Image {full_path.name} was sent to browser")  # noqa: T201
             input("Press Enter to continue...")
         if e:
-            return
+            return None, None
 
         img = await self._img_from_response(result)
         if isinstance(img, BaseException):
@@ -306,25 +334,13 @@ class _KaleidoTab:
                     ErrorEntry(full_path.name, img, self.javascript_log),
                 )
                 _logger.info(f"Failed {full_path.name}")
-                return
+                return None, None
             else:
                 raise img
-
-        def write_image(binary):
-            with full_path.open("wb") as file:
-                file.write(binary)
-
-        _logger.info(f"Starting write of {full_path.name}")
-        await to_thread(write_image, img)
-        _logger.info(f"Wrote {full_path.name}")
-        if profiler is not None:
-            self._finish_profile(
-                profile,
-                "WROTE",
-                None,
-                full_path.stat().st_size / 1000000,
-            )
+        if profile:
+            self._finish_profile(profile, "CALCULATED", None)
             profiler[tab.target_id].append(profile)
+        return img, profile
 
     async def _img_from_response(self, response):
         js_response = json.loads(response.get("result").get("result").get("value"))
