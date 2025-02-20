@@ -35,7 +35,7 @@ class PageGenerator:
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
 
-    def __init__(self, *, plotly=None, mathjax=None, others=None):
+    def __init__(self, *, plotly=None, mathjax=None, others=None, force_cdn=False):
         """
         Create a PageGenerator.
 
@@ -46,10 +46,13 @@ class PageGenerator:
             Can be set to false to turn off.
             others: a list of other script urls to include. Usually strings, but can be
             (str, str) where its (url, encoding).
+            force_cdn: (default False) Don't use plotly import, use CDN
 
         """
         self._scripts = []
-        if not plotly:
+        if force_cdn:
+            plotly = (DEFAULT_PLOTLY, "utf-8")
+        elif not plotly:
             try:
                 import plotly as pltly  # type: ignore [import-not-found]
 
