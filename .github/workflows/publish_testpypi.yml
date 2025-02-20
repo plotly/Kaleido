@@ -100,3 +100,4 @@ jobs:
         with:
           repository-url: https://test.pypi.org/legacy/.
           packages-dir: src/py/dist
+          verbose: true
