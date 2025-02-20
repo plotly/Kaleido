@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/kaleido
+      url: https://test.pypi.org/p/kaleido_test
     # Signs this workflow so pypi trusts it
     permissions:
       id-token: write

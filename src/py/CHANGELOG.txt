@@ -1,7 +1,8 @@
-v1.0.0rc6
-- All force_cdn to not use plotly install's js
+v1.0.0rc7
 - Add kaleido.calc_fig to return bytes
 - Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido
+v1.0.0rc6
+- All force_cdn to not use plotly install's js
 v1.0.0rc5
 - Fix bug by which plotly's internal JS was ignored
 - Adds testing for page generators
