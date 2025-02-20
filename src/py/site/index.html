@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.d7758b05.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.8608ea7d.min.css">
       
       
 
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#kaleido" class="md-skip">
+        <a href="#pre-launch-kaleido-v100" class="md-skip">
           Skip to content
         </a>
       
@@ -230,27 +230,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+  <a href="#quickstart" class="md-nav__link">
     <span class="md-ellipsis">
-      How It Works
+      Quickstart
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quickstart">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#but-im-not-running-a-asyncawait-loop-" class="md-nav__link">
+    <span class="md-ellipsis">
+      But I'm not running a async/await loop :-(
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pagegenerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      PageGenerators
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#full-reference" class="md-nav__link">
     <span class="md-ellipsis">
-      Installation
+      Full Reference
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#use" class="md-nav__link">
+  <a href="#more-info" class="md-nav__link">
     <span class="md-ellipsis">
-      Use
+      More info
     </span>
   </a>
   
@@ -333,27 +357,51 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
+  <a href="#quickstart" class="md-nav__link">
     <span class="md-ellipsis">
-      How It Works
+      Quickstart
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quickstart">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#but-im-not-running-a-asyncawait-loop-" class="md-nav__link">
+    <span class="md-ellipsis">
+      But I'm not running a async/await loop :-(
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pagegenerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      PageGenerators
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#installation" class="md-nav__link">
+  <a href="#full-reference" class="md-nav__link">
     <span class="md-ellipsis">
-      Installation
+      Full Reference
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#use" class="md-nav__link">
+  <a href="#more-info" class="md-nav__link">
     <span class="md-ellipsis">
-      Use
+      More info
     </span>
   </a>
   
@@ -375,10 +423,7 @@
 
 
 
-<h1 id="kaleido">Kaleido</h1>
-<p>Kaleido is a cross-platform library for generating static images for <a href="https://plotly.com/">Plotly</a>'s
-visualization library. After installing it, you can use <code>fig.write_image("filename.png")</code>
-to save a plot to a file.</p>
+<h1 id="pre-launch-kaleido-v100">Pre-Launch Kaleido v1.0.0</h1>
 <div align="center">
   <a href="https://dash.plotly.com/project-maintenance">
     <img src="https://dash.plotly.com/assets/images/maintained-by-plotly.png"
@@ -386,37 +431,56 @@ to save a plot to a file.</p>
   </a>
 </div>
 
-<h2 id="how-it-works">How It Works</h2>
-<p>The original version of kaleido included a custom build of the Chrome web browser,
-which made it very large (hundreds of megabytes) and proved very difficult to maintain.
-In contrast, this version depends on <a href="https://pypi.org/project/choreographer/">choreographer</a>,
-a lightweight library that enables remote control of browsers from Python.
-When you ask kaleido to create an image, it uses choreographer to run a headless
-instance of Chrome to render and save your figure. Please see choreographer's
-ocumentation for details.</p>
-<blockquote>
-<p>The new version of kaleido is a work on progress;
-we would be grateful for help testing it and improving it.
-If you find a bug, please report it in <a href="https://github.com/plotly/Kaleido">our GitHub repository</a>,
-and please include a minimal reproducible example if you can.</p>
-<p>It would also be very helpful to run the script <code>src/py/tests/manual.py</code>
-and attach its zipped output to your bug report.
-This will give us detailed information about the precise versions of software you
-are using and the platform you are running on,
-which will help us track down problems more quickly.</p>
-</blockquote>
-<h2 id="installation">Installation</h2>
-<p>You can install kaleido from <a href="https://pypi.org/">PyPI</a> using pip:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip install kaleido
+<p>Kaleido allows you to convert plotly figures to images.</p>
+<p>It is now <strong>much faster</strong> and <strong>memory efficient</strong>: but Google Chrome is no longer
+included.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$ pip install kaleido
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a># or
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>$ pip install --pre kaleido # for pre-release versions
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a># v1.0.0 is available as a release candidate (v1.0.0rc2).
 </span></code></pre></div>
-<h2 id="use">Use</h2>
-<p>Versions 4.9 and above of the Plotly Python library will automatically use kaleido
-for static image export when kaleido is installed.
-For example:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">plotly.express</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">px</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">fig</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">px</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">iris</span><span class="p">(),</span> <span class="n">x</span><span class="o">=</span><span class="s2">&quot;sepal_length&quot;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s2">&quot;sepal_width&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;species&quot;</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">fig</span><span class="o">.</span><span class="n">write_image</span><span class="p">(</span><span class="s2">&quot;figure.png&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;kaleido&quot;</span><span class="p">)</span>
+<p>Kaleido will try to use your own platform's <code>chrome</code>, but we recommend:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$ kaleido_get_chrome
 </span></code></pre></div>
+<p>or</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">kaleido</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">await</span> <span class="n">kaleido</span><span class="o">.</span><span class="n">get_chrome</span><span class="p">()</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="c1"># or</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># kaleido.get_chrome_sync()</span>
+</span></code></pre></div>
+<h2 id="quickstart">Quickstart</h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">kaleido</span><span class="w"> </span><span class="kn">import</span> <span class="n">Kaleido</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">async</span> <span class="k">with</span> <span class="n">kaleido</span><span class="o">.</span><span class="n">Kaleido</span><span class="p">()</span> <span class="k">as</span> <span class="n">k</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  <span class="k">await</span> <span class="n">k</span><span class="o">.</span><span class="n">write_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span><span class="s2">&quot;jpg&quot;</span><span class="p">})</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="c1"># or, there&#39;s a shortcut function:</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="k">await</span> <span class="n">kaleido</span><span class="o">.</span><span class="n">write_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span><span class="s2">&quot;jpg&quot;</span><span class="p">})</span>
+</span></code></pre></div>
+<h4 id="but-im-not-running-a-asyncawait-loop-">But I'm not running a async/await loop :-(</h4>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">kaleido</span><span class="o">.</span><span class="n">write_fig</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">,</span> <span class="n">opts</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;format&quot;</span><span class="p">:</span><span class="s2">&quot;jpg&quot;</span><span class="p">}))</span>
+</span></code></pre></div>
+<h2 id="pagegenerators">PageGenerators</h2>
+<p><code>Kaleido(page=???)</code> takes a <code>kaleido.PageGenerator()</code> to customize versions.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>custom_page = kaleido.PageGenerator(
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>                plotly  = &quot;file://my.url.to.my.plotly.js&quot;,
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>                mathjax = False,
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>                others  = [&quot;https://another.link&quot;],
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>                )
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a># mathjax can also be a link
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>async with kaleido.Kaleido(page=custom_page) as k:
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  ... # do stuff
+</span></code></pre></div>
+<h2 id="full-reference">Full Reference</h2>
+<p>Coming Soon! For now, the source code has docstrings.</p>
+<p><a href="https://github.com/plotly/Kaleido/blob/f0a26a5d75e4d1c2fd59d08d1179cadaaa693ca4/src/py/kaleido/kaleido.py#L460"><code>class Kaleido()</code></a></p>
+<p><a href="https://github.com/plotly/Kaleido/blob/f0a26a5d75e4d1c2fd59d08d1179cadaaa693ca4/src/py/kaleido/kaleido.py#L668"><code>Kaleido.write_fig()</code></a></p>
+<p><a href="https://github.com/plotly/Kaleido/blob/f0a26a5d75e4d1c2fd59d08d1179cadaaa693ca4/src/py/kaleido/kaleido.py#L761"><code>Kaleido.write_fig_from_object()</code></a></p>
+<h2 id="more-info">More info</h2>
 <p>See the <a href="https://plotly.com/python/static-image-export/">Plotly static image export documentation</a> for more information.</p>
 
 
