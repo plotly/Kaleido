@@ -26,7 +26,6 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "async-timeout>=5.0.1",
   "choreographer>=1.0.3",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
