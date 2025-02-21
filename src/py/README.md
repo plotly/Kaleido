@@ -76,7 +76,7 @@ async with kaleido.Kaleido(n=4, timeout=90) as k:
 
 There are shortcut functions if just want dont want to create a `Kaleido()`.
 
-```
+```python
 import asyncio
 import kaleido
 asyncio.run(
