@@ -52,31 +52,26 @@ await kaleido.get_chrome()
 ```python
 import kaleido
 
-# fig is a plotly figure or an iterable of plotly figures
-
-# Those are the defaults! 4 processes, 90 seconds.
 async with kaleido.Kaleido(n=4, timeout=90) as k:
-  await k.write_fig(fig, path="./", opts={"format":"jpg"}) # default format is `png`
+  # n is number of processes
+  await k.write_fig(fig, path="./", opts={"format":"jpg"})
 
-# Kaleido arguments:
-# - n: how many processors to use
-# - timeout: Set a timeout on any single image write
-# - page: Customize the version of mathjax/plotly used
+# other `kaleido.Kaleido` arguments:
+# page:  Change library version (see PageGenerators below)
 
-# Kaleido.write_fig arguments:
-# - fig: a single plotly figure or an iterable
-# - path: A directory (names will be auto-generated based on title) or a single file
-# - opts: a dictionary with image options:
-#         {"scale":, "format":, "width":, "height":}
+# `Kaleido.write_fig()` arguments:
+# - fig:       A single plotly figure or an iterable.
+# - path:      A directory (names auto-generated based on title)
+#              or a single file.
+# - opts:      A dictionary with image options:
+#              `{"scale":..., "format":..., "width":..., "height":...}`
 # - error_log: If you pass a list here, image-generation errors will be appended
-#              to the list and generation continues. If left as None, the first error
-#              will cause failure.
+#              to the list and generation continues. If left as `None`, the
+#              first error will cause failure.
 
 # You can also use Kaleido.write_fig_from_object:
   await k.write_fig_from_object(fig_objects, error_log)
-
-# where fig_objects is an iterable of dictionaries that have
-# {"fig":, "path":, "opts":} keys corresponding to above.
+# where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
 There are shortcut functions if just want dont want to create a `Kaleido()`.
@@ -85,31 +80,31 @@ There are shortcut functions if just want dont want to create a `Kaleido()`.
 import asyncio
 import kaleido
 asyncio.run(
-            kaleido.write_fig(
-                              fig,
-                              path="./",
-                              n=4
-                              )
-            )
+  kaleido.write_fig(
+    fig,
+    path="./",
+    n=4
+  )
+)
 ```
-
-However, if you want to set timeout or custom page, you must use a `Kaleido()`.
 
 ## PageGenerators
 
-`Kaleido(page=???)` takes a `kaleido.PageGenerator()` to customize versions.
-
+The `page` argument takes a `kaleido.PageGenerator()` to customize versions.
+Normally, kaleido looks for an installed plotly as uses that version. You can pass
+`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (the
+default if plotly is not installed).
 ```
 my_page = kaleido.PageGenerator(
-                      plotly="A fully qualified link to plotly (https:// or file://)",
-                      mathjax=False # no mathjax, or another fully quality link
-                      others=["a list of other script links to include"]
-                      )
-async with kaleido.Kaleido(n=4, page=my_page) as k:
-  ...
+  plotly="A fully qualified link to plotly (https:// or file://)",
+  mathjax=False # no mathjax, or another fully quality link
+  others=["a list of other script links to include"]
+)
 ```
 
 ## More info
+
+There are plenty of doc strings in the source code.
 
 See the [Plotly static image export documentation][plotly-export] for more information.
 
