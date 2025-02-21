@@ -1,4 +1,3 @@
-# Pre-Launch Kaleido v1.0.0
 
 <div align="center">
   <a href="https://dash.plotly.com/project-maintenance">
@@ -7,22 +6,34 @@
   </a>
 </div>
 
+# Pre-Launch Kaleido v1.0.0
+
+**NOTE: New api versions of Kaleido v1.0.0rc1+ are only available through github.**
+This will change once [plotly.py](https://www.github.com/plotly/plolty.py)
+finishes its integration with the new api.
+
+```bash
+$ pip install git+https://github.com/plotly/kaleido@v1.0.0rc6
+
+# or whatever the latest tag is
+
+# this syntax works with `uv add` and `uv run --with PACKAGE`
+```
+
+# Kaleido
+
 Kaleido allows you to convert plotly figures to images.
 
-It is now **much faster** and **memory efficient**: but Google Chrome is no longer
-included.
-
-```
+```bash
 $ pip install kaleido
-# or
-$ pip install --pre kaleido # for pre-release versions
-# v1.0.0 is available as a release candidate (v1.0.0rc2).
 ```
 
+Kaleido's strategy has changed: `chrome` is no longer included. On the other hand,
+it's *much* faster and supports parallel processing and memory-saving techniques.
 
-Kaleido will try to use your own platform's `chrome`, but we recommend:
+Kaleido will try to use your own platform's `chrome`, but we recommend the following:
 
-```
+```bash
 $ kaleido_get_chrome
 ```
 
@@ -39,52 +50,61 @@ await kaleido.get_chrome()
 ## Quickstart
 
 ```python
-from kaleido import Kaleido
+import kaleido
 
-async with kaleido.Kaleido() as k:
+async with kaleido.Kaleido(n=4, timeout=90) as k:
+  # n is number of processes
   await k.write_fig(fig, path="./", opts={"format":"jpg"})
 
-# or, there's a shortcut function:
+# other `kaleido.Kaleido` arguments:
+# page:  Change library version (see PageGenerators below)
 
-await kaleido.write_fig(fig, path="./", opts={"format":"jpg"})
+# `Kaleido.write_fig()` arguments:
+# - fig:       A single plotly figure or an iterable.
+# - path:      A directory (names auto-generated based on title)
+#              or a single file.
+# - opts:      A dictionary with image options:
+#              `{"scale":..., "format":..., "width":..., "height":...}`
+# - error_log: If you pass a list here, image-generation errors will be appended
+#              to the list and generation continues. If left as `None`, the
+#              first error will cause failure.
+
+# You can also use Kaleido.write_fig_from_object:
+  await k.write_fig_from_object(fig_objects, error_log)
+# where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
-#### But I'm not running a async/await loop :-(
+There are shortcut functions if just want dont want to create a `Kaleido()`.
 
 ```python
 import asyncio
-
-asyncio.run(kaleido.write_fig(fig, path="./", opts={"format":"jpg"}))
+import kaleido
+asyncio.run(
+  kaleido.write_fig(
+    fig,
+    path="./",
+    n=4
+  )
+)
 ```
 
 ## PageGenerators
 
-`Kaleido(page=???)` takes a `kaleido.PageGenerator()` to customize versions.
-
+The `page` argument takes a `kaleido.PageGenerator()` to customize versions.
+Normally, kaleido looks for an installed plotly as uses that version. You can pass
+`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (the
+default if plotly is not installed).
 ```
-custom_page = kaleido.PageGenerator(
-                plotly  = "file://my.url.to.my.plotly.js",
-                mathjax = False,
-                others  = ["https://another.link"],
-                )
-# mathjax can also be a link
-
-async with kaleido.Kaleido(page=custom_page) as k:
-  ... # do stuff
+my_page = kaleido.PageGenerator(
+  plotly="A fully qualified link to plotly (https:// or file://)",
+  mathjax=False # no mathjax, or another fully quality link
+  others=["a list of other script links to include"]
+)
 ```
-
-## Full Reference
-
-Coming Soon! For now, the source code has docstrings.
-
-[`class Kaleido()`](https://github.com/plotly/Kaleido/blob/f0a26a5d75e4d1c2fd59d08d1179cadaaa693ca4/src/py/kaleido/kaleido.py#L460)
-
-[`Kaleido.write_fig()`](https://github.com/plotly/Kaleido/blob/f0a26a5d75e4d1c2fd59d08d1179cadaaa693ca4/src/py/kaleido/kaleido.py#L668)
-
-[`Kaleido.write_fig_from_object()`](https://github.com/plotly/Kaleido/blob/f0a26a5d75e4d1c2fd59d08d1179cadaaa693ca4/src/py/kaleido/kaleido.py#L761)
-
 
 ## More info
+
+There are plenty of doc strings in the source code.
 
 See the [Plotly static image export documentation][plotly-export] for more information.
 
