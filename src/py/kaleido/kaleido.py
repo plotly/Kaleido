@@ -116,18 +116,6 @@ class Kaleido(choreo.Browser):
             self._width = None
         _logger.debug(f"Timeout: {self._timeout}")
 
-        if page and isinstance(page, str) and Path(page).is_file():
-            self._index = page
-        elif page and hasattr(page, "is_file") and page.is_file():
-            self._index = page.as_uri()
-        else:
-            self.tmp_dir = TmpDirectory(path=Path(__file__).resolve().parent / "vendor")
-            index = self.tmp_dir.path / "index.html"
-            self._index = index.as_uri()
-            if not page:
-                page = PageGenerator()
-            page.generate_index(index)
-
         try:
             super().__init__(*args, **kwargs)
         except ChromeNotFoundError:
@@ -138,6 +126,24 @@ class Kaleido(choreo.Browser):
                 "command as well as a `get_chrome()` and `get_chrome_sync()` "
                 "functions in kaleido.",
             ) from ChromeNotFoundError
+
+        if page and isinstance(page, str) and Path(page).is_file():
+            self._index = page
+        elif page and hasattr(page, "is_file") and page.is_file():
+            self._index = page.as_uri()
+        else:
+            if self.is_isolated():
+                path = None
+                sneak = False
+            else:
+                path = Path(__file__).resolve().parent / "vendor"
+                sneak = True
+            self.tmp_dir = TmpDirectory(path=path, sneak=sneak)
+            index = self.tmp_dir.path / "index.html"
+            self._index = index.as_uri()
+            if not page:
+                page = PageGenerator()
+            page.generate_index(index)
 
     async def _conform_tabs(self, tabs=None) -> None:
         if not tabs:
