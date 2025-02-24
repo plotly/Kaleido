@@ -134,7 +134,7 @@ async def test_page_generator():
         plotly="file:///with_plot",
         mathjax=False,
     ).generate_index()
-    assert without_math_result_re(without_math)
+    assert without_math_result_re.findall(without_math)
 
     with_others = PageGenerator(
         plotly="file:///with_plot",
