@@ -132,13 +132,7 @@ class Kaleido(choreo.Browser):
         elif page and hasattr(page, "is_file") and page.is_file():
             self._index = page.as_uri()
         else:
-            if self.is_isolated():
-                path = None
-                sneak = False
-            else:
-                path = Path(__file__).resolve().parent / "vendor"
-                sneak = True
-            self.tmp_dir = TmpDirectory(path=path, sneak=sneak)
+            self.tmp_dir = TmpDirectory(sneak=self.is_isolated())
             index = self.tmp_dir.path / "index.html"
             self._index = index.as_uri()
             if not page:
