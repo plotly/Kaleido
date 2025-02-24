@@ -1,3 +1,5 @@
+v1.0.0rc9
+- Fix v1.0.0rc7 for logic reversal
 v1.0.0rc8
 - Add kaleido.calc_fig to return bytes
 - Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido
