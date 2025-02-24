@@ -13,22 +13,22 @@
         <link rel="canonical" href="https://github.com/plotly/kaleido/api/kaleido/">
       
       
-        <link rel="prev" href="../..">
+        <link rel="prev" href="../../examples/">
       
       
         <link rel="next" href="../kaleido.errors/">
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
     
     
       
-        <title>User API - kaleido</title>
+        <title>User API Reference - kaleido</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.d7758b05.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
       
       
 
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              User API
+              User API Reference
             
           </span>
         </div>
@@ -202,6 +202,27 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -218,7 +239,7 @@
           
   
   <span class="md-ellipsis">
-    User API
+    User API Reference
     
   </span>
   
@@ -230,7 +251,7 @@
         
   
   <span class="md-ellipsis">
-    User API
+    User API Reference
     
   </span>
   
@@ -263,6 +284,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#kaleido-calc_fig" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_fig(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kaleido-write_fig" class="md-nav__link">
     <span class="md-ellipsis">
       write_fig(...)
@@ -275,6 +305,33 @@
   <a href="#kaleido-write_fig_from_object" class="md-nav__link">
     <span class="md-ellipsis">
       write_fig_from_object(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kaleido-calc_fig_sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_fig_sync(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kaleido-write_fig_sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      write_fig_sync(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kaleido-write_fig_from_object_sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      write_fig_from_object_sync(...)
     </span>
   </a>
   
@@ -442,6 +499,15 @@
   <a href="#Kaleido-populate_targets" class="md-nav__link">
     <span class="md-ellipsis">
       populate_targets(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#Kaleido-calc_fig" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_fig(...)
     </span>
   </a>
   
@@ -546,6 +612,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#kaleido-calc_fig" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_fig(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kaleido-write_fig" class="md-nav__link">
     <span class="md-ellipsis">
       write_fig(...)
@@ -558,6 +633,33 @@
   <a href="#kaleido-write_fig_from_object" class="md-nav__link">
     <span class="md-ellipsis">
       write_fig_from_object(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kaleido-calc_fig_sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_fig_sync(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kaleido-write_fig_sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      write_fig_sync(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kaleido-write_fig_from_object_sync" class="md-nav__link">
+    <span class="md-ellipsis">
+      write_fig_from_object_sync(...)
     </span>
   </a>
   
@@ -731,6 +833,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#Kaleido-calc_fig" class="md-nav__link">
+    <span class="md-ellipsis">
+      calc_fig(...)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#Kaleido-write_fig" class="md-nav__link">
     <span class="md-ellipsis">
       write_fig(...)
@@ -788,6 +899,15 @@ kaleido
 <p>Please see the README.md for more information and a quickstart.</p>
 </div>
 <h2 id="functions">Functions</h2>
+<h5 id="kaleido-calc_fig"><code>calc_fig(fig, path, opts, topojson)</code></h5>
+<div class="long-description">
+<div class="text">
+<p>Return binary for plotly figure.</p>
+<p>A convenience wrapper for <code>Kaleido.calc_fig()</code> which starts a <code>Kaleido</code> and
+executes the <code>calc_fig()</code>.</p>
+<p>See documentation for <code>Kaleido.calc_fig()</code>.</p>
+</div>
+</div>
 <h5 id="kaleido-write_fig"><code>write_fig(fig, path, opts, topojson, error_log, profiler, n)</code></h5>
 <div class="long-description">
 <div class="text">
@@ -810,6 +930,24 @@ of processes.</p>
 <p>See documentation for <code>Kaleido.write_fig_from_object()</code>.</p>
 </div>
 </div>
+<h5 id="kaleido-calc_fig_sync"><code>calc_fig_sync(args, kwargs)</code></h5>
+<div class="long-description">
+<div class="text">
+<p>Call <code>calc_fig</code> but blocking.</p>
+</div>
+</div>
+<h5 id="kaleido-write_fig_sync"><code>write_fig_sync(args, kwargs)</code></h5>
+<div class="long-description">
+<div class="text">
+<p>Call <code>write_fig</code> but blocking.</p>
+</div>
+</div>
+<h5 id="kaleido-write_fig_from_object_sync"><code>write_fig_from_object_sync(args, kwargs)</code></h5>
+<div class="long-description">
+<div class="text">
+<p>Call <code>write_fig_from_object</code> but blocking.</p>
+</div>
+</div>
 <h2 id="classes">Classes</h2>
 <div class="individual-class">
 <h3 id="PageGenerator"><code>class PageGenerator():</code></h3>
@@ -826,7 +964,7 @@ of processes.</p>
 </div>
 <h4 id="methods">methods</h4>
 <div class="indent">
-<h5 id="PageGenerator-a__init__"><code>__init__(self, plotly, mathjax, others)</code></h5>
+<h5 id="PageGenerator-a__init__"><code>__init__(self, plotly, mathjax, others, force_cdn)</code></h5>
 <div class="long-description">
 <div class="text">
 <p>Create a PageGenerator.</p>
@@ -847,6 +985,10 @@ Can be set to false to turn off.</span></p>
 <p><span class="code key" translate="no">others</span>
 <span class="text" markdown> -  a list of other script urls to include. Usually strings, but can be
 (str, str) where its (url, encoding).</span></p>
+</div>
+<div>
+<p><span class="code key" translate="no">force_cdn</span>
+<span class="text" markdown> -  (default False) Don't use plotly import, use CDN</span></p>
 </div>
 </div>
 </div>
@@ -907,7 +1049,7 @@ be generated.</p>
 </div>
 <div>
 <p><span class="code key" translate="no">timeout</span>
-<span class="text" markdown> -  limit on any single render.</span></p>
+<span class="text" markdown> -  limit on any single render (default 90 seconds).</span></p>
 </div>
 <div>
 <p><span class="code key" translate="no">width</span>
@@ -939,6 +1081,17 @@ be generated.</p>
 <p>Override the browser populate_targets to ensure the correct page.</p>
 <p>Is called automatically during initialization, and should only be called
 once ever per object.</p>
+</div>
+</div>
+</div>
+<div class="indent">
+<h5 id="Kaleido-calc_fig"><code>calc_fig(self, fig, path, opts, topojson)</code></h5>
+<div class="long-description">
+<div class="text">
+<p>Calculate the bytes for a figure.</p>
+<p>This function does not support parallelism or multi-image processing like
+<code>write_fig</code> does, although its arguments are a subset of those of <code>write_fig</code>.
+This function is currently just meant to bridge the old and new API.</p>
 </div>
 </div>
 </div>
