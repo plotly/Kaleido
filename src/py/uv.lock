@@ -17,15 +17,28 @@ wheels = [
 
 [[package]]
 name = "choreographer"
-version = "1.0.3"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../../../devtools_protocol" }
 dependencies = [
     { name = "logistro" },
     { name = "simplejson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/fb/5f/2b8e4d08f4459180101bcc2e9d14eaf3060e933d1fcbe05598a667752c2f/choreographer-1.0.3.tar.gz", hash = "sha256:70c949767d7627009c0df62ae69ae5975537a31fad9ce69f8f8c754ac9958349", size = 35994 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/df/99086b752c33d9bf58b5016069d805175311bead59e7b47f46efed178b09/choreographer-1.0.3-py3-none-any.whl", hash = "sha256:ff6fbaf634f5dbd7ace2ea5374034cf84342494b16e5062ef1b211815fc27d67", size = 41716 },
+
+[package.metadata]
+requires-dist = [
+    { name = "logistro", specifier = ">=1.0.11" },
+    { name = "simplejson" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "async-timeout" },
+    { name = "mypy", specifier = ">=1.14.1" },
+    { name = "numpy" },
+    { name = "poethepoet", specifier = ">=0.30.0" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-xdist" },
+    { name = "types-simplejson", specifier = ">=3.19.0.20241221" },
 ]
 
 [[package]]
@@ -68,7 +81,6 @@ wheels = [
 name = "kaleido"
 source = { editable = "." }
 dependencies = [
-    { name = "async-timeout" },
     { name = "choreographer" },
     { name = "logistro" },
     { name = "orjson" },
@@ -90,9 +102,8 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "async-timeout", specifier = ">=5.0.1" },
-    { name = "choreographer", specifier = ">=1.0.3" },
-    { name = "logistro", specifier = ">=1.0.8" },
+    { name = "choreographer", editable = "../../../devtools_protocol" },
+    { name = "logistro", editable = "../../../logistro" },
     { name = "orjson", specifier = ">=3.10.15" },
 ]
 
@@ -109,11 +120,16 @@ dev = [
 
 [[package]]
 name = "logistro"
-version = "1.0.11"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/7b/dc/e4c4b1fd2e6eca7f4e288434ae7f8057c0c06bad797366e0cc027fef23ef/logistro-1.0.11.tar.gz", hash = "sha256:9386b65cde9cc71d8c356142a219868612357b3c54ed4e067a78f420c4e51846", size = 7550 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/a6/fc/bf7cdfc51b13d6f4e2ebdacdd18ddb2aa7a70c00f8b7cd81c0906e0e7490/logistro-1.0.11-py3-none-any.whl", hash = "sha256:5f68bf18f2cb842de207947e6ee53d4980fba602935455d8fa2e9156b2e13323", size = 7006 },
+source = { editable = "../../../logistro" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=1.14.1" },
+    { name = "poethepoet", specifier = ">=0.30.0" },
+    { name = "pytest", specifier = ">=8.3.4" },
+    { name = "pytest-xdist" },
 ]
 
 [[package]]
