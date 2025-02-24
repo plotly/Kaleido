@@ -7,6 +7,8 @@ _logger = logistro.getLogger(__name__)
 DEFAULT_PLOTLY = "https://cdn.plot.ly/plotly-2.35.2.js"
 DEFAULT_MATHJAX = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
 
+KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
+
 
 class PageGenerator:
     """
@@ -27,10 +29,10 @@ class PageGenerator:
 """
     """The header is the HTML that always goes at the top. Rarely needs changing."""
 
-    footer = """
-        <script src="../kaleido_scopes.js"></script>
+    footer = f"""
+        <script src="{KJS_PATH}"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"><img></body>
 </html>
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
