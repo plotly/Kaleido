@@ -1,3 +1,6 @@
+v1.0.0rc8
+- Add kaleido.calc_fig to return bytes
+- Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido
 v1.0.0rc7
 - Use new choero is_isolated() to improve platform support
 v1.0.0rc6
