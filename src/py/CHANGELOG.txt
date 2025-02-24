@@ -1,3 +1,5 @@
+v1.0.0rc7
+- Use new choero is_isolated() to improve platform support
 v1.0.0rc6
 - All force_cdn to not use plotly install's js
 v1.0.0rc5
