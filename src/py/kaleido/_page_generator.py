@@ -30,7 +30,7 @@ class PageGenerator:
     """The header is the HTML that always goes at the top. Rarely needs changing."""
 
     footer = f"""
-        <script src="{KJS_PATH}"></script>
+        <script src="{KJS_PATH.as_uri()}"></script>
     </head>
     <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"><img></body>
 </html>
