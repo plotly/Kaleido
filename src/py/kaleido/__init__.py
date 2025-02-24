@@ -107,7 +107,6 @@ async def write_fig_from_object(
             generator,
             error_log=error_log,
             profiler=profiler,
-            n=n,
         )
 
 
