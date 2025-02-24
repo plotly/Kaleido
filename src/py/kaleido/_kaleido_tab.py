@@ -240,7 +240,7 @@ class _KaleidoTab:
             profile["megabytes"] = full_path.stat().st_size / 1000000
             profile["state"] = "WROTE"
 
-    async def _calc_fig(  # noqa: C901, complexity
+    async def _calc_fig(  # noqa: C901, PLR0912, complexity, branches
         self,
         spec,
         full_path,
@@ -276,6 +276,8 @@ class _KaleidoTab:
                 "start": time.perf_counter(),
                 "state": "INIT",
             }
+        else:
+            profile = None
 
         _logger.debug(f"In tab {tab.target_id[:4]} calc_fig for {full_path.name}.")
 
@@ -302,9 +304,11 @@ class _KaleidoTab:
         }
 
         _logger.info(f"Sending big command for {full_path.name}.")
-        profile["state"] = "SENDING"
+        if profile:
+            profile["state"] = "SENDING"
         result = await tab.send_command("Runtime.callFunctionOn", params=params)
-        profile["state"] = "SENT"
+        if profile:
+            profile["state"] = "SENT"
         _logger.info(f"Sent big command for {full_path.name}.")
         e = _check_error_ret(result)
         if e:
