@@ -15,7 +15,8 @@ nav:
         "src": "../README.md",
         "replace": {"src='docs/": "src='"}
       }
-  - User API: >-
+  - Examples: examples.md
+  - User API Reference: >-
       {
         "api": "kaleido",
         "test": ["exports", "_prefix_local"],
