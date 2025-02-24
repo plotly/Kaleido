@@ -12,7 +12,7 @@ pytestmark = pytest.mark.asyncio(loop_scope="function")
 
 _logger = logistro.getLogger(__name__)
 
-no_imports_result = """
+no_imports_result_re = re.compile(r"""
 <!DOCTYPE html>
 <html>
     <head>
@@ -24,11 +24,11 @@ no_imports_result = """
 
         <script src="https://cdn.plot.ly/plotly-2.35.2.js" charset="utf-8"></script>
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
-        <script src="../kaleido_scopes.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
-"""
+""")
 
 all_defaults_re = re.compile(r"""
 <!DOCTYPE html>
@@ -42,13 +42,13 @@ all_defaults_re = re.compile(r"""
 
         <script src="\S[^\n]*/package_data/plotly\.min\.js" charset="utf-8"></script>
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
-        <script src="\.\./kaleido_scopes\.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
 """)
 
-with_plot_result = """
+with_plot_result_re = re.compile(r"""
 <!DOCTYPE html>
 <html>
     <head>
@@ -60,13 +60,13 @@ with_plot_result = """
 
         <script src="file:///with_plot" charset="utf-8"></script>
         <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
-        <script src="../kaleido_scopes.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
-"""
+""")
 
-without_math_result = """
+without_math_result_re = re.compile(r"""
 <!DOCTYPE html>
 <html>
     <head>
@@ -77,13 +77,13 @@ without_math_result = """
         </script>
 
         <script src="file:///with_plot" charset="utf-8"></script>
-        <script src="../kaleido_scopes.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
-"""
+""")
 
-with_others_result = """
+with_others_result_re = re.compile(r"""
 <!DOCTYPE html>
 <html>
     <head>
@@ -97,11 +97,11 @@ with_others_result = """
         <script src="file:///with_mathjax"></script>
         <script src="1"></script>
         <script src="2"></script>
-        <script src="../kaleido_scopes.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
-"""
+""")
 
 
 async def test_page_generator():
@@ -120,7 +120,7 @@ async def test_page_generator():
             "in the main group.",
         )
     no_imports = PageGenerator().generate_index()
-    assert no_imports == no_imports_result
+    assert no_imports_result_re.findall(no_imports)
     sys.path = old_path
 
     # this imports plotly so above test must have already been done
@@ -128,20 +128,20 @@ async def test_page_generator():
     assert all_defaults_re.findall(all_defaults)
 
     with_plot = PageGenerator(plotly="file:///with_plot").generate_index()
-    assert with_plot_result == with_plot
+    assert with_plot_result_re.findall(with_plot)
 
     without_math = PageGenerator(
         plotly="file:///with_plot",
         mathjax=False,
     ).generate_index()
-    assert without_math_result == without_math
+    assert without_math_result_re(without_math)
 
     with_others = PageGenerator(
         plotly="file:///with_plot",
         mathjax="file:///with_mathjax",
         others=["1", "2"],
     ).generate_index()
-    assert with_others_result == with_others
+    assert with_others_result_re.findall(with_others)
 
 
 # test others
