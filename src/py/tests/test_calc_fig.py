@@ -21,4 +21,6 @@ async def test_calc_fig():
     assert img
     img = kaleido.calc_fig_sync(fig)
     assert img
-    assert True
+    with pytest.raises(TypeError):
+        # can't accept iterables
+        img = kaleido.calc_fig_sync([fig, fig])
