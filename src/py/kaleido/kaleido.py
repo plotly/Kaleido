@@ -331,7 +331,7 @@ class Kaleido(choreo.Browser):
             timeout,
         )
         await self._return_kaleido_tab(tab)
-        return data
+        return data[0]
 
     async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
         self,
