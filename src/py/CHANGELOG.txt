@@ -1,12 +1,12 @@
 v1.0.0rc9
-- Fix v1.0.0rc7 for logic reversal
+- Fix v1.0.0rc7 for logic reversal (was conditional error)
 v1.0.0rc8
-- Add kaleido.calc_fig to return bytes
-- Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido
+- Add kaleido.calc_fig to return bytes, not write file automatically
+- Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido API
 v1.0.0rc7
-- Use new choero is_isolated() to improve platform support
+- Use new choreo is_isolated() to improve platform support (snap /tmp sandboxing)
 v1.0.0rc6
-- All force_cdn to not use plotly install's js
+- Allow PageGenerator(force_cdn=True) to not use plotly.py's installed js
 v1.0.0rc5
-- Fix bug by which plotly's internal JS was ignored
-- Adds testing for page generators
+- Fix bug by which plotly.py's internal js was always ignored
+- Adds testing for PageGenerator

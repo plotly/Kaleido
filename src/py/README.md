@@ -13,11 +13,9 @@ This will change once [plotly.py](https://www.github.com/plotly/plolty.py)
 finishes its integration with the new api.
 
 ```bash
-$ pip install git+https://github.com/plotly/kaleido@v1.0.0rc6#subdirectory=src/py
+$ pip install git+https://github.com/plotly/kaleido@latest-tag#subdirectory=src/py
 
-# or whatever the latest tag is
-
-# this syntax works with `uv add` and `uv run --with PACKAGE`
+# also works with `uv add` and `uv run --with PACKAGE`
 ```
 
 # Kaleido
