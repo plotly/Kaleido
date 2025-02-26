@@ -13,6 +13,10 @@ DEFAULT_HEIGHT = 500
 SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf")  # pdf and eps
 
 
+def _is_figurish(o):
+    return hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
+
+
 def _get_figure_dimensions(layout, width, height):
     # Compute image width / height with fallbacks
     width = (

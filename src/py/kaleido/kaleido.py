@@ -13,7 +13,7 @@ import logistro
 from choreographer.errors import ChromeNotFoundError
 from choreographer.utils import TmpDirectory
 
-from ._fig_tools import build_fig_spec
+from ._fig_tools import _is_figurish, build_fig_spec
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
 from ._utils import ErrorEntry
@@ -313,7 +313,7 @@ class Kaleido(choreo.Browser):
         `write_fig` does, although its arguments are a subset of those of `write_fig`.
         This function is currently just meant to bridge the old and new API.
         """
-        if not hasattr(fig, "to_dict") and isinstance(fig, Iterable):
+        if not _is_figurish(fig) and isinstance(fig, Iterable):
             raise TypeError("Calc fig can not process multiple images at a time.")
         spec, full_path = build_fig_spec(fig, path, opts)
         tab = await self._get_kaleido_tab()
@@ -369,7 +369,7 @@ class Kaleido(choreo.Browser):
         if profiler is not None:
             _logger.info("Using profiler.")
 
-        if hasattr(fig, "to_dict") or not isinstance(fig, Iterable):
+        if _is_figurish(fig) or not isinstance(fig, Iterable):
             fig = [fig]
         else:
             _logger.debug(f"Is iterable {type(fig)}")
