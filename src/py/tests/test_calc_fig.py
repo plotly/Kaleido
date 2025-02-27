@@ -18,6 +18,7 @@ async def test_calc_fig():
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         fig = px.line(x=[1, 2, 3, 4], y=[1, 2, 3, 4])
 
+    # Pixel by pixel testing
     img = await kaleido.calc_fig(fig)
     assert isinstance(img, bytes)
 
