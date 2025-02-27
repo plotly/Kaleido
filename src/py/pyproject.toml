@@ -47,7 +47,9 @@ dev = [
   "async-timeout",
   "mypy>=1.14.1",
   "poethepoet>=0.30.0",
-  "plotly>=6.0.0",
+  "plotly[express]>=6.0.0",
+  "pytest-order>=1.3.0",
+  "pandas>=2.0.3",
 ]
 
 #docs = [

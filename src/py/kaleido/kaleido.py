@@ -313,7 +313,7 @@ class Kaleido(choreo.Browser):
         `write_fig` does, although its arguments are a subset of those of `write_fig`.
         This function is currently just meant to bridge the old and new API.
         """
-        if not hasattr(fig, "to_dict") or isinstance(fig, Iterable):
+        if not hasattr(fig, "to_dict") and isinstance(fig, Iterable):
             raise TypeError("Calc fig can not process multiple images at a time.")
         spec, full_path = build_fig_spec(fig, path, opts)
         tab = await self._get_kaleido_tab()
