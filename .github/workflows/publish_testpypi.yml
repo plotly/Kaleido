@@ -51,7 +51,7 @@ jobs:
           --logistro-level INFO
           --n 1
           --timeout 200
-          --output ${GITHUB_WORKSPACE}/integration_tests/renders/
+          --output ${{ github.workspace }}/../src/py/integration_tests/renders/
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
