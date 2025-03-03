@@ -51,7 +51,7 @@ def to_spec(figure, layout_opts):
     layout = figure.get("layout", {})
 
     # Extract info
-    extension = _get_format(layout_opts.get("format", DEFAULT_EXT))
+    extension = _get_format(layout_opts.get("format") or DEFAULT_EXT)
     width, height = _get_figure_dimensions(
         layout,
         layout_opts.get("width"),
