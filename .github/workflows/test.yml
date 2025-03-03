@@ -28,12 +28,12 @@ jobs:
           --all-extras
 
       - name: Install google-chrome-for-testing
-        run: uv run --no-sources kaleido_get_chrome -v
+        run: uv run --no-sync kaleido_get_chrome -v
 
       - name: Test mocker
         run: >
           uv run
-          --no-sources kaleido_mocker
+          --no-sync kaleido_mocker
           --random 50
           --logistro-level INFO
           --n 1
@@ -41,19 +41,19 @@ jobs:
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
-        run: uv run --no-sources poe test
+        run: uv run --no-sync poe test
         timeout-minutes: 7
 
       - name: Test (Linux)
         if: ${{ ! runner.debug && matrix.os == 'ubuntu-latest' }}
-        run: xvfb-run uv run --no-sources poe test
+        run: xvfb-run uv run --no-sync poe test
         timeout-minutes: 7
 
       - name: Test (Debug)
         if: runner.debug
-        run: uv run --no-sources poe debug-test
+        run: uv run --no-sync poe debug-test
 
       - name: Test (Debug, Linux)
         if: ${{ runner.debug && matrix.os == 'ubuntu-latest' }}
-        run: xvfb-run uv run --no-sources poe debug-test
+        run: xvfb-run uv run --no-sync poe debug-test
         timeout-minutes: 7

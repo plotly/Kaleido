@@ -45,7 +45,7 @@ jobs:
       - name: Test mocker
         run: >
           uv run
-          --no-sources kaleido_mocker
+          --no-sync kaleido_mocker
           --random 50
           --logistro-level INFO
           --n 1
