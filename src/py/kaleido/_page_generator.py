@@ -26,6 +26,9 @@ class PageGenerator:
         <script>
           window.PlotlyConfig = {MathJaxConfig: 'local'}
         </script>
+        <script type="text/x-mathjax-config">
+          MathJax.Hub.Config({ "SVG": { blacker: 0 }})
+        </script>
 """
     """The header is the HTML that always goes at the top. Rarely needs changing."""
 

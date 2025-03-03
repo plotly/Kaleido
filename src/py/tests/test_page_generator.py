@@ -19,16 +19,19 @@ no_imports_result_re = re.compile(r"""
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
         <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
+          window\.PlotlyConfig = {MathJaxConfig: 'local'}
+        </script>
+        <script type="text/x-mathjax-config">
+          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
-        <script src="https://cdn.plot.ly/plotly-2.35.2.js" charset="utf-8"></script>
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
-        <script src="\S[^\n]*/kaleido_scopes.js"></script>
+        <script src="https://cdn\.plot\.ly/plotly-2\.35\.2\.js" charset="utf-8"></script>
+        <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
-""")
+""")  # noqa: E501 line too long
 
 all_defaults_re = re.compile(r"""
 <!DOCTYPE html>
@@ -38,6 +41,9 @@ all_defaults_re = re.compile(r"""
         <title>Kaleido-fier</title>
         <script>
           window\.PlotlyConfig = {MathJaxConfig: 'local'}
+        </script>
+        <script type="text/x-mathjax-config">
+          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
         <script src="\S[^\n]*/package_data/plotly\.min\.js" charset="utf-8"></script>
@@ -55,12 +61,15 @@ with_plot_result_re = re.compile(r"""
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
         <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
+          window\.PlotlyConfig = {MathJaxConfig: 'local'}
+        </script>
+        <script type="text/x-mathjax-config">
+          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
         <script src="file:///with_plot" charset="utf-8"></script>
-        <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
-        <script src="\S[^\n]*/kaleido_scopes.js"></script>
+        <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
@@ -73,11 +82,14 @@ without_math_result_re = re.compile(r"""
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
         <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
+          window\.PlotlyConfig = {MathJaxConfig: 'local'}
+        </script>
+        <script type="text/x-mathjax-config">
+          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
         <script src="file:///with_plot" charset="utf-8"></script>
-        <script src="\S[^\n]*/kaleido_scopes.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
@@ -90,14 +102,17 @@ with_others_result_re = re.compile(r"""
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
         <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
+          window\.PlotlyConfig = {MathJaxConfig: 'local'}
+        </script>
+        <script type="text/x-mathjax-config">
+          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
         <script src="file:///with_plot" charset="utf-8"></script>
         <script src="file:///with_mathjax"></script>
         <script src="1"></script>
         <script src="2"></script>
-        <script src="\S[^\n]*/kaleido_scopes.js"></script>
+        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
 </html>
