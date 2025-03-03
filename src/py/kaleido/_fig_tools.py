@@ -14,7 +14,9 @@ SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf")  # pdf 
 
 
 def _is_figurish(o):
-    return hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
+    return hasattr(o, "to_dict") or (
+        isinstance(o, dict) and "data" in o and "layout" in o
+    )
 
 
 def _get_figure_dimensions(layout, width, height):
