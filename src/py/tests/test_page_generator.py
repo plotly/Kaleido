@@ -119,6 +119,7 @@ with_others_result_re = re.compile(r"""
 """)
 
 
+@pytest.mark.order(1)
 async def test_page_generator():
     if not find_spec("plotly"):
         raise ImportError(

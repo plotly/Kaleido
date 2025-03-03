@@ -115,12 +115,19 @@ def _async_thread_run(func, args, kwargs):
 
     def run(*args, **kwargs):
         # func is a closure
-        q.put(asyncio.run(func(*args, **kwargs)))
+        try:
+            q.put(asyncio.run(func(*args, **kwargs)))
+        except BaseException as e:  # noqa: BLE001
+            q.put(e)
 
     t = Thread(target=run, args=args, kwargs=kwargs)
     t.start()
     t.join()
-    return q.get()
+    res = q.get()
+    if isinstance(res, BaseException):
+        raise res
+    else:
+        return res
 
 
 def calc_fig_sync(*args, **kwargs):

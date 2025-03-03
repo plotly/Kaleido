@@ -48,7 +48,7 @@ def _load_figures_from_paths(paths: list[Path]):
                 _logger.info(f"Yielding {path.stem}")
                 yield {
                     "fig": figure,
-                    "path": args.output / f"{path.stem}.{args.format}",
+                    "path": str(Path(args.output) / f"{path.stem}.{args.format}"),
                 }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
@@ -158,7 +158,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 if not Path(args.output).is_dir():
-    raise ValueError("Specified output must be existing directory.")
+    raise ValueError(f"Specified output must be existing directory. Is {args.output!s}")
 
 
 # Function to process the images

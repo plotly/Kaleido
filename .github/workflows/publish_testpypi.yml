@@ -2,6 +2,7 @@
 ---
 name: test-n-build
 on:
+  workflow_dispatch:
   push:
     tags:
       - v*
@@ -45,11 +46,13 @@ jobs:
       - name: Test mocker
         run: >
           uv run
-          --no-sources kaleido_mocker
+          --no-sync kaleido_mocker
           --random 50
           --logistro-level INFO
           --n 1
           --timeout 200
+          --output ${{ github.workspace }}/src/py/integration_tests/renders/
+          --input ${{ github.workspace }}/src/py/integration_tests/mocks/
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
@@ -77,7 +80,11 @@ jobs:
         working-directory: ./src/py/
     name: Upload release to TestPyPI
     needs: super-test
-    if: always() && !cancelled() && !failure()
+    if: |
+      always() &&
+      !cancelled() &&
+      !failure() &&
+      startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     environment:
       name: testpypi

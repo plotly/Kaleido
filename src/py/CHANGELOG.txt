@@ -1,3 +1,7 @@
+v1.0.0rc10
+- Allow user to pass Figure-like dicts
+- Fix bug by which calc fig rejected plotly figures
+- Improve testing
 v1.0.0rc9
 - Fix v1.0.0rc7 for logic reversal (was conditional error)
 v1.0.0rc8
