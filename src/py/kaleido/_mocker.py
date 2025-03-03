@@ -48,7 +48,7 @@ def _load_figures_from_paths(paths: list[Path]):
                 _logger.info(f"Yielding {path.stem}")
                 yield {
                     "fig": figure,
-                    "path": args.output / f"{path.stem}.{args.format}",
+                    "path": str(Path(args.output) / f"{path.stem}.{args.format}"),
                 }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
