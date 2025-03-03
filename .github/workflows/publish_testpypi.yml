@@ -52,6 +52,7 @@ jobs:
           --n 1
           --timeout 200
           --output ${{ github.workspace }}/src/py/integration_tests/renders/
+          --input ${{ github.workspace }}/src/py/integration_tests/mocks/
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
