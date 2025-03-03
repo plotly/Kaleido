@@ -2,6 +2,7 @@
 ---
 name: test-n-build
 on:
+  workflow_dispatch:
   push:
     tags:
       - v*
@@ -77,7 +78,11 @@ jobs:
         working-directory: ./src/py/
     name: Upload release to TestPyPI
     needs: super-test
-    if: always() && !cancelled() && !failure()
+    if: |
+      always() &&
+      !cancelled() &&
+      !failure() &&
+      startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     environment:
       name: testpypi
