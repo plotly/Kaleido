@@ -122,7 +122,7 @@ class Kaleido(choreo.Browser):
             raise ChromeNotFoundError(
                 "Kaleido requires Chrome to be installed. To install Chrome, "
                 "use the CLI command `kaleido_get_chrome`, or from Python "
-                "use either `kaleido.get_chrome` or `kaleido.get_chrome_sync`.",
+                "use either `kaleido.get_chrome()` or `kaleido.get_chrome_sync()`.",
             ) from ChromeNotFoundError
 
         if page and isinstance(page, str) and Path(page).is_file():
