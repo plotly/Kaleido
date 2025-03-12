@@ -46,15 +46,54 @@ def _load_figures_from_paths(paths: list[Path]):
             with path.open(encoding="utf-8") as file:
                 figure = orjson.loads(file.read())
                 _logger.info(f"Yielding {path.stem}")
-                yield {
-                    "fig": figure,
-                    "path": str(Path(args.output) / f"{path.stem}.{args.format}"),
-                    "opts": {
-                        "scale": args.scale,
-                        "width": args.width,
-                        "height": args.height,
-                    },
-                }
+                if args.parameterize_opts is False:
+                    params = [
+                        {
+                            "name": f"{path.stem}.{args.format or 'png'}",
+                            "opts": {
+                                "scale": args.scale,
+                                "width": args.width,
+                                "height": args.height,
+                            },
+                        },
+                    ]
+                else:
+                    widths = [args.width] if args.width else [200, 700, 1000]
+                    heights = [args.height] if args.height else [200, 500, 1000]
+                    scales = [args.scale] if args.scale else [0.5, 1, 2]
+                    formats = (
+                        [args.format]
+                        if args.format
+                        else [
+                            "png",
+                            "pdf",
+                            "jpg",
+                            "webp",
+                            "svg",
+                            "json",
+                        ]
+                    )
+                    params = []
+                    for w in widths:
+                        for h in heights:
+                            for s in scales:
+                                for f in formats:
+                                    params.append(
+                                        {
+                                            "name": f"{path.stem}-{w}x{h}X{s}.{f}",
+                                            "opts": {
+                                                "scale": s,
+                                                "width": w,
+                                                "height": h,
+                                            },
+                                        },
+                                    )
+                for p in params:
+                    yield {
+                        "fig": figure,
+                        "path": str(Path(args.output) / p["name"]),
+                        "opts": p["opts"],
+                    }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
 
@@ -80,42 +119,36 @@ parser = argparse.ArgumentParser(
     conflict_handler="resolve",
     description=description,
 )
-
 parser.add_argument(
     "--logistro-level",
     default="INFO",
     dest="log",
     help="Set the logging level (default INFO)",
 )
-
 parser.add_argument(
     "--n",
     type=int,
     default=cpus,
     help="Number of tabs, defaults to # of cpus",
 )
-
 parser.add_argument(
     "--input",
     type=str,
     default=in_dir,
-    help="Directory of mock file/s, default tests/mocks",
+    help="Directory of mock file/s or single file (default tests/mocks)",
 )
-
 parser.add_argument(
     "--output",
     type=str,
     default=out_dir,
-    help="Directory of mock file/s, default tests/renders",
+    help="DIRECTORY of mock file/s (default tests/renders)",
 )
-
 parser.add_argument(
     "--format",
     type=str,
-    default="png",
+    default=None,
     help="png (default), pdf, jpg, webp, svg, json",
 )
-
 parser.add_argument(
     "--width",
     type=str,
@@ -132,30 +165,32 @@ parser.add_argument(
     "--scale",
     type=str,
     default=None,
-    help="Scale ratio (default 1)",
+    help="Scale ratio, acts as multiplier for height/width (default 1)",
 )
-
+parser.add_argument(
+    "--parameterize_opts",
+    action="store_true",
+    default=False,
+    help="Run mocks w/ different configurations.",
+)
 parser.add_argument(
     "--timeout",
     type=int,
     default=90,
     help="Set timeout in seconds for any 1 mock (default 60 seconds)",
 )
-
 parser.add_argument(
     "--headless",
     action="store_true",
     default=True,
     help="Set headless as True (default)",
 )
-
 parser.add_argument(
     "--no-headless",
     action="store_false",
     dest="headless",
     help="Set headless as False",
 )
-
 parser.add_argument(
     "--stepper",
     action="store_true",
@@ -164,14 +199,12 @@ parser.add_argument(
     help="Stepper sets n to 1, headless to False, no timeout "
     "and asks for confirmation before printing.",
 )
-
 parser.add_argument(
     "--random",
     type=int,
     default=0,
     help="Will select N random jsons- or if 0 (default), all.",
 )
-
 parser.add_argument(
     "--fail-fast",
     action="store_true",
