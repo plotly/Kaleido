@@ -49,6 +49,11 @@ def _load_figures_from_paths(paths: list[Path]):
                 yield {
                     "fig": figure,
                     "path": str(Path(args.output) / f"{path.stem}.{args.format}"),
+                    "opts": {
+                        "scale": args.scale,
+                        "width": args.width,
+                        "height": args.height,
+                    },
                 }
         else:
             raise RuntimeError(f"Path {path} is not a file.")
