@@ -112,6 +112,25 @@ parser.add_argument(
 )
 
 parser.add_argument(
+    "--width",
+    type=str,
+    default=None,
+    help="width in pixels (default 700)",
+)
+parser.add_argument(
+    "--height",
+    type=str,
+    default=None,
+    help="height in pixels (default 500)",
+)
+parser.add_argument(
+    "--scale",
+    type=str,
+    default=None,
+    help="Scale ratio (default 1)",
+)
+
+parser.add_argument(
     "--timeout",
     type=int,
     default=90,
