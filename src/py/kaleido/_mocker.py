@@ -213,6 +213,7 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+logistro.getLogger().setLevel(args.log)
 
 if not Path(args.output).is_dir():
     raise ValueError(f"Specified output must be existing directory. Is {args.output!s}")
