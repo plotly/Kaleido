@@ -16,11 +16,10 @@ SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf")  # pdf 
 def _is_figurish(o):
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
     if not valid:
-        _logger.error("Figure doesn't seem to be valid.")
         _logger.debug(
             f"Figure has to_dict? {hasattr(o, 'to_dict')} "
             f"is dict? {isinstance(o, dict)} "
-            f"Keys: {o.keys()!s}",
+            f"Keys: {o.keys() if hasattr(o, 'keys') else None!s}",
         )
     return valid
 
