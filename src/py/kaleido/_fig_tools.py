@@ -57,15 +57,14 @@ def to_spec(figure, layout_opts):
     layout = figure.get("layout", {})
 
     for k, v in layout_opts.items():
-        match k:
-            case "format":
-                if v is not None and not isinstance(v, (str)):
-                    raise TypeError(f"{v} must be string or None")
-            case "scale" | "height" | "width":
-                if v is not None and not isinstance(v, (float, int)):
-                    raise TypeError(f"{v} must be numeric or None")
-            case _:
-                raise AttributeError(f"Unknown key in layout options, {k}")
+        if k == "format":
+            if v is not None and not isinstance(v, (str)):
+                raise TypeError(f"{v} must be string or None")
+        elif k in ("scale", "height", "width"):
+            if v is not None and not isinstance(v, (float, int)):
+                raise TypeError(f"{v} must be numeric or None")
+        else:
+            raise AttributeError(f"Unknown key in layout options, {k}")
 
     # Extract info
     extension = _get_format(layout_opts.get("format") or DEFAULT_EXT)
