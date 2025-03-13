@@ -114,8 +114,8 @@ def build_fig_spec(fig, path, opts):  #  noqa: C901
 
     if isinstance(path, str):
         path = Path(path)
-    elif not isinstance(path, Path):
-        raise TypeError("Path supplied should be a string or `pathlib.Path` object")
+    elif path and not isinstance(path, Path):
+        raise TypeError("Path should be a string or `pathlib.Path` object (or None)")
 
     if path and path.suffix and not opts.get("format"):
         opts["format"] = path.suffix.lstrip(".")
