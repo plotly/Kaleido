@@ -14,9 +14,14 @@ SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf")  # pdf 
 
 
 def _is_figurish(o):
-    return hasattr(o, "to_dict") or (
-        isinstance(o, dict) and "data" in o and "layout" in o
-    )
+    valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
+    if not valid:
+        _logger.debug(
+            f"Figure has to_dict? {hasattr(o, 'to_dict')} "
+            f"is dict? {isinstance(o, dict)} "
+            f"Keys: {o.keys() if hasattr(o, 'keys') else None!s}",
+        )
+    return valid
 
 
 def _get_figure_dimensions(layout, width, height):
@@ -57,15 +62,14 @@ def to_spec(figure, layout_opts):
     layout = figure.get("layout", {})
 
     for k, v in layout_opts.items():
-        match k:
-            case "format":
-                if v is not None and not isinstance(v, (str)):
-                    raise TypeError(f"{v} must be string or None")
-            case "scale" | "height" | "width":
-                if v is not None and not isinstance(v, (float, int)):
-                    raise TypeError(f"{v} must be numeric or None")
-            case _:
-                raise AttributeError(f"Unknown key in layout options, {k}")
+        if k == "format":
+            if v is not None and not isinstance(v, (str)):
+                raise TypeError(f"{v} must be string or None")
+        elif k in ("scale", "height", "width"):
+            if v is not None and not isinstance(v, (float, int)):
+                raise TypeError(f"{v} must be numeric or None")
+        else:
+            raise AttributeError(f"Unknown key in layout options, {k}")
 
     # Extract info
     extension = _get_format(layout_opts.get("format") or DEFAULT_EXT)
@@ -109,8 +113,8 @@ def build_fig_spec(fig, path, opts):  #  noqa: C901
 
     if isinstance(path, str):
         path = Path(path)
-    elif not isinstance(path, Path):
-        raise TypeError("Path supplied should be a string or `pathlib.Path` object")
+    elif path and not isinstance(path, Path):
+        raise TypeError("Path should be a string or `pathlib.Path` object (or None)")
 
     if path and path.suffix and not opts.get("format"):
         opts["format"] = path.suffix.lstrip(".")
