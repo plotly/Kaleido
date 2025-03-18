@@ -106,7 +106,7 @@ class Kaleido(choreo.Browser):
         self._height = kwargs.pop("height", None)
         self._width = kwargs.pop("width", None)
         self._stepper = kwargs.pop("stepper", False)
-        if not kwargs.get("headless", True) and (self._height or self._width):
+        if not kwargs.get("headless", False) and (self._height or self._width):
             warnings.warn(
                 "Height and Width can only be used if headless=True, "
                 "ignoring both sizes.",
