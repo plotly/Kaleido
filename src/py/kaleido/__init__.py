@@ -1,5 +1,5 @@
 """
-Kaleido provides functions to convert plotly figures into various image formats.
+Kaleido is a library for generating static images from Plotly figures.
 
 Please see the README.md for more information and a quickstart.
 """
