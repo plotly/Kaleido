@@ -1,5 +1,5 @@
 """
-Kaleido provides to convert plotly figures into various image formats.
+Kaleido provides functions to convert plotly figures into various image formats.
 
 Please see the README.md for more information and a quickstart.
 """
