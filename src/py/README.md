@@ -9,7 +9,7 @@
 # Pre-Launch Kaleido v1.0.0
 
 **NOTE: New api versions of Kaleido v1.0.0rc1+ are only available through github.**
-This will change once [plotly.py](https://www.github.com/plotly/plolty.py)
+This will change once [plotly.py](https://www.github.com/plotly/plotly.py)
 finishes its integration with the new api.
 
 ```bash
