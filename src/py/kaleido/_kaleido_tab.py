@@ -361,7 +361,7 @@ class _KaleidoTab:
                 "marginBottom": 0.1,
                 "marginLeft": 0.1,
                 "marginRight": 0.1,
-                "preferCSSPageSize": False,
+                "preferCSSPageSize": True,
                 "pageRanges": "1",
             }
             pdf_response = await self.tab.send_command(

@@ -1,3 +1,6 @@
+v1.0.0rc11
+- Write mocker tool to parameterize opts in tests
+- Crop page to pdf size
 v1.0.0rc10
 - Allow user to pass Figure-like dicts
 - Fix bug by which calc fig rejected plotly figures
