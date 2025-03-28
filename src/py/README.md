@@ -14,7 +14,7 @@ Kaleido allows you to convert plotly figures to images. Kaleido v1 is currently 
 
 Kaleido v1 introduces a new API. If you're currently using v0, you'll need to make changes to your code and environment where you are running Kaleido.
 
-- Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome installation, but also provides commands for installing Chrome. If you don't have Chome, you'll need to install it. See the following installation section for more details.
+- Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome installation, but also provides commands for installing Chrome. If you don't have Chrome, you'll need to install it. See the following installation section for more details.
 - `kaleido.scopes.plotly` has been removed in v1. Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
   ```
   from kaleido import write_fig_sync
