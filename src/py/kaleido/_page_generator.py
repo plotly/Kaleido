@@ -106,7 +106,7 @@ class PageGenerator:
             else:
                 page += script_tag_charset % script
         page += self.footer
-        _logger.debug(page)
+        _logger.debug2(page)
         if not path:
             return page
         with (path).open("w") as f:
