@@ -61,19 +61,23 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     error_log=None,
     profiler=None,
     n=1,
+    kopts=None,
 ):
     """
     Write a plotly figure(s) to a file.
 
     A convenience wrapper for `Kaleido.write_fig()` which starts a `Kaleido` and
     executes the `write_fig()`.
-    It takes one additional argument, `n`, which can be used to set the number
-    of processes.
+    It takes an additional argument, `kopts`, a dictionary of arguments to pass
+    to the kaleido process. See the `kaleido.Kaleido` docs.
 
-    See documentation for `Kaleido.write_fig()`.
+
+    See documentation for `Kaleido.write_fig()` for the other arguments.
 
     """
-    async with Kaleido(n=n) as k:
+    if "n" not in kopts:
+        kopts["n"] = n
+    async with Kaleido(**kopts) as k:
         await k.write_fig(
             fig,
             path=path,
@@ -90,19 +94,23 @@ async def write_fig_from_object(
     error_log=None,
     profiler=None,
     n=1,
+    kopts=None,
 ):
     """
     Write a plotly figure(s) to a file.
 
     A convenience wrapper for `Kaleido.write_fig_from_object()` which starts a
     `Kaleido` and executes the `write_fig_from_object()`
-    It takes one additional argument, `n`, which can be used to set the number
-    of processes.
+    It takes an additional argument, `kopts`, a dictionary of arguments to pass
+    to the kaleido process. See the `kaleido.Kaleido` docs.
 
-    See documentation for `Kaleido.write_fig_from_object()`.
+    See documentation for `Kaleido.write_fig_from_object()` for the other
+    arguments.
 
     """
-    async with Kaleido(n=n) as k:
+    if "n" not in kopts:
+        kopts["n"] = n
+    async with Kaleido(**kopts) as k:
         await k.write_fig_from_object(
             generator,
             error_log=error_log,
