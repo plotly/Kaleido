@@ -3,13 +3,13 @@ requires = ["setuptools>=65.0.0", "wheel", "setuptools-git-versioning"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages]
-find = {namespaces = false}
+find = {namespaces = true}
 
 [tool.setuptools-git-versioning]
 enabled = true
 
 [tool.setuptools.package-data]
-kaleido = ['vendor/*', 'vendor/**']
+kaleido = ['vendor/**']
 
 [project]
 name = "kaleido"
