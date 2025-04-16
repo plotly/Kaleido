@@ -15,5 +15,11 @@
   "timezone": "Asia/Dubai",
   "schedule": [
     "before 10am on wednesday"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": ["pre-commit"],
+      "matchPaths": ["src/py/.pre-commit-config.yaml"]
+    }
   ]
 }
