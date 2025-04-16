@@ -60,7 +60,6 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     topojson=None,
     error_log=None,
     profiler=None,
-    n=1,
     kopts=None,
 ):
     """
@@ -75,8 +74,6 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     See documentation for `Kaleido.write_fig()` for the other arguments.
 
     """
-    if "n" not in kopts:
-        kopts["n"] = n
     async with Kaleido(**kopts) as k:
         await k.write_fig(
             fig,
@@ -93,7 +90,6 @@ async def write_fig_from_object(
     *,
     error_log=None,
     profiler=None,
-    n=1,
     kopts=None,
 ):
     """
@@ -108,8 +104,6 @@ async def write_fig_from_object(
     arguments.
 
     """
-    if "n" not in kopts:
-        kopts["n"] = n
     async with Kaleido(**kopts) as k:
         await k.write_fig_from_object(
             generator,
