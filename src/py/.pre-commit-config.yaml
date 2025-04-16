@@ -8,8 +8,8 @@ exclude: |
   src/js/.*|
   \.js$
   )
-default_install_hook_types: [ pre-commit, commit-msg ]
-default_stages: [ pre-commit ]
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
@@ -32,21 +32,25 @@ repos:
     hooks:
       #  Run the linter.
       - id: ruff
-        types_or: [ python, pyi ]
+        types_or: [python, pyi]
       #  Run the formatter.
       - id: ruff-format
-        types_or: [ python, pyi ]
+        types_or: [python, pyi]
         #  options: ignore one line things [E701]
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.35.1
-    hooks:
-      - id: yamllint
-        name: yamllint
-        description: This hook runs yamllint.
-        entry: yamllint
-        language: python
-        types: [ file, yaml ]
-        args: [ '-d', '{"extends": "default", "rules": {"colons": {"max-spaces-after": -1}}}' ]
+
+  # you check the actions below
+  #- repo: https://github.com/adrienverge/yamllint
+  #  rev: v1.35.1
+  #  hooks:
+  #    - id: yamllint
+  #      name: yamllint
+  #      description: This hook runs yamllint.
+  #      entry: yamllint
+  #      language: python
+  #      types: [file, yaml]
+  #      args: ['-d', '{"extends": "default",
+  #                     "rules": {"colons": {"max-spaces-after": -1}}}']
+
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.4
     hooks:
@@ -54,9 +58,10 @@ repos:
         name: Lint GitHub Actions workflow files
         description: Runs actionlint to lint GitHub Actions workflow files
         language: golang
-        types: [ "yaml" ]
+        types: ["yaml"]
         files: ^\.github/workflows/
         entry: actionlint
+
   - repo: https://github.com/jorisroovers/gitlint
     rev: v0.19.1
     hooks:
@@ -64,23 +69,32 @@ repos:
         name: gitlint
         description: Checks your git commit messages for style.
         language: python
-        additional_dependencies: [ "./gitlint-core[trusted-deps]" ]
+        additional_dependencies: ["./gitlint-core[trusted-deps]"]
         entry: gitlint
-        args: [ --staged, -c, "general.ignore=B6,T3", --msg-filename ]
-        stages: [ commit-msg ]
+        args: [--staged, -c, "general.ignore=B6,T3", --msg-filename]
+        stages: [commit-msg]
+
   - repo: https://github.com/crate-ci/typos
     rev: v1.28.2
     hooks:
       - id: typos
-  - repo: https://github.com/markdownlint/markdownlint
-    rev: v0.13.0
+
+  # - repo: https://github.com/markdownlint/markdownlint
+  #   rev: v0.13.0
+  #   hooks:
+  #     - id: markdownlint
+  #       name: Markdownlint
+  #       description: Run markdownlint on your Markdown files
+  #       entry: mdl --rules ~MD026 --style .markdown.rb
+  #       language: ruby
+  #       files: \.(md|mdown|markdown)$
+
+  # no ruby acrobatic needed
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.44.0
     hooks:
       - id: markdownlint
-        name: Markdownlint
-        description: Run markdownlint on your Markdown files
-        entry: mdl --rules ~MD026 --style .markdown.rb
-        language: ruby
-        files: \.(md|mdown|markdown)$
+
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
@@ -88,4 +102,4 @@ repos:
         name: Detect secrets
         language: python
         entry: detect-secrets-hook
-        args: [ '' ]
+        args: ['']
