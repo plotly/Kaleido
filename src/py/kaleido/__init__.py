@@ -74,7 +74,7 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
     See documentation for `Kaleido.write_fig()` for the other arguments.
 
     """
-    async with Kaleido(**kopts) as k:
+    async with Kaleido(**(kopts or {})) as k:
         await k.write_fig(
             fig,
             path=path,
@@ -104,7 +104,7 @@ async def write_fig_from_object(
     arguments.
 
     """
-    async with Kaleido(**kopts) as k:
+    async with Kaleido(**(kopts or {})) as k:
         await k.write_fig_from_object(
             generator,
             error_log=error_log,
