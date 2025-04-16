@@ -2,25 +2,19 @@
   "logLevel": "debug",
   "extends": [
     "config:recommended",
-    ":enablePreCommit",
     ":automergeMinor",
     ":dependencyDashboard",
-    ":semanticCommits",
-    ":pinVersions"
+    ":semanticCommits"
   ],
   "enabledManagers": [
     "github-actions",
     "pep621",
     "pre-commit"
   ],
-  "timezone": "Asia/Dubai",
-  "schedule": [
-    "before 10am on wednesday"
-  ],
   "packageRules": [
     {
       "matchManagers": ["pre-commit"],
-      "fileMatch": ["src/py/.pre-commit-config\\.yaml"]
+      "matchPaths": ["src/py/.pre-commit-config.yaml"]
     },
     {
       "matchManagers": ["pep621"],
