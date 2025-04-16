@@ -1,6 +1,7 @@
 {
   "extends": [
     "config:recommended",
+    ":enablePreCommit",
     ":automergeMinor",
     ":dependencyDashboard",
     ":semanticCommits"
