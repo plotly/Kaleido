@@ -23,7 +23,7 @@
     },
     {
       "matchManagers": ["pep621"],
-      "matchPaths": ["scr/py/pyproject.toml"]
+      "matchPaths": ["src/py/pyproject.toml"]
     }
   ]
 }
