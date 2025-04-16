@@ -1,5 +1,4 @@
 {
-  "logLevel": "debug",
   "extends": [
     "config:recommended",
     ":automergeMinor",
