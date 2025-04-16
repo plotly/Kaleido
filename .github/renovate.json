@@ -8,7 +8,6 @@
     ":pinVersions"
   ],
   "enabledManagers": [
-    "pip_requirements",
     "github-actions"
   ],
   "timezone": "Asia/Dubai",
