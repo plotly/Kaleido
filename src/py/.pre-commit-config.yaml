@@ -46,12 +46,7 @@ repos:
         entry: yamllint
         language: python
         types: [ file, yaml ]
-        args: [ '-d', "{\
-          extends: default,\
-          rules: {\
-            colons: { max-spaces-after: -1 }\
-          }\
-        }" ]
+        args: [ '-d', '{"extends": "default", "rules": {"colons": {"max-spaces-after": -1}}}' ]
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.4
     hooks:
