@@ -8,7 +8,9 @@
     ":pinVersions"
   ],
   "enabledManagers": [
-    "github-actions"
+    "github-actions",
+    "pep621",
+    "pre-commit"
   ],
   "timezone": "Asia/Dubai",
   "schedule": [
