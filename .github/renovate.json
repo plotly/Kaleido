@@ -9,7 +9,6 @@
   ],
   "enabledManagers": [
     "pip_requirements",
-    "pre-commit",
     "github-actions"
   ],
   "timezone": "Asia/Dubai",
