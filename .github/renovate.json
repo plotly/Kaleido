@@ -19,6 +19,10 @@
     {
       "matchManagers": ["pre-commit"],
       "matchPaths": ["src/py/.pre-commit-config.yaml"]
+    },
+    {
+      "matchManagers": ["pep621"],
+      "matchPaths": ["scr/py/pyproject.toml"]
     }
   ]
 }
