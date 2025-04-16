@@ -39,7 +39,7 @@ Repository = "https://github.com/plotly/kaleido"
 kaleido_mocker = "kaleido._mocker:build_mocks"
 kaleido_get_chrome = "choreographer.cli._cli_utils:get_chrome_cli"
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
   "pytest",
   "pytest-asyncio",
@@ -51,17 +51,6 @@ dev = [
   "pytest-order>=1.3.0",
   "pandas>=2.0.3",
 ]
-
-#docs = [
-#    "mkquixote @ git+ssh://git@github.com/geopozo/mkquixote; python_version>= '3.11'",
-#    "mkdocs>=1.6.1",
-#    "mkdocs-material>=9.5.49",
-#]
-
-#[tool.uv.sources]
-#mkquixote = { path = "../../../mkquixote", editable = true }
-#choreographer = { path = "../../../devtools_protocol", editable = true }
-#logistro = { path = "../../../logistro", editable = true }
 
 [tool.ruff.lint]
 select = ["ALL"]

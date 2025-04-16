@@ -76,7 +76,7 @@ dependencies = [
     { name = "orjson" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "async-timeout" },
     { name = "mypy", version = "1.14.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
@@ -95,23 +95,20 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "async-timeout", marker = "extra == 'dev'" },
     { name = "choreographer", specifier = ">=1.0.5" },
     { name = "logistro", specifier = ">=1.0.8" },
+    { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.14.1" },
     { name = "orjson", specifier = ">=3.10.15" },
+    { name = "pandas", marker = "extra == 'dev'", specifier = ">=2.0.3" },
+    { name = "plotly", extras = ["express"], marker = "extra == 'dev'", specifier = ">=6.0.0" },
+    { name = "poethepoet", marker = "extra == 'dev'", specifier = ">=0.30.0" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "pytest-order", marker = "extra == 'dev'", specifier = ">=1.3.0" },
+    { name = "pytest-xdist", marker = "extra == 'dev'" },
 ]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "async-timeout" },
-    { name = "mypy", specifier = ">=1.14.1" },
-    { name = "pandas", specifier = ">=2.0.3" },
-    { name = "plotly", extras = ["express"], specifier = ">=6.0.0" },
-    { name = "poethepoet", specifier = ">=0.30.0" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-order", specifier = ">=1.3.0" },
-    { name = "pytest-xdist" },
-]
+provides-extras = ["dev"]
 
 [[package]]
 name = "logistro"
