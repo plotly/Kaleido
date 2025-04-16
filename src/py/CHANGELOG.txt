@@ -1,3 +1,5 @@
+v1.0.0rc12
+- Add `kopts` args to top-level shortcuts to pass args to `Kaleido(**kopts)`
 v1.0.0rc11
 - Write mocker tool to parameterize opts in tests
 - Crop page to pdf size
