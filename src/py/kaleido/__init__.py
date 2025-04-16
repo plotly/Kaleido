@@ -33,17 +33,25 @@ async def calc_fig(
     opts=None,
     *,
     topojson=None,
+    kopts=None,
 ):
     """
     Return binary for plotly figure.
 
     A convenience wrapper for `Kaleido.calc_fig()` which starts a `Kaleido` and
     executes the `calc_fig()`.
+    It takes an additional argument, `kopts`, a dictionary of arguments to pass
+    to the kaleido process. See the `kaleido.Kaleido` docs. However,
+    `calc_fig()` will never use more than one processor, so any `n` value will
+    be overridden.
+
 
     See documentation for `Kaleido.calc_fig()`.
 
     """
-    async with Kaleido(n=1) as k:
+    kopts = kopts or {}
+    kopts["n"] = 1
+    async with Kaleido(**kopts) as k:
         return await k.calc_fig(
             fig,
             path=path,
