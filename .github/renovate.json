@@ -4,7 +4,8 @@
     ":enablePreCommit",
     ":automergeMinor",
     ":dependencyDashboard",
-    ":semanticCommits"
+    ":semanticCommits",
+    ":pinDevDependencies"
   ],
   "enabledManagers": [
     "github-actions",
