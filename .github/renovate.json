@@ -1,4 +1,5 @@
 {
+  "logLevel": "debug",
   "extends": [
     "config:recommended",
     ":enablePreCommit",
@@ -19,7 +20,7 @@
   "packageRules": [
     {
       "matchManagers": ["pre-commit"],
-      "matchPaths": ["src/py/.pre-commit-config.yaml"]
+      "fileMatch": ["src/py/.pre-commit-config\\.yaml"]
     },
     {
       "matchManagers": ["pep621"],
