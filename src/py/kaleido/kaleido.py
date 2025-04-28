@@ -106,6 +106,7 @@ class Kaleido(choreo.Browser):
         self._height = kwargs.pop("height", None)
         self._width = kwargs.pop("width", None)
         self._stepper = kwargs.pop("stepper", False)
+        self._mathjax = kwargs.pop("mathjax", None)
         if not kwargs.get("headless", True) and (self._height or self._width):
             warnings.warn(
                 "Height and Width can only be used if headless=True, "
@@ -135,7 +136,7 @@ class Kaleido(choreo.Browser):
             index = self.tmp_dir.path / "index.html"
             self._index = index.as_uri()
             if not page:
-                page = PageGenerator()
+                page = PageGenerator(mathjax=self._mathjax)
             page.generate_index(index)
 
     async def _conform_tabs(self, tabs=None) -> None:
