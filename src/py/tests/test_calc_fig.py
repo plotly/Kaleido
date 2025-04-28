@@ -23,7 +23,10 @@ async def test_calc_fig():
     assert isinstance(img_awaited, bytes)
 
     # Make sure passing `mathjax` argument via `kopts` works properly
-    img_sync = kaleido.calc_fig_sync(fig, kopts=dict(mathjax="https://cdn.jsdelivr.net/npm/mathjax@3.2.1/es5/tex-svg.js"))
+    img_sync = kaleido.calc_fig_sync(
+        fig,
+        kopts={"mathjax": "https://cdn.jsdelivr.net/npm/mathjax@3.2.1/es5/tex-svg.js"},
+    )
     assert isinstance(img_sync, bytes)
 
     img_from_dict = kaleido.calc_fig_sync(fig.to_dict())
