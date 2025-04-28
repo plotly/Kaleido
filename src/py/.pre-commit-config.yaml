@@ -75,7 +75,7 @@ repos:
         stages: [commit-msg]
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.31.1
+    rev: v1.31.2
     hooks:
       - id: typos
 
