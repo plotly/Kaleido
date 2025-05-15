@@ -8,34 +8,40 @@
 
 # Pre-Launch Kaleido v1.0.0
 
-**NOTE: New api versions of Kaleido v1.0.0rc1+ are only available through github.**
-This will change once [plotly.py](https://www.github.com/plotly/plotly.py)
-finishes its integration with the new api.
+Kaleido allows you to convert plotly figures to images. Kaleido v1 is currently available as a release candidate.
+
+## Migrating from v0 to v1
+
+Kaleido v1 introduces a new API. If you're currently using v0, you'll need to make changes to your code and environment where you are running Kaleido.
+
+- Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome installation, but also provides commands for installing Chrome. If you don't have Chrome, you'll need to install it. See the following installation section for more details.
+- `kaleido.scopes.plotly` has been removed in v1. Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
+  ```
+  from kaleido import write_fig_sync
+  import plotly.graph_objects as go
+
+  fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+  kaleido.write_fig_sync(fig, path="figure.png")
+  ```
+  See the Quickstart section below for more details on usage for v1.
+
+Note: Kaleido v1 works with Plotly v6.1.0 and later.
+
+## Installation
+
+To install the Kaleido release candidate:
 
 ```bash
-$ pip install git+https://github.com/plotly/kaleido@latest-tag#subdirectory=src/py
-
-# also works with `uv add` and `uv run --with PACKAGE`
+$ pip install kaleido --upgrade --pre
 ```
 
-# Kaleido
-
-Kaleido allows you to convert plotly figures to images.
-
-```bash
-$ pip install kaleido
-```
-
-Kaleido's strategy has changed: `chrome` is no longer included. On the other hand,
-it's *much* faster and supports parallel processing and memory-saving techniques.
-
-Kaleido will try to use your own platform's `chrome`, but we recommend the following:
+To install Chrome, we recommend using Kaleido's CLI command:
 
 ```bash
 $ kaleido_get_chrome
 ```
 
-or
+or functions in Python:
 
 ```python
 
@@ -103,8 +109,6 @@ my_page = kaleido.PageGenerator(
 ## More info
 
 There are plenty of doc strings in the source code.
-
-See the [Plotly static image export documentation][plotly-export] for more information.
 
 [choreographer]: https://pypi.org/project/choreographer/
 [plotly]: https://plotly.com/
