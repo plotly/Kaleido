@@ -25,7 +25,7 @@ Kaleido v1 introduces a new API. If you're currently using v0, you'll need to ma
   ```
   See the Quickstart section below for more details on usage for v1.
 
-Note: The Kaleido v1 release candidate is not yet integrated with Plotly.py, meaning [`write_image` and `to_image` functions and methods in Plotly.py](https://plotly.com/python/static-image-export/) won't yet work with v1. Support for Kaleido v1 with Plotly.py will be added in Plotly.py v6.1.
+Note: Kaleido v1 works with Plotly v6.1.0 and later.
 
 ## Installation
 
