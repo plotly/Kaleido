@@ -1,7 +1,6 @@
 # Kaleido Code Snippets
 
-
-### Basic
+## Basic
 
 ```python
 import plotly.express as px
@@ -31,7 +30,6 @@ figures = [fig, fig2]
 
 kaleido.write_fig_sync(fig, path="./output/")
 
-
 ## Multiple image write with error collection
 
 error_log = []
@@ -50,7 +48,6 @@ if error_log:
     print(str(e))
   raise RuntimeError("{len(error_log)} images failed.")
 
-
 ## async/await style of above
 
 await kaleido.write_fig(
@@ -61,11 +58,10 @@ await kaleido.write_fig(
   )
 ```
 
-### Generator (for batch processing)
+## Generator (for batch processing)
 
 Generating all of the plotly figures can take too much memory depending on the
 number of figures, so use a generator:
-
 
 ```python
 import plotly.express as px
@@ -87,7 +83,6 @@ def generate_figures(): # can be async as well
 # four processors
 kaleido.write_fig_sync(generate_figures(), path="./output/", n=4)
 # file names will be taken from figure title
-
 
 ### If you need more control, use an object
 
