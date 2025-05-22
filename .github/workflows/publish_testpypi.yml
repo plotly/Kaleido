@@ -21,7 +21,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - name: Install Dependencies
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: sudo apt-get update && sudo apt-get install xvfb
@@ -32,7 +32,7 @@ jobs:
       - run: uv python pin ${{ matrix.python_v }}
         if: ${{ matrix.python_v != '' }}
       # don't modify sync file! messes up version!
-      - run: uv sync --no-sources --all-extras --frozen # does order matter?
+      - run: uv sync --all-extras --frozen # does order matter?
       - run: uv build
       - name: Reinstall from wheel
         run: >
@@ -95,7 +95,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - uses: actions/setup-python@v5
         with:
           python-version-file: "./src/py/pyproject.toml"
