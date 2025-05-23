@@ -1,0 +1,27 @@
+{
+  "extends": [
+     "config:recommended",
+     ":enablePreCommit",
+
+
+     ":automergeMinor",
+     ":dependencyDashboard",
+     ":semanticCommits",
+     ":pinDevDependencies"
+   ],
+   "enabledManagers": [
+     "github-actions",
+     "pep621",
+     "pre-commit"
+   ],
+   "packageRules": [
+     {
+       "matchManagers": ["pre-commit"],
+       "matchPaths": ["src/py/.pre-commit-config.yaml"]
+     },
+     {
+       "matchManagers": ["pep621"],
+       "matchPaths": ["src/py/pyproject.toml"]
+     }
+   ]
+ }
