@@ -22,7 +22,6 @@ jobs:
         with:
           node-version: '20'
 
-# Let's activate this later, more corrections are needed
-#      - uses: pre-commit/action@v3.0.1
-#        with:
-#          extra_args: '--all-files --config src/py/.pre-commit-config.yaml'
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: '--all-files --config src/py/.pre-commit-config.yaml'
