@@ -79,21 +79,15 @@ repos:
     rev: v1.28.2
     hooks:
       - id: typos
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.45.0
+  - repo: https://github.com/markdownlint/markdownlint
+    rev: v0.13.0
     hooks:
       - id: markdownlint
-        # args: [ "--ignore", "book/**/*.md", "--ignore", "opinion.md" ]
-  # too old:
-  # - repo: https://github.com/markdownlint/markdownlint
-  #   rev: v0.13.0
-  #   hooks:
-  #    - id: markdownlint
-  #      name: Markdownlint
-  #      description: Run markdownlint on your Markdown files
-  #      entry: mdl --rules ~MD026 --style .markdown.rb
-  #      language: ruby
-  #      files: \.(md|mdown|markdown)$
+        name: Markdownlint
+        description: Run markdownlint on your Markdown files
+        entry: mdl --rules ~MD026 --style .markdown.rb
+        language: ruby
+        files: \.(md|mdown|markdown)$
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
