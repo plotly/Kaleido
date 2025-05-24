@@ -8,14 +8,24 @@
 
 # Pre-Launch Kaleido v1.0.0
 
-Kaleido allows you to convert plotly figures to images. Kaleido v1 is currently available as a release candidate.
+Kaleido allows you to convert plotly figures to images.
+Kaleido v1 is currently available as a release candidate.
 
 ## Migrating from v0 to v1
 
-Kaleido v1 introduces a new API. If you're currently using v0, you'll need to make changes to your code and environment where you are running Kaleido.
+Kaleido v1 introduces a new API. If you're currently using v0,
+you'll need to make changes to your code and environment
+where you are running Kaleido.
 
-- Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome installation, but also provides commands for installing Chrome. If you don't have Chrome, you'll need to install it. See the following installation section for more details.
-- `kaleido.scopes.plotly` has been removed in v1. Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
+- Chrome is no longer included with Kaleido.
+  Kaleido will look for an existing Chrome installation,
+  but also provides commands for installing Chrome.
+  If you don't have Chrome, you'll need to install it.
+  See the following installation section for more details.
+- `kaleido.scopes.plotly` has been removed in v1.
+  Kaleido v1 provides `write_fig` and `write_fig_sync`
+  for exporting Plotly figures.
+
   ```
   from kaleido import write_fig_sync
   import plotly.graph_objects as go
@@ -23,6 +33,7 @@ Kaleido v1 introduces a new API. If you're currently using v0, you'll need to ma
   fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
   kaleido.write_fig_sync(fig, path="figure.png")
   ```
+
   See the Quickstart section below for more details on usage for v1.
 
 Note: Kaleido v1 works with Plotly v6.1.0 and later.
