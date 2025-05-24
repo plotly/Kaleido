@@ -1,0 +1,32 @@
+# Workflow: pre-commit
+# Purpose: This workflow runs pre-commit checks on the
+#          codebase to ensure code quality and consistency.
+#          It automatically validates code style, formatting, and other
+#          checks defined in the pre-commit configuration.
+name: pre-commit
+
+# Trigger: This workflow runs on every push to the repository
+on:
+  push
+
+# Permissions: Only read access to repository contents is needed
+permissions:
+  contents: read
+
+jobs:
+  # Job: pre-commit
+  # Purpose: Executes the pre-commit checks against the codebase
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout [${{ github.repository }}]
+        uses: actions/checkout@v4
+
+      - name: Install Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: '--verbose --all-files'
