@@ -1,13 +1,8 @@
-# Workflow: pre-commit
-# Purpose: This workflow runs pre-commit checks on the
-#          codebase to ensure code quality and consistency.
-#          It automatically validates code style, formatting, and other
-#          checks defined in the pre-commit configuration.
 name: pre-commit
 
 # Trigger: This workflow runs on every push to the repository
 on:
-  push
+  push:
 
 # Permissions: Only read access to repository contents is needed
 permissions:
@@ -29,4 +24,4 @@ jobs:
 
       - uses: pre-commit/action@v3.0.1
         with:
-          extra_args: '--verbose --all-files'
+          extra_args: '--all-files --config src/py/.pre-commit-config.yaml'
