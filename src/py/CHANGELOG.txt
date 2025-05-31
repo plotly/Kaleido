@@ -1,26 +1,37 @@
+v1.0.0rc14
+- Pass `plotlyjs` option through from Kaleido() to PageGenerator()
+
 v1.0.0rc13
 - Pass mathjax option through when using default plotly.js template
+
 v1.0.0rc12
 - Add `kopts` args to top-level shortcuts to pass args to `Kaleido(**kopts)`
+
 v1.0.0rc11
 - Write mocker tool to parameterize opts in tests
 - Crop page to pdf size
 - Add type checks to user input for improved error messages
 - Fix latex strings in PDF bolding
 - Add some choreographer errors to kaleido.errors
+
 v1.0.0rc10
 - Allow user to pass Figure-like dicts
 - Fix bug by which calc fig rejected plotly figures
 - Improve testing
+
 v1.0.0rc9
 - Fix v1.0.0rc7 for logic reversal (was conditional error)
+
 v1.0.0rc8
 - Add kaleido.calc_fig to return bytes, not write file automatically
 - Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido API
+
 v1.0.0rc7
 - Use new choreo is_isolated() to improve platform support (snap /tmp sandboxing)
+
 v1.0.0rc6
 - Allow PageGenerator(force_cdn=True) to not use plotly.py's installed js
+
 v1.0.0rc5
 - Fix bug by which plotly.py's internal js was always ignored
 - Adds testing for PageGenerator
