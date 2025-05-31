@@ -88,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/kaleido_test
+      url: https://test.pypi.org/p/kaleido
     # Signs this workflow so pypi trusts it
     permissions:
       id-token: write
@@ -100,7 +100,7 @@ jobs:
         with:
           python-version-file: "./src/py/pyproject.toml"
       - run: git checkout ${{ github.ref_name }}
-      - run: uv sync --no-sources --frozen --all-extras
+      - run: uv sync --frozen --all-extras
       - run: uv build
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
