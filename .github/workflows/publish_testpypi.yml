@@ -34,11 +34,15 @@ jobs:
       # don't modify sync file! messes up version!
       - run: uv sync --all-extras --frozen # does order matter?
       - run: uv build
+      #- name: Reinstall from wheel
+      #  run: >
+      #    uv pip install dist/kaleido-$(uv
+      #    run --no-sync --with setuptools-git-versioning
+      #    setuptools-git-versioning)-py3-none-any.whl
       - name: Reinstall from wheel
-        run: >
-          uv pip install dist/kaleido-$(uv
-          run --no-sync --with setuptools-git-versioning
-          setuptools-git-versioning)-py3-none-any.whl
+        run: |
+          WHEEL_PATH=$(ls dist/kaleido-*-py3-none-any.whl)
+          uv pip install "$WHEEL_PATH"
       - run: uv run --no-sync kaleido_get_chrome -v # --i ${{ matrix.chrome_v }}
       - name: Diagnose
         run:  uv run --no-sync choreo_diagnose --no-run
