@@ -1,3 +1,4 @@
+import glob
 import re
 from pathlib import Path
 
@@ -94,9 +95,11 @@ def _next_filename(path, prefix, ext):
     re_number = re.compile(
         r"^" + re.escape(prefix) + r"\-(\d+)\." + re.escape(ext) + r"$",
     )
+    escaped_prefix = glob.escape(prefix)
+    escaped_ext = glob.escape(ext)
     numbers = [
         int(match.group(1))
-        for name in path.glob(f"{prefix}-*.{ext}")
+        for name in path.glob(f"{escaped_prefix}-*.{escaped_ext}")
         if (match := re_number.match(Path(name).name))
     ]
     n = max(numbers, default=default) + 1
