@@ -142,9 +142,9 @@ def build_fig_spec(fig, path, opts):  #  noqa: C901
             )
     if not full_path:
         _logger.debug("Looking for title")
-        prefix = (
-            fig.get("layout", {}).get("title", {}).get("text", "fig").replace(" ", "_")
-        )
+        prefix = fig.get("layout", {}).get("title", {}).get("text", "fig")
+        prefix = re.sub(r"[ \-]", "_", prefix)
+        prefix = re.sub(r"[^a-zA-Z0-9_]", "", prefix)
         _logger.debug(f"Found: {prefix}")
         name = _next_filename(directory, prefix, ext)
         full_path = directory / name
