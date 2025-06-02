@@ -91,7 +91,9 @@ def to_spec(figure, layout_opts):
 
 def _next_filename(path, prefix, ext):
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
-    re_number = re.compile(r"^" + prefix + r"-(\d+)\." + ext + r"$")
+    re_number = re.compile(
+        r"^" + re.escape(prefix) + r"\-(\d+)\." + re.escape(ext) + r"$",
+    )
     numbers = [
         int(match.group(1))
         for name in path.glob(f"{prefix}-*.{ext}")
