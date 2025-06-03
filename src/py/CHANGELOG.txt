@@ -1,5 +1,6 @@
 v1.0.0rc15
 - BUG: Add regex sanitization for auto-filename generation
+- Further santiize title to filename conversion
 
 v1.0.0rc14
 - Pass `plotlyjs` option through from Kaleido() to PageGenerator()
