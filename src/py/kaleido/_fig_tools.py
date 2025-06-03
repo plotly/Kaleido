@@ -145,6 +145,7 @@ def build_fig_spec(fig, path, opts):  #  noqa: C901
         prefix = fig.get("layout", {}).get("title", {}).get("text", "fig")
         prefix = re.sub(r"[ \-]", "_", prefix)
         prefix = re.sub(r"[^a-zA-Z0-9_]", "", prefix)
+        prefix = prefix or "fig"
         _logger.debug(f"Found: {prefix}")
         name = _next_filename(directory, prefix, ext)
         full_path = directory / name
