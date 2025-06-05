@@ -1,3 +1,4 @@
+import glob
 import re
 from pathlib import Path
 
@@ -91,10 +92,14 @@ def to_spec(figure, layout_opts):
 
 def _next_filename(path, prefix, ext):
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
-    re_number = re.compile(r"^" + prefix + r"-(\d+)\." + ext + r"$")
+    re_number = re.compile(
+        r"^" + re.escape(prefix) + r"\-(\d+)\." + re.escape(ext) + r"$",
+    )
+    escaped_prefix = glob.escape(prefix)
+    escaped_ext = glob.escape(ext)
     numbers = [
         int(match.group(1))
-        for name in path.glob(f"{prefix}-*.{ext}")
+        for name in path.glob(f"{escaped_prefix}-*.{escaped_ext}")
         if (match := re_number.match(Path(name).name))
     ]
     n = max(numbers, default=default) + 1
@@ -137,9 +142,10 @@ def build_fig_spec(fig, path, opts):  #  noqa: C901
             )
     if not full_path:
         _logger.debug("Looking for title")
-        prefix = (
-            fig.get("layout", {}).get("title", {}).get("text", "fig").replace(" ", "_")
-        )
+        prefix = fig.get("layout", {}).get("title", {}).get("text", "fig")
+        prefix = re.sub(r"[ \-]", "_", prefix)
+        prefix = re.sub(r"[^a-zA-Z0-9_]", "", prefix)
+        prefix = prefix or "fig"
         _logger.debug(f"Found: {prefix}")
         name = _next_filename(directory, prefix, ext)
         full_path = directory / name
