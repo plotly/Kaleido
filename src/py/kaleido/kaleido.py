@@ -20,7 +20,8 @@ from ._utils import ErrorEntry, warn_incompatible_plotly
 
 _logger = logistro.getLogger(__name__)
 
-# Show a warning if the installed Plotly version is incompatible with this version of Kaleido
+# Show a warning if the installed Plotly version
+# is incompatible with this version of Kaleido
 warn_incompatible_plotly()
 
 

@@ -1,8 +1,8 @@
 import asyncio
-from importlib.metadata import version, PackageNotFoundError
 import traceback
-from functools import partial
 import warnings
+from functools import partial
+from importlib.metadata import PackageNotFoundError, version
 
 import logistro
 from packaging.version import Version
@@ -18,7 +18,8 @@ async def to_thread(func, *args, **kwargs):
 
 def warn_incompatible_plotly():
     """
-    Check if the installed Plotly version (if any) is compatible with this version of Kaleido.
+    Check if installed Plotly version (if any) is compatible with this Kaleido version.
+
     If not, display a warning.
     """
     try:
@@ -29,15 +30,20 @@ def warn_incompatible_plotly():
             warnings.warn(
                 "\n\n"
                 f"Warning: You have Plotly version {installed_plotly_version}, "
-                f"which is not compatible with this version of Kaleido ({installed_kaleido_version}).\n\n"
-                "This means that image generation (e.g. `fig.write_image()`) will not work.\n\n"
-                f"Please upgrade Plotly to at least {min_compatible_plotly_version}, or downgrade Kaleido."
+                "which is not compatible with this version of "
+                f"Kaleido ({installed_kaleido_version}).\n\n"
+                "This means that image generation (e.g. `fig.write_image()`) "
+                "will not work.\n\n"
+                f"Please upgrade Plotly to at least {min_compatible_plotly_version}, "
+                "or downgrade Kaleido."
                 "\n\n",
                 UserWarning,
+                stacklevel=2,
             )
     except PackageNotFoundError:
         # If Plotly is not installed, there's nothing to worry about
         pass
+    # ruff: noqa: BLE001
     except Exception as e:
         # If another error occurs, log it but do not raise
         # Since this compatibility check is just a convenience,
