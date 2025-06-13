@@ -16,9 +16,13 @@ from choreographer.utils import TmpDirectory
 from ._fig_tools import _is_figurish, build_fig_spec
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
-from ._utils import ErrorEntry
+from ._utils import ErrorEntry, warn_incompatible_plotly
 
 _logger = logistro.getLogger(__name__)
+
+# Show a warning if the installed Plotly version
+# is incompatible with this version of Kaleido
+warn_incompatible_plotly()
 
 
 def _make_printer(name):

@@ -29,6 +29,7 @@ dependencies = [
   "choreographer>=1.0.5",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
+  "packaging",
 ]
 
 [project.urls]
