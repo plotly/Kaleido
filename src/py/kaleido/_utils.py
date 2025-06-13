@@ -32,13 +32,13 @@ def warn_incompatible_plotly():
                 f"Warning: You have Plotly version {installed_plotly_version}, "
                 "which is not compatible with this version of "
                 f"Kaleido ({installed_kaleido_version}).\n\n"
-                "This means that image generation (e.g. `fig.write_image()`) "
+                "This means that static image generation (e.g. `fig.write_image()`) "
                 "will not work.\n\n"
-                f"Please upgrade Plotly to at least {min_compatible_plotly_version}, "
-                "or downgrade Kaleido."
-                "\n\n",
+                f"Please upgrade Plotly to version {min_compatible_plotly_version} "
+                "or greater, or downgrade Kaleido to version 0.2.1."
+                "\n",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=3,
             )
     except PackageNotFoundError:
         # If Plotly is not installed, there's nothing to worry about
