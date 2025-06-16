@@ -1,3 +1,6 @@
+Unreleased
+- Add warning if using incompatible Plotly version
+
 v1.0.0rc15
 - BUG: Add regex sanitization for auto-filename generation
 - Further santiize title to filename conversion
