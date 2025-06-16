@@ -48,7 +48,7 @@ def warn_incompatible_plotly():
         # If another error occurs, log it but do not raise
         # Since this compatibility check is just a convenience,
         # we don't want to block the whole library if there's an issue
-        _logger.info(f"Error while checking Plotly version: {e}")
+        _logger.info("Error while checking Plotly version.", exc_info=e)
 
 
 class ErrorEntry:
