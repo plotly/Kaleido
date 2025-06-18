@@ -1,4 +1,4 @@
-Unreleased
+v1.0.0
 - Add warning if using incompatible Plotly version
 
 v1.0.0rc15
