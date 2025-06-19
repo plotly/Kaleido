@@ -59,6 +59,7 @@ class PageGenerator:
             plotly = (DEFAULT_PLOTLY, "utf-8")
         elif not plotly:
             try:
+                # ruff: noqa: PLC0415
                 import plotly as pltly  # type: ignore [import-not-found]
 
                 plotly_path = (
