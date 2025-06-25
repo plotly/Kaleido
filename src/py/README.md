@@ -129,11 +129,11 @@ def render_plotly_figure_as_image_file(
 ) -> bytes:
   """"Render Plotly figure as a static PNG image.
 
-  - Uses Kaleido to render the Plotly figure as a PNG or SVG image.
+  - Uses Kaleido to render the Plotly figure as a PNG, SVG image, PDF or similar.
   - Creates Kaleido backend (Chrome browser) on the first call.
 
   :param format:
-    "png" or "svg"
+    See ``kaleido._fig_tools`` module for supported forms.
 
   :param width:
     Width in pixels
@@ -142,10 +142,8 @@ def render_plotly_figure_as_image_file(
     Height in pixels
 
   :return:
-    Image data encoded as byttes blob.
+    Image data encoded as bytes blob.
   """
-
-  assert format in ["png", "svg"], "Format must be png or svg"
 
   stream = BytesIO()
 
