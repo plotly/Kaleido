@@ -56,8 +56,8 @@ class Kaleido(choreo.Browser):
 
     async def close(self):
         """Close the browser."""
-        if self.tmp_dir:
-            self.tmp_dir.clean()
+        if self._tmp_dir:
+            self._tmp_dir.clean()
         _logger.info("Cancelling tasks.")
         for task in self._main_tasks:
             if not task.done():
@@ -137,8 +137,8 @@ class Kaleido(choreo.Browser):
         elif page and hasattr(page, "is_file") and page.is_file():
             self._index = page.as_uri()
         else:
-            self.tmp_dir = TmpDirectory(sneak=self.is_isolated())
-            index = self.tmp_dir.path / "index.html"
+            self._tmp_dir = TmpDirectory(sneak=self.is_isolated())
+            index = self._tmp_dir.path / "index.html"
             self._index = index.as_uri()
             if not page:
                 page = PageGenerator(plotly=self._plotlyjs, mathjax=self._mathjax)
