@@ -18,7 +18,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
     
     
       
@@ -26,7 +26,7 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.8608ea7d.min.css">
+      <link rel="stylesheet" href="assets/stylesheets/main.342714a4.min.css">
       
       
 
@@ -66,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#pre-launch-kaleido-v100" class="md-skip">
+        <a href="#overview" class="md-skip">
           Skip to content
         </a>
       
@@ -191,8 +191,22 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Readme
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="." class="md-nav__link md-nav__link--active">
         
+  
   
   <span class="md-ellipsis">
     Readme
@@ -201,6 +215,76 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrating-from-v0-to-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migrating from v0 to v1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development guide
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pagegenerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      PageGenerators
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -215,6 +299,7 @@
     <li class="md-nav__item">
       <a href="examples/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     Examples
@@ -237,6 +322,7 @@
       <a href="api/kaleido/" class="md-nav__link">
         
   
+  
   <span class="md-ellipsis">
     User API Reference
     
@@ -257,6 +343,7 @@
     <li class="md-nav__item">
       <a href="api/kaleido.errors/" class="md-nav__link">
         
+  
   
   <span class="md-ellipsis">
     kaleido.errors
@@ -289,6 +376,65 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#migrating-from-v0-to-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      Migrating from v0 to v1
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-guide" class="md-nav__link">
+    <span class="md-ellipsis">
+      Development guide
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development guide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage examples
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pagegenerators" class="md-nav__link">
+    <span class="md-ellipsis">
+      PageGenerators
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -310,32 +456,36 @@
   </a>
 </div>
 
-<h1 id="pre-launch-kaleido-v100">Pre-Launch Kaleido v1.0.0</h1>
-<p><strong>NOTE: New api versions of Kaleido v1.0.0rc1+ are only available through github.</strong>
-This will change once <a href="https://www.github.com/plotly/plolty.py">plotly.py</a>
-finishes its integration with the new api.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/plotly/kaleido@v1.0.0rc6#subdirectory<span class="o">=</span>src/py
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># or whatever the latest tag is</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="c1"># this syntax works with `uv add` and `uv run --with PACKAGE`</span>
+<h1 id="overview">Overview</h1>
+<p>Kaleido is a cross-platform Python library for generating static images (e.g. png, svg, pdf, etc.) for Plotly.js, to be used by Plotly.py.</p>
+<h2 id="installation">Installation</h2>
+<p>Kaleido can be installed from <a href="https://pypi.org/project/kaleido">PyPI</a> using <code>pip</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>kaleido<span class="w"> </span>--upgrade
 </span></code></pre></div>
-<h1 id="kaleido">Kaleido</h1>
-<p>Kaleido allows you to convert plotly figures to images.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>kaleido
+<p>As of version 1.0.0, Kaleido requires Chrome to be installed. If you already have Chrome on your system, Kaleido should find it; otherwise, you can install a compatible Chrome version using the <code>kaleido_get_chrome</code> command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>kaleido_get_chrome
 </span></code></pre></div>
-<p>Kaleido's strategy has changed: <code>chrome</code> is no longer included. On the other hand,
-it's <em>much</em> faster and supports parallel processing and memory-saving techniques.</p>
-<p>Kaleido will try to use your own platform's <code>chrome</code>, but we recommend the following:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>kaleido_get_chrome
+<p>or function in Python:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">kaleido</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">kaleido</span><span class="o">.</span><span class="n">get_chrome_sync</span><span class="p">()</span>
 </span></code></pre></div>
-<p>or</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">kaleido</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">await</span> <span class="n">kaleido</span><span class="o">.</span><span class="n">get_chrome</span><span class="p">()</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="c1"># or</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># kaleido.get_chrome_sync()</span>
-</span></code></pre></div>
-<h2 id="quickstart">Quickstart</h2>
+<h2 id="migrating-from-v0-to-v1">Migrating from v0 to v1</h2>
+<p>Kaleido v1 introduces a new API. If you're currently using v0, you'll need to make changes to your code and environment where you are running Kaleido.</p>
+<ul>
+<li>If using Kaleido v1 with Plotly.py, you will need to install Plotly.py v6.1.1 or later.</li>
+<li>Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome installation, but also provides commands for installing Chrome. If you don't have Chrome, you'll need to install it. See the installation section above for instructions.</li>
+<li>If your code uses Kaleido directly: <code>kaleido.scopes.plotly</code> has been removed in v1. Kaleido v1 provides <code>write_fig</code> and <code>write_fig_sync</code> for exporting Plotly figures.
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>from kaleido import write_fig_sync
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>import plotly.graph_objects as go
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>kaleido.write_fig_sync(fig, path=&quot;figure.png&quot;)
+</span></code></pre></div></li>
+</ul>
+<h2 id="development-guide">Development guide</h2>
+<p>Below are examples of how to use Kaleido directly in your Python program.</p>
+<p>If you want to export images of Plotly charts, it's not necessary to call Kaleido directly; you can use functions in the Plotly library. <a href="https://plotly.com/python/static-image-export/">See the Plotly documentation for instructions.</a></p>
+<h3 id="usage-examples">Usage examples</h3>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">kaleido</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">async</span> <span class="k">with</span> <span class="n">kaleido</span><span class="o">.</span><span class="n">Kaleido</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">90</span><span class="p">)</span> <span class="k">as</span> <span class="n">k</span><span class="p">:</span>
@@ -359,7 +509,7 @@ it's <em>much</em> faster and supports parallel processing and memory-saving tec
 </span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>  <span class="k">await</span> <span class="n">k</span><span class="o">.</span><span class="n">write_fig_from_object</span><span class="p">(</span><span class="n">fig_objects</span><span class="p">,</span> <span class="n">error_log</span><span class="p">)</span>
 </span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="c1"># where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.</span>
 </span></code></pre></div>
-<p>There are shortcut functions if just want dont want to create a <code>Kaleido()</code>.</p>
+<p>There are shortcut functions which can be used to generate images without creating a <code>Kaleido()</code> object:</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">import</span><span class="w"> </span><span class="nn">kaleido</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
@@ -370,7 +520,7 @@ it's <em>much</em> faster and supports parallel processing and memory-saving tec
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  <span class="p">)</span>
 </span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="p">)</span>
 </span></code></pre></div>
-<h2 id="pagegenerators">PageGenerators</h2>
+<h3 id="pagegenerators">PageGenerators</h3>
 <p>The <code>page</code> argument takes a <code>kaleido.PageGenerator()</code> to customize versions.
 Normally, kaleido looks for an installed plotly as uses that version. You can pass
 <code>kaleido.PageGenerator(force_cdn=True)</code> to force use of a CDN version of plotly (the
@@ -381,9 +531,6 @@ default if plotly is not installed).
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  others=[&quot;a list of other script links to include&quot;]
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>)
 </span></code></pre></div></p>
-<h2 id="more-info">More info</h2>
-<p>There are plenty of doc strings in the source code.</p>
-<p>See the <a href="https://plotly.com/python/static-image-export/">Plotly static image export documentation</a> for more information.</p>
 
 
 
@@ -430,10 +577,12 @@ default if plotly is not installed).
     </div>
     
     
-    <script id="__config" type="application/json">{"base": ".", "features": ["navigation.indexes"], "search": "assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+      
+      <script id="__config" type="application/json">{"base": ".", "features": ["navigation.indexes"], "search": "assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.f1b6f286.min.js"></script>
+      <script src="assets/javascripts/bundle.56ea9cef.min.js"></script>
       
     
   </body>
