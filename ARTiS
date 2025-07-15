@@ -1,0 +1,56 @@
+import random
+import plotly.graph_objects as go
+import plotly.io as pio
+
+def generate_scattered_points(lat1, lon1, lat2, lon2, n_points, offset=0.00005):
+    points = []
+    for _ in range(n_points):
+        t = random.uniform(0, 1)
+        base_lat = lat1 + t * (lat2 - lat1)
+        base_lon = lon1 + t * (lon2 - lon1)
+        scattered_lat = base_lat + random.uniform(-offset, offset)
+        scattered_lon = base_lon + random.uniform(-offset, offset)
+        points.append((scattered_lat, scattered_lon))
+    return points
+
+start_lat, start_lon = 6.03536, 116.12548
+end_lat, end_lon = 6.03561, 116.12497
+
+# Generate 113 red points scattered near the line
+red_points = generate_scattered_points(start_lat, start_lon, end_lat, end_lon, 113)
+
+latitudes = [p[0] for p in red_points]
+longitudes = [p[1] for p in red_points]
+
+fig = go.Figure()
+
+# Add red scattered points
+fig.add_trace(go.Scattermapbox(
+    lat=latitudes,
+    lon=longitudes,
+    mode='markers',
+    marker=dict(size=8, color='red'),
+    name='Random Red Points'
+))
+
+# Add base blue line
+fig.add_trace(go.Scattermapbox(
+    lat=[start_lat, end_lat],
+    lon=[start_lon, end_lon],
+    mode='lines',
+    line=dict(color='blue', width=2),
+    name='Base Line'
+))
+
+fig.update_layout(
+    mapbox_style="open-street-map",
+    mapbox_zoom=17,
+    mapbox_center={"lat": (start_lat + end_lat) / 2, "lon": (start_lon + end_lon) / 2},
+    margin={"r":0,"t":0,"l":0,"b":0},
+    showlegend=True
+)
+
+# Save static image (requires kaleido installed: pip install -U kaleido)
+pio.write_image(fig, "red_points_map.png", format="png", scale=2)
+
+print("Static image saved as 'red_points_map.png'. Please check your working directory.")
