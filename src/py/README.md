@@ -9,8 +9,8 @@
 
 ## Overview
 
-Kaleido is a cross-platform Python library for generating static images (e.g. png, svg, pdf, etc.) 
-for Plotly.js, to be used by Plotly.py.
+Kaleido is a cross-platform Python library for generating static
+images (e.g. png, svg, pdf, etc.) for Plotly.js, to be used by Plotly.py.
 
 ## Pre-Launch Kaleido v1.0.0
 
@@ -52,7 +52,10 @@ Kaleido can be installed from [PyPI](https://pypi.org/project/kaleido) using `pi
 $ pip install kaleido --upgrade
 ```
 
-As of version 1.0.0, Kaleido requires Chrome to be installed. If you already have Chrome on your system, Kaleido should find it; otherwise, you can install a compatible Chrome version using the `kaleido_get_chrome` command:
+As of version 1.0.0, Kaleido requires Chrome to be installed.
+If you already have Chrome on your system, Kaleido should find it;
+otherwise, you can install a compatible Chrome version
+using the `kaleido_get_chrome` command:
 
 ```bash
 $ kaleido_get_chrome
@@ -69,7 +72,9 @@ kaleido.get_chrome_sync()
 
 Below are examples of how to use Kaleido directly in your Python program.
 
-If you want to export images of Plotly charts, it's not necessary to call Kaleido directly; you can use functions in the Plotly library. [See the Plotly documentation for instructions.](https://plotly.com/python/static-image-export/)
+If you want to export images of Plotly charts, it's not necessary
+to call Kaleido directly; you can use functions in the Plotly
+library. [See the Plotly documentation for instructions.](https://plotly.com/python/static-image-export/)
 
 ### Usage examples
 
@@ -98,7 +103,8 @@ async with kaleido.Kaleido(n=4, timeout=90) as k:
 # where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
-There are shortcut functions which can be used to generate images without creating a `Kaleido()` object:
+There are shortcut functions which can be used to generate images
+without creating a `Kaleido()` object:
 
 ```python
 import asyncio
