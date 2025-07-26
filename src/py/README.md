@@ -1,3 +1,4 @@
+# Kaleido
 
 <div align="center">
   <a href="https://dash.plotly.com/project-maintenance">
@@ -6,7 +7,12 @@
   </a>
 </div>
 
-# Pre-Launch Kaleido v1.0.0
+## Overview
+
+Kaleido is a cross-platform Python library for generating static images (e.g. png, svg, pdf, etc.) 
+for Plotly.js, to be used by Plotly.py.
+
+## Pre-Launch Kaleido v1.0.0
 
 Kaleido allows you to convert plotly figures to images.
 Kaleido v1 is currently available as a release candidate.
@@ -40,29 +46,32 @@ Note: Kaleido v1 works with Plotly v6.1.0 and later.
 
 ## Installation
 
-To install the Kaleido release candidate:
+Kaleido can be installed from [PyPI](https://pypi.org/project/kaleido) using `pip`:
 
 ```bash
-$ pip install kaleido --upgrade --pre
+$ pip install kaleido --upgrade
 ```
 
-To install Chrome, we recommend using Kaleido's CLI command:
+As of version 1.0.0, Kaleido requires Chrome to be installed. If you already have Chrome on your system, Kaleido should find it; otherwise, you can install a compatible Chrome version using the `kaleido_get_chrome` command:
 
 ```bash
 $ kaleido_get_chrome
 ```
 
-or functions in Python:
+or function in Python:
 
 ```python
-
 import kaleido
-await kaleido.get_chrome()
-# or
-# kaleido.get_chrome_sync()
+kaleido.get_chrome_sync()
 ```
 
-## Quickstart
+## Development guide
+
+Below are examples of how to use Kaleido directly in your Python program.
+
+If you want to export images of Plotly charts, it's not necessary to call Kaleido directly; you can use functions in the Plotly library. [See the Plotly documentation for instructions.](https://plotly.com/python/static-image-export/)
+
+### Usage examples
 
 ```python
 import kaleido
@@ -89,7 +98,7 @@ async with kaleido.Kaleido(n=4, timeout=90) as k:
 # where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
-There are shortcut functions if just want dont want to create a `Kaleido()`.
+There are shortcut functions which can be used to generate images without creating a `Kaleido()` object:
 
 ```python
 import asyncio
@@ -103,7 +112,7 @@ asyncio.run(
 )
 ```
 
-## PageGenerators
+### PageGenerators
 
 The `page` argument takes a `kaleido.PageGenerator()` to customize versions.
 Normally, kaleido looks for an installed plotly as uses that version. You can pass
@@ -116,13 +125,3 @@ my_page = kaleido.PageGenerator(
   others=["a list of other script links to include"]
 )
 ```
-
-## More info
-
-There are plenty of doc strings in the source code.
-
-[choreographer]: https://pypi.org/project/choreographer/
-[plotly]: https://plotly.com/
-[plotly-export]: https://plotly.com/python/static-image-export/
-[pypi]: https://pypi.org/
-[repo]: https://github.com/plotly/Kaleido

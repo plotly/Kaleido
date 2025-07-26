@@ -264,6 +264,7 @@ def build_mocks():
         profiler = {}
         asyncio.run(_main(error_log, profiler))
     finally:
+        # ruff: noqa: PLC0415
         from operator import itemgetter
 
         for tab, tab_profile in profiler.items():

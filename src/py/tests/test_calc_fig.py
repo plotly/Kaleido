@@ -12,6 +12,7 @@ _logger = logistro.getLogger(__name__)
 
 
 async def test_calc_fig():
+    # ruff: noqa: PLC0415
     import plotly.express as px
 
     with warnings.catch_warnings():
