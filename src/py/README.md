@@ -38,12 +38,14 @@ kaleido.get_chrome_sync()
 Kaleido v1 introduces a new API. If you're currently using v0, you'll need
 to make changes to your code and environment where you are running Kaleido.
 
-- If using Kaleido v1 with Plotly.py, you will need to install Plotly.py v6.1.1 or later.
+- If using Kaleido v1 with Plotly.py, you will need to install
+Plotly.py v6.1.1 or later.
 - Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome
 installation, but also provides commands for installing Chrome.
 If you don't have Chrome, you'll need to install it.
 See the installation section above for instructions.
-- If your code uses Kaleido directly: `kaleido.scopes.plotly` has been removed in v1.
+- If your code uses Kaleido directly: `kaleido.scopes.plotly` has been
+removed in v1.
 Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
 
 ```python
@@ -118,4 +120,3 @@ my_page = kaleido.PageGenerator(
   others=["a list of other script links to include"]
 )
 ```
-
