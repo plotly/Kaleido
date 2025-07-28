@@ -21,6 +21,13 @@ DEFAULT_HEIGHT = 500
 SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf")
 FormatString = Literal["png", "jpg", "jpeg", "webp", "svg", "json", "pdf"]
 
+
+def _assert_format(ext: str) -> TypeGuard[FormatString]:
+    if ext not in SUPPORTED_FORMATS:
+        raise ValueError(f"File format {ext} is not supported.")
+    return True
+
+
 Figurish = Any  # Be nice to make it more specific, dictionary or something
 
 
@@ -117,7 +124,7 @@ def to_spec(figure, layout_opts: LayoutOpts) -> Spec:
     }
 
 
-def _next_filename(path, prefix, ext):
+def _next_filename(path, prefix, ext) -> str:
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
     re_number = re.compile(
         r"^" + re.escape(prefix) + r"\-(\d+)\." + re.escape(ext) + r"$",
@@ -133,7 +140,11 @@ def _next_filename(path, prefix, ext):
     return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
 
 
-def build_fig_spec(fig, path, opts) -> tuple[Spec, Path]:  #  noqa: C901
+def build_fig_spec(  #  noqa: C901, PLR0912
+    fig: Figurish,
+    path: Path | str | None,
+    opts: LayoutOpts | None,
+) -> tuple[Spec, Path]:
     if not opts:
         opts = {}
 
@@ -149,13 +160,16 @@ def build_fig_spec(fig, path, opts) -> tuple[Spec, Path]:  #  noqa: C901
         raise TypeError("Path should be a string or `pathlib.Path` object (or None)")
 
     if path and path.suffix and not opts.get("format"):
-        opts["format"] = path.suffix.lstrip(".")
+        ext = path.suffix.lstrip(".")
+        if _assert_format(ext):  # not strict necessary if but helps typeguard
+            opts["format"] = ext
 
     spec = to_spec(fig, opts)
 
     ext = spec["format"]
 
-    full_path: Path
+    full_path: Path | None = None
+    directory: Path
     if not path:
         directory = Path()  # use current Path
     elif path and (not path.suffix or path.is_dir()):
