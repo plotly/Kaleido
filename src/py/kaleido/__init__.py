@@ -3,6 +3,7 @@ Kaleido is a library for generating static images from Plotly figures.
 
 Please see the README.md for more information and a quickstart.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -14,6 +15,9 @@ from choreographer.cli import get_chrome, get_chrome_sync
 
 from ._page_generator import PageGenerator
 from .kaleido import Kaleido
+
+if TYPE_CHECKING:
+    from typing import Any
 
 __all__ = [
     "Kaleido",
@@ -122,17 +126,17 @@ async def write_fig_from_object(
         )
 
 
-def _async_thread_run(func, args, kwargs):
-    q = queue.Queue(maxsize=1)
+def _async_thread_run(func, args: tuple[Any, ...], kwargs: dict):
+    q: queue.Queue[Any] = queue.Queue(maxsize=1)
 
-    def run(*args, **kwargs):
+    def run(func, q, *args, **kwargs):
         # func is a closure
         try:
             q.put(asyncio.run(func(*args, **kwargs)))
         except BaseException as e:  # noqa: BLE001
             q.put(e)
 
-    t = Thread(target=run, args=args, kwargs=kwargs)
+    t = Thread(target=run, args=(func, q, *args), kwargs=kwargs)
     t.start()
     t.join()
     res = q.get()
