@@ -3,10 +3,12 @@ Kaleido is a library for generating static images from Plotly figures.
 
 Please see the README.md for more information and a quickstart.
 """
+from __future__ import annotations
 
 import asyncio
 import queue
 from threading import Thread
+from typing import TYPE_CHECKING, NamedTuple
 
 from choreographer.cli import get_chrome, get_chrome_sync
 
