@@ -1,3 +1,4 @@
+- Add not-released api functions start/stop_sync_server
 v1.0.0
 - Add warning if using incompatible Plotly version
 
