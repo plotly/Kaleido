@@ -15,7 +15,7 @@ from .kaleido import Kaleido
 _global_server = _sync_server.GlobalKaleidoServer()
 
 
-def start_kaleido_sync_server(*args, **kwargs):
+def start_sync_server(*args, **kwargs):
     """
     Start a kaleido server which will process all sync generation requests.
 
@@ -26,7 +26,7 @@ def start_kaleido_sync_server(*args, **kwargs):
     _global_server.open(*args, **kwargs)
 
 
-def stop_kaleido_sync_server():
+def stop_sync_server():
     """Stop the kaleido server. It can be restarted."""
     _global_server.close()
 
