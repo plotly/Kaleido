@@ -88,7 +88,7 @@ class GlobalKaleidoServer:
     def call_function(self, cmd: str, *args, **kwargs):
         if not self.is_running():
             raise RuntimeError("Can't call function on stopped server.")
-        if kwargs.pop("kopts"):
+        if kwargs.pop("kopts", None):
             warnings.warn(
                 "The kopts argument is ignored if using a server.",
                 UserWarning,
