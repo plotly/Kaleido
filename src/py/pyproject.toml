@@ -26,7 +26,7 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "choreographer>=1.0.5",
+  "choreographer>=1.0.7",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
@@ -61,9 +61,7 @@ dev = [
 #]
 
 #[tool.uv.sources]
-#mkquixote = { path = "../../../mkquixote", editable = true }
-#choreographer = { path = "../../../devtools_protocol", editable = true }
-#logistro = { path = "../../../logistro", editable = true }
+#choreographer = { path = "/home/ajp/projects/PLOTLY/choreographer", editable = true }
 
 [tool.ruff.lint]
 select = ["ALL"]
