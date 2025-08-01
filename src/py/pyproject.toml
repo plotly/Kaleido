@@ -14,7 +14,7 @@ kaleido = ['vendor/**']
 [project]
 name = "kaleido"
 description = "Plotly graph export library"
-license = {file = "LICENSE.md"}
+license = {file = "LICENSE"}
 readme = "README.md"
 requires-python = ">=3.8"
 dynamic = ["version"]
