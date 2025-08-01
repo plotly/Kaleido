@@ -9,6 +9,7 @@ import warnings
 from pathlib import Path
 from pprint import pp
 from random import sample
+from typing import TypedDict
 
 import logistro
 import orjson
@@ -39,8 +40,14 @@ def _get_jsons_in_paths(path: str | Path) -> list[Path]:
         raise TypeError("--input must be file or directory")
 
 
+class Param(TypedDict):
+    name: str
+    opts: dict[str, int | float]
+
+
 def _load_figures_from_paths(paths: list[Path]):
     # Set json
+    params: list[Param]
     for path in paths:
         if path.is_file():
             with path.open(encoding="utf-8") as file:
@@ -80,7 +87,10 @@ def _load_figures_from_paths(paths: list[Path]):
                                 for f in formats:
                                     params.append(
                                         {
-                                            "name": f"{path.stem}-{w}x{h}X{s}.{f}",
+                                            "name": (
+                                                f"{path.stem!s}-{w!s}"
+                                                f"x{h!s}X{s!s}.{f!s}"
+                                            ),
                                             "opts": {
                                                 "scale": s,
                                                 "width": w,

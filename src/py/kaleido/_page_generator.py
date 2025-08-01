@@ -60,7 +60,8 @@ class PageGenerator:
         elif not plotly:
             try:
                 # ruff: noqa: PLC0415
-                import plotly as pltly  # type: ignore [import-not-found]
+                # is this the best way to do this? can't we use importlib?
+                import plotly as pltly  # type: ignore[import-untyped]
 
                 plotly_path = (
                     Path(pltly.__file__).parent / "package_data" / "plotly.min.js"
