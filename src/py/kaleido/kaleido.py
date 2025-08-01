@@ -102,6 +102,7 @@ class Kaleido(choreo.Browser):
         self._background_render_tasks = set()
         self._main_tasks = set()
         self._tabs_ready = asyncio.Queue(maxsize=0)
+        self._total_tabs = 0
         self._tmp_dir = None
 
         page = kwargs.pop("page_generator", None)
@@ -165,6 +166,7 @@ class Kaleido(choreo.Browser):
         _logger.info("All navigates done, putting them all in queue.")
         for tab in kaleido_tabs:
             await self._tabs_ready.put(tab)
+        self._total_tabs = len(kaleido_tabs)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
     async def populate_targets(self) -> None:
@@ -216,6 +218,10 @@ class Kaleido(choreo.Browser):
 
         """
         _logger.info(f"Getting tab from queue (has {self._tabs_ready.qsize()})")
+        if not self._total_tabs:
+            raise RuntimeError(
+                "It looks like nothing is ready. Did you call .open() or .close()?",
+            )
         tab = await self._tabs_ready.get()
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
