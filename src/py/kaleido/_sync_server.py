@@ -53,7 +53,7 @@ class GlobalKaleidoServer:
     def is_running(self):
         return self._initialized
 
-    def open(self, *args, **kwargs):
+    def open(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the singleton with three values."""
         if self.is_running():
             warnings.warn(

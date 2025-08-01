@@ -6,10 +6,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypedDict
 
 import logistro
-from typing_extensions import TypeGuard
 
 if TYPE_CHECKING:
-    """Just leaving it here in case."""
+    from typing_extensions import TypeGuard
 
 _logger = logistro.getLogger(__name__)
 
