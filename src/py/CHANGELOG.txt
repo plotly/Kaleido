@@ -1,3 +1,6 @@
+v1.0.1
+- Fix bug where attribute was inconsistently named
+
 v1.0.0
 - Add warning if using incompatible Plotly version
 
