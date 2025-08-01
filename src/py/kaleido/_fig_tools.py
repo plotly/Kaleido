@@ -173,7 +173,7 @@ def build_fig_spec(  #  noqa: C901, PLR0912
         directory = Path()  # use current Path
     elif path and (not path.suffix or path.is_dir()):
         if not path.is_dir():
-            raise ValueError(f"Please create all desired folders: {path}")
+            raise ValueError(f"Directory {path} not found. Please create it.")
         directory = path
     else:
         full_path = path
