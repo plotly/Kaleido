@@ -26,7 +26,7 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "choreographer>=1.0.5",
+  "choreographer>=1.0.7",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
@@ -51,18 +51,8 @@ dev = [
   "plotly[express]>=6.1.1",
   "pytest-order>=1.3.0",
   "pandas>=2.0.3",
+  "typing-extensions>=4.12.2",
 ]
-
-#docs = [
-#    "mkquixote @ git+ssh://git@github.com/geopozo/mkquixote; python_version>= '3.11'",
-#    "mkdocs>=1.6.1",
-#    "mkdocs-material>=9.5.49",
-#]
-
-#[tool.uv.sources]
-#mkquixote = { path = "../../../mkquixote", editable = true }
-#choreographer = { path = "../../../devtools_protocol", editable = true }
-#logistro = { path = "../../../logistro", editable = true }
 
 [tool.ruff.lint]
 select = ["ALL"]
