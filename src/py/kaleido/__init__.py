@@ -4,14 +4,32 @@ Kaleido is a library for generating static images from Plotly figures.
 Please see the README.md for more information and a quickstart.
 """
 
-import asyncio
-import queue
-from threading import Thread
+from __future__ import annotations
 
 from choreographer.cli import get_chrome, get_chrome_sync
 
+from . import _sync_server
 from ._page_generator import PageGenerator
 from .kaleido import Kaleido
+
+_global_server = _sync_server.GlobalKaleidoServer()
+
+
+def start_sync_server(*args, **kwargs):
+    """
+    Start a kaleido server which will process all sync generation requests.
+
+    Only one server can be started at a time.
+
+    This wrapper function takes the exact same arguments as kaleido.Kaleido().
+    """
+    _global_server.open(*args, **kwargs)
+
+
+def stop_sync_server():
+    """Stop the kaleido server. It can be restarted."""
+    _global_server.close()
+
 
 __all__ = [
     "Kaleido",
@@ -20,6 +38,8 @@ __all__ = [
     "calc_fig_sync",
     "get_chrome",
     "get_chrome_sync",
+    "start_sync_server",
+    "stop_sync_server",
     "write_fig",
     "write_fig_from_object",
     "write_fig_from_object_sync",
@@ -120,36 +140,25 @@ async def write_fig_from_object(
         )
 
 
-def _async_thread_run(func, args, kwargs):
-    q = queue.Queue(maxsize=1)
-
-    def run(*args, **kwargs):
-        # func is a closure
-        try:
-            q.put(asyncio.run(func(*args, **kwargs)))
-        except BaseException as e:  # noqa: BLE001
-            q.put(e)
-
-    t = Thread(target=run, args=args, kwargs=kwargs)
-    t.start()
-    t.join()
-    res = q.get()
-    if isinstance(res, BaseException):
-        raise res
-    else:
-        return res
-
-
 def calc_fig_sync(*args, **kwargs):
     """Call `calc_fig` but blocking."""
-    return _async_thread_run(calc_fig, args=args, kwargs=kwargs)
+    if _global_server.is_running():
+        return _global_server.call_function("calc_fig", *args, **kwargs)
+    else:
+        return _sync_server.oneshot_async_run(calc_fig, args=args, kwargs=kwargs)
 
 
 def write_fig_sync(*args, **kwargs):
     """Call `write_fig` but blocking."""
-    _async_thread_run(write_fig, args=args, kwargs=kwargs)
+    if _global_server.is_running():
+        _global_server.call_function("write_fig", *args, **kwargs)
+    else:
+        _sync_server.oneshot_async_run(write_fig, args=args, kwargs=kwargs)
 
 
 def write_fig_from_object_sync(*args, **kwargs):
     """Call `write_fig_from_object` but blocking."""
-    _async_thread_run(write_fig_from_object, args=args, kwargs=kwargs)
+    if _global_server.is_running():
+        _global_server.call_function("write_fig_from_object", *args, **kwargs)
+    else:
+        _sync_server.oneshot_async_run(write_fig_from_object, args=args, kwargs=kwargs)
