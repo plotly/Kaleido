@@ -1,6 +1,5 @@
-v1.0.1
 - Fix bug where attribute was inconsistently named
-
+- Add new api functions start/stop_sync_server
 v1.0.0
 - Add warning if using incompatible Plotly version
 
