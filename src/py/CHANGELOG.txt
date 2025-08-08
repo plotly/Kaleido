@@ -1,4 +1,4 @@
-v1.0.1rc0
+v1.1.0rc0
 - Improve verbosity of errors when starting kaleido improperly
 - Add new api functions start/stop_sync_server
 
