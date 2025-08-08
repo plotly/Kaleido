@@ -220,7 +220,7 @@ class Kaleido(choreo.Browser):
         _logger.info(f"Getting tab from queue (has {self._tabs_ready.qsize()})")
         if not self._total_tabs:
             raise RuntimeError(
-                "It looks like nothing is ready. Did you call .open() or .close()?",
+                "Before generating a figure, you must await `k.open()`.",
             )
         tab = await self._tabs_ready.get()
         _logger.info(f"Got {tab.tab.target_id[:4]}")
