@@ -54,15 +54,6 @@ dev = [
   "typing-extensions>=4.12.2",
 ]
 
-#docs = [
-#    "mkquixote @ git+ssh://git@github.com/geopozo/mkquixote; python_version>= '3.11'",
-#    "mkdocs>=1.6.1",
-#    "mkdocs-material>=9.5.49",
-#]
-
-#[tool.uv.sources]
-#choreographer = { path = "/home/ajp/projects/PLOTLY/choreographer", editable = true }
-
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
