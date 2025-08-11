@@ -1,5 +1,8 @@
 - Fix bug where attribute was inconsistently named
+v1.1.0rc0
+- Improve verbosity of errors when starting kaleido improperly
 - Add new api functions start/stop_sync_server
+
 v1.0.0
 - Add warning if using incompatible Plotly version
 

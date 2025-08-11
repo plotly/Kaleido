@@ -102,6 +102,7 @@ class Kaleido(choreo.Browser):
         self._background_render_tasks = set()
         self._main_tasks = set()
         self._tabs_ready = asyncio.Queue(maxsize=0)
+        self._total_tabs = 0
         self._tmp_dir = None
 
         page = kwargs.pop("page_generator", None)
@@ -165,6 +166,7 @@ class Kaleido(choreo.Browser):
         _logger.info("All navigates done, putting them all in queue.")
         for tab in kaleido_tabs:
             await self._tabs_ready.put(tab)
+        self._total_tabs = len(kaleido_tabs)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
     async def populate_targets(self) -> None:
@@ -216,6 +218,10 @@ class Kaleido(choreo.Browser):
 
         """
         _logger.info(f"Getting tab from queue (has {self._tabs_ready.qsize()})")
+        if not self._total_tabs:
+            raise RuntimeError(
+                "Before generating a figure, you must await `k.open()`.",
+            )
         tab = await self._tabs_ready.get()
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
@@ -248,9 +254,12 @@ class Kaleido(choreo.Browser):
             raise e
 
     def _check_render_task(self, name, tab, main_task, error_log, task):
-        if e := task.exception():
-            if isinstance(e, asyncio.CancelledError):
-                _logger.info(f"Something cancelled {name}.")
+        if task.cancelled():
+            _logger.info(f"Something cancelled {name}.")
+            error_log.append(
+                ErrorEntry(name, asyncio.CancelledError, tab.javascript_log),
+            )
+        elif e := task.exception():
             _logger.error(f"Render Task Error In {name}- ", exc_info=e)
             if isinstance(e, (asyncio.TimeoutError, TimeoutError)) and error_log:
                 error_log.append(
