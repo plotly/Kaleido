@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -11,10 +13,10 @@ DEFAULT_MATHJAX = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
-def _ensure_path(path: Path):
-    if urlparse(path).scheme:  # is url
+def _ensure_path(path: Path | str):
+    if urlparse(str(path)).scheme:  # is url
         return
-    if not path.exists():
+    if not Path(path).exists():
         raise ValueError(f"{path} does not seem to be a valid path.")
 
 
@@ -90,7 +92,7 @@ class PageGenerator:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
         elif isinstance(plotly, str):
-            _ensure_path(Path(plotly))
+            _ensure_path(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
