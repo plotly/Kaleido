@@ -29,7 +29,7 @@ no_imports_result_re = re.compile(r"""
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)  # noqa: E501 line too long
 
@@ -50,7 +50,7 @@ all_defaults_re = re.compile(r"""
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -71,7 +71,7 @@ with_plot_result_re = re.compile(r"""
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -91,7 +91,7 @@ without_math_result_re = re.compile(r"""
         <script src="file:///with_plot" charset="utf-8"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -114,7 +114,7 @@ with_others_result_re = re.compile(r"""
         <script src="2"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
