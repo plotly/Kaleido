@@ -35,7 +35,7 @@ class PageGenerator:
     footer = f"""
         <script src="{KJS_PATH.as_uri()}"></script>
     </head>
-    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"><img></body>
+    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"></img></body>
 </html>
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
