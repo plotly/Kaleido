@@ -14,10 +14,11 @@ KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
 def _ensure_path(path: Path | str):
+    _logger.debug(f"Ensuring path {path!s}")
     if urlparse(str(path)).scheme:  # is url
         return
     if not Path(path).exists():
-        raise ValueError(f"{path} does not seem to be a valid path.")
+        raise ValueError(f"{path!s} does not seem to be a valid path.")
 
 
 class PageGenerator:
