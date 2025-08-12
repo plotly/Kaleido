@@ -90,7 +90,7 @@ class PageGenerator:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
         elif isinstance(plotly, str):
-            _ensure_path(plotly)
+            _ensure_path(Path(plotly))
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
