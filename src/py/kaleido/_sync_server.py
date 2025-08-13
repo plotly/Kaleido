@@ -63,7 +63,11 @@ class GlobalKaleidoServer:
             )
             return
         coroutine = self._server(*args, **kwargs)
-        self._thread: Thread = Thread(target=asyncio.run, args=(coroutine,))
+        self._thread: Thread = Thread(
+            target=asyncio.run,
+            args=(coroutine,),
+            daemon=True,
+        )
         self._task_queue: Queue[Task | None] = Queue()
         self._return_queue: Queue[Any] = Queue()
         self._thread.start()
