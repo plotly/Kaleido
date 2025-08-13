@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 import warnings
 from queue import Queue
 from threading import Thread
@@ -53,6 +54,15 @@ class GlobalKaleidoServer:
     def is_running(self):
         return self._initialized
 
+    def ensure_opened(self, *args: Any, **kwargs: Any) -> None:
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"Server already open.",
+                category=RuntimeWarning,
+            )
+            self.open(*args, **kwargs)
+
     def open(self, *args: Any, **kwargs: Any) -> None:
         """Initialize the singleton with three values."""
         if self.is_running():
@@ -72,6 +82,16 @@ class GlobalKaleidoServer:
         self._return_queue: Queue[Any] = Queue()
         self._thread.start()
         self._initialized = True
+        atexit.register(self.ensure_closed)
+
+    def ensure_closed(self):
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message=r"Server already closed.",
+                category=RuntimeWarning,
+            )
+            self.close()
 
     def close(self):
         """Reset the singleton back to an uninitialized state."""

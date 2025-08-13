@@ -15,19 +15,37 @@ from .kaleido import Kaleido
 _global_server = _sync_server.GlobalKaleidoServer()
 
 
+def safe_start_sync_server(*args, **kwargs):
+    """
+    Start a kaleido server which will process all sync generation requests.
+
+    The kaleido server is a singleton, so it can't be opened twice. This
+    function will simply return if the server is already running.
+
+    This wrapper function takes the exact same arguments as kaleido.Kaleido().
+    """
+    _global_server.ensure_opened(*args, **kwargs)
+
+
 def start_sync_server(*args, **kwargs):
     """
     Start a kaleido server which will process all sync generation requests.
 
-    Only one server can be started at a time.
+    The kaleido server is a singleton, so it can't be opened twice. This
+    function will warn you if the server is already running.
 
     This wrapper function takes the exact same arguments as kaleido.Kaleido().
     """
     _global_server.open(*args, **kwargs)
 
 
-def stop_sync_server():
+def safe_stop_sync_server():
     """Stop the kaleido server. It can be restarted."""
+    _global_server.ensure_closed()
+
+
+def stop_sync_server():
+    """Stop the kaleido server. It can be restarted. Warns if not started."""
     _global_server.close()
 
 
