@@ -56,6 +56,8 @@ __all__ = [
     "calc_fig_sync",
     "get_chrome",
     "get_chrome_sync",
+    "safe_start_sync_server",
+    "safe_stop_sync_server",
     "start_sync_server",
     "stop_sync_server",
     "write_fig",
