@@ -47,7 +47,6 @@ async def main():
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
-        print("PATH", FILE_PATH)
         await cmd_execute("ls")
         await cmd_execute("cat", p)
         await cmd_execute("git", "branch")
