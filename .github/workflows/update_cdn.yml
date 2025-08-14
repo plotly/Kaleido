@@ -1,0 +1,32 @@
+name: Update CDN
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+on:
+  push:
+    branches:
+      - bot/*
+  schedule:
+    - cron: "0 13 * * 1"
+
+jobs:
+  inspection:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    defaults:
+      run:
+        working-directory: ./src/py/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: uv sync
+      - name: Update CDN & PR
+        run: uv run --with semver --with jq --with orjson --with aiohttp scripts/update_cdn.py
