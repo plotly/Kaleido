@@ -18,11 +18,13 @@ async def run(commands: list[str]) -> tuple[bytes, bytes]:
     p = await asyncio.create_subprocess_exec(
         *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-    return await p.communicate()
+
+    return (*(await p.communicate()), p.returncode)
+
 
 # TODO: investigar JQ con semver y max version
 async def get_latest_version() -> str:
-    out, _ = await run(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
+    out, _, _ = await run(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
     tags = jq.compile("map(.name)").input_value(orjson.loads(out)).first()
     versions = [semver.VersionInfo.parse(v.lstrip("v")) for v in tags]
     return str(max(versions))
@@ -50,16 +52,19 @@ async def main():
     else:
         title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
-        out, _ = await run(["gh", "issue", "list", "--limit", "1", "|", "grep", title])
-        print("EXIST:", out)
-        new_issue, err = await run(
-            ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
-        )
-        print(
-            f"The issue '{title}' was created in {new_issue.decode().strip()}"
-            if not err
-            else err
-        )
+        out, _, reteval = await run(["gh", "issue", "list", "|", "grep", title])
+        print("reteval:", reteval)
+        if out.decode():
+            print("Ya existe un issue")
+            sys.exit(0)
+        # new, err = await run(
+        #     ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
+        # )
+        # print(
+        #     f"The issue '{title}' was created in {new.decode().strip()}"
+        #     if not err
+        #     else err
+        # )
 
 
 asyncio.run(main())
