@@ -14,15 +14,15 @@ import aiohttp
 REPO = os.environ["REPO"]
 
 
-async def cmd_execute(commands: list[str]) -> tuple[bytes, bytes]:
+async def run(commands: list[str]) -> tuple[bytes, bytes]:
     p = await asyncio.create_subprocess_exec(
         *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
     return await p.communicate()
 
-
+# TODO: investigar JQ con semver y max version
 async def get_latest_version() -> str:
-    out, err = await cmd_execute(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
+    out, _ = await run(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
     tags = jq.compile("map(.name)").input_value(orjson.loads(out)).first()
     versions = [semver.VersionInfo.parse(v.lstrip("v")) for v in tags]
     return str(max(versions))
@@ -42,27 +42,21 @@ async def main():
         print("Already up to date")
         sys.exit(0)
 
-    cdn_exists = await verify_url(new_cdn)
+    cdn_exists = await verify_url("https://cdn.plot.ly/plotly-4.1.0.js")
     if cdn_exists:
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
-        out, _ = await cmd_execute(["ls"])
-        print(out)
-        out, _ = await cmd_execute(["cat", p])
-        print(out)
-        out, _ = await cmd_execute(["git", "branch"])
-        print(out)
-        out, _ = await cmd_execute(["git", "status"])
-        print(out)
     else:
-        title = f"'CDN not reachable for Plotly v{latest_version}'"
+        title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
-        out, err = await cmd_execute(
+        out, _ = await run(["gh", "issue", "list", "--limit", "1", "|", "grep", title])
+        print("EXIST:", out)
+        new_issue, err = await run(
             ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         )
         print(
-            f"The issue {title} was created in {out.decode().strip()}"
+            f"The issue '{title}' was created in {new_issue.decode().strip()}"
             if not err
             else err
         )
