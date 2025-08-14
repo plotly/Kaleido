@@ -14,7 +14,7 @@ import aiohttp
 REPO = os.environ["REPO"]
 
 
-async def gh_call(commands: list[str]) -> tuple[bytes, bytes]:
+async def command_call(commands: list[str]) -> tuple[bytes, bytes]:
     p = await asyncio.create_subprocess_exec(
         *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -22,7 +22,7 @@ async def gh_call(commands: list[str]) -> tuple[bytes, bytes]:
 
 
 async def get_latest_version() -> str:
-    out, err = await gh_call(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
+    out, err = await command_call(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
     tags = jq.compile("map(.name)").input_value(orjson.loads(out)).first()
     versions = [semver.VersionInfo.parse(v.lstrip("v")) for v in tags]
     return str(max(versions))
@@ -46,14 +46,15 @@ async def main():
     if cdn_exists:
         print("DEFAULT_PLOTLY", DEFAULT_PLOTLY)
         p = pathlib.Path(FILE_PATH)
+        print("PATH:", p)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
-        from kaleido._page_generator import DEFAULT_PLOTLY as const_value
-        print(const_value)
+        await command_call("ls")
+        await command_call("cat", p)
     else:
         title = f"'CDN not reachable for Plotly v{latest_version}'"
         body = f"URL: {new_cdn} - invalid url"
-        out, err = await gh_call(
+        out, err = await command_call(
             ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         )
         print(
