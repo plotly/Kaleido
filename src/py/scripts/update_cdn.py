@@ -52,22 +52,18 @@ async def main():
     else:
         title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
-        out, _, reteval = await run(["gh", "issue", "list", "--search", title])
-        print(title)
-        print("reteval:", reteval)
-        print("OUT", out)
+        out, _, _ = await run(["gh", "issue", "list", "--search", title])
         if out.decode():
-            print("Ya existe un issue")
+            print(f"Issue '{title}' already exists")
             sys.exit(0)
-        print("No existe")
         new, err, _ = await run(
             ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         )
-        # print(
-        #     f"The issue '{title}' was created in {new.decode().strip()}"
-        #     if not err
-        #     else err
-        # )
+        print(
+            f"The issue '{title}' was created in {new.decode().strip()}"
+            if not err
+            else err
+        )
 
 
 asyncio.run(main())
