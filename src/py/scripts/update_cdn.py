@@ -60,9 +60,9 @@ async def main():
             print("Ya existe un issue")
             sys.exit(0)
         print("No existe")
-        # new, err = await run(
-        #     ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
-        # )
+        new, err = await run(
+            ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
+        )
         # print(
         #     f"The issue '{title}' was created in {new.decode().strip()}"
         #     if not err
