@@ -47,10 +47,14 @@ async def main():
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
-        await cmd_execute(["ls"])
-        await cmd_execute(["cat", p])
-        await cmd_execute(["git", "branch"])
-        await cmd_execute(["git", "status"])
+        out, _ = await cmd_execute(["ls"])
+        print(out)
+        out, _ = await cmd_execute(["cat", p])
+        print(out)
+        out, _ = await cmd_execute(["git", "branch"])
+        print(out)
+        out, _ = await cmd_execute(["git", "status"])
+        print(out)
     else:
         title = f"'CDN not reachable for Plotly v{latest_version}'"
         body = f"URL: {new_cdn} - invalid url"
