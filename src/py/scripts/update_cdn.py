@@ -47,7 +47,8 @@ async def main():
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
-        print(p)
+        from kaleido._page_generator import DEFAULT_PLOTLY
+        print(DEFAULT_PLOTLY)
     else:
         title = f"'CDN not reachable for Plotly v{latest_version}'"
         body = f"URL: {new_cdn} - invalid url"
