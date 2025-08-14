@@ -15,7 +15,6 @@ REPO = os.environ["REPO"]
 
 
 async def gh_call(commands: list[str]) -> tuple[bytes, bytes]:
-    print("I'm here", commands)
     p = await asyncio.create_subprocess_exec(
         *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -23,7 +22,9 @@ async def gh_call(commands: list[str]) -> tuple[bytes, bytes]:
 
 
 async def get_latest_version() -> str:
-    out, _ = await gh_call(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
+    print("I'm here latest")
+    out, err = await gh_call(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
+    print("I PASS", out, err)
     tags = jq.compile("map(.name)").input_value(orjson.loads(out)).first()
     versions = [semver.VersionInfo.parse(v.lstrip("v")) for v in tags]
     return str(max(versions))
