@@ -14,7 +14,8 @@ import aiohttp
 REPO = os.environ["REPO"]
 
 
-async def gh_call(commands: list[str]):
+async def gh_call(commands: list[str]) -> tuple[bytes, bytes]:
+    print("I'm here", commands)
     p = await asyncio.create_subprocess_exec(
         *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
