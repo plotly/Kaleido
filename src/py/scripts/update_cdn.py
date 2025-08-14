@@ -52,7 +52,7 @@ async def main():
     else:
         title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
-        out, _, reteval = await run(["gh", "issue", "list", "--search", f"title:{title}"])
+        out, _, reteval = await run(["gh", "issue", "list", "--search", title])
         print(title)
         print("reteval:", reteval)
         print("OUT", out)
@@ -60,7 +60,7 @@ async def main():
             print("Ya existe un issue")
             sys.exit(0)
         print("No existe")
-        new, err = await run(
+        new, err, _ = await run(
             ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         )
         # print(
