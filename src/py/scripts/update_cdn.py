@@ -44,13 +44,14 @@ async def main():
 
     cdn_exists = await verify_url(new_cdn)
     if cdn_exists:
-        print("DEFAULT_PLOTLY", DEFAULT_PLOTLY)
         p = pathlib.Path(FILE_PATH)
-        print("PATH:", p)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
+        print("PATH:", p)
         await command_call("ls")
         await command_call("cat", p)
+        await command_call("git", "branch")
+        await command_call("git", "status")
     else:
         title = f"'CDN not reachable for Plotly v{latest_version}'"
         body = f"URL: {new_cdn} - invalid url"
