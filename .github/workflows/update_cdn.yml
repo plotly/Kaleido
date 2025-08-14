@@ -27,5 +27,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - run: uv sync
       - name: Update CDN & PR
-        run: uv run --with semver --with jq --with aiohttp scripts/update_cdn.py
+        run: uv run --python 3.12 --with semver --with jq --with aiohttp scripts/update_cdn.py
