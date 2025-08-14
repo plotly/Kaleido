@@ -59,6 +59,7 @@ async def main():
         if out.decode():
             print("Ya existe un issue")
             sys.exit(0)
+        print("No existe")
         # new, err = await run(
         #     ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         # )
