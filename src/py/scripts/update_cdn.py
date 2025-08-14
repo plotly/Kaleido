@@ -54,6 +54,7 @@ async def main():
         body = f"URL: {new_cdn} - invalid url"
         out, _, reteval = await run(["gh", "issue", "list", "|", "grep", title])
         print("reteval:", reteval)
+        print("OUT", out)
         if out.decode():
             print("Ya existe un issue")
             sys.exit(0)
