@@ -22,9 +22,7 @@ async def gh_call(commands: list[str]) -> tuple[bytes, bytes]:
 
 
 async def get_latest_version() -> str:
-    print("I'm here latest")
     out, err = await gh_call(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
-    print("I PASS", out, err)
     tags = jq.compile("map(.name)").input_value(orjson.loads(out)).first()
     versions = [semver.VersionInfo.parse(v.lstrip("v")) for v in tags]
     return str(max(versions))
