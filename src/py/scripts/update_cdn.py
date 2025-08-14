@@ -49,6 +49,10 @@ async def main():
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
+        branch = f"bot/update-cdn-{latest_version}"
+        out, _, _ = await run(["gh", "api" f"repos/{REPO}/branches/{branch}", "--silent"])
+        print(out)
+        #await run(["git", "checkout", "-b", branch])
     else:
         title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
