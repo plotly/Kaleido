@@ -44,10 +44,10 @@ async def main():
 
     cdn_exists = await verify_url(new_cdn)
     if cdn_exists:
+        print("PATH",FILE_PATH)
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
         p.write_text(s, encoding="utf-8")
-        print("PATH:", p)
         await command_call("ls")
         await command_call("cat", p)
         await command_call("git", "branch")
