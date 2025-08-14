@@ -44,7 +44,7 @@ async def main():
         print("Already up to date")
         sys.exit(0)
 
-    cdn_exists = await verify_url("https://cdn.plot.ly/plotly-4.1.0.js")
+    cdn_exists = await verify_url(new_cdn)
     if cdn_exists:
         p = pathlib.Path(FILE_PATH)
         s = p.read_text(encoding="utf-8").replace(DEFAULT_PLOTLY, new_cdn, 1)
