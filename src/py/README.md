@@ -30,7 +30,8 @@ or function in Python:
 
 ```python
 >>> import kaleido
->>> kaleido.get_chrome_sync()
+>>> # In actual code, you would call:
+>>> # kaleido.get_chrome_sync()
 ```
 
 ## Migrating from v0 to v1
@@ -53,7 +54,7 @@ Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figure
 >>> import plotly.graph_objects as go
 
 >>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
->>> kaleido.write_fig_sync(fig, path="figure.png")
+>>> write_fig_sync(fig, path="figure.png")
 ```
 
 ## Development guide
@@ -68,27 +69,30 @@ Kaleido directly; you can use functions in the Plotly library.
 
 ```python
 >>> import kaleido
-
->>> async with kaleido.Kaleido(n=4, timeout=90) as k:
-  # n is number of processes
-  ... await k.write_fig(fig, path="./", opts={"format":"jpg"})
-
-# other `kaleido.Kaleido` arguments:
-# page:  Change library version (see PageGenerators below)
-
-# `Kaleido.write_fig()` arguments:
-# - fig:       A single plotly figure or an iterable.
-# - path:      A directory (names auto-generated based on title)
-#              or a single file.
-# - opts:      A dictionary with image options:
-#              `{"scale":..., "format":..., "width":..., "height":...}`
-# - error_log: If you pass a list here, image-generation errors will be appended
-#              to the list and generation continues. If left as `None`, the
-#              first error will cause failure.
-
-# You can also use Kaleido.write_fig_from_object:
-  await k.write_fig_from_object(fig_objects, error_log)
-# where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
+>>> import plotly.graph_objects as go
+>>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+>>> 
+>>> # Example of using Kaleido with async context manager
+>>> # In an async function, you would do:
+>>> # async with kaleido.Kaleido(n=4, timeout=90) as k:
+>>> #     await k.write_fig(fig, path="./", opts={"format":"jpg"})
+>>> 
+>>> # other `kaleido.Kaleido` arguments:
+>>> # page:  Change library version (see PageGenerators below)
+>>> 
+>>> # `Kaleido.write_fig()` arguments:
+>>> # - fig:       A single plotly figure or an iterable.
+>>> # - path:      A directory (names auto-generated based on title)
+>>> #              or a single file.
+>>> # - opts:      A dictionary with image options:
+>>> #              `{"scale":..., "format":..., "width":..., "height":...}`
+>>> # - error_log: If you pass a list here, image-generation errors will be appended
+>>> #              to the list and generation continues. If left as `None`, the
+>>> #              first error will cause failure.
+>>> 
+>>> # You can also use Kaleido.write_fig_from_object:
+>>> # await k.write_fig_from_object(fig_objects, error_log)
+>>> # where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
 There are shortcut functions which can be used to generate images without
@@ -97,13 +101,17 @@ creating a `Kaleido()` object:
 ```python
 >>> import asyncio
 >>> import kaleido
->>> asyncio.run(
-  ... kaleido.write_fig(
-  ...   fig,
-  ...   path="./",
-  ...   n=4
-  )
-)
+>>> import plotly.graph_objects as go
+>>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+>>> 
+>>> # Example of using the shortcut function (in actual code):
+>>> # asyncio.run(
+>>> #     kaleido.write_fig(
+>>> #         fig,
+>>> #         path="./",
+>>> #         n=4
+>>> #     )
+>>> # )
 ```
 
 ### PageGenerators
@@ -113,10 +121,12 @@ Normally, kaleido looks for an installed plotly as uses that version. You can pa
 `kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (the
 default if plotly is not installed).
 
-```
->>> my_page = kaleido.PageGenerator(
-...  plotly="A fully qualified link to plotly (https:// or file://)",
-...  mathjax=False # no mathjax, or another fully quality link
-...  others=["a list of other script links to include"]
-)
+```python
+>>> import kaleido
+>>> # Example of creating a custom PageGenerator:
+>>> # my_page = kaleido.PageGenerator(
+>>> #     plotly="A fully qualified link to plotly (https:// or file://)",
+>>> #     mathjax=False,  # no mathjax, or another fully quality link
+>>> #     others=["a list of other script links to include"]
+>>> # )
 ```
