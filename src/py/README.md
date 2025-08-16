@@ -29,8 +29,8 @@ $ kaleido_get_chrome
 or function in Python:
 
 ```python
-import kaleido
-kaleido.get_chrome_sync()
+>>> import kaleido
+>>> kaleido.get_chrome_sync()
 ```
 
 ## Migrating from v0 to v1
@@ -49,11 +49,11 @@ removed in v1.
 Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
 
 ```python
-from kaleido import write_fig_sync
-import plotly.graph_objects as go
+>>> from kaleido import write_fig_sync
+>>> import plotly.graph_objects as go
 
-fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
-kaleido.write_fig_sync(fig, path="figure.png")
+>>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+>>> kaleido.write_fig_sync(fig, path="figure.png")
 ```
 
 ## Development guide
@@ -67,11 +67,11 @@ Kaleido directly; you can use functions in the Plotly library.
 ### Usage examples
 
 ```python
-import kaleido
+>>> import kaleido
 
-async with kaleido.Kaleido(n=4, timeout=90) as k:
+>>> async with kaleido.Kaleido(n=4, timeout=90) as k:
   # n is number of processes
-  await k.write_fig(fig, path="./", opts={"format":"jpg"})
+  ... await k.write_fig(fig, path="./", opts={"format":"jpg"})
 
 # other `kaleido.Kaleido` arguments:
 # page:  Change library version (see PageGenerators below)
@@ -95,13 +95,13 @@ There are shortcut functions which can be used to generate images without
 creating a `Kaleido()` object:
 
 ```python
-import asyncio
-import kaleido
-asyncio.run(
-  kaleido.write_fig(
-    fig,
-    path="./",
-    n=4
+>>> import asyncio
+>>> import kaleido
+>>> asyncio.run(
+  ... kaleido.write_fig(
+  ...   fig,
+  ...   path="./",
+  ...   n=4
   )
 )
 ```
@@ -114,9 +114,9 @@ Normally, kaleido looks for an installed plotly as uses that version. You can pa
 default if plotly is not installed).
 
 ```
-my_page = kaleido.PageGenerator(
-  plotly="A fully qualified link to plotly (https:// or file://)",
-  mathjax=False # no mathjax, or another fully quality link
-  others=["a list of other script links to include"]
+>>> my_page = kaleido.PageGenerator(
+...  plotly="A fully qualified link to plotly (https:// or file://)",
+...  mathjax=False # no mathjax, or another fully quality link
+...  others=["a list of other script links to include"]
 )
 ```
