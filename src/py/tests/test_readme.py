@@ -14,12 +14,13 @@ import os
 import re
 import warnings
 from pathlib import Path
+from typing import Optional
 
 import pytest
 from _pytest.capture import CaptureFixture
 
 
-def find_project_root(start_path: Path = None) -> Path:
+def find_project_root(start_path: Optional[Path]) -> Path:
     """Find the project root directory by looking for the .git folder.
 
     This function iterates up the directory tree from the given starting path
