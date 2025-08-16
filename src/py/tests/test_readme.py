@@ -1,13 +1,10 @@
 """Tests for validating code examples in the project documentation.
 
-This file is part of the tschm/.config-templates repository
-(https://github.com/tschm/.config-templates).
-
-
 This module contains tests that extract Python code blocks from the README.md file
 and run them through doctest to ensure they are valid and working as expected.
 This helps maintain accurate and working examples in the documentation.
 """
+from __future__ import annotations
 
 import doctest
 import os
@@ -85,7 +82,7 @@ def docstring(project_root: Path) -> str:
     """
     # Read the README.md file
     try:
-        with open(project_root / "README.md", encoding="utf-8") as f:
+        with Path.open(project_root / "README.md", encoding="utf-8") as f:
             content = f.read()
 
             # Extract Python code blocks (assuming they are in triple backticks)
