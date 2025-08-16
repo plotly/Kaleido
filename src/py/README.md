@@ -30,8 +30,7 @@ or function in Python:
 
 ```python
 >>> import kaleido
->>> # In actual code, you would call:
->>> # kaleido.get_chrome_sync()
+>>> kaleido.get_chrome_sync()
 ```
 
 ## Migrating from v0 to v1
@@ -101,17 +100,14 @@ creating a `Kaleido()` object:
 ```python
 >>> import asyncio
 >>> import kaleido
->>> import plotly.graph_objects as go
->>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
 
-# Example usage (not executed in doctests):
-# asyncio.run(
-#     kaleido.write_fig(
-#         fig,
-#         path="./",
-#         n=4
-#     )
-# )
+>>> asyncio.run(
+...     kaleido.write_fig(
+...         fig,
+...         path="./",
+...         n=4
+...     )
+... )
 ```
 
 ### PageGenerators
