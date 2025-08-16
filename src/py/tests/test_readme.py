@@ -11,13 +11,15 @@ import os
 import re
 import warnings
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import pytest
-from _pytest.capture import CaptureFixture
+
+if TYPE_CHECKING:
+    from _pytest.capture import CaptureFixture
 
 
-def find_project_root(start_path: Optional[Path]) -> Path:
+def find_project_root(start_path: Path | None) -> Path:
     """Find the project root directory by looking for the .git folder.
 
     This function iterates up the directory tree from the given starting path
@@ -96,7 +98,7 @@ def docstring(project_root: Path) -> str:
             return docstring
 
     except FileNotFoundError:
-        warnings.warn("README.md file not found")
+        warnings.warn("README.md file not found", stacklevel=2)
         return ""
 
 
