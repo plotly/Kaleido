@@ -52,7 +52,7 @@ def find_project_root(start_path: Optional[Path]) -> Path:
         current_path = current_path.parent
 
     # If we've reached the root directory without finding .git
-    raise FileNotFoundError("Could not find project root: no .git directory found in any parent directory")
+    raise FileNotFoundError("No .git directory found in any parent directory")
 
 
 @pytest.fixture
@@ -65,7 +65,7 @@ def project_root() -> Path:
     return find_project_root(Path(__file__).parent)
 
 
-@pytest.fixture()
+@pytest.fixture
 def docstring(project_root: Path) -> str:
     """Extract Python code blocks from README.md and prepare them for doctest.
 
@@ -131,4 +131,4 @@ def test_blocks(project_root: Path, docstring: str, capfd: CaptureFixture[str]) 
 
     # If there is any output (error message), fail the test
     if captured.out:
-        pytest.fail(f"Doctests failed with the following output:\n{captured.out} and \n{docstring}")
+        pytest.fail(f"Doctests failed with:\n{captured.out} and \n{docstring}")
