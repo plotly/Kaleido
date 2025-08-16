@@ -30,7 +30,8 @@ or function in Python:
 
 ```python
 >>> import kaleido
->>> kaleido.get_chrome_sync()
+>>> # uncomment in code
+>>> # kaleido.get_chrome_sync()
 ```
 
 ## Migrating from v0 to v1
@@ -104,8 +105,7 @@ creating a `Kaleido()` object:
 >>> asyncio.run(
 ...     kaleido.write_fig(
 ...         fig,
-...         path="./",
-...         n=4
+...         path="./"
 ...     )
 ... )
 ```
