@@ -71,28 +71,28 @@ Kaleido directly; you can use functions in the Plotly library.
 >>> import kaleido
 >>> import plotly.graph_objects as go
 >>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
->>> 
->>> # Example of using Kaleido with async context manager
->>> # In an async function, you would do:
->>> # async with kaleido.Kaleido(n=4, timeout=90) as k:
->>> #     await k.write_fig(fig, path="./", opts={"format":"jpg"})
->>> 
->>> # other `kaleido.Kaleido` arguments:
->>> # page:  Change library version (see PageGenerators below)
->>> 
->>> # `Kaleido.write_fig()` arguments:
->>> # - fig:       A single plotly figure or an iterable.
->>> # - path:      A directory (names auto-generated based on title)
->>> #              or a single file.
->>> # - opts:      A dictionary with image options:
->>> #              `{"scale":..., "format":..., "width":..., "height":...}`
->>> # - error_log: If you pass a list here, image-generation errors will be appended
->>> #              to the list and generation continues. If left as `None`, the
->>> #              first error will cause failure.
->>> 
->>> # You can also use Kaleido.write_fig_from_object:
->>> # await k.write_fig_from_object(fig_objects, error_log)
->>> # where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
+ 
+# Example of using Kaleido with async context manager
+# In an async function, you would do:
+# async with kaleido.Kaleido(n=4, timeout=90) as k:
+#     await k.write_fig(fig, path="./", opts={"format":"jpg"})
+ 
+# other `kaleido.Kaleido` arguments:
+# page:  Change library version (see PageGenerators below)
+ 
+# `Kaleido.write_fig()` arguments:
+# - fig:       A single plotly figure or an iterable.
+# - path:      A directory (names auto-generated based on title)
+#              or a single file.
+# - opts:      A dictionary with image options:
+#              `{"scale":..., "format":..., "width":..., "height":...}`
+# - error_log: If you pass a list here, image-generation errors will be appended
+#              to the list and generation continues. If left as `None`, the
+#              first error will cause failure.
+ 
+# You can also use Kaleido.write_fig_from_object:
+# await k.write_fig_from_object(fig_objects, error_log)
+# where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
 There are shortcut functions which can be used to generate images without
@@ -103,15 +103,15 @@ creating a `Kaleido()` object:
 >>> import kaleido
 >>> import plotly.graph_objects as go
 >>> fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
->>> 
->>> # Example of using the shortcut function (in actual code):
->>> # asyncio.run(
->>> #     kaleido.write_fig(
->>> #         fig,
->>> #         path="./",
->>> #         n=4
->>> #     )
->>> # )
+
+# Example usage (not executed in doctests):
+# asyncio.run(
+#     kaleido.write_fig(
+#         fig,
+#         path="./",
+#         n=4
+#     )
+# )
 ```
 
 ### PageGenerators
@@ -124,9 +124,9 @@ default if plotly is not installed).
 ```python
 >>> import kaleido
 >>> # Example of creating a custom PageGenerator:
->>> # my_page = kaleido.PageGenerator(
->>> #     plotly="A fully qualified link to plotly (https:// or file://)",
->>> #     mathjax=False,  # no mathjax, or another fully quality link
->>> #     others=["a list of other script links to include"]
->>> # )
+>>> my_page = kaleido.PageGenerator(
+...   plotly="A fully qualified link to plotly (https:// or file://)",
+...   mathjax=False,  # no mathjax, or another fully quality link
+...   others=["a list of other script links to include"]
+... )
 ```
