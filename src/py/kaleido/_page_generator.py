@@ -58,9 +58,9 @@ class PageGenerator:
         Args:
             plotly: The url to the plotly.js to use. Defaults to plotly.js
                 present in plotly.py, if installed. Otherwise fallback to
-                global constant.
-            mathjax: The url to the mathjax script. Defaults to global constant.
-                Can be set to false to turn off.
+                value of DEFAULT_PLOTLY.
+            mathjax: The url to the mathjax script. Defaults to values of
+                DEFAULT_MATHJAX. Can be set to false to disable mathjax.
             others: A list of other script urls to include. Usually strings, but
                 can be (str, str) where it's (url, encoding).
             force_cdn: Set True to force CDN use, defaults to False.
