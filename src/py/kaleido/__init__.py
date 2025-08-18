@@ -22,7 +22,15 @@ def safe_start_sync_server(*args, **kwargs):
     The kaleido server is a singleton, so it can't be opened twice. This
     function will simply return if the server is already running.
 
-    This wrapper function takes the exact same arguments as kaleido.Kaleido().
+    This wrapper function takes the exact same arguments as kaleido.Kaleido(),
+    except one extra, `silence_warnings`.
+
+    Args:
+        *args: all arguments `Kaleido()` would take.
+        silence_warnings: (bool, default False): If True, emit warning if
+        starting an already started server.
+        **kwargs: all keyword arguments `Kaleido()` would take.
+
     """
     _global_server.ensure_opened(*args, **kwargs)
 
@@ -34,7 +42,15 @@ def start_sync_server(*args, **kwargs):
     The kaleido server is a singleton, so it can't be opened twice. This
     function will warn you if the server is already running.
 
-    This wrapper function takes the exact same arguments as kaleido.Kaleido().
+    This wrapper function takes the exact same arguments as kaleido.Kaleido(),
+    except one extra, `silence_warnings`.
+
+    Args:
+        *args: all arguments `Kaleido()` would take.
+        silence_warnings: (bool, default False): If True, emit warning if
+        starting an already started server.
+        **kwargs: all keyword arguments `Kaleido()` would take.
+
     """
     _global_server.open(*args, **kwargs)
 

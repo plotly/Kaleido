@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import atexit
 import warnings
+from functools import partial
 from queue import Queue
 from threading import Thread
 from typing import TYPE_CHECKING, NamedTuple
@@ -54,23 +55,15 @@ class GlobalKaleidoServer:
     def is_running(self):
         return self._initialized
 
-    def ensure_opened(self, *args: Any, **kwargs: Any) -> None:
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                message=r"Server already open.",
-                category=RuntimeWarning,
-            )
-            self.open(*args, **kwargs)
-
-    def open(self, *args: Any, **kwargs: Any) -> None:
+    def open(self, *args: Any, silence_warnings=False, **kwargs: Any) -> None:
         """Initialize the singleton with three values."""
         if self.is_running():
-            warnings.warn(
-                "Server already open.",
-                RuntimeWarning,
-                stacklevel=2,
-            )
+            if not silence_warnings:
+                warnings.warn(
+                    "Server already open.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
             return
         coroutine = self._server(*args, **kwargs)
         self._thread: Thread = Thread(
@@ -82,25 +75,18 @@ class GlobalKaleidoServer:
         self._return_queue: Queue[Any] = Queue()
         self._thread.start()
         self._initialized = True
-        atexit.register(self.ensure_closed)
+        close = partial(self.close, silence_warnings=True)
+        atexit.register(close)
 
-    def ensure_closed(self):
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "ignore",
-                message=r"Server already closed.",
-                category=RuntimeWarning,
-            )
-            self.close()
-
-    def close(self):
+    def close(self, *, silence_warnings=False):
         """Reset the singleton back to an uninitialized state."""
         if not self.is_running():
-            warnings.warn(
-                "Server already closed.",
-                RuntimeWarning,
-                stacklevel=2,
-            )
+            if not silence_warnings:
+                warnings.warn(
+                    "Server already closed.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
             return
         self._task_queue.put(None)
         self._thread.join()
