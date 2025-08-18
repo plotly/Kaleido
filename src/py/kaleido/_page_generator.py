@@ -18,7 +18,7 @@ def _ensure_path(path: Path | str):
     if urlparse(str(path)).scheme.startswith("http"):  # is url
         return
     if not Path(path).exists():
-        raise ValueError(f"{path!s} does not seem to be a valid path.")
+        raise FileNotFoundError(f"{path!s} does not exist.")
 
 
 class PageGenerator:
