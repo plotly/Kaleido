@@ -15,26 +15,6 @@ from .kaleido import Kaleido
 _global_server = _sync_server.GlobalKaleidoServer()
 
 
-def safe_start_sync_server(*args, **kwargs):
-    """
-    Start a kaleido server which will process all sync generation requests.
-
-    The kaleido server is a singleton, so it can't be opened twice. This
-    function will simply return if the server is already running.
-
-    This wrapper function takes the exact same arguments as kaleido.Kaleido(),
-    except one extra, `silence_warnings`.
-
-    Args:
-        *args: all arguments `Kaleido()` would take.
-        silence_warnings: (bool, default False): If True, emit warning if
-        starting an already started server.
-        **kwargs: all keyword arguments `Kaleido()` would take.
-
-    """
-    _global_server.ensure_opened(*args, **kwargs)
-
-
 def start_sync_server(*args, **kwargs):
     """
     Start a kaleido server which will process all sync generation requests.
@@ -47,7 +27,7 @@ def start_sync_server(*args, **kwargs):
 
     Args:
         *args: all arguments `Kaleido()` would take.
-        silence_warnings: (bool, default False): If True, emit warning if
+        silence_warnings: (bool, default False): If True, don't emit warning if
         starting an already started server.
         **kwargs: all keyword arguments `Kaleido()` would take.
 
@@ -55,14 +35,16 @@ def start_sync_server(*args, **kwargs):
     _global_server.open(*args, **kwargs)
 
 
-def safe_stop_sync_server():
-    """Stop the kaleido server. It can be restarted."""
-    _global_server.ensure_closed()
+def stop_sync_server(*, silence_warnings=False):
+    """
+    Stop the kaleido server. It can be restarted. Warns if not started.
 
+    Args:
+        silence_warnings: (bool, default False): If True, don't emit warning if
+        stopping a server that's not running.
 
-def stop_sync_server():
-    """Stop the kaleido server. It can be restarted. Warns if not started."""
-    _global_server.close()
+    """
+    _global_server.close(silence_warnings=silence_warnings)
 
 
 __all__ = [
@@ -72,8 +54,6 @@ __all__ = [
     "calc_fig_sync",
     "get_chrome",
     "get_chrome_sync",
-    "safe_start_sync_server",
-    "safe_stop_sync_server",
     "start_sync_server",
     "stop_sync_server",
     "write_fig",
