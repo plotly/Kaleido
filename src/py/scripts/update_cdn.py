@@ -41,15 +41,20 @@ async def get_latest_version() -> str:
 
 async def create_pr(latest_version: str) -> None:
     branch = f"bot/update-cdn-{latest_version}"
-    _, _, reteval = await run(
-        ["gh", "api", f"repos/{REPO}/branches/{branch}", "--silent"]
-    )
+    _, err, _ = await run(["gh", "api", f"repos/{REPO}/branches/{branch}", "--silent"])
+
+    if err:
+        msg = err.decode()
+        if "HTTP 404" not in msg:
+            print(msg)  # errores no esperados
+            sys.exit(1)
+    else:
+        print(f"The branch {branch} already exists")
+        sys.exit(1)
+
     pr, _, _ = await run(
         ["gh", "pr", "list", "-R", REPO, "-H", branch, "--state", "all"]
     )
-    if not reteval:
-        print(f"The branch {branch} already exists")
-        sys.exit(0)
 
     if pr.decode():
         print(f"Pull request '{branch}' already exists")
