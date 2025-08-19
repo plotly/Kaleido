@@ -125,9 +125,14 @@ async def main() -> None:
                 "all",
             ]
         )
-        if brc:
-            print(f"Issue '{title}' already exists in:")
-            print(brc.decode())
+        issues = json.loads(brc.decode())
+        if issues:
+            for issue in issues:
+                if issue.get("state") == "OPEN":
+                    print(f"Issue '{title}' already exists in:")
+                    print(f"https://github.com/{REPO}/issues/{issue.get('number')}")
+                    sys.exit(1)
+            print(f"Issue '{title}' is closed")
             sys.exit(0)
 
         new, err, _ = await run(
