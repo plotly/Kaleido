@@ -55,16 +55,6 @@ def start_sync_server(*args, **kwargs):
     _global_server.open(*args, **kwargs)
 
 
-def safe_stop_sync_server():
-    """Stop the kaleido server. It can be restarted."""
-    _global_server.ensure_closed()
-
-
-def stop_sync_server():
-    """Stop the kaleido server. It can be restarted. Warns if not started."""
-    _global_server.close()
-
-
 __all__ = [
     "Kaleido",
     "PageGenerator",
@@ -72,8 +62,6 @@ __all__ = [
     "calc_fig_sync",
     "get_chrome",
     "get_chrome_sync",
-    "safe_start_sync_server",
-    "safe_stop_sync_server",
     "start_sync_server",
     "stop_sync_server",
     "write_fig",
