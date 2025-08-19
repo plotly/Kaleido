@@ -113,7 +113,17 @@ async def main() -> None:
         title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
         brc, _, _ = await run(
-            ["gh", "issue", "list", "--search", title, "--state", "all"]
+            [
+                "gh",
+                "issue",
+                "--json",
+                "number,state",
+                "list",
+                "--search",
+                title,
+                "--state",
+                "all",
+            ]
         )
         if brc:
             print(f"Issue '{title}' already exists in:")
