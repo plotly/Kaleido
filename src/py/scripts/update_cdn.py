@@ -23,17 +23,20 @@ async def run(commands: list[str]) -> tuple[bytes, bytes, int | None]:
     return (*(await p.communicate()), p.returncode)
 
 
-async def get_latest_version() -> str:
-    out, _, _ = await run(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
-    tags = jq.compile('map(.name | ltrimstr("v"))').input_value(json.loads(out)).first()
-    versions = [semver.VersionInfo.parse(v) for v in tags]
-    return str(max(versions))
-
-
 async def verify_url(url: str) -> bool:
     async with aiohttp.ClientSession() as session:
         async with session.head(url) as response:
             return response.status == 200
+
+
+async def get_latest_version() -> str:
+    out, err, _ = await run(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
+    tags = jq.compile('map(.name | ltrimstr("v"))').input_value(json.loads(out)).first()
+    versions = [semver.VersionInfo.parse(v) for v in tags]
+    if err:
+        print(err.decode())
+        sys.exit(1)
+    return str(max(versions))
 
 
 async def create_pr(latest_version: str) -> None:
