@@ -12,25 +12,6 @@ from . import _sync_server
 from ._page_generator import PageGenerator
 from .kaleido import Kaleido
 
-_global_server = _sync_server.GlobalKaleidoServer()
-
-
-def start_sync_server(*args, **kwargs):
-    """
-    Start a kaleido server which will process all sync generation requests.
-
-    Only one server can be started at a time.
-
-    This wrapper function takes the exact same arguments as kaleido.Kaleido().
-    """
-    _global_server.open(*args, **kwargs)
-
-
-def stop_sync_server():
-    """Stop the kaleido server. It can be restarted."""
-    _global_server.close()
-
-
 __all__ = [
     "Kaleido",
     "PageGenerator",
@@ -45,6 +26,40 @@ __all__ = [
     "write_fig_from_object_sync",
     "write_fig_sync",
 ]
+
+_global_server = _sync_server.GlobalKaleidoServer()
+
+
+def start_sync_server(*args, silence_warnings=False, **kwargs):
+    """
+    Start a kaleido server which will process all sync generation requests.
+
+    The kaleido server is a singleton, so it can't be opened twice. This
+    function will warn you if the server is already running.
+
+    This wrapper function takes the exact same arguments as kaleido.Kaleido(),
+    except one extra, `silence_warnings`.
+
+    Args:
+        *args: all arguments `Kaleido()` would take.
+        silence_warnings: (bool, default False): If True, don't emit warning if
+        starting an already started server.
+        **kwargs: all keyword arguments `Kaleido()` would take.
+
+    """
+    _global_server.open(*args, silence_warnings=silence_warnings, **kwargs)
+
+
+def stop_sync_server(*, silence_warnings=False):
+    """
+    Stop the kaleido server. It can be restarted. Warns if not started.
+
+    Args:
+        silence_warnings: (bool, default False): If True, don't emit warning if
+        stopping a server that's not running.
+
+    """
+    _global_server.close(silence_warnings=silence_warnings)
 
 
 async def calc_fig(
