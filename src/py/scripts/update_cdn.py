@@ -57,8 +57,9 @@ async def create_pr(latest_version: str) -> None:
     )
 
     if pr.decode():
+        # err es vacio en este caso
         print(f"Pull request '{branch}' already exists")
-        sys.exit(0)
+        sys.exit(1)
 
     await run(["git", "checkout", "-b", branch])
     await run(["git", "add", FILE_PATH])
@@ -74,15 +75,23 @@ async def create_pr(latest_version: str) -> None:
             f"chore: update Plotly CDN to v{latest_version}",
         ]
     )
-    await run(["git", "push", "-u", "origin", branch])
+    _, err, _ = await run(["git", "push", "-u", "origin", branch])
+
+    if err:
+        print(err.decode())
+        sys.exit(1)
 
     title = f"Update Plotly CDN to v{latest_version}"
     body = f"This PR updates the CDN URL to v{latest_version}."
-    new_pr, _, reteval = await run(
+    new_pr, err, _ = await run(
         ["gh", "pr", "create", "-B", "master", "-H", branch, "-t", title, "-b", body]
     )
+    if err:
+        print(err.decode())
+        sys.exit(1)
+
     print("Pull request:", new_pr.decode().strip())
-    sys.exit(reteval)
+    sys.exit(0)
 
 
 async def main() -> None:
