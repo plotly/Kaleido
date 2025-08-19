@@ -1,16 +1,36 @@
 <!DOCTYPE html>
+
+<!--
+  THIS FILE IS AN EXAMPLE, IT IS GENERATED AUTOMATICALLY AT RUNTIME
+  TO ENSURE FULLY UPDATED RESOURCES
+-->
+
 <html>
   <head>
+    <meta charset="utf-8" />
     <title>Kaleido-fier</title>
+
     <script>
-      window.PlotlyConfig = {MathJaxConfig: 'local'};
+      // Plotly won't fetch MathJax; you'll provide it
+      window.PlotlyConfig = { MathJaxConfig: 'local' };
     </script>
+
+    <!-- Only your one tweak; preset handles TeX+AMS+SVG -->
     <script type="text/x-mathjax-config">
-      MathJax.Hub.Config({ "SVG": {blacker: 0 }});
+      MathJax.Hub.Config({
+        SVG: { blacker: 0 }
+      });
     </script>
-    <script src="https://cdn.plot.ly/plotly-2.35.3.min.js" charset="utf-8"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+
+    <!-- Preset loads TeX input, AMS, and SVG output -->
+    <script src="/vendor/mathjax/2.7.5/MathJax.js?config=TeX-AMS_SVG"></script>
+
+    <!-- Plotly after MathJax (since we're in 'local' mode) -->
+    <script src="https://cdn.plot.ly/plotly-2.35.3.min.js"></script>
+
     <script src="./kaleido_scopes.js"></script>
   </head>
-  <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
+  <body style="margin:0; padding:0;">
+    <img id="kaleido-image" />
+  </body>
 </html>
