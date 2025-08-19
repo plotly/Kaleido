@@ -30,7 +30,7 @@ __all__ = [
 _global_server = _sync_server.GlobalKaleidoServer()
 
 
-def start_sync_server(*args, **kwargs):
+def start_sync_server(*args, silence_warnings=False, **kwargs):
     """
     Start a kaleido server which will process all sync generation requests.
 
@@ -47,7 +47,7 @@ def start_sync_server(*args, **kwargs):
         **kwargs: all keyword arguments `Kaleido()` would take.
 
     """
-    _global_server.open(*args, **kwargs)
+    _global_server.open(*args, silence_warnings=silence_warnings, **kwargs)
 
 
 def stop_sync_server(*, silence_warnings=False):
