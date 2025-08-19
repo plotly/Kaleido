@@ -29,7 +29,7 @@ no_imports_result_re = re.compile(r"""
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)  # noqa: E501 line too long
 
@@ -50,7 +50,7 @@ all_defaults_re = re.compile(r"""
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -67,11 +67,11 @@ with_plot_result_re = re.compile(r"""
           MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
-        <script src="file:///with_plot" charset="utf-8"></script>
+        <script src="https://with_plot" charset="utf-8"></script>
         <script src="https://cdn\.jsdelivr\.net/npm/mathjax@3\.2\.2/es5/tex-svg\.js"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -88,10 +88,10 @@ without_math_result_re = re.compile(r"""
           MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
-        <script src="file:///with_plot" charset="utf-8"></script>
+        <script src="https://with_plot" charset="utf-8"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -108,13 +108,13 @@ with_others_result_re = re.compile(r"""
           MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
         </script>
 
-        <script src="file:///with_plot" charset="utf-8"></script>
-        <script src="file:///with_mathjax"></script>
-        <script src="1"></script>
-        <script src="2"></script>
+        <script src="https://with_plot" charset="utf-8"></script>
+        <script src="https://with_mathjax"></script>
+        <script src="https://1"></script>
+        <script src="https://2"></script>
         <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"><img></body>
+    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image"></img></body>
 </html>
 """)
 
@@ -143,19 +143,19 @@ async def test_page_generator():
     all_defaults = PageGenerator().generate_index()
     assert all_defaults_re.findall(all_defaults)
 
-    with_plot = PageGenerator(plotly="file:///with_plot").generate_index()
+    with_plot = PageGenerator(plotly="https://with_plot").generate_index()
     assert with_plot_result_re.findall(with_plot)
 
     without_math = PageGenerator(
-        plotly="file:///with_plot",
+        plotly="https://with_plot",
         mathjax=False,
     ).generate_index()
     assert without_math_result_re.findall(without_math)
 
     with_others = PageGenerator(
-        plotly="file:///with_plot",
-        mathjax="file:///with_mathjax",
-        others=["1", "2"],
+        plotly="https://with_plot",
+        mathjax="https://with_mathjax",
+        others=["https://1", "https://2"],
     ).generate_index()
     assert with_others_result_re.findall(with_others)
 
