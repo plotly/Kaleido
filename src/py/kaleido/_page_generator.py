@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
+from urllib.parse import urlparse
 
 import logistro
 
@@ -8,6 +11,14 @@ DEFAULT_PLOTLY = "https://cdn.plot.ly/plotly-2.35.2.js"
 DEFAULT_MATHJAX = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
 
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
+
+
+def _ensure_path(path: Path | str):
+    _logger.debug(f"Ensuring path {path!s}")
+    if urlparse(str(path)).scheme.startswith("http"):  # is url
+        return
+    if not Path(path).exists():
+        raise FileNotFoundError(f"{path!s} does not exist.")
 
 
 class PageGenerator:
@@ -35,7 +46,7 @@ class PageGenerator:
     footer = f"""
         <script src="{KJS_PATH.as_uri()}"></script>
     </head>
-    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"><img></body>
+    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"></img></body>
 </html>
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
@@ -45,13 +56,14 @@ class PageGenerator:
         Create a PageGenerator.
 
         Args:
-            plotly: the url to the plotly script to use. The default is the one
-            plotly.py is using, if not installed, it uses the constant declared.
-            mathjax: the url to the mathjax script. By default is constant above.
-            Can be set to false to turn off.
-            others: a list of other script urls to include. Usually strings, but can be
-            (str, str) where its (url, encoding).
-            force_cdn: (default False) Don't use plotly import, use CDN
+            plotly: The url to the plotly.js to use. Defaults to plotly.js
+                present in plotly.py, if installed. Otherwise fallback to
+                value of DEFAULT_PLOTLY.
+            mathjax: The url to the mathjax script. Defaults to values of
+                DEFAULT_MATHJAX. Can be set to false to disable mathjax.
+            others: A list of other script urls to include. Usually strings, but
+                can be (str, str) where it's (url, encoding).
+            force_cdn: Set True to force CDN use, defaults to False.
 
         """
         self._scripts = []
@@ -81,14 +93,19 @@ class PageGenerator:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
         elif isinstance(plotly, str):
+            _ensure_path(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
         if mathjax is not False:
             if not mathjax:
                 mathjax = DEFAULT_MATHJAX
+            else:
+                _ensure_path(mathjax)
             self._scripts.append(mathjax)
         if others:
+            for o in others:
+                _ensure_path(o)
             self._scripts.extend(others)
 
     def generate_index(self, path=None):
