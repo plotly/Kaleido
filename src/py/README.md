@@ -121,7 +121,7 @@ default if plotly is not installed).
 >>> import kaleido
 >>> # Example of creating a custom PageGenerator:
 >>> my_page = kaleido.PageGenerator(
-...   plotly="A fully qualified link to plotly (https:// or file://)",
+...   plotly="https://cdn.plot.ly/plotly-latest.min.js",
 ...   mathjax=False,  # no mathjax, or another fully quality link
 ...   others=["a list of other script links to include"]
 ... )
