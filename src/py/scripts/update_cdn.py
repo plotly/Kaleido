@@ -85,7 +85,7 @@ async def create_pr(latest_version: str) -> None:
     sys.exit(reteval)
 
 
-async def main():
+async def main() -> None:
     latest_version = await get_latest_version()
     new_cdn = f"https://cdn.plot.ly/plotly-{latest_version}.js"
 
@@ -103,18 +103,22 @@ async def main():
     else:
         title = f"CDN not reachable for Plotly v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
-        brc, _, _ = await run(["gh", "issue", "list", "--search", title])
-        if brc.decode():
-            print(f"Issue '{title}' already exists")
+        brc, _, _ = await run(
+            ["gh", "issue", "list", "--search", title, "--state", "all"]
+        )
+        if brc:
+            print(f"Issue '{title}' already exists in:")
+            print(brc.decode())
             sys.exit(0)
+
         new, err, _ = await run(
             ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         )
-        print(
-            f"The issue '{title}' was created in {new.decode().strip()}"
-            if not err
-            else err
-        )
+        if err:
+            print(err.decode())
+
+        print(f"The issue '{title}' was created in {new.decode().strip()}")
+        sys.exit(1)
 
 
 asyncio.run(main())
