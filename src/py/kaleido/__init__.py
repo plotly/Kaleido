@@ -12,6 +12,21 @@ from . import _sync_server
 from ._page_generator import PageGenerator
 from .kaleido import Kaleido
 
+__all__ = [
+    "Kaleido",
+    "PageGenerator",
+    "calc_fig",
+    "calc_fig_sync",
+    "get_chrome",
+    "get_chrome_sync",
+    "start_sync_server",
+    "stop_sync_server",
+    "write_fig",
+    "write_fig_from_object",
+    "write_fig_from_object_sync",
+    "write_fig_sync",
+]
+
 _global_server = _sync_server.GlobalKaleidoServer()
 
 
@@ -45,22 +60,6 @@ def stop_sync_server(*, silence_warnings=False):
 
     """
     _global_server.close(silence_warnings=silence_warnings)
-
-
-__all__ = [
-    "Kaleido",
-    "PageGenerator",
-    "calc_fig",
-    "calc_fig_sync",
-    "get_chrome",
-    "get_chrome_sync",
-    "start_sync_server",
-    "stop_sync_server",
-    "write_fig",
-    "write_fig_from_object",
-    "write_fig_from_object_sync",
-    "write_fig_sync",
-]
 
 
 async def calc_fig(
