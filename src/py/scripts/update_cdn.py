@@ -125,6 +125,12 @@ def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
                 key, log_dict[key := line] = key, []
             elif re.match(r"^-", line):
                 log_dict[key or "Unreleased"].append(line.lstrip("-").strip())
+            else:
+                current_list = log_dict[key or "Unreleased"]
+                if current_list:
+                    current_list[-1] += f" {line}"
+                else:
+                    current_list.append(line)
     return log_dict
 
 
