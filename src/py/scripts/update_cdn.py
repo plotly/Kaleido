@@ -2,6 +2,7 @@
 import asyncio
 import os
 import pathlib
+import re
 import subprocess
 import sys
 
@@ -95,11 +96,16 @@ async def create_pr(latest_version: str) -> None:
 
 def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
     changelog_dict = {}
+    v_regex = r"^v\d+\.\d+\.\d+"
+    key = None
 
     with pathlib.Path(path).open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            print(line)
+            if len(line) > 0:
+                if re.match(v_regex, line):
+                    key = line
+                    changelog_dict[key] = []
     return changelog_dict
 
 async def main() -> None:
