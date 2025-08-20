@@ -96,8 +96,8 @@ async def create_pr(latest_version: str) -> None:
 
 def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
     changelog_dict = {"Unreleased": []}
-    v_regex = r"^v\d+\.\d+\.\d+"
-    bp_regex = r"^-"
+    v_re = r"^v\d+\.\d+\.\d+"
+    bp_re = r"^-"
     key = None
 
     with pathlib.Path(path).open("r", encoding="utf-8") as f:
@@ -106,11 +106,11 @@ def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
             if not line:
                 continue
             
-            if re.match(v_regex, line):
+            if re.match(v_re, line):
                 key = line
                 changelog_dict[key] = []
-            elif re.match(bp_regex, line):
-                cleaned_line = re.sub(bp_regex, "", line).strip()
+            elif re.match(bp_re, line):
+                cleaned_line = re.sub(bp_re, "", line).strip()
                 changelog_dict[key or "Unreleased"].append(cleaned_line)
 
     return changelog_dict
