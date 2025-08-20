@@ -113,8 +113,8 @@ async def create_pr(latest_version: str) -> None:
 
 
 def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
-    log_dict = {"Unreleased": []}
-    key = ""
+    key = "Unreleased"
+    log_dict = {key: []}
 
     with pathlib.Path(path).open("r", encoding="utf-8") as f:
         for line in f:
@@ -122,11 +122,11 @@ def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
             if not line:
                 continue
             if parse_version(line):
-                key, log_dict[key := line] = key, []
+                log_dict[key := line] = []
             elif re.match(r"^-", line):
-                log_dict[key or "Unreleased"].append(line.lstrip("-").strip())
+                log_dict[key].append(line.lstrip("-").strip())
             else:
-                current_list = log_dict[key or "Unreleased"]
+                current_list = log_dict[key]
                 if current_list:
                     current_list[-1] += f" {line}"
                 else:
