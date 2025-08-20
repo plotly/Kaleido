@@ -95,6 +95,11 @@ async def create_pr(latest_version: str) -> None:
 
 def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
     changelog_dict = {}
+
+    with pathlib.Path(path).open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            print(line)
     return changelog_dict
 
 async def main() -> None:
