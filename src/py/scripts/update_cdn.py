@@ -105,14 +105,11 @@ def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
             line = line.strip()
             if not line:
                 continue
-            
             if re.match(v_re, line):
-                key = line
-                changelog_dict[key] = []
+                key, changelog_dict[key := line] = key, []
             elif re.match(bp_re, line):
                 cleaned_line = re.sub(bp_re, "", line).strip()
                 changelog_dict[key or "Unreleased"].append(cleaned_line)
-
     return changelog_dict
 
 async def main() -> None:
