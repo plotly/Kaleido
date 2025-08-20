@@ -103,13 +103,15 @@ def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
     with pathlib.Path(path).open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
-            if len(line) > 0:
-                if re.match(v_regex, line):
-                    key = line
-                    changelog_dict[key] = []
-                elif re.match(bp_regex, line):
-                    cleaned_line = re.sub(bp_regex, "", line).strip()
-                    changelog_dict[key or "Unreleased"].append(cleaned_line)
+            if not line:
+                continue
+            
+            if re.match(v_regex, line):
+                key = line
+                changelog_dict[key] = []
+            elif re.match(bp_regex, line):
+                cleaned_line = re.sub(bp_regex, "", line).strip()
+                changelog_dict[key or "Unreleased"].append(cleaned_line)
 
     return changelog_dict
 
