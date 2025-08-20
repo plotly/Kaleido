@@ -93,6 +93,9 @@ async def create_pr(latest_version: str) -> None:
     print("Pull request:", new_pr.decode().strip())
     sys.exit(0)
 
+def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
+    changelog_dict = {}
+    return changelog_dict
 
 async def main() -> None:
     latest_version = await get_latest_version()
