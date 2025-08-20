@@ -114,7 +114,6 @@ async def create_pr(latest_version: str) -> None:
 
 def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
     log_dict = {"Unreleased": []}
-    v_re = r"^v\d+\.\d+\.\d+"
     key = ""
 
     with pathlib.Path(path).open("r", encoding="utf-8") as f:
