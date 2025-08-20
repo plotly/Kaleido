@@ -10,6 +10,25 @@ from packaging.version import Version
 _logger = logistro.getLogger(__name__)
 
 
+def ensure_async_iter(obj):
+    if hasattr(obj, "__aiter__"):
+        return obj
+
+    it = iter(obj)
+
+    class _AIter:
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            try:
+                return next(it)
+            except StopIteration:
+                raise StopAsyncIteration  # noqa: B904
+
+    return _AIter()
+
+
 async def to_thread(func, *args, **kwargs):
     _loop = asyncio.get_running_loop()
     fn = partial(func, *args, **kwargs)
