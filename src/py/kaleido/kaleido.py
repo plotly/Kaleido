@@ -16,7 +16,7 @@ from choreographer.utils import TmpDirectory
 from ._fig_tools import _is_figurish, build_fig_spec
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
-from ._utils import ErrorEntry, warn_incompatible_plotly
+from ._utils import ErrorEntry, ensure_async_iter, warn_incompatible_plotly
 
 _logger = logistro.getLogger(__name__)
 
@@ -347,7 +347,7 @@ class Kaleido(choreo.Browser):
         await self._return_kaleido_tab(tab)
         return data[0]
 
-    async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
+    async def write_fig(  # noqa: PLR0913 (too many args)
         self,
         fig,
         path=None,
@@ -440,7 +440,7 @@ class Kaleido(choreo.Browser):
         finally:
             self._main_tasks.remove(main_task)
 
-    async def write_fig_from_object(  # noqa: C901 too complex
+    async def write_fig_from_object(
         self,
         generator,
         *,
@@ -487,48 +487,42 @@ class Kaleido(choreo.Browser):
         self._main_tasks.add(main_task)
         tasks = set()
 
-        async def _loop(args):
-            spec, full_path = build_fig_spec(
-                args.pop("fig"),
-                args.pop("path", None),
-                args.pop("opts", None),
-            )
-            args["spec"] = spec
-            args["full_path"] = full_path
-            tab = await self._get_kaleido_tab()
-            if profiler is not None and tab.tab.target_id not in profiler:
-                profiler[tab.tab.target_id] = []
-            t = asyncio.create_task(
-                self._render_task(
-                    tab,
-                    args=args,
-                    error_log=error_log,
-                    profiler=profiler,
-                ),
-            )
-            t.add_done_callback(
-                partial(
-                    self._check_render_task,
-                    full_path.name,
-                    tab,
-                    main_task,
-                    error_log,
-                ),
-            )
-            tasks.add(t)
-
         try:
-            if hasattr(generator, "__aiter__"):  # is async iterable
-                _logger.debug("Is async for")
-                async for args in generator:
-                    await _loop(args)
-            else:
-                _logger.debug("Is sync for")
-                for args in generator:
-                    await _loop(args)
-            _logger.debug("awaiting tasks")
+            async for args in ensure_async_iter(generator):
+                args["spec"], args["full_path"] = build_fig_spec(
+                    args.pop("fig"),
+                    args.pop("path", None),
+                    args.pop("opts", None),
+                )
+
+                tab = await self._get_kaleido_tab()
+
+                if profiler is not None and tab.tab.target_id not in profiler:
+                    profiler[tab.tab.target_id] = []
+
+                t = asyncio.create_task(
+                    self._render_task(
+                        tab,
+                        args=args,
+                        error_log=error_log,
+                        profiler=profiler,
+                    ),
+                )
+                t.add_done_callback(
+                    partial(
+                        self._check_render_task,
+                        args["full_path"].name,
+                        tab,
+                        main_task,
+                        error_log,
+                    ),
+                )
+                tasks.add(t)
+
             await asyncio.gather(*tasks, return_exceptions=True)
+            # This here would include errors during the tasks?
         except:
+            # This would only catch errors in the machinery, not the task
             _logger.exception("Cleaning tasks after error.")
             for task in tasks:
                 if not task.done():
