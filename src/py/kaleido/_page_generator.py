@@ -108,14 +108,8 @@ class PageGenerator:
                 _ensure_path(o)
             self._scripts.extend(others)
 
-    def generate_index(self, path=None):
-        """
-        Generate the page.
-
-        Args:
-            path: If specified, page is written to path. Otherwise it is returned.
-
-        """
+    def generate_index(self):
+        """Generate the page."""
         page = self.header
         script_tag = '\n        <script src="%s"></script>'
         script_tag_charset = '\n        <script src="%s" charset="%s"></script>'
@@ -126,8 +120,4 @@ class PageGenerator:
                 page += script_tag_charset % script
         page += self.footer
         _logger.debug2(page)
-        if not path:
-            return page
-        with (path).open("w") as f:
-            f.write(page)
-        return path.as_uri()
+        return page

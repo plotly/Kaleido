@@ -1,5 +1,4 @@
 import asyncio
-import traceback
 import warnings
 from functools import partial
 from importlib.metadata import PackageNotFoundError, version
@@ -10,7 +9,32 @@ from packaging.version import Version
 _logger = logistro.getLogger(__name__)
 
 
+def event_printer(name):
+    """Return function that prints whatever argument received."""
+
+    async def print_all(response):
+        _logger.debug2(f"{name!s}:{response!s}")
+
+    return print_all
+
+
+def _clean_error(t: asyncio.Task) -> None:
+    """Check a task to avoid "task never awaited" errors."""
+    if t.cancelled():
+        _logger.error(f"{t} cancelled.")
+    elif (exc := t.exception()) is not None:
+        _logger.error(f"{t} raised error.", exc_info=exc)
+
+
+def create_task_log_error(coroutine) -> asyncio.Task:
+    """Create a task and assign a callback to log its errors."""
+    t = asyncio.create_task(coroutine)
+    t.add_done_callback(_clean_error)
+    return t
+
+
 def ensure_async_iter(obj):
+    """Convert any iterable to an async iterator."""
     if hasattr(obj, "__aiter__"):
         return obj
 
@@ -30,6 +54,7 @@ def ensure_async_iter(obj):
 
 
 async def to_thread(func, *args, **kwargs):
+    """Polyfill `asyncio.to_thread()`."""
     _loop = asyncio.get_running_loop()
     fn = partial(func, *args, **kwargs)
     await _loop.run_in_executor(None, fn)
@@ -68,30 +93,3 @@ def warn_incompatible_plotly():
         # Since this compatibility check is just a convenience,
         # we don't want to block the whole library if there's an issue
         _logger.info("Error while checking Plotly version.", exc_info=e)
-
-
-class ErrorEntry:
-    """A simple object to record errors and context."""
-
-    def __init__(self, name, error, javascript_log):
-        """
-        Construct an error entry.
-
-        Args:
-            name: the name of the image with the error
-            error: the error object (from class BaseException)
-            javascript_log: an array of entries from the javascript console
-
-        """
-        self.name = name
-        self.error = error
-        self.javascript_log = javascript_log
-
-    def __str__(self):
-        """Display the error object in a concise way."""
-        ret = f"{self.name}:\n"
-        e = self.error
-        ret += " ".join(traceback.format_exception(type(e), e, e.__traceback__))
-        ret += " javascript Log:\n"
-        ret += "\n ".join(self.javascript_log)
-        return ret
