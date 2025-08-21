@@ -49,7 +49,8 @@ class Kaleido(choreo.Browser):
     ```
     """
 
-    _tabs_ready: asyncio.Queue[_KaleidoTab]
+    tabs_ready: asyncio.Queue[_KaleidoTab]
+    """A queue of ready tabs."""
     _background_render_tasks: set[asyncio.Task]
     # not really render tasks
     _main_tasks: set[asyncio.Task]
@@ -101,7 +102,7 @@ class Kaleido(choreo.Browser):
         """
         self._background_render_tasks = set()
         self._main_tasks = set()
-        self._tabs_ready = asyncio.Queue(maxsize=0)
+        self.tabs_ready = asyncio.Queue(maxsize=0)
         self._total_tabs = 0
         self._tmp_dir = None
 
@@ -165,7 +166,7 @@ class Kaleido(choreo.Browser):
         await asyncio.gather(*tasks)
         _logger.info("All navigates done, putting them all in queue.")
         for tab in kaleido_tabs:
-            await self._tabs_ready.put(tab)
+            await self.tabs_ready.put(tab)
         self._total_tabs = len(kaleido_tabs)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
@@ -217,12 +218,12 @@ class Kaleido(choreo.Browser):
             A kaleido-tab from the queue.
 
         """
-        _logger.info(f"Getting tab from queue (has {self._tabs_ready.qsize()})")
+        _logger.info(f"Getting tab from queue (has {self.tabs_ready.qsize()})")
         if not self._total_tabs:
             raise RuntimeError(
                 "Before generating a figure, you must await `k.open()`.",
             )
-        tab = await self._tabs_ready.get()
+        tab = await self.tabs_ready.get()
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
@@ -238,9 +239,9 @@ class Kaleido(choreo.Browser):
         await tab.reload()
         _logger.info(
             f"Putting tab {tab.tab.target_id[:4]} back (queue size: "
-            f"{self._tabs_ready.qsize()}).",
+            f"{self.tabs_ready.qsize()}).",
         )
-        await self._tabs_ready.put(tab)
+        await self.tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
     def _clean_tab_return_task(self, main_task, task):
