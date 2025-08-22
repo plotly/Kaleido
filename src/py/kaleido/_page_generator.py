@@ -8,7 +8,10 @@ import logistro
 _logger = logistro.getLogger(__name__)
 
 DEFAULT_PLOTLY = "https://cdn.plot.ly/plotly-2.35.2.js"
-DEFAULT_MATHJAX = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
+DEFAULT_MATHJAX = (
+    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"
+    "?config=TeX-AMS-MML_SVG"
+)
 
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
@@ -46,7 +49,7 @@ class PageGenerator:
     footer = f"""
         <script src="{KJS_PATH.as_uri()}"></script>
     </head>
-    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"></img></body>
+    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image" /></body>
 </html>
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
@@ -67,6 +70,12 @@ class PageGenerator:
 
         """
         self._scripts = []
+        if mathjax is not False:
+            if not mathjax:
+                mathjax = DEFAULT_MATHJAX
+            else:
+                _ensure_path(mathjax)
+            self._scripts.append(mathjax)
         if force_cdn:
             plotly = (DEFAULT_PLOTLY, "utf-8")
         elif not plotly:
@@ -97,12 +106,6 @@ class PageGenerator:
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
-        if mathjax is not False:
-            if not mathjax:
-                mathjax = DEFAULT_MATHJAX
-            else:
-                _ensure_path(mathjax)
-            self._scripts.append(mathjax)
         if others:
             for o in others:
                 _ensure_path(o)
