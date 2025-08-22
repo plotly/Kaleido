@@ -4,10 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import warnings
-from collections.abc import AsyncIterable, Iterable
+from collections.abc import Iterable
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
+from urllib.parse import unquote, urlparse
 
 import choreographer as choreo
 import logistro
@@ -156,10 +157,18 @@ class Kaleido(choreo.Browser):
                 "or `kaleido.get_chrome_sync()`.",
             ) from ChromeNotFoundError
 
-        if page and isinstance(page, str) and Path(page).is_file():
-            self._index = page
-        elif page and hasattr(page, "is_file") and page.is_file():
-            self._index = page.as_uri()
+        if isinstance(page, str):
+            if page.startswith(r"file://") and Path(unquote(urlparse(page).path)):
+                self._index = page
+            elif Path(page).is_file():
+                self._index = Path(page).as_uri()
+            else:
+                raise FileNotFoundError(f"{page} does not exist.")
+        elif isinstance(page, Path):
+            if page.is_file():
+                self._index = page.as_uri()
+            else:
+                raise FileNotFoundError(f"{page!s} does not exist.")
         else:
             self._tmp_dir = TmpDirectory(sneak=self.is_isolated())
             index = self._tmp_dir.path / "index.html"
