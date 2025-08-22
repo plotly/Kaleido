@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import warnings
-from collections.abc import Iterable
+from collections.abc import AsyncIterable, Iterable
 from functools import partial
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import choreographer as choreo
 import logistro
@@ -18,6 +19,10 @@ from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
 from ._utils import ErrorEntry, warn_incompatible_plotly
 
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Any, Callable, Coroutine
+
 _logger = logistro.getLogger(__name__)
 
 # Show a warning if the installed Plotly version
@@ -25,10 +30,10 @@ _logger = logistro.getLogger(__name__)
 warn_incompatible_plotly()
 
 
-def _make_printer(name):
+def _make_printer(name: str) -> Callable[[str], Coroutine[Any, Any, None]]:
     """Create event printer for generic events. Helper function."""
 
-    async def print_all(response):
+    async def print_all(response: str) -> None:
         _logger.debug2(f"{name}:{response}")
 
     return print_all
@@ -55,7 +60,7 @@ class Kaleido(choreo.Browser):
     # not really render tasks
     _main_tasks: set[asyncio.Task]
 
-    async def close(self):
+    async def close(self) -> None:
         """Close the browser."""
         if self._tmp_dir:
             self._tmp_dir.clean()
@@ -69,14 +74,31 @@ class Kaleido(choreo.Browser):
         _logger.info("Exiting Kaleido/Choreo")
         return await super().close()
 
-    async def __aexit__(self, exc_type, exc_value, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> bool | None:
         """Close the browser."""
         _logger.info("Waiting for all cleanups to finish.")
         await asyncio.gather(*self._background_render_tasks, return_exceptions=True)
         _logger.info("Exiting Kaleido")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
 
-    def __init__(self, *args, **kwargs):  # noqa: D417 no args/kwargs in description
+    def __init__(  # noqa: D417, PLR0913 no args/kwargs in description
+        self,
+        *args: Any,
+        page_generator: None | PageGenerator | str | Path = None,
+        n: int = 1,
+        timeout: int | None = 90,
+        width: int | None = None,
+        height: int | None = None,
+        stepper: bool = False,
+        plotlyjs: str | None = None,
+        mathjax: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
 
@@ -106,14 +128,14 @@ class Kaleido(choreo.Browser):
         self._total_tabs = 0
         self._tmp_dir = None
 
-        page = kwargs.pop("page_generator", None)
-        self._timeout = kwargs.pop("timeout", 90)
-        self._n = kwargs.pop("n", 1)
-        self._height = kwargs.pop("height", None)
-        self._width = kwargs.pop("width", None)
-        self._stepper = kwargs.pop("stepper", False)
-        self._plotlyjs = kwargs.pop("plotlyjs", None)
-        self._mathjax = kwargs.pop("mathjax", None)
+        page = page_generator
+        self._timeout = timeout
+        self._n = n
+        self._height = height
+        self._width = width
+        self._stepper = stepper
+        self._plotlyjs = plotlyjs
+        self._mathjax = mathjax
         if not kwargs.get("headless", True) and (self._height or self._width):
             warnings.warn(
                 "Height and Width can only be used if headless=True, "
