@@ -15,14 +15,14 @@ from ._page_generator import PageGenerator
 from .kaleido import Kaleido
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterable, Iterable, TypeVar
+    from collections.abc import AsyncIterable, Iterable
     from pathlib import Path
-    from typing import Any
+    from typing import Any, TypeVar, Union
 
     from ._fig_tools import Figurish, LayoutOpts
 
     T = TypeVar("T")
-    AnyIterable = AsyncIterable[T] | Iterable[T]
+    AnyIterable = Union[AsyncIterable[T], Iterable[T]]
 
 __all__ = [
     "Kaleido",
