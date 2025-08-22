@@ -26,7 +26,7 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "choreographer>=1.0.7",
+  "choreographer>=1.0.10",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
