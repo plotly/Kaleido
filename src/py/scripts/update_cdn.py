@@ -3,7 +3,6 @@ import asyncio
 import json
 import os
 import pathlib
-import re
 import subprocess
 import sys
 
@@ -12,7 +11,6 @@ import jq
 import semver
 from kaleido._page_generator import DEFAULT_PLOTLY
 from kaleido._page_generator import __file__ as FILE_PATH
-from packaging import version
 
 REPO = os.environ["REPO"]
 
@@ -31,26 +29,10 @@ async def verify_url(url: str) -> bool:
             return response.status == 200
 
 
-def parse_version(content: str) -> semver.Version | version.Version | None:
-    content = content.lstrip("v")
-    v = None
-    try:
-        v = version.Version(content)
-    except version.InvalidVersion:
-        pass
-    try:
-        v = semver.Version.parse(content)
-    except ValueError:
-        pass
-    if not v:
-        return None
-    return v
-
-
 async def get_latest_version() -> str:
     out, err, _ = await run(["gh", "api", "repos/plotly/plotly.js/tags", "--paginate"])
-    tags = jq.compile("map(.name)").input_value(json.loads(out)).first()
-    versions = [v for v in (parse_version(v) for v in tags) if v]
+    tags = jq.compile('map(.name | ltrimstr("v"))').input_value(json.loads(out)).first()
+    versions = [semver.VersionInfo.parse(v) for v in tags]
     if err:
         print(err.decode())
         sys.exit(1)
@@ -110,28 +92,6 @@ async def create_pr(latest_version: str) -> None:
 
     print("Pull request:", new_pr.decode().strip())
     sys.exit(0)
-
-
-def parse_changelog_to_dict(path: str) -> dict[str, list[str]]:
-    key = "Unreleased"
-    log_dict = {key: []}
-
-    with pathlib.Path(path).open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            if parse_version(line):
-                log_dict[key := line] = []
-            elif re.match(r"^-", line):
-                log_dict[key].append(line.lstrip("-").strip())
-            else:
-                current_list = log_dict[key]
-                if current_list:
-                    current_list[-1] += f" {line}"
-                else:
-                    current_list.append(line)
-    return log_dict
 
 
 async def main() -> None:
