@@ -47,19 +47,19 @@ class KaleidoError(Exception):
         return f"Error {self._code}: {self._message}"
 
 
-def _check_error(result):
-    e = _check_error_ret(result)
-    if e:
-        raise e
-
-
-def _check_error_ret(result):  # Utility
+def _check_error_ret(result):
     """Check browser response for errors. Helper function."""
     if "error" in result:
         return DevtoolsProtocolError(result)
     if result.get("result", {}).get("result", {}).get("subtype", None) == "error":
         return JavascriptError(str(result.get("result")))
     return None
+
+
+def _check_error(result):
+    e = _check_error_ret(result)
+    if e:
+        raise e
 
 
 def _make_console_logger(name, log):
@@ -85,6 +85,14 @@ class _KaleidoTab:
     javascript_log: list[Any]
     """A list of console outputs from the tab."""
 
+    def _regenerate_javascript_console(self):
+        self.javascript_log = []
+        self.tab.unsubscribe("Runtime.consoleAPICalled")
+        self.tab.subscribe(
+            "Runtime.consoleAPICalled",
+            _make_console_logger("tab js console", self.javascript_log),
+        )
+
     def __init__(self, tab, *, _stepper=False):
         """
         Create a new _KaleidoTab.
@@ -96,16 +104,6 @@ class _KaleidoTab:
         self.tab = tab
         self.javascript_log = []
         self._stepper = _stepper
-
-    def _regenerate_javascript_console(self):
-        tab = self.tab
-        self.javascript_log = []
-        _logger.debug2("Subscribing to all console prints for tab {tab}.")
-        tab.unsubscribe("Runtime.consoleAPICalled")
-        tab.subscribe(
-            "Runtime.consoleAPICalled",
-            _make_console_logger("tab js console", self.javascript_log),
-        )
 
     async def navigate(self, url: str | Path = ""):
         """
