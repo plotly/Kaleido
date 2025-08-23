@@ -4,6 +4,9 @@ from unittest.mock import AsyncMock, patch
 
 import kaleido
 
+# Pretty complicated for basically testing a bunch of wrappers, but it works.
+# Integration tests seem more important.
+
 
 @patch("kaleido._sync_server.GlobalKaleidoServer.open")
 def test_start_sync_server_passes_args(mock_open):
