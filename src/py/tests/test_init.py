@@ -44,11 +44,10 @@ def test_stop_sync_server_passes_args(mock_close):
 async def test_async_wrapper_functions(mock_kaleido_class):
     """Test all async wrapper functions pass arguments correctly."""
     # Create a mock that doesn't need the context fixture
-    mock_kaleido = AsyncMock()
+    mock_kaleido_class.return_value = mock_kaleido = AsyncMock()
     mock_kaleido.__aenter__.return_value = mock_kaleido
     mock_kaleido.__aexit__.return_value = None
     mock_kaleido.calc_fig.return_value = b"test_bytes"
-    mock_kaleido_class.return_value = mock_kaleido
 
     fig = {"data": []}
 
