@@ -145,7 +145,7 @@ async def test_write_fig_sync_both_scenarios(simple_figure, tmp_path):
             [
                 {
                     "fig": simple_figure,
-                    "path": output_file_from_object_1,
+                    "path": output_file_from_object_2,
                 },
             ],
         )
@@ -170,7 +170,7 @@ def test_start_stop_sync_server_integration():
     kaleido.start_sync_server(silence_warnings=False)
 
     # Test starting already started server - should warn
-    with pytest.warns(UserWarning, match="already"):
+    with pytest.warns(RuntimeWarning, match="already"):
         kaleido.start_sync_server(silence_warnings=False)
 
     kaleido.start_sync_server(silence_warnings=True)
@@ -178,7 +178,7 @@ def test_start_stop_sync_server_integration():
     kaleido.stop_sync_server(silence_warnings=False)
 
     # Test stopping already stopped server - should warn
-    with pytest.warns(UserWarning, match="not running"):
+    with pytest.warns(RuntimeWarning, match="closed"):
         kaleido.stop_sync_server(silence_warnings=False)
 
     kaleido.stop_sync_server(silence_warnings=True)
