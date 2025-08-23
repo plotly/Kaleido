@@ -107,15 +107,14 @@ async def calc_fig(
         )
 
 
-async def write_fig(  # noqa: PLR0913 (too many args, complexity)
+async def write_fig(
     fig: Figurish,
     path: str | None | Path = None,
     opts: LayoutOpts | None = None,
     *,
     topojson: str | None = None,
     kopts: dict[str, Any] | None = None,
-    error_log=None,
-    profiler=None,
+    **kwargs,
 ):
     """
     Write a plotly figure(s) to a file.
@@ -135,8 +134,7 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
             path=path,
             opts=opts,
             topojson=topojson,
-            error_log=error_log,
-            profiler=profiler,
+            **kwargs,
         )
 
 
@@ -144,8 +142,7 @@ async def write_fig_from_object(
     generator: AnyIterable,  # this could be more specific with []
     *,
     kopts: dict[str, Any] | None = None,
-    error_log=None,
-    profiler=None,
+    **kwargs,
 ):
     """
     Write a plotly figure(s) to a file.
@@ -162,8 +159,7 @@ async def write_fig_from_object(
     async with Kaleido(**(kopts or {})) as k:
         await k.write_fig_from_object(
             generator,
-            error_log=error_log,
-            profiler=profiler,
+            **kwargs,
         )
 
 
