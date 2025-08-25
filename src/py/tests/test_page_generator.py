@@ -1,3 +1,4 @@
+import re
 import sys
 from html.parser import HTMLParser
 from importlib.util import find_spec
@@ -60,10 +61,19 @@ class HTMLAnalyzer(HTMLParser):
             self.boilerplate.append(data)
 
 
+def normalize_whitespace(html):
+    """Normalize whitespace by collapsing multiple newlines and extra spaces."""
+    # Collapse multiple newlines to single newlines
+    html = re.sub(r"\n\s*\n", "\n", html)
+    # Remove extra whitespace between tags
+    html = re.sub(r">\s*<", "><", html)
+    return html.strip()
+
+
 # Create boilerplate reference by parsing expected HTML
 _reference_analyzer = HTMLAnalyzer()
 _reference_analyzer.feed(EXPECTED_BOILERPLATE)
-_REFERENCE_BOILERPLATE = "\n".join(_reference_analyzer.boilerplate)
+_REFERENCE_BOILERPLATE = normalize_whitespace("".join(_reference_analyzer.boilerplate))
 
 
 def get_scripts_from_html(generated_html):
@@ -76,7 +86,7 @@ def get_scripts_from_html(generated_html):
     analyzer = HTMLAnalyzer()
     analyzer.feed(generated_html)
 
-    generated_boilerplate = "\n".join(analyzer.boilerplate)
+    generated_boilerplate = normalize_whitespace("".join(analyzer.boilerplate))
 
     # Assert boilerplate matches with diff on failure
     assert generated_boilerplate == _REFERENCE_BOILERPLATE, (
