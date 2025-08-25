@@ -24,4 +24,6 @@ jobs:
       - uses: astral-sh/setup-uv@v5
       - run: uv sync
       - name: Update CDN & PR
-        run: uv run --python 3.12 --with semver --with jq --with aiohttp scripts/update_cdn.py
+        env:
+          CHANGELOGTXT: git+https://github.com/geopozo/changelogtxt-parser
+        run: uv run --python 3.12 --with semver --with jq --with aiohttp --with "$CHANGELOGTXT" scripts/update_cdn.py
