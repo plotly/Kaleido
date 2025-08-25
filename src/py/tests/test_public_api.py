@@ -1,6 +1,5 @@
 """Integrative tests for all public API functions in __init__.py using basic figures."""
 
-import warnings
 from pathlib import Path
 from unittest.mock import patch
 
@@ -15,153 +14,160 @@ def simple_figure():
     # ruff: noqa: PLC0415
     import plotly.express as px
 
-    with warnings.catch_warnings():
-        fig = px.line(x=[1, 2, 3, 4], y=[1, 2, 3, 4])
+    fig = px.line(x=[1, 2, 3, 4], y=[1, 2, 3, 4])
 
     return fig
 
 
-async def test_calc_fig_basic(simple_figure):
-    """Test calc_fig with a basic figure."""
-    result = await kaleido.calc_fig(simple_figure)
-    assert isinstance(result, bytes)
-    assert result.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
+async def test_async_api_functions(simple_figure, tmp_path):
+    """Test calc_fig, write_fig, and write_fig_from_object with cross-validation."""
+    # Test calc_fig and get reference bytes
+    calc_result = await kaleido.calc_fig(simple_figure)
+    assert isinstance(calc_result, bytes)
+    assert calc_result.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
+
+    # Test write_fig and compare with calc_fig output
+    write_fig_output = tmp_path / "test_write_fig.png"
+    await kaleido.write_fig(simple_figure, path=str(write_fig_output))
+
+    with Path(write_fig_output).open("rb") as f:  # noqa: ASYNC230
+        write_fig_bytes = f.read()
+
+    assert write_fig_bytes == calc_result
+    assert write_fig_bytes.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
+
+    # Test write_fig_from_object and compare with calc_fig output
+    write_fig_from_object_output = tmp_path / "test_write_fig_from_object.png"
+    await kaleido.write_fig_from_object(
+        [
+            {
+                "fig": simple_figure,
+                "path": write_fig_from_object_output,
+            },
+        ],
+    )
+
+    with Path(write_fig_from_object_output).open("rb") as f:  # noqa: ASYNC230
+        write_fig_from_object_bytes = f.read()
+
+    assert write_fig_from_object_bytes == calc_result
+    assert write_fig_from_object_bytes.startswith(
+        b"\x89PNG\r\n\x1a\n",
+    ), "Not a PNG file"
+
+    # Cross-validate all results are identical
+    assert write_fig_bytes == write_fig_from_object_bytes == calc_result
 
 
-async def test_calc_fig_sync_both_scenarios(simple_figure):
-    """Test calc_fig_sync in both server running and not running scenarios."""
-    # First get the expected result from calc_fig for comparison
-    expected_result = await kaleido.calc_fig(simple_figure)
-    assert isinstance(expected_result, bytes)
-    assert expected_result.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
-
-    # Test scenario 1: server running
-    kaleido.start_sync_server(silence_warnings=True)
-    try:
-        with patch(
-            "kaleido._global_server.call_function",
-            wraps=kaleido._global_server.call_function,  # noqa: SLF001 internal
-        ) as mock_call:
-            result_server_running = kaleido.calc_fig_sync(simple_figure)
-
-            mock_call.assert_called_once()
-            assert isinstance(result_server_running, bytes)
-            assert result_server_running.startswith(
-                b"\x89PNG\r\n\x1a\n",
-            ), "Not a PNG file"
-            assert result_server_running == expected_result
-    finally:
-        kaleido.stop_sync_server(silence_warnings=True)
-
-    # Test scenario 2: server not running
-    with patch(
-        "kaleido._sync_server.oneshot_async_run",
-        wraps=kaleido._sync_server.oneshot_async_run,  # noqa: SLF001 internal
-    ) as mock_oneshot:
-        result_server_not_running = kaleido.calc_fig_sync(simple_figure)
-
-        mock_oneshot.assert_called_once()
-        assert isinstance(result_server_not_running, bytes)
-        assert result_server_not_running.startswith(
-            b"\x89PNG\r\n\x1a\n",
-        ), "Not a PNG file"
-        assert result_server_not_running == expected_result
-
-
-async def test_write_fig_basic(simple_figure, tmp_path):
-    """Test write_fig with a basic figure and compare with calc_fig output."""
-    output_file = tmp_path / "test_output.png"
-
-    # Get expected bytes from calc_fig
-    expected_bytes = await kaleido.calc_fig(simple_figure)
-
-    # Write figure to file
-    await kaleido.write_fig(simple_figure, path=str(output_file))
-
-    # Read the written file and compare
-    with Path(output_file).open("rb") as f:  # noqa: ASYNC230 use aiofile
-        written_bytes = f.read()
-
-    assert written_bytes == expected_bytes
-    assert written_bytes.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
-
-
-async def test_write_fig_sync_both_scenarios(simple_figure, tmp_path):
-    """Test write_fig_sync and write_fig_from_object_sync in both server scenarios."""
+async def test_sync_api_functions(simple_figure, tmp_path):
+    """Test sync wrappers with cross-validation."""
     # Get expected bytes from calc_fig for comparison
     expected_bytes = await kaleido.calc_fig(simple_figure)
+    assert isinstance(expected_bytes, bytes)
     assert expected_bytes.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
 
     # Test scenario 1: server running
-    output_file_1 = tmp_path / "test_server_running.png"
-    output_file_from_object_1 = tmp_path / "test_from_object_server_running.png"
-    kaleido.start_sync_server(silence_warnings=True)
-    try:
-        with patch(
-            "kaleido._global_server.call_function",
-            wraps=kaleido._global_server.call_function,  # noqa: SLF001 internal
-        ) as mock_call:
+    write_fig_output_1 = tmp_path / "test_write_fig_server_running.png"
+    write_fig_from_object_output_1 = tmp_path / "test_from_object_server_running.png"
+
+    with patch(
+        "kaleido._sync_server.oneshot_async_run",
+        wraps=kaleido._sync_server.oneshot_async_run,  # noqa: SLF001 internal
+    ) as mock_oneshot, patch(
+        "kaleido._global_server.call_function",
+        wraps=kaleido._global_server.call_function,  # noqa: SLF001 internal
+    ) as mock_call:
+        kaleido.start_sync_server(silence_warnings=True)
+        try:
+            # Test calc_fig_sync
+            calc_result_1 = kaleido.calc_fig_sync(simple_figure)
+            assert isinstance(calc_result_1, bytes)
+            assert calc_result_1.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
+            assert calc_result_1 == expected_bytes
+
             # Test write_fig_sync
-            kaleido.write_fig_sync(simple_figure, path=str(output_file_1))
+            kaleido.write_fig_sync(simple_figure, path=str(write_fig_output_1))
+
+            with Path(write_fig_output_1).open("rb") as f:  # noqa: ASYNC230
+                write_fig_bytes_1 = f.read()
+            assert write_fig_bytes_1 == expected_bytes
+            assert write_fig_bytes_1.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
 
             # Test write_fig_from_object_sync
             kaleido.write_fig_from_object_sync(
                 [
                     {
                         "fig": simple_figure,
-                        "path": output_file_from_object_1,
+                        "path": write_fig_from_object_output_1,
                     },
                 ],
             )
 
-            # Should have been called twice (once for each function)
-            assert mock_call.call_count == 2  # noqa: PLR2004
+            with Path(write_fig_from_object_output_1).open("rb") as f:  # noqa: ASYNC230
+                from_object_bytes_1 = f.read()
+            assert from_object_bytes_1 == expected_bytes
+            assert from_object_bytes_1.startswith(
+                b"\x89PNG\r\n\x1a\n",
+            ), "Not a PNG file"
 
-            # Read and verify the written files
-            with Path(output_file_1).open("rb") as f:  # noqa: ASYNC230
-                written_bytes_1 = f.read()
-            assert written_bytes_1 == expected_bytes
+            # Should have been called three times (once for each function)
+            assert mock_call.call_count == 3  # noqa: PLR2004
+            assert mock_oneshot.call_count == 0
 
-            # Read and verify the written files
-            with Path(output_file_from_object_1).open("rb") as f:  # noqa: ASYNC230
-                from_object_written_bytes_1 = f.read()
-            assert from_object_written_bytes_1 == expected_bytes
+            # Cross-validate all server running results are identical
+            assert (
+                calc_result_1
+                == write_fig_bytes_1
+                == from_object_bytes_1
+                == expected_bytes
+            )
 
-    finally:
-        kaleido.stop_sync_server(silence_warnings=True)
+        finally:
+            kaleido.stop_sync_server(silence_warnings=True)
 
-    # Test scenario 2: server not running
-    output_file_2 = tmp_path / "test_server_not_running.png"
-    output_file_from_object_2 = tmp_path / "test_from_object_server_not_running.png"
-    with patch(
-        "kaleido._sync_server.oneshot_async_run",
-        wraps=kaleido._sync_server.oneshot_async_run,  # noqa: SLF001 internal
-    ) as mock_oneshot:
+        # Test scenario 2: server not running
+        write_fig_output_2 = tmp_path / "test_write_fig_server_not_running.png"
+        write_fig_from_object_output_2 = (
+            tmp_path / "test_from_object_server_not_running.png"
+        )
+
+        # Test calc_fig_sync
+        calc_result_2 = kaleido.calc_fig_sync(simple_figure)
+        assert isinstance(calc_result_2, bytes)
+        assert calc_result_2.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
+        assert calc_result_2 == expected_bytes
+
         # Test write_fig_sync
-        kaleido.write_fig_sync(simple_figure, path=str(output_file_2))
+        kaleido.write_fig_sync(simple_figure, path=str(write_fig_output_2))
+
+        with Path(write_fig_output_2).open("rb") as f:  # noqa: ASYNC230
+            write_fig_bytes_2 = f.read()
+        assert write_fig_bytes_2 == expected_bytes
+        assert write_fig_bytes_2.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
 
         # Test write_fig_from_object_sync
         kaleido.write_fig_from_object_sync(
             [
                 {
                     "fig": simple_figure,
-                    "path": output_file_from_object_2,
+                    "path": write_fig_from_object_output_2,
                 },
             ],
         )
 
-        # Should have been called twice (once for each function)
-        assert mock_oneshot.call_count == 2  # noqa: PLR2004
+        with Path(write_fig_from_object_output_2).open("rb") as f:  # noqa: ASYNC230
+            from_object_bytes_2 = f.read()
+        assert from_object_bytes_2 == expected_bytes
+        assert from_object_bytes_2.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
 
-        # Read and verify the written files
-        with Path(output_file_2).open("rb") as f:  # noqa: ASYNC230
-            written_bytes_2 = f.read()
-        assert written_bytes_2 == expected_bytes
+        # Should have been called three times (once for each function)
+        assert mock_call.call_count == 3  # noqa: PLR2004
+        assert mock_oneshot.call_count == 3  # noqa: PLR2004
 
-        # Read and verify the written files
-        with Path(output_file_from_object_2).open("rb") as f:  # noqa: ASYNC230
-            from_object_written_bytes_2 = f.read()
-        assert from_object_written_bytes_2 == expected_bytes
+        # Cross-validate all server not running results are identical
+        assert (
+            calc_result_2 == write_fig_bytes_2 == from_object_bytes_2 == expected_bytes
+        )
 
 
 def test_start_stop_sync_server_integration():
