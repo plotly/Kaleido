@@ -1,10 +1,14 @@
 import re
 import sys
+import tempfile
 from html.parser import HTMLParser
 from importlib.util import find_spec
+from pathlib import Path
 
 import logistro
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
 from kaleido import PageGenerator
 from kaleido._page_generator import DEFAULT_MATHJAX, DEFAULT_PLOTLY
@@ -33,7 +37,6 @@ EXPECTED_BOILERPLATE = """<!DOCTYPE html>
 </html>"""
 
 
-# Claude, please review this for obvious errors.
 class HTMLAnalyzer(HTMLParser):
     """Extract script tags with src attributes and return HTML without them."""
 
@@ -98,12 +101,77 @@ def get_scripts_from_html(generated_html):
     return analyzer.scripts
 
 
+# Fixtures for user supplied input scenarios
+@pytest.fixture
+def temp_js_file():
+    """Create a temporary JavaScript file that exists."""
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=False) as f:
+        f.write("console.log('test');")
+        temp_path = Path(f.name)
+    yield temp_path
+    temp_path.unlink()
+
+
+@pytest.fixture
+def existing_file_path():
+    """Return path to current test file (guaranteed to exist)."""
+    return Path(__file__)
+
+
+@pytest.fixture
+def nonexistent_file_path():
+    """Return path to file that doesn't exist."""
+    return Path("/nonexistent/path/file.js")
+
+
+@pytest.fixture
+def user_input_scenarios():
+    """Fixture for user supplied input scenarios using hypothesis strategies."""
+
+    # Generate sample data using hypothesis strategies
+    http_urls = st.text(
+        min_size=1,
+        max_size=20,
+        alphabet=st.characters(whitelist_categories=("Lu", "Ll", "And")),
+    ).map(lambda x: f"https://example.com/{x}.js")
+
+    return {
+        "custom_plotly_url": http_urls.example(),
+        "custom_mathjax_url": http_urls.example(),
+        "other_scripts": [
+            http_urls.example(),
+            http_urls.example(),
+        ],
+        "plotly_with_encoding": (http_urls.example(), "utf-8"),
+        "mathjax_with_encoding": (http_urls.example(), "utf-16"),
+    }
+
+
+@pytest.fixture
+def hypothesis_urls():
+    """Generate hypothesis-based URL strategies."""
+    return st.text(min_size=1, max_size=20).map(lambda x: f"https://example.com/{x}.js")
+
+
+@pytest.fixture
+def hypothesis_encodings():
+    """Generate hypothesis-based encoding strategies."""
+    return st.sampled_from(["utf-8", "utf-16", "ascii", "latin1"])
+
+
+@pytest.fixture
+def hypothesis_tuples(hypothesis_urls, hypothesis_encodings):
+    """Generate hypothesis-based (url, encoding) tuples."""
+    return st.tuples(hypothesis_urls, hypothesis_encodings)
+
+
+# Test default combinations
 @pytest.mark.order(1)
-async def test_page_generator():
+async def test_defaults_no_plotly_available():
+    """Test defaults when plotly package is not available."""
     if not find_spec("plotly"):
-        raise ImportError(
-            "Tests must be run with plotly installed to function",
-        )
+        raise ImportError("Tests must be run with plotly installed to function")
+
     old_path = sys.path
     sys.path = sys.path[:1]
     if find_spec("plotly"):
@@ -127,7 +195,9 @@ async def test_page_generator():
 
     sys.path = old_path
 
-    # Test all defaults (plotly available)
+
+async def test_defaults_with_plotly_available():
+    """Test defaults when plotly package is available."""
     all_defaults = PageGenerator().generate_index()
     scripts = get_scripts_from_html(all_defaults)
 
@@ -137,37 +207,243 @@ async def test_page_generator():
     assert scripts[1].endswith("package_data/plotly.min.js")
     assert scripts[2].endswith("kaleido_scopes.js")
 
-    # Test with custom plotly
-    with_plot = PageGenerator(plotly="https://with_plot").generate_index()
-    scripts = get_scripts_from_html(with_plot)
+
+async def test_force_cdn():
+    """Test force_cdn=True forces use of CDN plotly even when plotly is available."""
+    # Verify plotly is available first
+    if not find_spec("plotly"):
+        pytest.skip("Plotly not available - cannot test force_cdn override")
+
+    forced_cdn = PageGenerator(force_cdn=True).generate_index()
+    scripts = get_scripts_from_html(forced_cdn)
 
     assert len(scripts) == 3  # noqa: PLR2004
     assert scripts[0] == DEFAULT_MATHJAX
-    assert scripts[1] == "https://with_plot"
+    assert scripts[1] == DEFAULT_PLOTLY
     assert scripts[2].endswith("kaleido_scopes.js")
 
-    # Test without mathjax
-    without_math = PageGenerator(
-        plotly="https://with_plot",
-        mathjax=False,
-    ).generate_index()
-    scripts = get_scripts_from_html(without_math)
+
+# Test boolean mathjax functionality
+async def test_mathjax_false():
+    """Test that mathjax=False disables mathjax."""
+    without_mathjax = PageGenerator(mathjax=False).generate_index()
+    scripts = get_scripts_from_html(without_mathjax)
 
     assert len(scripts) == 2  # noqa: PLR2004
-    assert scripts[0] == "https://with_plot"
+    assert scripts[0].endswith("package_data/plotly.min.js")
     assert scripts[1].endswith("kaleido_scopes.js")
 
-    # Test with custom mathjax and others
-    with_others = PageGenerator(
-        plotly="https://with_plot",
-        mathjax="https://with_mathjax",
-        others=["https://1", "https://2"],
-    ).generate_index()
+
+# Test user overrides
+async def test_custom_plotly_url(user_input_scenarios):
+    """Test custom plotly URL override."""
+    custom_plotly = user_input_scenarios["custom_plotly_url"]
+    with_custom = PageGenerator(plotly=custom_plotly).generate_index()
+    scripts = get_scripts_from_html(with_custom)
+
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == custom_plotly
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+
+async def test_custom_mathjax_url(user_input_scenarios):
+    """Test custom mathjax URL override."""
+    custom_mathjax = user_input_scenarios["custom_mathjax_url"]
+    with_custom = PageGenerator(mathjax=custom_mathjax).generate_index()
+    scripts = get_scripts_from_html(with_custom)
+
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == custom_mathjax
+    assert scripts[1].endswith("package_data/plotly.min.js")
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+
+async def test_other_scripts(user_input_scenarios):
+    """Test adding other scripts."""
+    other_scripts = user_input_scenarios["other_scripts"]
+    with_others = PageGenerator(others=other_scripts).generate_index()
     scripts = get_scripts_from_html(with_others)
 
     assert len(scripts) == 5  # noqa: PLR2004
-    assert scripts[0] == "https://with_mathjax"
-    assert scripts[1] == "https://with_plot"
-    assert scripts[2] == "https://1"
-    assert scripts[3] == "https://2"
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1].endswith("package_data/plotly.min.js")
+    assert scripts[2] == other_scripts[0]
+    assert scripts[3] == other_scripts[1]
     assert scripts[4].endswith("kaleido_scopes.js")
+
+
+async def test_combined_overrides(user_input_scenarios):
+    """Test combination of multiple overrides."""
+    custom_plotly = user_input_scenarios["custom_plotly_url"]
+    custom_mathjax = user_input_scenarios["custom_mathjax_url"]
+    other_scripts = user_input_scenarios["other_scripts"]
+
+    combined = PageGenerator(
+        plotly=custom_plotly,
+        mathjax=custom_mathjax,
+        others=other_scripts,
+    ).generate_index()
+    scripts = get_scripts_from_html(combined)
+
+    assert len(scripts) == 5  # noqa: PLR2004
+    assert scripts[0] == custom_mathjax
+    assert scripts[1] == custom_plotly
+    assert scripts[2] == other_scripts[0]
+    assert scripts[3] == other_scripts[1]
+    assert scripts[4].endswith("kaleido_scopes.js")
+
+
+# Test file path validation
+async def test_existing_file_path(temp_js_file):
+    """Test that existing file paths work with and without file:/// protocol."""
+    # Test with regular path
+    generator = PageGenerator(plotly=str(temp_js_file))
+    html = generator.generate_index()
+    scripts = get_scripts_from_html(html)
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == str(temp_js_file)
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+    # Test with file:/// protocol
+    generator_uri = PageGenerator(plotly=temp_js_file.as_uri())
+    html_uri = generator_uri.generate_index()
+    scripts_uri = get_scripts_from_html(html_uri)
+    assert len(scripts_uri) == 3  # noqa: PLR2004
+    assert scripts_uri[0] == DEFAULT_MATHJAX
+    assert scripts_uri[1] == temp_js_file.as_uri()
+    assert scripts_uri[2].endswith("kaleido_scopes.js")
+
+
+async def test_nonexistent_file_path_raises_error(nonexistent_file_path):
+    """Test that nonexistent file paths raise FileNotFoundError."""
+    # Test with regular path
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(plotly=str(nonexistent_file_path))
+
+    # Test with file:/// protocol
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(plotly=nonexistent_file_path.as_uri())
+
+
+async def test_mathjax_nonexistent_file_raises_error(nonexistent_file_path):
+    """Test that nonexistent mathjax file raises FileNotFoundError."""
+    # Test with regular path
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(mathjax=str(nonexistent_file_path))
+
+    # Test with file:/// protocol
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(mathjax=nonexistent_file_path.as_uri())
+
+
+async def test_others_nonexistent_file_raises_error(nonexistent_file_path):
+    """Test that nonexistent file in others list raises FileNotFoundError."""
+    # Test with regular path
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(others=[str(nonexistent_file_path)])
+
+    # Test with file:/// protocol
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(others=[nonexistent_file_path.as_uri()])
+
+
+# Test HTTP URLs (should not raise FileNotFoundError)
+async def test_http_urls_skip_file_validation():
+    """Test that HTTP URLs skip file existence validation."""
+    # These should not raise FileNotFoundError even if URLs don't exist
+    generator = PageGenerator(
+        plotly="https://nonexistent.example.com/plotly.js",
+        mathjax="https://nonexistent.example.com/mathjax.js",
+        others=["https://nonexistent.example.com/other.js"],
+    )
+    html = generator.generate_index()
+    scripts = get_scripts_from_html(html)
+
+    assert len(scripts) == 4  # noqa: PLR2004
+    assert scripts[0] == "https://nonexistent.example.com/mathjax.js"
+    assert scripts[1] == "https://nonexistent.example.com/plotly.js"
+    assert scripts[2] == "https://nonexistent.example.com/other.js"
+    assert scripts[3].endswith("kaleido_scopes.js")
+
+
+# Test tuple (path, encoding) functionality
+async def test_plotly_with_encoding_tuple(user_input_scenarios):
+    """Test plotly parameter with (url, encoding) tuple."""
+    plotly_tuple = user_input_scenarios["plotly_with_encoding"]
+    generator = PageGenerator(plotly=plotly_tuple)
+    html = generator.generate_index()
+    scripts = get_scripts_from_html(html)
+
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == plotly_tuple[0]  # Should be the URL from tuple
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+
+async def test_mathjax_with_encoding_tuple(user_input_scenarios):
+    """Test mathjax parameter with (url, encoding) tuple."""
+    mathjax_tuple = user_input_scenarios["mathjax_with_encoding"]
+    generator = PageGenerator(mathjax=mathjax_tuple)
+    html = generator.generate_index()
+    scripts = get_scripts_from_html(html)
+
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == mathjax_tuple[0]  # Should be the URL from tuple
+    assert scripts[1].endswith("package_data/plotly.min.js")
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+
+async def test_others_tuple_error(user_input_scenarios):
+    """Test that others parameter with tuples currently fails (documents bug)."""
+    # Create a tuple for others list
+    url_encoding_tuple = user_input_scenarios["plotly_with_encoding"]
+
+    # This should fail until the others parameter properly handles tuples
+    with pytest.raises((TypeError, AttributeError, ValueError)):
+        PageGenerator(others=[url_encoding_tuple])
+
+
+@given(st.text(min_size=1, max_size=10).map(lambda x: f"https://example.com/{x}.js"))
+async def test_plotly_urls_hypothesis(url):
+    """Test plotly with hypothesis-generated URLs."""
+    generator = PageGenerator(plotly=url)
+    html = generator.generate_index()
+    scripts = get_scripts_from_html(html)
+
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == url
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+
+@given(
+    st.tuples(
+        st.text(min_size=1, max_size=10).map(lambda x: f"https://example.com/{x}.js"),
+        st.sampled_from(["utf-8", "utf-16", "ascii"]),
+    ),
+)
+async def test_encoding_tuples_hypothesis(url_encoding_tuple):
+    """Test encoding tuples with hypothesis-generated data."""
+    url, encoding = url_encoding_tuple
+
+    # Test with plotly
+    generator = PageGenerator(plotly=(url, encoding))
+    html = generator.generate_index()
+    scripts = get_scripts_from_html(html)
+
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == url
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+    # Test with mathjax
+    generator2 = PageGenerator(mathjax=(url, encoding))
+    html2 = generator2.generate_index()
+    scripts2 = get_scripts_from_html(html2)
+
+    assert len(scripts2) == 3  # noqa: PLR2004
+    assert scripts2[0] == url
+    assert scripts2[1].endswith("package_data/plotly.min.js")
+    assert scripts2[2].endswith("kaleido_scopes.js")
