@@ -53,7 +53,7 @@ class HTMLAnalyzer(HTMLParser):
         if self._in_script and tag == "script":
             self._in_script = False
             return
-        self.boilerplate.append(self.get_endtag_text())
+        self.boilerplate.append(f"</{tag}>")
 
     def handle_data(self, data):
         if not self._in_script:
