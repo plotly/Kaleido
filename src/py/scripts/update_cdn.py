@@ -11,8 +11,10 @@ import jq
 import semver
 from kaleido._page_generator import DEFAULT_PLOTLY
 from kaleido._page_generator import __file__ as FILE_PATH
+import changelogtxt_parser as changelog
 
 REPO = os.environ["REPO"]
+GITHUB_WORKSPACE = os.environ["GITHUB_WORKSPACE"]
 
 
 async def run(commands: list[str]) -> tuple[bytes, bytes, int | None]:
@@ -46,7 +48,7 @@ async def create_pr(latest_version: str) -> None:
     if err:
         msg = err.decode()
         if "HTTP 404" not in msg:
-            print(msg)  # errores no esperados
+            print(msg)  # unexpected errors
             sys.exit(1)
     else:
         print(f"The branch {branch} already exists")
@@ -57,13 +59,20 @@ async def create_pr(latest_version: str) -> None:
     )
 
     if pr.decode():
-        # err es vacio en este caso
+        # err if is empty
         print(f"Pull request '{branch}' already exists")
         sys.exit(1)
 
     title = f"Update Plotly.js CDN to v{latest_version}"
+    file_updated = changelog.update_version(latest_version, title, GITHUB_WORKSPACE)
+
+    if not file_updated:
+        print("Failed to update changelog")
+        sys.exit(1)
 
     await run(["git", "checkout", "-b", branch])
+    await run(["git", "add", FILE_PATH])
+    await run(["git", "add", GITHUB_WORKSPACE])
     await run(
         [
             "git",
