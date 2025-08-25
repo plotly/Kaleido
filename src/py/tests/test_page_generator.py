@@ -1,5 +1,5 @@
-import re
 import sys
+from html.parser import HTMLParser
 from importlib.util import find_spec
 
 import logistro
@@ -13,130 +13,79 @@ pytestmark = pytest.mark.asyncio(loop_scope="function")
 
 _logger = logistro.getLogger(__name__)
 
-_re_default_mathjax = re.escape(DEFAULT_MATHJAX)
-_re_default_plotly = re.escape(DEFAULT_PLOTLY)
 
-no_imports_result_raw = (
-    r'''
-<!DOCTYPE html>
+# Expected boilerplate HTML (without script tags with src)
+EXPECTED_BOILERPLATE = """<!DOCTYPE html>
 <html>
     <head>
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
         <script>
-          window\.PlotlyConfig = {MathJaxConfig: 'local'}
+          window.PlotlyConfig = {MathJaxConfig: 'local'}
         </script>
         <script type="text/x-mathjax-config">
-          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
+          MathJax.Hub.Config({ "SVG": { blacker: 0 }})
         </script>
 
-        <script src="'''
-    + _re_default_mathjax
-    + r'''"></script>
-        <script src="'''
-    + _re_default_plotly
-    + r"""" charset="utf\-8"></script>
-        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
-    </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido\-image" /></body>
-</html>
-"""
-)
-no_imports_result_re = re.compile(no_imports_result_raw)
-
-all_defaults_re = re.compile(
-    r'''
-<!DOCTYPE html>
-<html>
-    <head>
-        <style id="head-style"></style>
-        <title>Kaleido-fier</title>
-        <script>
-          window\.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-        <script type="text/x-mathjax-config">
-          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
-        </script>
-
-        <script src="'''
-    + _re_default_mathjax
-    + r""""></script>
-        <script src="\S[^\n]*/package_data/plotly\.min\.js" charset="utf-8"></script>
-        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image" /></body>
-</html>
-""",
-)
+</html>"""
 
-with_plot_result_re = re.compile(
-    r'''
-<!DOCTYPE html>
-<html>
-    <head>
-        <style id="head-style"></style>
-        <title>Kaleido-fier</title>
-        <script>
-          window\.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-        <script type="text/x-mathjax-config">
-          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
-        </script>
 
-        <script src="'''
-    + _re_default_mathjax
-    + r""""></script>
-        <script src="https://with_plot" charset="utf-8"></script>
-        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
-    </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image" /></body>
-</html>
-""",
-)
+# Claude, please review this for obvious errors.
+class HTMLAnalyzer(HTMLParser):
+    """Extract script tags with src attributes and return HTML without them."""
 
-without_math_result_re = re.compile(r"""
-<!DOCTYPE html>
-<html>
-    <head>
-        <style id="head-style"></style>
-        <title>Kaleido-fier</title>
-        <script>
-          window\.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-        <script type="text/x-mathjax-config">
-          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
-        </script>
+    def __init__(self):
+        super().__init__()
+        self.scripts = []
+        self.boilerplate = []
+        self._in_script = False
 
-        <script src="https://with_plot" charset="utf-8"></script>
-        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
-    </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image" /></body>
-</html>
-""")
+    def handle_starttag(self, tag, attrs):
+        if tag == "script" and "src" in (attr_dict := dict(attrs)):
+            self._in_script = True
+            self.scripts.append(attr_dict["src"])
+            return
+        self.boilerplate.append(self.get_starttag_text())
 
-with_others_result_raw = r"""
-<!DOCTYPE html>
-<html>
-    <head>
-        <style id="head-style"></style>
-        <title>Kaleido-fier</title>
-        <script>
-          window\.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-        <script type="text/x-mathjax-config">
-          MathJax\.Hub\.Config\({ "SVG": { blacker: 0 }}\)
-        </script>
+    def handle_endtag(self, tag):
+        if self._in_script and tag == "script":
+            self._in_script = False
+            return
+        self.boilerplate.append(self.get_endtag_text())
 
-        <script src="https://with_mathjax"></script>
-        <script src="https://with_plot" charset="utf-8"></script>
-        <script src="https://1"></script>
-        <script src="https://2"></script>
-        <script src="\S[^\n]*/kaleido_scopes\.js"></script>
-    </head>
-    <body style="{margin: 0; padding: 0;}"><img id="kaleido-image" /></body>
-</html>
-"""
-with_others_result_re = re.compile(with_others_result_raw)
+    def handle_data(self, data):
+        if not self._in_script:
+            self.boilerplate.append(data)
+
+
+# Create boilerplate reference by parsing expected HTML
+_reference_analyzer = HTMLAnalyzer()
+_reference_analyzer.feed(EXPECTED_BOILERPLATE)
+_REFERENCE_BOILERPLATE = "\n".join(_reference_analyzer.boilerplate)
+
+
+def get_scripts_from_html(generated_html):
+    """
+    Parse generated HTML, assert boilerplate matches reference, and return script URLs.
+
+    Returns:
+        list: script src URLs found in generated HTML
+    """
+    analyzer = HTMLAnalyzer()
+    analyzer.feed(generated_html)
+
+    generated_boilerplate = "\n".join(analyzer.boilerplate)
+
+    # Assert boilerplate matches with diff on failure
+    assert generated_boilerplate == _REFERENCE_BOILERPLATE, (
+        f"Boilerplate mismatch:\n"
+        f"Expected:\n{_REFERENCE_BOILERPLATE}\n\n"
+        f"Got:\n{generated_boilerplate}"
+    )
+
+    return analyzer.scripts
 
 
 @pytest.mark.order(1)
@@ -155,37 +104,60 @@ async def test_page_generator():
             "or if you really need to, run it separately and then skip it "
             "in the main group.",
         )
+
+    # Test no imports (plotly not available)
     no_imports = PageGenerator().generate_index()
-    assert no_imports_result_re.findall(no_imports), (
-        f"{len(no_imports_result_raw)}: {no_imports_result_raw}"
-        "\n"
-        f"{len(no_imports)}: {no_imports}"
-    )
+    scripts = get_scripts_from_html(no_imports)
+
+    # Should have mathjax, plotly default, and kaleido_scopes
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == DEFAULT_PLOTLY
+    assert scripts[2].endswith("kaleido_scopes.js")
+
     sys.path = old_path
 
-    # this imports plotly so above test must have already been done
+    # Test all defaults (plotly available)
     all_defaults = PageGenerator().generate_index()
-    assert all_defaults_re.findall(all_defaults)
+    scripts = get_scripts_from_html(all_defaults)
 
+    # Should have mathjax, plotly package data, and kaleido_scopes
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1].endswith("package_data/plotly.min.js")
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+    # Test with custom plotly
     with_plot = PageGenerator(plotly="https://with_plot").generate_index()
-    assert with_plot_result_re.findall(with_plot)
+    scripts = get_scripts_from_html(with_plot)
 
+    assert len(scripts) == 3  # noqa: PLR2004
+    assert scripts[0] == DEFAULT_MATHJAX
+    assert scripts[1] == "https://with_plot"
+    assert scripts[2].endswith("kaleido_scopes.js")
+
+    # Test without mathjax
     without_math = PageGenerator(
         plotly="https://with_plot",
         mathjax=False,
     ).generate_index()
-    assert without_math_result_re.findall(without_math)
+    scripts = get_scripts_from_html(without_math)
 
+    assert len(scripts) == 2  # noqa: PLR2004
+    assert scripts[0] == "https://with_plot"
+    assert scripts[1].endswith("kaleido_scopes.js")
+
+    # Test with custom mathjax and others
     with_others = PageGenerator(
         plotly="https://with_plot",
         mathjax="https://with_mathjax",
         others=["https://1", "https://2"],
     ).generate_index()
-    assert with_others_result_re.findall(with_others), (
-        f"{len(with_others_result_raw)}: {with_others_result_raw}"
-        "\n"
-        f"{len(with_others)}: {with_others}"
-    )
+    scripts = get_scripts_from_html(with_others)
 
-
-# test others
+    assert len(scripts) == 5  # noqa: PLR2004
+    assert scripts[0] == "https://with_mathjax"
+    assert scripts[1] == "https://with_plot"
+    assert scripts[2] == "https://1"
+    assert scripts[3] == "https://2"
+    assert scripts[4].endswith("kaleido_scopes.js")
