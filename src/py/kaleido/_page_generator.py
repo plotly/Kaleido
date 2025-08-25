@@ -16,7 +16,7 @@ DEFAULT_MATHJAX = (
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
-def _ensure_path(path: Path | str):
+def _ensure_path(path: Path | str) -> None:
     _logger.debug(f"Ensuring path {path!s}")
     if urlparse(str(path)).scheme.startswith("http"):  # is url
         return
@@ -54,7 +54,14 @@ class PageGenerator:
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
 
-    def __init__(self, *, plotly=None, mathjax=None, others=None, force_cdn=False):
+    def __init__(
+        self,
+        *,
+        plotly: None | Path | str | tuple[Path | str, str] = None,
+        mathjax: None | Path | str | bool | tuple[Path | str, str] = None,
+        others: None | list[Path | str | tuple[Path | str, str]] = None,
+        force_cdn: bool = False,
+    ):
         """
         Create a PageGenerator.
 
