@@ -61,8 +61,9 @@ async def create_pr(latest_version: str) -> None:
         print(f"Pull request '{branch}' already exists")
         sys.exit(1)
 
+    title = f"Update Plotly.js CDN to v{latest_version}"
+
     await run(["git", "checkout", "-b", branch])
-    await run(["git", "add", FILE_PATH])
     await run(
         [
             "git",
@@ -72,7 +73,7 @@ async def create_pr(latest_version: str) -> None:
             "user.email='github-actions@github.com'",
             "commit",
             "-m",
-            f"chore: update Plotly CDN to v{latest_version}",
+            f"chore: {title}",
         ]
     )
     _, err, _ = await run(["git", "push", "-u", "origin", branch])
@@ -81,7 +82,6 @@ async def create_pr(latest_version: str) -> None:
         print(err.decode())
         sys.exit(1)
 
-    title = f"Update Plotly CDN to v{latest_version}"
     body = f"This PR updates the CDN URL to v{latest_version}."
     new_pr, err, _ = await run(
         ["gh", "pr", "create", "-B", "master", "-H", branch, "-t", title, "-b", body]
@@ -110,7 +110,7 @@ async def main() -> None:
 
         await create_pr(latest_version)
     else:
-        title = f"CDN not reachable for Plotly v{latest_version}"
+        title = f"CDN not reachable for Plotly.js v{latest_version}"
         body = f"URL: {new_cdn} - invalid url"
         brc, _, _ = await run(
             [
