@@ -8,14 +8,16 @@ import pytest
 import kaleido
 
 
-@pytest.fixture
-def simple_figure():
-    """Create a simple plotly figure for testing."""
+@pytest.fixture(params=["figure", "dict"])
+def simple_figure(request):
+    """Create a simple plotly figure for testing, either as figure or dict."""
     # ruff: noqa: PLC0415
     import plotly.express as px
 
     fig = px.line(x=[1, 2, 3, 4], y=[1, 2, 3, 4])
 
+    if request.param == "dict":
+        return fig.to_dict()
     return fig
 
 
