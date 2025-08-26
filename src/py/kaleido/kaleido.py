@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import warnings
-from collections.abc import Iterable
+from collections.abc import AsyncIterable, Iterable
 from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any, Callable, Coroutine
 
+    from ._fig_tools import Figurish
+
 _logger = logistro.getLogger(__name__)
 
 # Show a warning if the installed Plotly version
@@ -31,10 +33,10 @@ _logger = logistro.getLogger(__name__)
 warn_incompatible_plotly()
 
 
-def _make_printer(name: str) -> Callable[[str], Coroutine[Any, Any, None]]:
+def _make_printer(name: str) -> Callable[[Any], Coroutine[Any, Any, None]]:
     """Create event printer for generic events. Helper function."""
 
-    async def print_all(response: str) -> None:
+    async def print_all(response: Any) -> None:
         _logger.debug2(f"{name}:{response}")
 
     return print_all
@@ -93,8 +95,8 @@ class Kaleido(choreo.Browser):
         page_generator: None | PageGenerator | str | Path = None,
         n: int = 1,
         timeout: int | None = 90,
-        width: int | None = None,
-        height: int | None = None,
+        width: int | None = None,  # deprecate
+        height: int | None = None,  # deprecate
         stepper: bool = False,
         plotlyjs: str | None = None,
         mathjax: str | None = None,
@@ -132,8 +134,8 @@ class Kaleido(choreo.Browser):
         page = page_generator
         self._timeout = timeout
         self._n = n
-        self._height = height
-        self._width = width
+        self._height = height  # deprecate
+        self._width = width  # deprecate
         self._stepper = stepper
         self._plotlyjs = plotlyjs
         self._mathjax = mathjax
@@ -177,7 +179,7 @@ class Kaleido(choreo.Browser):
                 page = PageGenerator(plotly=self._plotlyjs, mathjax=self._mathjax)
             page.generate_index(index)
 
-    async def _conform_tabs(self, tabs=None) -> None:
+    async def _conform_tabs(self, tabs: list[choreo.Tab] | None = None) -> None:
         if not tabs:
             tabs = list(self.tabs.values())
         _logger.info(f"Conforming {len(tabs)} to {self._index}")
@@ -258,7 +260,7 @@ class Kaleido(choreo.Browser):
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
-    async def _return_kaleido_tab(self, tab):
+    async def _return_kaleido_tab(self, tab: _KaleidoTab) -> None:
         """
         Refresh tab and put it back into the available queue.
 
@@ -275,7 +277,11 @@ class Kaleido(choreo.Browser):
         await self.tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
-    def _clean_tab_return_task(self, main_task, task):
+    def _clean_tab_return_task(
+        self,
+        main_task: asyncio.Task,
+        task: asyncio.Task,
+    ) -> None:
         _logger.info("Cleaning out background tasks.")
         self._background_render_tasks.remove(task)
         e = task.exception()
@@ -285,7 +291,14 @@ class Kaleido(choreo.Browser):
                 main_task.cancel()
             raise e
 
-    def _check_render_task(self, name, tab, main_task, error_log, task):
+    def _check_render_task(
+        self,
+        name: str,
+        tab: _KaleidoTab,
+        main_task: asyncio.Task,
+        error_log: None | list[ErrorEntry],
+        task: asyncio.Task,
+    ) -> None:
         if task.cancelled():
             _logger.info(f"Something cancelled {name}.")
             error_log.append(
@@ -307,7 +320,13 @@ class Kaleido(choreo.Browser):
         self._background_render_tasks.add(t)
         t.add_done_callback(partial(self._clean_tab_return_task, main_task))
 
-    async def _render_task(self, tab, args, error_log=None, profiler=None):
+    async def _render_task(
+        self,
+        tab: _KaleidoTab,
+        args: Any,
+        error_log: None | list[ErrorEntry] = None,
+        profiler: None | list = None,
+    ):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         if self._timeout:
             try:
@@ -346,11 +365,11 @@ class Kaleido(choreo.Browser):
 
     async def calc_fig(
         self,
-        fig,
-        path=None,
-        opts=None,
+        fig: Figurish,
+        path: str | Path | None = None,
+        opts: None | dict = None,
         *,
-        topojson=None,
+        topojson: str | None = None,
     ):
         """
         Calculate the bytes for a figure.
@@ -381,13 +400,13 @@ class Kaleido(choreo.Browser):
 
     async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
         self,
-        fig,
-        path=None,
-        opts=None,
+        fig: Figurish,
+        path: str | Path | None = None,
+        opts: dict | None = None,
         *,
-        topojson=None,
-        error_log=None,
-        profiler=None,
+        topojson: str | None = None,
+        error_log: None | list[ErrorEntry] = None,
+        profiler: None | list = None,
     ):
         """
         Call the plotly renderer via javascript on first available tab.
@@ -474,10 +493,10 @@ class Kaleido(choreo.Browser):
 
     async def write_fig_from_object(  # noqa: C901 too complex
         self,
-        generator,
+        generator: Iterable | AsyncIterable,
         *,
-        error_log=None,
-        profiler=None,
+        error_log: None | list[ErrorEntry] = None,
+        profiler: None | list = None,
     ):
         """
         Equal to `write_fig` but allows the user to generate all arguments.
