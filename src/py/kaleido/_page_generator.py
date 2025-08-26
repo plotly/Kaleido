@@ -16,7 +16,9 @@ DEFAULT_MATHJAX = (
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
-def _ensure_path(path: Path | str) -> None:
+def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
+    if isinstance(path, tuple):
+        path = path[0]
     _logger.debug(f"Ensuring path {path!s}")
     if urlparse(str(path)).scheme.startswith("http"):  # is url
         return
@@ -130,8 +132,8 @@ class PageGenerator:
         script_tag = '\n        <script src="%s"></script>'
         script_tag_charset = '\n        <script src="%s" charset="%s"></script>'
         for script in self._scripts:
-            if isinstance(script, str):
-                page += script_tag % script
+            if isinstance(script, (str, Path)):
+                page += script_tag % str(script)
             else:
                 page += script_tag_charset % script
         page += self.footer
