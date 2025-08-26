@@ -80,7 +80,7 @@ class PageGenerator:
         """
         self._scripts = []
         if mathjax is not False:
-            if not mathjax:
+            if not mathjax or mathjax is True:
                 mathjax = DEFAULT_MATHJAX
             else:
                 _ensure_path(mathjax)
