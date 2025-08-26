@@ -20,7 +20,7 @@ def _ensure_path(path: Path | str) -> None:
     _logger.debug(f"Ensuring path {path!s}")
     if urlparse(str(path)).scheme.startswith("http"):  # is url
         return
-    if not Path(path).exists():
+    if not Path(urlparse(str(path)).path).exists():
         raise FileNotFoundError(f"{path!s} does not exist.")
 
 
