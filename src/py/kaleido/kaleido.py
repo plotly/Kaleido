@@ -301,9 +301,10 @@ class Kaleido(choreo.Browser):
     ) -> None:
         if task.cancelled():
             _logger.info(f"Something cancelled {name}.")
-            error_log.append(
-                ErrorEntry(name, asyncio.CancelledError, tab.javascript_log),
-            )
+            if error_log:
+                error_log.append(
+                    ErrorEntry(name, asyncio.CancelledError, tab.javascript_log),
+                )
         elif e := task.exception():
             _logger.error(f"Render Task Error In {name}- ", exc_info=e)
             if isinstance(e, (asyncio.TimeoutError, TimeoutError)) and error_log:
