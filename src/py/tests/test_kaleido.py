@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, Phase, given, settings
 from hypothesis import strategies as st
 
 from kaleido import Kaleido
@@ -151,6 +151,19 @@ async def test_write_fig_from_object_bare_dictionary(
         )
 
 
+# In the refactor, all figure generation methods are really just wrappers
+# for the most flexible, tested above, generate_fig_from_object.
+# So we test that one, and then test to make sure its receiving arguments
+# properly for the other tests.
+
+
+# Uncomment these settings after refactor.
+# @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(
+    phases=[Phase.generate],
+    max_examples=1,
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+)
 @given(
     path=st.text(
         min_size=1,
@@ -172,7 +185,7 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
     topojson,
 ):
     """Test that write_fig properly passes arguments to write_fig_from_object."""
-
+    pytest.skip("Remove this failure line and the comment above after the refactor!")
     test_path = tmp_path / f"{path}.{format_type}"
     opts = {"format": format_type, "width": width, "height": height}
 
@@ -212,7 +225,11 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
         # Check that the values match
         assert generated_args["fig"] == simple_figure_with_bytes["fig"], (
             "Figure should match"
-        )  # this should fail
+        )
         assert str(generated_args["path"]) == str(test_path), "Path should match"
         assert generated_args["opts"] == opts, "Options should match"
         assert generated_args["topojson"] == topojson, "Topojson should match"
+
+
+def test_forcefail():
+    pytest.fail("After refactor, remove this test and unskip test above.")
