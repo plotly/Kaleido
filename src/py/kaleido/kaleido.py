@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from types import TracebackType
     from typing import Any, Callable, Coroutine
 
-    from ._fig_tools import Figurish
+    from . import _fig_tools
 
 _logger = logistro.getLogger(__name__)
 
@@ -198,8 +198,9 @@ class Kaleido(choreo.Browser):
         _logger.info("Waiting on all navigates")
         await asyncio.gather(*tasks)
         _logger.info("All navigates done, putting them all in queue.")
-        for tab in kaleido_tabs:
-            await self.tabs_ready.put(tab)
+
+        for ktab in kaleido_tabs:
+            await self.tabs_ready.put(ktab)
         self._total_tabs = len(kaleido_tabs)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
@@ -366,9 +367,9 @@ class Kaleido(choreo.Browser):
 
     async def calc_fig(
         self,
-        fig: Figurish,
+        fig: _fig_tools.Figurish,
         path: str | Path | None = None,
-        opts: None | dict = None,
+        opts: None | _fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
     ):
@@ -399,11 +400,11 @@ class Kaleido(choreo.Browser):
         await self._return_kaleido_tab(tab)
         return data[0]
 
-    async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
+    async def write_fig(  # noqa: PLR0913, PLR0912, C901 (too many args, complexity)
         self,
-        fig: Figurish,
+        fig: _fig_tools.Figurish,
         path: str | Path | None = None,
-        opts: dict | None = None,
+        opts: _fig_tools.LayoutOpts | None = None,
         *,
         topojson: str | None = None,
         error_log: None | list[ErrorEntry] = None,
@@ -440,8 +441,8 @@ class Kaleido(choreo.Browser):
         else:
             _logger.debug(f"Is iterable {type(fig)}")
 
-        main_task = asyncio.current_task()
-        self._main_tasks.add(main_task)
+        if main_task := asyncio.current_task():
+            self._main_tasks.add(main_task)
         tasks = set()
 
         async def _loop(f):
@@ -490,7 +491,8 @@ class Kaleido(choreo.Browser):
                     task.cancel()
             raise
         finally:
-            self._main_tasks.remove(main_task)
+            if main_task:
+                self._main_tasks.remove(main_task)
 
     async def write_fig_from_object(  # noqa: C901 too complex
         self,
@@ -535,8 +537,8 @@ class Kaleido(choreo.Browser):
         if profiler is not None:
             _logger.info("Using profiler.")
 
-        main_task = asyncio.current_task()
-        self._main_tasks.add(main_task)
+        if main_task := asyncio.current_task():
+            self._main_tasks.add(main_task)
         tasks = set()
 
         async def _loop(args):
@@ -587,4 +589,5 @@ class Kaleido(choreo.Browser):
                     task.cancel()
             raise
         finally:
-            self._main_tasks.remove(main_task)
+            if main_task:
+                self._main_tasks.remove(main_task)
