@@ -65,6 +65,7 @@ class Kaleido(choreo.Browser):
 
     async def close(self) -> None:
         """Close the browser."""
+        await super().close()
         if self._tmp_dir:
             self._tmp_dir.clean()
         _logger.info("Cancelling tasks.")
@@ -75,7 +76,6 @@ class Kaleido(choreo.Browser):
             if not task.done():
                 task.cancel()
         _logger.info("Exiting Kaleido/Choreo")
-        return await super().close()
 
     async def __aexit__(
         self,
