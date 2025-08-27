@@ -159,6 +159,14 @@ class Kaleido(choreo.Browser):
                 "or `kaleido.get_chrome_sync()`.",
             ) from ChromeNotFoundError
 
+        # do this during open because it requires close
+        self._saved_page_arg = page
+
+    async def open(self):
+        """Build temporary file if we need one."""
+        page = self._saved_page_arg
+        del self._saved_page_arg
+
         if isinstance(page, str):
             if page.startswith(r"file://") and Path(unquote(urlparse(page).path)):
                 self._index = page
@@ -178,6 +186,7 @@ class Kaleido(choreo.Browser):
             if not page:
                 page = PageGenerator(plotly=self._plotlyjs, mathjax=self._mathjax)
             page.generate_index(index)
+        await super().open()
 
     async def _conform_tabs(self, tabs: list[choreo.Tab] | None = None) -> None:
         if not tabs:
