@@ -231,10 +231,6 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
         assert generated_args["topojson"] == topojson, "Topojson should match"
 
 
-def test_forcefail():
-    pytest.fail("After refactor, remove this test and unskip test above.")
-
-
 async def test_kaleido_instantiate_no_hang():
     """Test that instantiating Kaleido doesn't hang."""
     _ = Kaleido()
