@@ -41,9 +41,11 @@ async def get_latest_version() -> str:
 
 async def create_pr(latest_version: str) -> None:
     branch = f"bot/update-cdn-{latest_version}"
-    _, err, _ = await run(["gh", "api", f"repos/{REPO}/branches/{branch}", "--silent"])
+    _, err, brc_eval = await run(
+        ["gh", "api", f"repos/{REPO}/branches/{branch}", "--silent"]
+    )
 
-    if err:
+    if brc_eval:
         msg = err.decode()
         if "HTTP 404" not in msg:
             print(msg)  # unexpected errors
@@ -82,17 +84,17 @@ async def create_pr(latest_version: str) -> None:
             f"chore: {title}",
         ]
     )
-    _, push_err, _ = await run(["git", "push", "-u", "origin", branch])
+    _, push_err, push_eval = await run(["git", "push", "-u", "origin", branch])
 
-    if push_err:
+    if push_eval:
         print(push_err.decode())
         sys.exit(1)
 
     body = f"This PR updates the CDN URL to v{latest_version}."
-    new_pr, pr_err, _ = await run(
+    new_pr, pr_err, pr_eval = await run(
         ["gh", "pr", "create", "-B", "master", "-H", branch, "-t", title, "-b", body]
     )
-    if pr_err:
+    if pr_eval:
         print(pr_err.decode())
         sys.exit(1)
 
