@@ -1,4 +1,4 @@
-name: CHECK TAG
+name: Check Tag
 
 on:
   push:
