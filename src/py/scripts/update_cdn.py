@@ -59,7 +59,7 @@ async def create_pr(latest_version: str) -> None:
     )
 
     if pr.decode():
-        print(f"Pull request '{branch}' already exists")  # err if is empty
+        print(f"Pull request for '{branch}' already exists")  # err if is empty
         sys.exit(1)
 
     title = f"Update Plotly.js CDN to v{latest_version}"
@@ -70,8 +70,7 @@ async def create_pr(latest_version: str) -> None:
         sys.exit(1)
 
     await run(["git", "checkout", "-b", branch])
-    await run(["git", "add", FILE_PATH])
-    await run(["git", "add", GITHUB_WORKSPACE])
+    await run(["git", "add", "."])
     await run(
         [
             "git",
