@@ -249,8 +249,8 @@ async def test_kaleido_instantiate_and_close():
     await k.close()
 
 
-async def test_all_methods_context_and_non_context(simple_figure_with_bytes, tmp_path):
-    """Test write, write_from_object, and calc with context and non-context."""
+async def test_all_methods_context(simple_figure_with_bytes, tmp_path):
+    """Test write, write_from_object, and calc with context."""
     fig = simple_figure_with_bytes["fig"]
     opts = simple_figure_with_bytes["opts"]
     expected_bytes = simple_figure_with_bytes["bytes"]
@@ -277,9 +277,15 @@ async def test_all_methods_context_and_non_context(simple_figure_with_bytes, tmp
             "write_fig_from_object bytes don't match fixture"
         )
 
+
+async def test_all_methods_non_context(simple_figure_with_bytes, tmp_path):
+    """Test write, write_from_object, and calc with non-context."""
+    fig = simple_figure_with_bytes["fig"]
+    opts = simple_figure_with_bytes["opts"]
+    expected_bytes = simple_figure_with_bytes["bytes"]
+
     # Test without context manager
-    k = Kaleido()
-    await k.open()
+    k = await Kaleido()
     try:
         # Test calc_fig
         calc_bytes = await k.calc_fig(fig, opts=opts)
@@ -288,15 +294,16 @@ async def test_all_methods_context_and_non_context(simple_figure_with_bytes, tmp
         )
 
         # Test write_fig
+
         write_path2 = tmp_path / "non_context_write.png"
         await k.write_fig(fig, path=write_path2, opts=opts)
+
         assert write_path2.exists(), "Non-context write_fig didn't create file"
         write_bytes2 = write_path2.read_bytes()
         assert write_bytes2 == expected_bytes, (
             "Non-context write_fig bytes don't match fixture"
         )
 
-        # Test write_fig_from_object
         obj_path2 = tmp_path / "non_context_obj.png"
         await k.write_fig_from_object([{"fig": fig, "path": obj_path2, "opts": opts}])
         assert obj_path2.exists(), (
@@ -306,6 +313,7 @@ async def test_all_methods_context_and_non_context(simple_figure_with_bytes, tmp
         assert obj_bytes2 == expected_bytes, (
             "Non-context write_fig_from_object bytes don't match fixture"
         )
+
     finally:
         await k.close()
 
