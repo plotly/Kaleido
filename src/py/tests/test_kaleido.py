@@ -10,12 +10,11 @@ from kaleido import Kaleido
 
 
 @pytest.fixture
-async def simple_figure_with_bytes(tmp_path):
+async def simple_figure_with_bytes():
     """Create a simple figure with calculated bytes and PNG assertion."""
     import plotly.express as px  # noqa: PLC0415
 
     fig = px.line(x=[1, 2, 3], y=[1, 2, 3])
-    path = tmp_path / "test_figure.png"
 
     async with Kaleido() as k:
         bytes_data = await k.calc_fig(
@@ -29,7 +28,6 @@ async def simple_figure_with_bytes(tmp_path):
     return {
         "fig": fig,
         "bytes": bytes_data,
-        "path": path,
         "opts": {"format": "png", "width": 400, "height": 300},
     }
 
@@ -331,7 +329,9 @@ async def test_tab_count_verification(n_tabs):
         # Send getTargets command directly to Kaleido (which is a Browser/Target)
         result = await k.send_command("Target.getTargets")
         # Count targets that are pages (not service workers, etc.)
-        page_targets = [t for t in result["targetInfos"] if t.get("type") == "page"]
+        page_targets = [
+            t for t in result["result"]["targetInfos"] if t.get("type") == "page"
+        ]
         assert len(page_targets) >= n_tabs, (
             f"Found {len(page_targets)} page targets, expected at least {n_tabs}"
         )
@@ -377,7 +377,7 @@ async def test_plotlyjs_mathjax_injection(plotlyjs, mathjax):
                     "expression": "document.documentElement.outerHTML",
                 },
             )
-            source = result["result"]["value"]
+            source = result["result"]["result"]["value"]
 
             if plotlyjs:
                 # Check if plotlyjs URL is in the source
