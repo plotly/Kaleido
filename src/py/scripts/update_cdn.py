@@ -57,8 +57,7 @@ async def create_pr(latest_version: str) -> None:
     )
 
     if pr.decode():
-        # err if is empty
-        print(f"Pull request '{branch}' already exists")
+        print(f"Pull request '{branch}' already exists")  # err if is empty
         sys.exit(1)
 
     title = f"Update Plotly.js CDN to v{latest_version}"
@@ -83,18 +82,18 @@ async def create_pr(latest_version: str) -> None:
             f"chore: {title}",
         ]
     )
-    _, err, _ = await run(["git", "push", "-u", "origin", branch])
+    _, push_err, _ = await run(["git", "push", "-u", "origin", branch])
 
-    if err:
-        print(err.decode())
+    if push_err:
+        print(push_err.decode())
         sys.exit(1)
 
     body = f"This PR updates the CDN URL to v{latest_version}."
-    new_pr, err, _ = await run(
+    new_pr, pr_err, _ = await run(
         ["gh", "pr", "create", "-B", "master", "-H", branch, "-t", title, "-b", body]
     )
-    if err:
-        print(err.decode())
+    if pr_err:
+        print(pr_err.decode())
         sys.exit(1)
 
     print("Pull request:", new_pr.decode().strip())
@@ -142,13 +141,13 @@ async def main() -> None:
             print(f"Issue '{title}' is closed")
             sys.exit(0)
 
-        new, err, _ = await run(
+        new_issue, issue_err, _ = await run(
             ["gh", "issue", "create", "-R", REPO, "-t", title, "-b", body]
         )
-        if err:
-            print(err.decode())
+        if issue_err:
+            print(issue_err.decode())
 
-        print(f"The issue '{title}' was created in {new.decode().strip()}")
+        print(f"The issue '{title}' was created in {new_issue.decode().strip()}")
         sys.exit(1)
 
 
