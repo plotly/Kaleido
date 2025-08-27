@@ -1,0 +1,27 @@
+name: CHECK TAG
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  checking-tag:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
+      CHANGELOGTXT: git+https://github.com/geopozo/changelogtxt-parser
+    defaults:
+      run:
+        working-directory: ./src/py/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Check tag
+        run: |
+          uv run --python 3.12 --with "$CHANGELOGTXT" changelogtxt check-tag -t "$TAG"
+      - name: Delete invalid tag
+        if: failure()
+        run: |
+          git push --delete origin $TAG
