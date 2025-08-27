@@ -22,8 +22,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
-      - run: uv sync
+      - run: uv sync --group gha
       - name: Update CDN & PR
-        env:
-          CHANGELOGTXT: git+https://github.com/geopozo/changelogtxt-parser
-        run: uv run --python 3.12 --with semver --with jq --with aiohttp --with "$CHANGELOGTXT" scripts/update_cdn.py
+        run: uv run --python 3.12 scripts/update_cdn.py
