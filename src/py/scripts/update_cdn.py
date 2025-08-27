@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import asyncio
 import json
 import os
@@ -21,7 +20,6 @@ async def run(commands: list[str]) -> tuple[bytes, bytes, int | None]:
     p = await asyncio.create_subprocess_exec(
         *commands, stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
-
     return (*(await p.communicate()), p.returncode)
 
 
