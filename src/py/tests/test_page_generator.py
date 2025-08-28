@@ -123,7 +123,7 @@ def existing_file_path():
 @pytest.fixture
 def nonexistent_file_uri():
     """Return path to file that doesn't exist."""
-    return Path("file:///nonexistent/path/file.js")
+    return "file:///nonexistent/path/file.js"
 
 
 @pytest.fixture
