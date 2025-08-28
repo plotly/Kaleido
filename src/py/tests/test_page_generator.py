@@ -135,27 +135,35 @@ _h_url = st.tuples(
     ),
 ).map(lambda x: f"http{x[0]}://example.com/{x[1]}.js")
 
-_valid_file_string = str(Path(__file__).resolve())
 
-_h_file_str = st.just(_valid_file_string)
-_h_file_path = st.just(Path(_valid_file_string))
-_h_file_uri = st.just(Path(_valid_file_string).as_uri())
+def st_valid_path(dir_path: Path):
+    file_path = dir_path / "foo.foo"
+    file_path.touch()
+    _valid_file_string = str(file_path.resolve())
 
-_h_uri = st.one_of(_h_url, _h_file_str, _h_file_path, _h_file_uri)
+    _h_file_str = st.just(_valid_file_string)
+    _h_file_path = st.just(Path(_valid_file_string))
+    _h_file_uri = st.just(Path(_valid_file_string).as_uri())
 
-_h_encoding = st.sampled_from(["utf-8", "utf-16", "ascii", "latin1"])
+    _h_uri = st.one_of(_h_url, _h_file_str, _h_file_path, _h_file_uri)
 
-strategy_valid_path = st.one_of(_h_uri, st.tuples(_h_uri, _h_encoding))
+    _h_encoding = st.sampled_from(["utf-8", "utf-16", "ascii", "latin1"])
+
+    return st.one_of(_h_uri, st.tuples(_h_uri, _h_encoding))
+
 
 # Variable length list strategy for 'others' parameter
-strategy_others_list = st.lists(strategy_valid_path, min_size=0, max_size=3)
+def st_others_list(dir_path: Path):
+    return st.lists(st_valid_path(dir_path), min_size=0, max_size=3)
+
 
 # Mathjax strategy (includes None, False, True, and path options)
-strategy_mathjax = st.one_of(
-    st.none(),
-    st.just(False),  #  noqa: FBT003
-    strategy_valid_path,
-)
+def st_mathjax(dir_path: Path):
+    return st.one_of(
+        st.none(),
+        st.just(False),  #  noqa: FBT003
+        st_valid_path(dir_path),
+    )
 
 
 # Test default combinations
@@ -228,9 +236,10 @@ async def test_mathjax_false():
 
 
 # Test user overrides
-@given(strategy_valid_path)  # claude, change all further functions to this style
-async def test_custom_plotly_url(custom_plotly):
+@given(st.data())  # claude, change all further functions to this style
+async def test_custom_plotly_url(tmp_path, data):
     """Test custom plotly URL override."""
+    custom_plotly = data.draw(st_valid_path(tmp_path))
     with_custom = PageGenerator(plotly=custom_plotly).generate_index()
     scripts, encodings = get_scripts_from_html(with_custom)
 
@@ -244,9 +253,10 @@ async def test_custom_plotly_url(custom_plotly):
     assert scripts[2].endswith("kaleido_scopes.js")
 
 
-@given(strategy_valid_path)
-async def test_custom_mathjax_url(custom_mathjax):
+@given(st.data())
+async def test_custom_mathjax_url(tmp_path, data):
     """Test custom mathjax URL override."""
+    custom_mathjax = data.draw(st_valid_path(tmp_path))
     with_custom = PageGenerator(mathjax=custom_mathjax).generate_index()
     scripts, encodings = get_scripts_from_html(with_custom)
 
@@ -260,9 +270,10 @@ async def test_custom_mathjax_url(custom_mathjax):
     assert scripts[2].endswith("kaleido_scopes.js")
 
 
-@given(strategy_others_list)
-async def test_other_scripts(other_scripts):
+@given(st.data())
+async def test_other_scripts(tmp_path, data):
     """Test adding other scripts."""
+    other_scripts = data.draw(st_others_list(tmp_path))
     with_others = PageGenerator(others=other_scripts).generate_index()
     scripts, encodings = get_scripts_from_html(with_others)
 
@@ -283,13 +294,13 @@ async def test_other_scripts(other_scripts):
     assert scripts[-1].endswith("kaleido_scopes.js")
 
 
-@given(
-    custom_plotly=strategy_valid_path,
-    custom_mathjax=strategy_mathjax,
-    other_scripts=strategy_others_list,
-)
-async def test_combined_overrides(custom_plotly, custom_mathjax, other_scripts):
+@given(st.data())
+async def test_combined_overrides(tmp_path, data):
     """Test combination of multiple overrides."""
+    custom_plotly = data.draw(st_valid_path(tmp_path))
+    custom_mathjax = data.draw(st_mathjax(tmp_path))
+    other_scripts = data.draw(st_others_list(tmp_path))
+
     combined = PageGenerator(
         plotly=custom_plotly,
         mathjax=custom_mathjax,
