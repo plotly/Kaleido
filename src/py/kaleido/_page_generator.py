@@ -26,8 +26,9 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
         return
     elif (
         parsed.scheme.startswith("file")
-        and not Path(url2pathname(parsed.path)).exists()
+        and not (_p := Path(url2pathname(parsed.path))).exists()
     ):
+        _logger.error(f"File parsed to: {_p}")
         raise FileNotFoundError(f"{path!s} does not exist.")
     if not Path(path).exists():
         raise FileNotFoundError(f"{path!s} does not exist.")
