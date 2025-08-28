@@ -25,14 +25,13 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
     _logger.debug(f"Parsed file path: {parsed}")
     if parsed.scheme.startswith("http"):  # is url
         return
-    elif (
-        parsed.scheme.startswith("file")
-        and not (_p := Path(url2pathname(parsed.path))).exists()
-    ):
+    elif parsed.scheme.startswith("file"):
+        if (_p := Path(url2pathname(parsed.path))).exists():
+            return
         _logger.error(f"File parsed to: {_p}")
-        raise FileNotFoundError(f"{path!s} does not exist.")
-    if not Path(path).exists():
-        raise FileNotFoundError(f"{path!s} does not exist.")
+    elif Path(path).exists():
+        return
+    raise FileNotFoundError(f"{path!s} does not exist.")
 
 
 class PageGenerator:
