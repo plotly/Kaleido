@@ -126,24 +126,24 @@ def nonexistent_file_path():
     return Path("/nonexistent/path/file.js")
 
 
-_h_url = st.tuples(
-    st.sampled_from(["s", ""]),
-    st.text(
-        min_size=1,
-        max_size=20,
-        alphabet=st.characters(whitelist_categories=("Lu", "Ll")),
-    ),
-).map(lambda x: f"http{x[0]}://example.com/{x[1]}.js")
-
-
 def st_valid_path(dir_path: Path):
     file_path = dir_path / "foo.foo"
     file_path.touch()
+    assert file_path.resolve().exists()
     _valid_file_string = str(file_path.resolve())
 
     _h_file_str = st.just(_valid_file_string)
     _h_file_path = st.just(Path(_valid_file_string))
     _h_file_uri = st.just(Path(_valid_file_string).as_uri())
+
+    _h_url = st.tuples(
+        st.sampled_from(["s", ""]),
+        st.text(
+            min_size=1,
+            max_size=20,
+            alphabet=st.characters(whitelist_categories=("Lu", "Ll")),
+        ),
+    ).map(lambda x: f"http{x[0]}://example.com/{x[1]}.js")
 
     _h_uri = st.one_of(_h_url, _h_file_str, _h_file_path, _h_file_uri)
 
