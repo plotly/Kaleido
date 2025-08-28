@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import logistro
 
@@ -22,7 +23,13 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
     _logger.debug(f"Ensuring path {path!s}")
     if urlparse(str(path)).scheme.startswith("http"):  # is url
         return
-    if not Path(urlparse(str(path)).path).exists():
+    if not Path(
+        url2pathname(
+            urlparse(
+                str(path),
+            ).path,
+        ),
+    ).exists():
         raise FileNotFoundError(f"{path!s} does not exist.")
 
 
