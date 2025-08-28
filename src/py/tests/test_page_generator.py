@@ -135,9 +135,11 @@ _h_url = st.tuples(
     ),
 ).map(lambda x: f"http{x[0]}://example.com/{x[1]}.js")
 
-_h_file_str = st.just(__file__)
-_h_file_path = st.just(Path(__file__))
-_h_file_uri = st.just(Path(__file__).as_uri())
+_valid_file_string = str(Path(__file__).resolve())
+
+_h_file_str = st.just(_valid_file_string)
+_h_file_path = st.just(Path(_valid_file_string))
+_h_file_uri = st.just(Path(_valid_file_string).as_uri())
 
 _h_uri = st.one_of(_h_url, _h_file_str, _h_file_path, _h_file_uri)
 
