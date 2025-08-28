@@ -1,0 +1,28 @@
+name: Compare Changelog
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  compare-format:
+    runs-on: ubuntu-latest
+    env:
+      CHANGELOGTXT: git+https://github.com/geopozo/changelogtxt-parser
+    defaults:
+      run:
+        working-directory: ./src/py/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          fetch-depth: 0
+      - name: Pull request file
+        run: cat ./CHANGELOG.txt > source.txt
+      - name: Main file
+        run: |
+          git fetch origin master
+          git switch master
+          cat ./CHANGELOG.txt > target.txt
+      - run: uv run --python 3.12 --with "$CHANGELOGTXT" changelogtxt compare ./source.txt ./target.txt
