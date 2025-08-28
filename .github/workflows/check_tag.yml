@@ -19,9 +19,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v5
       - name: Check tag
-        run: |
-          uv run --python 3.12 --with "$CHANGELOGTXT" changelogtxt check-tag -t "$TAG"
+        run: uv run --python 3.12 --with "$CHANGELOGTXT" changelogtxt check-tag -t "$TAG"
       - name: Delete invalid tag
         if: failure()
-        run: |
-          git push --delete origin $TAG
+        run: git push --delete origin $TAG
