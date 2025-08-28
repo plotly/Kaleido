@@ -22,6 +22,7 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
         path = path[0]
     _logger.debug(f"Ensuring path {path!s}")
     parsed = urlparse(str(path))
+    _logger.debug(f"Parsed file path: {parsed}")
     if parsed.scheme.startswith("http"):  # is url
         return
     elif (
