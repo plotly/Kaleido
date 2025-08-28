@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import logistro
 
@@ -20,10 +21,17 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
     if isinstance(path, tuple):
         path = path[0]
     _logger.debug(f"Ensuring path {path!s}")
-    if urlparse(str(path)).scheme.startswith("http"):  # is url
+    parsed = urlparse(str(path))
+    _logger.debug(f"Parsed file path: {parsed}")
+    if parsed.scheme.startswith("http"):  # is url
         return
-    if not Path(urlparse(str(path)).path).exists():
-        raise FileNotFoundError(f"{path!s} does not exist.")
+    elif parsed.scheme.startswith("file"):
+        if (_p := Path(url2pathname(parsed.path))).exists():
+            return
+        _logger.error(f"File parsed to: {_p}")
+    elif Path(path).exists():
+        return
+    raise FileNotFoundError(f"{path!s} does not exist.")
 
 
 class PageGenerator:
