@@ -121,6 +121,12 @@ def existing_file_path():
 
 
 @pytest.fixture
+def nonexistent_file_uri():
+    """Return path to file that doesn't exist."""
+    return Path("file:///nonexistent/path/file.js")
+
+
+@pytest.fixture
 def nonexistent_file_path():
     """Return path to file that doesn't exist."""
     return Path("/nonexistent/path/file.js")
@@ -377,7 +383,10 @@ async def test_existing_file_path(temp_js_file):
     assert scripts_uri[2].endswith("kaleido_scopes.js")
 
 
-async def test_nonexistent_file_path_raises_error(nonexistent_file_path):
+async def test_nonexistent_file_path_raises_error(
+    nonexistent_file_path,
+    nonexistent_file_uri,
+):
     """Test that nonexistent file paths raise FileNotFoundError."""
     # Test with regular path
     with pytest.raises(FileNotFoundError):
@@ -385,10 +394,13 @@ async def test_nonexistent_file_path_raises_error(nonexistent_file_path):
 
     # Test with file:/// protocol
     with pytest.raises(FileNotFoundError):
-        PageGenerator(plotly=nonexistent_file_path.as_uri())
+        PageGenerator(plotly=nonexistent_file_uri())
 
 
-async def test_mathjax_nonexistent_file_raises_error(nonexistent_file_path):
+async def test_mathjax_nonexistent_file_raises_error(
+    nonexistent_file_path,
+    nonexistent_file_uri,
+):
     """Test that nonexistent mathjax file raises FileNotFoundError."""
     # Test with regular path
     with pytest.raises(FileNotFoundError):
@@ -396,10 +408,13 @@ async def test_mathjax_nonexistent_file_raises_error(nonexistent_file_path):
 
     # Test with file:/// protocol
     with pytest.raises(FileNotFoundError):
-        PageGenerator(mathjax=nonexistent_file_path.as_uri())
+        PageGenerator(mathjax=nonexistent_file_uri())
 
 
-async def test_others_nonexistent_file_raises_error(nonexistent_file_path):
+async def test_others_nonexistent_file_raises_error(
+    nonexistent_file_path,
+    nonexistent_file_uri,
+):
     """Test that nonexistent file in others list raises FileNotFoundError."""
     # Test with regular path
     with pytest.raises(FileNotFoundError):
@@ -407,7 +422,7 @@ async def test_others_nonexistent_file_raises_error(nonexistent_file_path):
 
     # Test with file:/// protocol
     with pytest.raises(FileNotFoundError):
-        PageGenerator(others=[nonexistent_file_path.as_uri()])
+        PageGenerator(others=[nonexistent_file_uri])
 
 
 # Test HTTP URLs (should not raise FileNotFoundError)
