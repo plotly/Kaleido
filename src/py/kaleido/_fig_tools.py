@@ -3,12 +3,17 @@ from __future__ import annotations
 import glob
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Literal, TypedDict
+from typing import TYPE_CHECKING, Literal, TypedDict
 
 import logistro
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from typing_extensions import TypeGuard
+
+    Figurish = Any  # Be nice to make it more specific, dictionary or something
+    FormatString = Literal["png", "jpg", "jpeg", "webp", "svg", "json", "pdf"]
 
 _logger = logistro.getLogger(__name__)
 
@@ -17,20 +22,26 @@ DEFAULT_EXT = "png"
 DEFAULT_SCALE = 1
 DEFAULT_WIDTH = 700
 DEFAULT_HEIGHT = 500
-SUPPORTED_FORMATS = ("png", "jpg", "jpeg", "webp", "svg", "json", "pdf")
-FormatString = Literal["png", "jpg", "jpeg", "webp", "svg", "json", "pdf"]
+SUPPORTED_FORMATS: tuple[FormatString, ...] = (
+    "png",
+    "jpg",
+    "jpeg",
+    "webp",
+    "svg",
+    "json",
+    "pdf",
+)
 
 
 def _assert_format(ext: str) -> TypeGuard[FormatString]:
     if ext not in SUPPORTED_FORMATS:
-        raise ValueError(f"File format {ext} is not supported.")
+        raise ValueError(
+            f"Invalid format '{ext}'.\n    Supported formats: {SUPPORTED_FORMATS!s}",
+        )
     return True
 
 
-Figurish = Any  # Be nice to make it more specific, dictionary or something
-
-
-def _is_figurish(o) -> TypeGuard[Figurish]:
+def _is_figurish(o: Any) -> TypeGuard[Figurish]:
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
     if not valid:
         _logger.debug(
@@ -41,7 +52,11 @@ def _is_figurish(o) -> TypeGuard[Figurish]:
     return valid
 
 
-def _get_figure_dimensions(layout, width, height):
+def _get_figure_dimensions(
+    layout: dict,
+    width: float | None,
+    height: float | None,
+) -> tuple[float, float]:
     # Compute image width / height with fallbacks
     width = (
         width
@@ -58,18 +73,13 @@ def _get_figure_dimensions(layout, width, height):
     return width, height
 
 
-def _get_format(extension):
-    original_format = extension
-    extension = extension.lower()
-    if extension == "jpg":
+def _get_format(extension: str) -> FormatString:
+    formatted_extension = extension.lower()
+    if formatted_extension == "jpg":
         return "jpeg"
-
-    if extension not in SUPPORTED_FORMATS:
-        raise ValueError(
-            f"Invalid format '{original_format}'.\n"
-            f"    Supported formats: {SUPPORTED_FORMATS!s}",
-        )
-    return extension
+    if not _assert_format(formatted_extension):
+        raise ValueError  # this line will never be reached its for typer
+    return formatted_extension
 
 
 # Input of to_spec
@@ -89,7 +99,7 @@ class Spec(TypedDict):
     data: Figurish
 
 
-def to_spec(figure, layout_opts: LayoutOpts) -> Spec:
+def to_spec(figure: Figurish, layout_opts: LayoutOpts) -> Spec:
     # Get figure layout
     layout = figure.get("layout", {})
 
@@ -123,7 +133,8 @@ def to_spec(figure, layout_opts: LayoutOpts) -> Spec:
     }
 
 
-def _next_filename(path, prefix, ext) -> str:
+def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
+    path = path if isinstance(path, Path) else Path(path)
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
     re_number = re.compile(
         r"^" + re.escape(prefix) + r"\-(\d+)\." + re.escape(ext) + r"$",
