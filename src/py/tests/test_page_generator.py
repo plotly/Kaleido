@@ -7,7 +7,7 @@ from pathlib import Path
 
 import logistro
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from kaleido import PageGenerator
@@ -236,7 +236,8 @@ async def test_mathjax_false():
 
 
 # Test user overrides
-@given(st.data())  # claude, change all further functions to this style
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(st.data())
 async def test_custom_plotly_url(tmp_path, data):
     """Test custom plotly URL override."""
     custom_plotly = data.draw(st_valid_path(tmp_path))
@@ -253,6 +254,7 @@ async def test_custom_plotly_url(tmp_path, data):
     assert scripts[2].endswith("kaleido_scopes.js")
 
 
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(st.data())
 async def test_custom_mathjax_url(tmp_path, data):
     """Test custom mathjax URL override."""
@@ -270,6 +272,7 @@ async def test_custom_mathjax_url(tmp_path, data):
     assert scripts[2].endswith("kaleido_scopes.js")
 
 
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(st.data())
 async def test_other_scripts(tmp_path, data):
     """Test adding other scripts."""
@@ -294,6 +297,7 @@ async def test_other_scripts(tmp_path, data):
     assert scripts[-1].endswith("kaleido_scopes.js")
 
 
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(st.data())
 async def test_combined_overrides(tmp_path, data):
     """Test combination of multiple overrides."""
