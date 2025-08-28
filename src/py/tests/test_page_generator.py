@@ -394,7 +394,7 @@ async def test_nonexistent_file_path_raises_error(
 
     # Test with file:/// protocol
     with pytest.raises(FileNotFoundError):
-        PageGenerator(plotly=nonexistent_file_uri())
+        PageGenerator(plotly=nonexistent_file_uri)
 
 
 async def test_mathjax_nonexistent_file_raises_error(
@@ -408,7 +408,7 @@ async def test_mathjax_nonexistent_file_raises_error(
 
     # Test with file:/// protocol
     with pytest.raises(FileNotFoundError):
-        PageGenerator(mathjax=nonexistent_file_uri())
+        PageGenerator(mathjax=nonexistent_file_uri)
 
 
 async def test_others_nonexistent_file_raises_error(
