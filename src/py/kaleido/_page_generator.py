@@ -29,7 +29,7 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
         and not Path(url2pathname(parsed.path)).exists()
     ):
         raise FileNotFoundError(f"{path!s} does not exist.")
-    if not Path(path):
+    if not Path(path).exists():
         raise FileNotFoundError(f"{path!s} does not exist.")
 
 
