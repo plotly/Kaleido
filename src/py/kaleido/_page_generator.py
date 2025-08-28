@@ -21,15 +21,15 @@ def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
     if isinstance(path, tuple):
         path = path[0]
     _logger.debug(f"Ensuring path {path!s}")
-    if urlparse(str(path)).scheme.startswith("http"):  # is url
+    parsed = urlparse(str(path))
+    if parsed.scheme.startswith("http"):  # is url
         return
-    if not Path(
-        url2pathname(
-            urlparse(
-                str(path),
-            ).path,
-        ),
-    ).exists():
+    elif (
+        parsed.scheme.startswith("file")
+        and not Path(url2pathname(parsed.path)).exists()
+    ):
+        raise FileNotFoundError(f"{path!s} does not exist.")
+    if not Path(path):
         raise FileNotFoundError(f"{path!s} does not exist.")
 
 
