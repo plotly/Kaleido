@@ -9,7 +9,6 @@ jobs:
   checking-tag:
     runs-on: ubuntu-latest
     env:
-      GH_TOKEN: ${{ github.token }}
       TAG: ${{ github.ref_name }}
       CHANGELOGTXT: git+https://github.com/geopozo/changelogtxt-parser
     defaults:
