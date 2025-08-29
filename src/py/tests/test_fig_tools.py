@@ -144,7 +144,7 @@ def test_next_filename_only_numbered_files(tmp_path):
                     "title": {"text": "My-Test!@#$%^&*()Chart_with[lots]of{symbols}"},
                 },
             },
-            "My_TestChart_withlotsof_symbols",
+            "My_TestChart_withlotsofsymbols",
         ),  # Complex title
         (
             {"layout": {"title": {"text": "Simple Title"}}},
@@ -164,7 +164,7 @@ def test_build_full_path_no_path_input(fig_fixture):
     result = _fig_tools._build_full_path(None, fig_dict, "ext")  # noqa: SLF001
 
     # Should use current directory
-    assert result.parent == Path().cwd()
+    assert result.parent.resolve() == Path().cwd().resolve()
     assert result.parent.is_dir()
 
     assert result.name == f"{expected_prefix}.ext"
