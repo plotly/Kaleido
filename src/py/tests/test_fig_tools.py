@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from kaleido import _fig_tools
@@ -131,3 +133,91 @@ def test_next_filename_only_numbered_files(tmp_path):
 
     result = _fig_tools._next_filename(tmp_path, "test", "png")  # noqa: SLF001
     assert result == "test-11.png"  # Should be max + 1
+
+
+# Fixtures for _build_full_path tests - testing various title scenarios
+@pytest.fixture(
+    params=[
+        (
+            {
+                "layout": {
+                    "title": {"text": "My-Test!@#$%^&*()Chart_with[lots]of{symbols}"},
+                },
+            },
+            "My_TestChart_withlotsof_symbols",
+        ),  # Complex title
+        (
+            {"layout": {"title": {"text": "Simple Title"}}},
+            "Simple_Title",
+        ),  # Simple title
+        ({"layout": {}}, "fig"),  # No title
+    ],
+)
+def fig_fixture(request):
+    """Parameterized fixture for fig with various title scenarios."""
+    return request.param
+
+
+def test_build_full_path_no_path_input(fig_fixture):
+    """Test _build_full_path with no path input uses current path."""
+    fig_dict, expected_prefix = fig_fixture
+    result = _fig_tools._build_full_path(None, fig_dict, "ext")  # noqa: SLF001
+
+    # Should use current directory
+    assert result.parent == Path().cwd()
+    assert result.parent.is_dir()
+
+    assert result.name == f"{expected_prefix}.ext"
+
+
+def test_build_full_path_no_suffix_directory(tmp_path, fig_fixture):
+    """Test _build_full_path with path having no suffix."""
+    fig_dict, expected_prefix = fig_fixture
+
+    # Test directory no suffix
+    test_dir = tmp_path
+    result = _fig_tools._build_full_path(test_dir, fig_dict, "ext")  # noqa: SLF001
+
+    # Should use provided directory
+    assert result.parent == test_dir
+    assert result.name == f"{expected_prefix}.ext"
+
+    # Test error
+    nonexistent_dir = Path("/nonexistent/directory")
+    with pytest.raises(ValueError, match="Directory .* not found. Please create it."):
+        _fig_tools._build_full_path(nonexistent_dir, fig_dict, "ext")  # noqa: SLF001
+
+
+def test_build_full_path_directory_with_suffix(tmp_path, fig_fixture):
+    """Test _build_full_path with path that is directory even with suffix."""
+    fig_dict, expected_prefix = fig_fixture
+
+    # Create a directory with a suffix-like name
+    dir_with_suffix = tmp_path / "mydir.png"
+    dir_with_suffix.mkdir()
+
+    result = _fig_tools._build_full_path(dir_with_suffix, fig_dict, "ext")  # noqa: SLF001
+
+    # Should treat as directory
+    assert result.parent == dir_with_suffix
+    assert result.name == f"{expected_prefix}.ext"
+
+
+def test_build_full_path_file_with_suffix(tmp_path, fig_fixture):
+    """Test _build_full_path with file path having suffix."""
+    fig_dict, expected_prefix = fig_fixture
+
+    # Exists
+    file_path = tmp_path / "output.png"
+    result = _fig_tools._build_full_path(file_path, fig_dict, "ext")  # noqa: SLF001
+
+    # Should return the exact path provided
+    assert result == file_path
+
+    # Doesn't exist
+    file_path = Path("/nonexistent/directory/output.png")
+    with pytest.raises(
+        RuntimeError,
+        match="Cannot reach path .* Are all directories created?",
+    ):
+        _fig_tools._build_full_path(file_path, fig_dict, "ext")  # noqa: SLF001
