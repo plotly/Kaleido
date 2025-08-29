@@ -64,7 +64,7 @@ class PageGenerator:
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         *,
         plotly: None | Path | str | tuple[Path | str, str] = None,
@@ -88,9 +88,9 @@ class PageGenerator:
         """
         self._scripts = []
         if mathjax is not False:
-            if not mathjax or mathjax is True:
+            if mathjax is None or mathjax is True:
                 mathjax = DEFAULT_MATHJAX
-            else:
+            elif mathjax:
                 _ensure_path(mathjax)
             self._scripts.append(mathjax)
         if force_cdn:
@@ -118,7 +118,7 @@ class PageGenerator:
             except ImportError:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
-        elif isinstance(plotly, str):
+        elif isinstance(plotly, (str, Path)):
             _ensure_path(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
