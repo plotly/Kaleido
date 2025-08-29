@@ -1,0 +1,27 @@
+name: Update CDN
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 * * 1"
+
+jobs:
+  inspection:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+    defaults:
+      run:
+        working-directory: ./src/py/
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync --group gha
+      - name: Update CDN & PR
+        run: uv run --python 3.12 scripts/update_cdn.py

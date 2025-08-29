@@ -53,6 +53,13 @@ dev = [
   "pandas>=2.0.3",
   "typing-extensions>=4.12.2",
 ]
+gha = [
+  "aiohttp",
+  "changelogtxt_parser @ git+https://github.com/geopozo/changelogtxt-parser",
+  "jq",
+  "orjson",
+  "semver",
+]
 
 [tool.ruff.lint]
 select = ["ALL"]
