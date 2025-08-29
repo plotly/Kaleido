@@ -125,6 +125,7 @@ def to_spec(figure: Figurish, layout_opts: LayoutOpts) -> Spec:
 
     # Extract info
     extension = _get_format(layout_opts.get("format") or DEFAULT_EXT)
+
     width, height = _get_figure_dimensions(
         layout,
         layout_opts.get("width"),
@@ -160,7 +161,11 @@ def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
 
 
 # validate and build full route if needed:
-def _build_full_path(path, fig, ext):
+def _build_full_path(
+    path: Path | None,
+    fig: Figurish,
+    ext: FormatString,
+) -> Path:
     full_path: Path | None = None
 
     directory: Path
@@ -187,6 +192,7 @@ def _build_full_path(path, fig, ext):
         _logger.debug(f"Found: {prefix}")
         name = _next_filename(directory, prefix, ext)
         full_path = directory / name
+    return full_path
 
 
 # call all validators/automatic config fill-in/packaging in expected format
@@ -214,8 +220,8 @@ def build_fig_spec(
         if _assert_format(ext):  # not strict necessary if but helps typeguard
             opts["format"] = ext
 
-    full_path = _build_full_path(path, fig, ext)
-
     spec = to_spec(fig, opts)
+
+    full_path = _build_full_path(path, fig, spec["format"])
 
     return spec, full_path
