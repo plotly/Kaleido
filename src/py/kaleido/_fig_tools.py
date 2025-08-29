@@ -1,3 +1,9 @@
+"""
+Adapted from old code, it 1. validates, 2. write defaults, 3. packages object.
+
+Its a bit complicated and mixed in order.
+"""
+
 from __future__ import annotations
 
 import glob
@@ -82,7 +88,7 @@ def _get_format(extension: str) -> FormatString:
     return formatted_extension
 
 
-# Input of to_spec
+# Input of to_spec (user gives us this)
 class LayoutOpts(TypedDict, total=False):
     format: FormatString | None
     scale: int | float
@@ -90,7 +96,8 @@ class LayoutOpts(TypedDict, total=False):
     width: int | float
 
 
-# Output of to_spec
+# Output of to_spec (we give kaleido_scopes.js this)
+# refactor note: this could easily be right before send
 class Spec(TypedDict):
     format: FormatString
     width: int | float
@@ -99,6 +106,7 @@ class Spec(TypedDict):
     data: Figurish
 
 
+# validate configuration options for kaleido.js and package like its wants
 def to_spec(figure: Figurish, layout_opts: LayoutOpts) -> Spec:
     # Get figure layout
     layout = figure.get("layout", {})
@@ -133,6 +141,7 @@ def to_spec(figure: Figurish, layout_opts: LayoutOpts) -> Spec:
     }
 
 
+# if we need to suffix the filename automatically:
 def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
     path = path if isinstance(path, Path) else Path(path)
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
@@ -150,7 +159,38 @@ def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
     return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
 
 
-def build_fig_spec(  #  noqa: C901, PLR0912
+# validate and build full route if needed:
+def _build_full_path(path, fig, ext):
+    full_path: Path | None = None
+
+    directory: Path
+
+    if not path:
+        directory = Path()  # use current Path
+    elif path and (not path.suffix or path.is_dir()):
+        if not path.is_dir():
+            raise ValueError(f"Directory {path} not found. Please create it.")
+        directory = path
+    else:
+        full_path = path
+        if not full_path.parent.is_dir():
+            raise RuntimeError(
+                f"Cannot reach path {path.parent}. Are all directories created?",
+            )
+
+    if not full_path:
+        _logger.debug("Looking for title")
+        prefix = fig.get("layout", {}).get("title", {}).get("text", "fig")
+        prefix = re.sub(r"[ \-]", "_", prefix)
+        prefix = re.sub(r"[^a-zA-Z0-9_]", "", prefix)
+        prefix = prefix or "fig"
+        _logger.debug(f"Found: {prefix}")
+        name = _next_filename(directory, prefix, ext)
+        full_path = directory / name
+
+
+# call all validators/automatic config fill-in/packaging in expected format
+def build_fig_spec(
     fig: Figurish,
     path: Path | str | None,
     opts: LayoutOpts | None,
@@ -169,37 +209,13 @@ def build_fig_spec(  #  noqa: C901, PLR0912
     elif path and not isinstance(path, Path):
         raise TypeError("Path should be a string or `pathlib.Path` object (or None)")
 
-    if path and path.suffix and not opts.get("format"):
+    if not opts.get("format") and path and path.suffix:
         ext = path.suffix.lstrip(".")
         if _assert_format(ext):  # not strict necessary if but helps typeguard
             opts["format"] = ext
 
+    full_path = _build_full_path(path, fig, ext)
+
     spec = to_spec(fig, opts)
-
-    ext = spec["format"]
-
-    full_path: Path | None = None
-    directory: Path
-    if not path:
-        directory = Path()  # use current Path
-    elif path and (not path.suffix or path.is_dir()):
-        if not path.is_dir():
-            raise ValueError(f"Directory {path} not found. Please create it.")
-        directory = path
-    else:
-        full_path = path
-        if not full_path.parent.is_dir():
-            raise RuntimeError(
-                f"Cannot reach path {path.parent}. Are all directories created?",
-            )
-    if not full_path:
-        _logger.debug("Looking for title")
-        prefix = fig.get("layout", {}).get("title", {}).get("text", "fig")
-        prefix = re.sub(r"[ \-]", "_", prefix)
-        prefix = re.sub(r"[^a-zA-Z0-9_]", "", prefix)
-        prefix = prefix or "fig"
-        _logger.debug(f"Found: {prefix}")
-        name = _next_filename(directory, prefix, ext)
-        full_path = directory / name
 
     return spec, full_path
