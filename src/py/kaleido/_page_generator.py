@@ -118,7 +118,7 @@ class PageGenerator:
             except ImportError:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
-        elif isinstance(plotly, str):
+        elif isinstance(plotly, (str, Path)):
             _ensure_path(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
