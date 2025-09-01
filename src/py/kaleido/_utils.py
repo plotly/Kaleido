@@ -1,18 +1,24 @@
+from __future__ import annotations
+
 import asyncio
 import warnings
 from functools import partial
 from importlib.metadata import PackageNotFoundError, version
+from typing import TYPE_CHECKING
 
 import logistro
 from packaging.version import Version
 
 _logger = logistro.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from typing import Any, Callable, Coroutine
 
-def event_printer(name):
+
+def event_printer(name: str) -> Callable[[Any], Coroutine[Any, Any, None]]:
     """Return function that prints whatever argument received."""
 
-    async def print_all(response):
+    async def print_all(response: Any) -> None:
         _logger.debug2(f"{name!s}:{response!s}")
 
     return print_all
