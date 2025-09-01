@@ -24,6 +24,8 @@ if TYPE_CHECKING:
     T = TypeVar("T")
     AnyIterable = Union[AsyncIterable[T], Iterable[T]]
 
+    from .kaleido import FigureGenerator
+
 __all__ = [
     "Kaleido",
     "PageGenerator",
@@ -139,7 +141,7 @@ async def write_fig(
 
 
 async def write_fig_from_object(
-    generator: AnyIterable,  # this could be more specific with []
+    generator: AnyIterable[FigureGenerator],
     *,
     kopts: dict[str, Any] | None = None,
     **kwargs,

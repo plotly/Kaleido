@@ -39,6 +39,12 @@ if TYPE_CHECKING:
     # Iterable & Sized
     Listish: TypeAlias = Union[Tuple[T], List[T], ValuesView[T]]
 
+    class FigureGenerator(TypedDict):
+        fig: Required[_fig_tools.Figurish]
+        path: NotRequired[None | str | Path]
+        opts: NotRequired[_fig_tools.LayoutOpts | None]
+        topojson: NotRequired[None | str]
+
 
 class Kaleido(choreo.Browser):
     tabs_ready: asyncio.Queue[_KaleidoTab]
@@ -248,16 +254,10 @@ class Kaleido(choreo.Browser):
 
     ### API ###
 
-    class FigureGenerator(TypedDict):
-        fig: Required[_fig_tools.Figurish]
-        path: NotRequired[None | str | Path]
-        opts: NotRequired[_fig_tools.LayoutOpts | None]
-        topojson: NotRequired[None | str]
-
     # also write_fig_from_dict
     async def write_fig_from_object(
         self,
-        generator: FigureGenerator,  # what should we accept here
+        generator: AnyIterable[FigureGenerator],
         *,
         cancel_on_error=False,
     ) -> None:
