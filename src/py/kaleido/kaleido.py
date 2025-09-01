@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterable, Iterable, TypedDict
+from collections.abc import AsyncIterable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 from urllib.parse import unquote, urlparse
 
 import choreographer as choreo
@@ -26,13 +26,18 @@ _utils.warn_incompatible_plotly()
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Any, Union
+    from typing import Any, List, Tuple, TypeVar, Union, ValuesView
 
-    from typing_extension import NotRequired, Required
+    from typing_extensions import NotRequired, Required, TypeAlias
 
     from . import _fig_tools
 
-    AnyIterable = Union[Iterable, AsyncIterable]  # not runtime
+    T = TypeVar("T")
+    AnyIterable: TypeAlias = Union[Iterable[T], AsyncIterable[T]]  # not runtime
+
+    # union of sized iterables since 3.8 doesn't have & operator
+    # Iterable & Sized
+    Listish: TypeAlias = Union[Tuple[T], List[T], ValuesView[T]]
 
 
 class Kaleido(choreo.Browser):
@@ -112,13 +117,13 @@ class Kaleido(choreo.Browser):
             page.generate_index(index)
         await super().open()
 
-    async def _conform_tabs(self, tabs: list[choreo.Tab] | None = None) -> None:
-        _logger.info(f"Conforming {len(tabs)} to {self._index}")
+    async def _conform_tabs(self, tabs: Listish[choreo.Tab] | None = None) -> None:
         if not tabs:
-            tabs = list(self.tabs.values())
+            tabs = self.tabs.values()
+        _logger.info(f"Conforming {len(tabs)} to {self._index}")
         for i, tab in enumerate(tabs):
             _logger.debug2(f"Subscribing * to tab: {tab}.")
-            tab.subscribe("*", _utils.make_printer(f"tab-{i!s} event"))
+            tab.subscribe("*", _utils.event_printer(f"tab-{i!s}: Event Dump:"))
 
         kaleido_tabs = [_KaleidoTab(tab, _stepper=self._stepper) for tab in tabs]
 
@@ -136,7 +141,7 @@ class Kaleido(choreo.Browser):
         once ever per object.
         """
         await super().populate_targets()
-        await self._conform_tabs(self.tabs.values())
+        await self._conform_tabs()
         needed_tabs = self._n - len(self.tabs)
         if not needed_tabs:
             return
@@ -209,35 +214,36 @@ class Kaleido(choreo.Browser):
 
     #### WE'RE HERE
 
-    async def _create_render_task(
+    def _create_render_task(
         self,
         tab: _KaleidoTab,
-        *args: Any,
+        spec: _fig_tools.Spec,
+        full_path: Path,
         **kwargs: Any,
     ) -> asyncio.Task:
-        _logger.info(f"Posting a task for {args['full_path'].name}")
-        t = asyncio.create_task(
+        _logger.info(f"Posting a task for {full_path.name}")
+        t: asyncio.Task = asyncio.create_task(
             asyncio.wait_for(
                 tab._write_fig(  # noqa: SLF001
-                    *args,
+                    spec,
+                    full_path,
                     **kwargs,
                 ),
                 self._timeout,
             ),
         )
-
         # create_task_log_error is a create_task helper, set and forget
         # to create a task and add a post-run action which checks for
         # errors and logs them. this pattern is the best i've found
         # but somehow its still pretty distressing
         t.add_done_callback(
-            lambda: self._tab_requeue_tasks.add(
+            lambda _f: self._tab_requeue_tasks.add(
                 _utils.create_task_log_error(
                     self._return_kaleido_tab(tab),
                 ),
             ),
         )
-        _logger.info(f"Posted task ending for {args['full_path'].name}")
+        _logger.info(f"Posted task ending for {full_path.name}")
         return t
 
     ### API ###
@@ -245,7 +251,7 @@ class Kaleido(choreo.Browser):
     class FigureGenerator(TypedDict):
         fig: Required[_fig_tools.Figurish]
         path: NotRequired[None | str | Path]
-        opts: NotRequired[_fig_tools.LayoutOpts, None]
+        opts: NotRequired[_fig_tools.LayoutOpts | None]
 
     # also write_fig_from_dict
     async def write_fig_from_object(
@@ -257,7 +263,7 @@ class Kaleido(choreo.Browser):
         """Temp."""
         if main_task := asyncio.current_task():
             self._main_render_coroutines.add(main_task)
-        tasks = set()
+        tasks: set[asyncio.Task] = set()
 
         try:
             async for args in _utils.ensure_async_iter(generator):
@@ -270,13 +276,12 @@ class Kaleido(choreo.Browser):
 
                 tab = await self._get_kaleido_tab()
 
-                t = self._create_render_task(
+                t: asyncio.Task = self._create_render_task(
                     tab,
                     spec,
                     full_path,
                     topojson=topojson,
                 )
-
                 tasks.add(t)
 
             await asyncio.gather(*tasks, return_exceptions=not cancel_on_error)
