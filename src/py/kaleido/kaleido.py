@@ -252,6 +252,7 @@ class Kaleido(choreo.Browser):
         fig: Required[_fig_tools.Figurish]
         path: NotRequired[None | str | Path]
         opts: NotRequired[_fig_tools.LayoutOpts | None]
+        topojson: NotRequired[None | str]
 
     # also write_fig_from_dict
     async def write_fig_from_object(
@@ -296,11 +297,11 @@ class Kaleido(choreo.Browser):
 
     async def write_fig(
         self,
-        fig,
-        path=None,
-        opts=None,
+        fig: _fig_tools.Figurish,
+        path: None | Path | str = None,
+        opts: None | _fig_tools.LayoutOpts = None,
         *,
-        topojson=None,
+        topojson: str | None = None,
     ) -> None:
         """Temp."""
         if _is_figurish(fig) or not isinstance(fig, (Iterable, AsyncIterable)):
