@@ -52,7 +52,7 @@ def start_sync_server(*args: Any, silence_warnings: bool = False, **kwargs: Any)
     function will warn you if the server is already running.
 
     This wrapper function takes the exact same arguments as kaleido.Kaleido(),
-    except one extra, `silence_warnings`.
+    except one extra: `silence_warnings`.
 
     Args:
         *args: all arguments `Kaleido()` would take.
@@ -66,11 +66,13 @@ def start_sync_server(*args: Any, silence_warnings: bool = False, **kwargs: Any)
 
 def stop_sync_server(*, silence_warnings: bool = False):
     """
-    Stop the kaleido server. It can be restarted. Warns if not started.
+    Stop the kaleido server. It can be restarted.
+
+    This function will warn you if the server is already stopped.
 
     Args:
         silence_warnings: (bool, default False): If True, don't emit warning if
-        stopping a server that's not running.
+        stopping an already stopped server.
 
     """
     _global_server.close(silence_warnings=silence_warnings)
@@ -88,14 +90,13 @@ async def calc_fig(
     Return binary for plotly figure.
 
     A convenience wrapper for `Kaleido.calc_fig()` which starts a `Kaleido` and
-    executes the `calc_fig()`.
+    executes `calc_fig()`.
     It takes an additional argument, `kopts`, a dictionary of arguments to pass
     to the kaleido process. See the `kaleido.Kaleido` docs. However,
     `calc_fig()` will never use more than one processor, so any `n` value will
     be overridden.
 
-
-    See documentation for `Kaleido.calc_fig()`.
+    See also the documentation for `Kaleido.calc_fig()`.
 
     """
     kopts = kopts or {}
@@ -124,10 +125,9 @@ async def write_fig(
     A convenience wrapper for `Kaleido.write_fig()` which starts a `Kaleido` and
     executes the `write_fig()`.
     It takes an additional argument, `kopts`, a dictionary of arguments to pass
-    to the kaleido process. See the `kaleido.Kaleido` docs.
+    to the `Kaleido` constructor. See the `kaleido.Kaleido` docs.
 
-
-    See documentation for `Kaleido.write_fig()` for the other arguments.
+    See also the documentation for `Kaleido.write_fig()`.
 
     """
     async with Kaleido(**(kopts or {})) as k:
@@ -147,15 +147,14 @@ async def write_fig_from_object(
     **kwargs,
 ):
     """
-    Write a plotly figure(s) to a file.
+    Write a plotly figure(s) to a file specified by a dictionary generator.
 
     A convenience wrapper for `Kaleido.write_fig_from_object()` which starts a
     `Kaleido` and executes the `write_fig_from_object()`
     It takes an additional argument, `kopts`, a dictionary of arguments to pass
-    to the kaleido process. See the `kaleido.Kaleido` docs.
+    to the `Kaleido` constructor. See the `kaleido.Kaleido` docs.
 
-    See documentation for `Kaleido.write_fig_from_object()` for the other
-    arguments.
+    See also the documentation for `Kaleido.write_fig_from_object()`.
 
     """
     async with Kaleido(**(kopts or {})) as k:
