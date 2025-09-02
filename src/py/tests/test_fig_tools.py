@@ -6,12 +6,13 @@ from kaleido import _fig_tools
 
 sources = ["argument", "layout", "template", "default"]
 values = [None, 150, 800, 1500]
+values2 = [None, 300, 1000, 1300]
 
 
 @pytest.mark.parametrize("width_source", sources)
 @pytest.mark.parametrize("height_source", sources)
 @pytest.mark.parametrize("width_value", values)
-@pytest.mark.parametrize("height_value", [x * 1.5 if x else x for x in values])
+@pytest.mark.parametrize("height_value", values2)
 def test_get_figure_dimensions(width_source, height_source, width_value, height_value):
     """Test _get_figure_dimensions with all combinations of width/height sources."""
 
@@ -113,8 +114,8 @@ def test_next_filename_similar_names_ignored(tmp_path):
 
 def test_next_filename_special_characters(tmp_path):
     """Test _next_filename with special characters in prefix and extension."""
-    prefix = "test-file_name"
-    ext = "svg"  # set up to be parameterized but not
+    prefix = "test-?f$ile_name"
+    ext = "s$v&*g"  # set up to be parameterized but not
 
     # Create some files
     (tmp_path / f"{prefix}.{ext}").touch()
@@ -171,7 +172,7 @@ def test_build_full_path_no_path_input(fig_fixture):
 
 
 def test_build_full_path_no_suffix_directory(tmp_path, fig_fixture):
-    """Test _build_full_path with path having no suffix."""
+    """Test _build_full_path with path to directory having no suffix."""
     fig_dict, expected_prefix = fig_fixture
 
     # Test directory no suffix
