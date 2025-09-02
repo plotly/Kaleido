@@ -22,7 +22,7 @@ def _ensure_file(path: Path | str | tuple[str | Path, str]) -> None:
         path = path[0]
     if isinstance(path, Path) and path.is_file():  # noqa: SIM114 clarity
         return
-    elif _utils.is_url(path):  # noqa: SIM114 clarity
+    elif _utils.is_httpish(path):  # noqa: SIM114 clarity
         return
     elif _utils.get_path(path).is_file():
         return

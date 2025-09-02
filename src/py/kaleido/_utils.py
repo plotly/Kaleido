@@ -112,5 +112,5 @@ def get_path(p: str) -> Path | None:
     )
 
 
-def is_url(p: str) -> bool:
+def is_httpish(p: str) -> bool:
     return urlparse(str(p)).scheme.startswith("http")
