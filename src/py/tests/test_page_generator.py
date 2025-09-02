@@ -361,6 +361,10 @@ async def test_combined_overrides(tmp_path, data):
     assert len(scripts) == expected_count
 
 
+# note: the logic below was extracted to utilities,
+# so in a way its tested twice since tests were developed for that file
+
+
 # Test file path validation
 async def test_existing_file_path(temp_js_file):
     """Test that existing file paths work with and without file:/// protocol."""
@@ -383,9 +387,14 @@ async def test_existing_file_path(temp_js_file):
     assert scripts_uri[2].endswith("kaleido_scopes.js")
 
 
+# Claude, please for all bottom, please make a fixture like "existing_dir"
+# and make sure we still raise an error
+
+
 async def test_nonexistent_file_path_raises_error(
     nonexistent_file_path,
     nonexistent_file_uri,
+    tmp_path,
 ):
     """Test that nonexistent file paths raise FileNotFoundError."""
     # Test with regular path
@@ -399,10 +408,15 @@ async def test_nonexistent_file_path_raises_error(
     with pytest.raises(FileNotFoundError):
         PageGenerator(plotly=nonexistent_file_uri)
 
+    # Test that existing directory raises error
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(plotly=str(tmp_path))
+
 
 async def test_mathjax_nonexistent_file_raises_error(
     nonexistent_file_path,
     nonexistent_file_uri,
+    tmp_path,
 ):
     """Test that nonexistent mathjax file raises FileNotFoundError."""
     # Test with regular path
@@ -416,10 +430,15 @@ async def test_mathjax_nonexistent_file_raises_error(
     with pytest.raises(FileNotFoundError):
         PageGenerator(mathjax=nonexistent_file_uri)
 
+    # Test that existing directory raises error
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(mathjax=str(tmp_path))
+
 
 async def test_others_nonexistent_file_raises_error(
     nonexistent_file_path,
     nonexistent_file_uri,
+    tmp_path,
 ):
     """Test that nonexistent file in others list raises FileNotFoundError."""
     # Test with regular path
@@ -432,6 +451,10 @@ async def test_others_nonexistent_file_raises_error(
     # Test with file:/// protocol
     with pytest.raises(FileNotFoundError):
         PageGenerator(others=[nonexistent_file_uri])
+
+    # Test that existing directory raises error
+    with pytest.raises(FileNotFoundError):
+        PageGenerator(others=[str(tmp_path)])
 
 
 # Test HTTP URLs (should not raise FileNotFoundError)
