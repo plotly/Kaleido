@@ -8,7 +8,11 @@ import logistro
 from . import _utils
 
 if TYPE_CHECKING:
-    UrlAndCharset = tuple[str | Path, str]  # type: TypeAlias
+    from typing import Tuple, Union
+
+    from typing_extensions import TypeAlias
+
+    UrlAndCharset: TypeAlias = Tuple[Union[str, Path], str]
     """A tuple to explicitly set charset= in the <script> tag."""
 
 _logger = logistro.getLogger(__name__)

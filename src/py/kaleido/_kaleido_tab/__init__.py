@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+import base64
 from typing import TYPE_CHECKING
 
 import logistro
 
+from kaleido._utils import to_thread
+
 from . import _devtools_utils as _dtools
 from . import _js_logger
 from ._errors import _raise_error
-from ._utils import to_thread
 
 if TYPE_CHECKING:
     import asyncio
@@ -16,6 +18,9 @@ if TYPE_CHECKING:
     import choreographer as choreo
 
     from kaleido import _fig_tools
+
+
+_TEXT_FORMATS = ("svg", "json")  # eps
 
 _logger = logistro.getLogger(__name__)
 
@@ -50,7 +55,7 @@ class _KaleidoTab:
 
         """
         self.tab = tab
-        self.js_logger = _js_logger.JavascriptLogger()
+        self.js_logger = _js_logger.JavascriptLogger(self.tab)
         self._stepper = _stepper
 
     async def navigate(self, url: str | Path = ""):
@@ -141,9 +146,28 @@ class _KaleidoTab:
         )
         _raise_error(result)
 
-        _logger.debug2(f"Result of function call: {result}")
+        # TODO(AJP): better define these error mechanics, is this a devtools
+        # function or what
+        # upon implementation of error, might not be necessary
+        # to do these go-lang/c style returns
+        # but we have to collect and associate
+        # with the gather + profile
+        # None-non return values are a problem
+        # In general, need to better understand stuff here
 
-        img_bytes, error = await _dtools.get_bytes(result)
+        _logger.debug2(f"Result of function call: {result}")
+        js_response, error = _dtools.check_kaleido_js_response(result)
         if error:
             raise error
-        return img_bytes
+
+        if (response_format := js_response.get("format")) == "pdf":
+            img_raw, error = await _dtools.print_pdf(self.tab)
+        else:
+            img_raw = js_response.get("result")  # type: ignore[assignment]
+        if error:
+            raise error
+
+        if response_format not in _TEXT_FORMATS:
+            return base64.b64decode(img_raw), None
+        else:
+            return str.encode(img_raw), None

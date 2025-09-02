@@ -26,20 +26,21 @@ class JavascriptLogger:
     log: list[Any]
     """A list of console outputs from the tab."""
 
-    def __init__(self) -> None:
+    def __init__(self, tab: choreographer.Tab) -> None:
         self.log = []
+        self.tab = tab
 
-    def activate(self, tab: choreographer.Tab):
-        tab.unsubscribe("Runtime.consoleAPICalled")
-        tab.subscribe(
+    def activate(self):
+        self.tab.unsubscribe("Runtime.consoleAPICalled")
+        self.tab.subscribe(
             "Runtime.consoleAPICalled",
-            _make_console_logger("tab js console", self.javascript_log),
+            _make_console_logger("tab js console", self.log),
         )
 
-    def reset(self, tab: choreographer.Tab):
-        tab.unsubscribe("Runtime.consoleAPICalled")
+    def reset(self):
+        self.tab.unsubscribe("Runtime.consoleAPICalled")
         self.log = []
-        tab.subscribe(
+        self.tab.subscribe(
             "Runtime.consoleAPICalled",
-            _make_console_logger("tab js console", self.javascript_log),
+            _make_console_logger("tab js console", self.log),
         )
