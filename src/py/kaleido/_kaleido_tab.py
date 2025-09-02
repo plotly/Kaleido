@@ -21,7 +21,7 @@ _logger = logistro.getLogger(__name__)
 _TEXT_FORMATS = ("svg", "json")  # eps
 
 
-class JavascriptError(RuntimeError):  # TODO(A): process better # noqa: TD003, FIX002
+class JavascriptError(RuntimeError):  # TODO(AJP): process better
     """Used to report errors from javascript."""
 
 
@@ -66,7 +66,7 @@ def _make_console_logger(name, log):
     """Create printer specifically for console events. Helper function."""
 
     async def console_printer(event):
-        _logger.debug2(f"{name}:{event}")  # TODO(A): parse # noqa: TD003, FIX002
+        _logger.debug2(f"{name}:{event}")  # TODO(AJP): parse? stretch goal.
         log.append(str(event))
 
     return console_printer
