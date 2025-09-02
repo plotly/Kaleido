@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from pathlib import Path
-from urllib.parse import urlparse
-from urllib.request import url2pathname
 
 import logistro
+
+from . import _utils
 
 _logger = logistro.getLogger(__name__)
 
@@ -17,19 +17,14 @@ DEFAULT_MATHJAX = (
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
-def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
+def _ensure_file(path: Path | str | tuple[str | Path, str]) -> None:
     if isinstance(path, tuple):
         path = path[0]
-    _logger.debug(f"Ensuring path {path!s}")
-    parsed = urlparse(str(path))
-    _logger.debug(f"Parsed file path: {parsed}")
-    if parsed.scheme.startswith("http"):  # is url
+    if isinstance(path, Path) and path.is_file():  # noqa: SIM114 clarity
         return
-    elif parsed.scheme.startswith("file"):
-        if (_p := Path(url2pathname(parsed.path))).exists():
-            return
-        _logger.error(f"File parsed to: {_p}")
-    elif Path(path).exists():
+    elif _utils.is_url(path):  # noqa: SIM114 clarity
+        return
+    elif _utils.get_path(path).is_file():
         return
     raise FileNotFoundError(f"{path!s} does not exist.")
 
@@ -91,7 +86,7 @@ class PageGenerator:
             if mathjax is None or mathjax is True:
                 mathjax = DEFAULT_MATHJAX
             elif mathjax:
-                _ensure_path(mathjax)
+                _ensure_file(mathjax)
             self._scripts.append(mathjax)
         if force_cdn:
             plotly = (DEFAULT_PLOTLY, "utf-8")
@@ -119,13 +114,13 @@ class PageGenerator:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
         elif isinstance(plotly, (str, Path)):
-            _ensure_path(plotly)
+            _ensure_file(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
         if others:
             for o in others:
-                _ensure_path(o)
+                _ensure_file(o)
             self._scripts.extend(others)
 
     def generate_index(self):
