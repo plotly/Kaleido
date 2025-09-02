@@ -186,6 +186,7 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
 ):
     """Test that write_fig properly passes arguments to write_fig_from_object."""
     pytest.skip("Remove this failure line and the comment above after the refactor!")
+    # Also add one for calc, its just a pass through tester.
     test_path = tmp_path / f"{path}.{format_type}"
     opts = {"format": format_type, "width": width, "height": height}
 
