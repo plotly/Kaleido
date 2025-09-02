@@ -20,8 +20,11 @@ KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 def _ensure_file(path: Path | str | tuple[str | Path, str]) -> None:
     if isinstance(path, tuple):
         path = path[0]
-    if isinstance(path, Path) and path.is_file():  # noqa: SIM114 clarity
-        return
+    if isinstance(path, Path):
+        if path.is_file():
+            return
+        else:
+            pass  # FileNotFound
     elif _utils.is_httpish(path):  # noqa: SIM114 clarity
         return
     elif _utils.get_path(path).is_file():
