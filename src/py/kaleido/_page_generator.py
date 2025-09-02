@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import logistro
 
 from . import _utils
+
+if TYPE_CHECKING:
+    UrlAndCharset = tuple[str | Path, str]  # type: TypeAlias
+    """A tuple to explicitly set charset= in the <script> tag."""
 
 _logger = logistro.getLogger(__name__)
 
@@ -17,7 +22,7 @@ DEFAULT_MATHJAX = (
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
-def _ensure_file(path: Path | str | tuple[str | Path, str]) -> None:
+def _ensure_file(path: Path | str | UrlAndCharset) -> None:
     if isinstance(path, tuple):
         path = path[0]
     if isinstance(path, Path):
@@ -65,9 +70,9 @@ class PageGenerator:
     def __init__(  # noqa: C901
         self,
         *,
-        plotly: None | Path | str | tuple[Path | str, str] = None,
-        mathjax: None | Path | str | bool | tuple[Path | str, str] = None,
-        others: None | list[Path | str | tuple[Path | str, str]] = None,
+        plotly: None | Path | str | UrlAndCharset = None,
+        mathjax: None | Path | str | bool | UrlAndCharset = None,
+        others: None | list[Path | str | UrlAndCharset] = None,
         force_cdn: bool = False,
     ):
         """
