@@ -74,6 +74,7 @@ ignore = [
           "SIM105", # Too opionated (try-except-pass)
           "PT003", # scope="function" implied but I like readability
           "G004", # fstrings in my logs
+          "TD003", # issue link in todos
           ]
 
 [tool.ruff.lint.per-file-ignores]

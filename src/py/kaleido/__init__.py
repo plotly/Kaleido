@@ -117,7 +117,7 @@ async def write_fig(
     *,
     topojson: str | None = None,
     kopts: dict[str, Any] | None = None,
-    **kwargs,
+    **kwargs,  # TODO(AJP): what might we pass here?
 ):
     """
     Write a plotly figure(s) to a file.
@@ -144,7 +144,7 @@ async def write_fig_from_object(
     generator: AnyIterable[FigureGenerator],
     *,
     kopts: dict[str, Any] | None = None,
-    **kwargs,
+    **kwargs,  # TODO(AJP): what might we pass here?
 ):
     """
     Write a plotly figure(s) to a file specified by a dictionary generator.

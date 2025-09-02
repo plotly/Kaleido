@@ -39,6 +39,8 @@ if TYPE_CHECKING:
     Listish: TypeAlias = Union[Tuple[T], List[T], ValuesView[T]]
 
     class FigureGenerator(TypedDict):
+        """The type a generator returns for `write_fig_from_object`."""
+
         fig: Required[_fig_tools.Figurish]
         path: NotRequired[None | str | Path]
         opts: NotRequired[_fig_tools.LayoutOpts | None]
@@ -46,7 +48,31 @@ if TYPE_CHECKING:
 
 
 class Kaleido(choreo.Browser):
+    """
+    The Kaleido object provides a browser to render and write plotly figures.
+
+    It provides methods to render said figures, and manages any number of tabs
+    in a work queue. Start it one of a few equal ways:
+
+    async with Kaleido() as k:
+        ...
+
+    # or
+
+    k = await Kaleido()
+    ...
+    await k.close()
+
+    # or
+
+    k = Kaleido()
+    await k.open()
+    ...
+    await.k.close()
+    """
+
     tabs_ready: asyncio.Queue[_KaleidoTab]
+    """A queue of tabs ready to process a kaleido figure."""
     _tab_requeue_tasks: set[asyncio.Task]
     _main_render_coroutines: set[asyncio.Task]
     # technically Tasks, user sees coroutines
@@ -58,15 +84,59 @@ class Kaleido(choreo.Browser):
 
     def __init__(  # noqa: PLR0913
         self,
-        *args: Any,  # does choreographer take args?
+        *args: Any,  # TODO(AJP): does choreographer take args?
         n: int = 1,
         timeout: int | None = 90,
         page_generator: None | PageGenerator | str | Path = None,
-        plotlyjs: str | Path | None = None,
-        mathjax: str | Path | None = None,
+        plotlyjs: str | Path | None = None,  # TODO(AJP): with page generator
+        mathjax: str | Path | None = None,  # TODO(AJP): with page generator?
         stepper: bool = False,
         **kwargs: Any,
     ) -> None:
+        """
+        Create a new Kaleido process for rendering plotly figures.
+
+        Args:
+            *args (Any):
+                Passed through to underlying choreographer.Browser()
+            n (int, optional):
+                Number of processors to use (parallelization). Defaults to 1.
+
+            timeout (int | None, optional):
+                Number of seconds to wait to render any one image. None for no
+                timeout. Defaults to 90.
+
+            page_generator (None | PageGenerator | str | Path, optional):
+                A PageGenerator object can be used for deep customization of the
+                plotly template page. This is for development use. You can also
+                pass a string or path directly to an index.html, or any object
+                with a `generate_index()->str function that prints an HTML
+                ppage. Defaults to None.
+
+            plotlyjs (str | Path | None, optional):
+                A path or URL to a plotly.js file. Defaults to None- which means
+                to use the plotly.js included with your version of plotly.py or
+                if not installed, the latest version available via CDN.
+
+            mathjax (str | Path | None, optional):
+                A path or URL to a mathjax.js file. If false, mathjax is
+                disabled. Defaults to None- which means to use version 2.35 via
+                CDN.
+
+            stepper (bool, optional):
+                A diagnostic tool that will ask the user to press enter between
+                rendering each image. Only useful if also used with
+                `headless=False`. See below. Defaults to False.
+
+            **kwargs (Any):
+                Additional keyword arguments passed through to the underlying
+                Choreographer.browser constructor. Notable options include,
+                `headless=False` (show window), `enable_sandbox=True` (turn on
+                sandboxing), and `enable_gpu=True` which will allow use of the
+                GPU. The defaults for these options are True, False, False
+                respectively.
+
+        """
         self._tab_requeue_tasks = set()
         self._main_render_coroutines = set()
         self.tabs_ready = asyncio.Queue(maxsize=0)
@@ -90,14 +160,15 @@ class Kaleido(choreo.Browser):
             raise ChromeNotFoundError(
                 "Kaleido v1 and later requires Chrome to be installed. "
                 "To install Chrome, use the CLI command `kaleido_get_chrome`, "
-                "or from Python, use either `kaleido.get_chrome()` "
+                "or from Python, use either `await kaleido.get_chrome()` "
                 "or `kaleido.get_chrome_sync()`.",
-            ) from ChromeNotFoundError
-        # do this during open because it requires close
+            ) from None  # overwriting the error entirely.
+
+        # save this for open() because it requires close()
         self._saved_page_arg = page
 
     async def open(self):
-        """Build temporary file if we need one."""
+        """Build page and temporary file if we need one, then opens browser."""
         page = self._saved_page_arg
         del self._saved_page_arg
 
@@ -116,10 +187,17 @@ class Kaleido(choreo.Browser):
                 f.write(page.generate_index())
         else:
             raise TypeError(
-                "A page generator must be one of: None, a"
-                " PageGenerator, or a file path to an index.html",
+                "page_generator must be one of: None, a"
+                " PageGenerator, or a file path to an index.html.",
             )
         await super().open()
+
+    async def _create_kaleido_tab(self) -> None:
+        tab = await super().create_tab(
+            url="",
+            window=True,
+        )
+        await self._conform_tabs([tab])
 
     async def _conform_tabs(self, tabs: Listish[choreo.Tab] | None = None) -> None:
         if not tabs:
@@ -130,6 +208,8 @@ class Kaleido(choreo.Browser):
             tab.subscribe("*", _utils.event_printer(f"tab-{i!s}: Event Dump:"))
 
         kaleido_tabs = [_KaleidoTab(tab, _stepper=self._stepper) for tab in tabs]
+        # TODO(AJP): why doesn't stepper use the global?
+        # KaleidoTab has access to Kaleido?
 
         await asyncio.gather(*(tab.navigate(self._index) for tab in kaleido_tabs))
 
@@ -142,7 +222,7 @@ class Kaleido(choreo.Browser):
         Override the browser populate_targets to ensure the correct page.
 
         Is called automatically during initialization, and should only be called
-        once ever per object.
+        once.
         """
         await super().populate_targets()
         await self._conform_tabs()
@@ -189,13 +269,6 @@ class Kaleido(choreo.Browser):
 
     ### TAB MANAGEMENT FUNCTIONS ####
 
-    async def _create_kaleido_tab(self) -> None:
-        tab = await super().create_tab(
-            url="",
-            window=True,
-        )
-        await self._conform_tabs([tab])
-
     async def _get_kaleido_tab(self) -> _KaleidoTab:
         _logger.info(f"Getting tab from queue (has {self.tabs_ready.qsize()})")
         if not self._total_tabs:
@@ -236,10 +309,10 @@ class Kaleido(choreo.Browser):
                 self._timeout,
             ),
         )
-        # create_task_log_error is a create_task helper, set and forget
-        # to create a task and add a post-run action which checks for
-        # errors and logs them. this pattern is the best i've found
-        # but somehow its still pretty distressing
+
+        # a weak solution to chaining tasks
+        # maybe consider an async closure instead
+        # avoids try/except....
         t.add_done_callback(
             lambda _f: self._tab_requeue_tasks.add(
                 _utils.create_task_log_error(
