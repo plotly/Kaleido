@@ -1,8 +1,17 @@
 """
-Adapted from old code, it 1. validates, 2. write defaults, 3. packages object.
+Tools to help prepare data for plotly.js from kaleido.
 
-Its a bit complicated and mixed in order.
+It 1. validates, 2. write defaults, 3. packages object.
 """
+
+# Adapted from old code, it's mixed in order, it should go in the order above.
+# build_fig_spec should probably be factored out.
+# 1. Validate
+# 2. Write Defaults/Automatics
+# 3. Packages Object
+# The structure should be more readable.
+
+# The main entry point is the last function, build_fig_spec
 
 from __future__ import annotations
 
@@ -20,6 +29,25 @@ if TYPE_CHECKING:
 
     Figurish = Any  # Be nice to make it more specific, dictionary or something
     FormatString = Literal["png", "jpg", "jpeg", "webp", "svg", "json", "pdf"]
+
+
+# Input of to_spec (user gives us this)
+class LayoutOpts(TypedDict, total=False):
+    format: FormatString | None
+    scale: int | float
+    height: int | float
+    width: int | float
+
+
+# Output of to_spec (we give kaleido_scopes.js this)
+# refactor note: this could easily be right before send
+class Spec(TypedDict):
+    format: FormatString
+    width: int | float
+    height: int | float
+    scale: int | float
+    data: Figurish
+
 
 _logger = logistro.getLogger(__name__)
 
@@ -39,6 +67,7 @@ SUPPORTED_FORMATS: tuple[FormatString, ...] = (
 )
 
 
+# validation function
 def _assert_format(ext: str) -> TypeGuard[FormatString]:
     if ext not in SUPPORTED_FORMATS:
         raise ValueError(
@@ -47,6 +76,7 @@ def _assert_format(ext: str) -> TypeGuard[FormatString]:
     return True
 
 
+# validation function
 def _is_figurish(o: Any) -> TypeGuard[Figurish]:
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
     if not valid:
@@ -58,6 +88,7 @@ def _is_figurish(o: Any) -> TypeGuard[Figurish]:
     return valid
 
 
+# defaults function
 def _get_figure_dimensions(
     layout: dict,
     width: float | None,
@@ -79,6 +110,7 @@ def _get_figure_dimensions(
     return width, height
 
 
+# coercion function
 def _get_format(extension: str) -> FormatString:
     formatted_extension = extension.lower()
     if formatted_extension == "jpg":
@@ -88,25 +120,7 @@ def _get_format(extension: str) -> FormatString:
     return formatted_extension
 
 
-# Input of to_spec (user gives us this)
-class LayoutOpts(TypedDict, total=False):
-    format: FormatString | None
-    scale: int | float
-    height: int | float
-    width: int | float
-
-
-# Output of to_spec (we give kaleido_scopes.js this)
-# refactor note: this could easily be right before send
-class Spec(TypedDict):
-    format: FormatString
-    width: int | float
-    height: int | float
-    scale: int | float
-    data: Figurish
-
-
-# validate configuration options for kaleido.js and package like its wants
+# does additional validation + defaults + packaging
 def to_spec(figure: Figurish, layout_opts: LayoutOpts) -> Spec:
     # Get figure layout
     layout = figure.get("layout", {})
@@ -142,7 +156,7 @@ def to_spec(figure: Figurish, layout_opts: LayoutOpts) -> Spec:
     }
 
 
-# if we need to suffix the filename automatically:
+# provides defaults
 def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
     path = path if isinstance(path, Path) else Path(path)
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
@@ -160,7 +174,7 @@ def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
     return f"{prefix}.{ext}" if n == 1 else f"{prefix}-{n}.{ext}"
 
 
-# validate and build full route if needed:
+# provides defaults (and validation)
 def _build_full_path(
     path: Path | None,
     fig: Figurish,
@@ -195,7 +209,7 @@ def _build_full_path(
     return full_path
 
 
-# call all validators/automatic config fill-in/packaging in expected format
+# does validation, defaults, and packaging. is main entry point
 def build_fig_spec(
     fig: Figurish,
     path: Path | str | None,
