@@ -88,7 +88,10 @@ def warn_incompatible_plotly():
                 "This means that static image generation (e.g. `fig.write_image()`) "
                 "will not work.\n\n"
                 f"Please upgrade Plotly to version {min_compatible_plotly_version} "
-                "or greater, or downgrade Kaleido to version 0.2.1."
+                "or greater, or downgrade Kaleido to version 0.2.1.\n\n"
+                "You can however, use the Kaleido API directly which will work "
+                "with your plotly version. `kaleido.write_fig(...)`, for example. "
+                "Please see the kaleido documentation."
                 "\n",
                 UserWarning,
                 stacklevel=3,
