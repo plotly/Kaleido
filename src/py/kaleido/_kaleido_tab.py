@@ -27,7 +27,11 @@ class JavascriptError(RuntimeError):  # TODO(AJP): process better
 
 ### Error definitions ###
 class KaleidoError(Exception):
-    """An error to interpret errors from Kaleido's JS side."""
+    """
+    An error to interpret errors from Kaleido's JS side.
+
+    This is not for all js errors, just kaleido_scopes.js errors.
+    """
 
     def __init__(self, code, message):
         """
@@ -47,7 +51,7 @@ class KaleidoError(Exception):
         return f"Error {self._code}: {self._message}"
 
 
-def _check_error_ret(result):
+def _get_error(result):
     """Check browser response for errors. Helper function."""
     if "error" in result:
         return DevtoolsProtocolError(result)
@@ -56,8 +60,8 @@ def _check_error_ret(result):
     return None
 
 
-def _check_error(result):
-    e = _check_error_ret(result)
+def _raise_error(result):
+    e = _get_error(result)
     if e:
         raise e
 
@@ -76,7 +80,7 @@ class _KaleidoTab:
     """
     A Kaleido tab is a wrapped choreographer tab providing the functions we need.
 
-    The choreographer tab can be access through the `self.tab` attribute.
+    The choreographer tab can be accessed through the `self.tab` attribute.
     """
 
     tab: choreo.Tab
@@ -124,12 +128,12 @@ class _KaleidoTab:
             page_ready = tab.subscribe_once("Page.loadEventFired")
 
         _logger.debug2(f"Calling Page.navigate on {tab}")
-        _check_error(await tab.send_command("Page.navigate", params={"url": url}))
+        _raise_error(await tab.send_command("Page.navigate", params={"url": url}))
         # Must enable after navigating.
         _logger.debug2(f"Calling Page.enable on {tab}")
-        _check_error(await tab.send_command("Page.enable"))
+        _raise_error(await tab.send_command("Page.enable"))
         _logger.debug2(f"Calling Runtime.enable on {tab}")
-        _check_error(await tab.send_command("Runtime.enable"))
+        _raise_error(await tab.send_command("Runtime.enable"))
 
         await javascript_ready
         self._current_js_id = (
@@ -159,7 +163,7 @@ class _KaleidoTab:
             _logger.debug2("Clearing an old Page.loadEventFired")
             is_loaded = tab.subscribe_once("Page.loadEventFired")
         _logger.debug2(f"Calling Page.reload on {tab}")
-        _check_error(await tab.send_command("Page.reload"))
+        _raise_error(await tab.send_command("Page.reload"))
         await javascript_ready
         self._current_js_id = (
             javascript_ready.result()
@@ -196,7 +200,7 @@ class _KaleidoTab:
         _logger.debug("Calling js function")
         result = await self.tab.send_command("Runtime.callFunctionOn", params=params)
         _logger.debug(f"Sent javascript got result: {result}")
-        _check_error(result)
+        _raise_error(result)
 
     def _finish_profile(self, profile, state, error=None):
         _logger.debug("Finishing profile")
@@ -308,7 +312,7 @@ class _KaleidoTab:
         if profile:
             profile["state"] = "SENT"
         _logger.info(f"Sent big command for {full_path.name}.")
-        e = _check_error_ret(result)
+        e = _get_error(result)
         if e:
             if profiler is not None:
                 self._finish_profile(profile, "ERROR", e)
@@ -366,7 +370,7 @@ class _KaleidoTab:
                 "Page.printToPDF",
                 params=pdf_params,
             )
-            e = _check_error_ret(pdf_response)
+            e = _get_error(pdf_response)
             if e:
                 return e
             img = pdf_response.get("result").get("data")
