@@ -104,7 +104,9 @@ def warn_incompatible_plotly():
         _logger.info("Error while checking Plotly version.", exc_info=e)
 
 
-def get_path(p: str) -> Path | None:
+def get_path(p: str | Path) -> Path:
+    if isinstance(p, Path):
+        return p
     parsed = urlparse(str(p))
 
     return Path(

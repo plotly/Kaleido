@@ -6,7 +6,6 @@ import asyncio
 from collections.abc import AsyncIterable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
-from urllib.parse import unquote, urlparse
 
 import choreographer as choreo
 import logistro
@@ -102,25 +101,24 @@ class Kaleido(choreo.Browser):
         page = self._saved_page_arg
         del self._saved_page_arg
 
-        if isinstance(page, str):
-            if page.startswith(r"file://") and Path(unquote(urlparse(page).path)):
-                self._index = page
-            elif Path(page).is_file():
-                self._index = Path(page).as_uri()
-            else:
-                raise FileNotFoundError(f"{page} does not exist.")
-        elif isinstance(page, Path):
-            if page.is_file():
-                self._index = page.as_uri()
+        if isinstance(page, (Path, str)):
+            if (_p := _utils.get_path(page)).is_file():
+                self._index = _p.as_uri()
             else:
                 raise FileNotFoundError(f"{page!s} does not exist.")
-        else:
+        elif not page or hasattr(page, "generate_index"):
             self._tmp_dir = TmpDirectory(sneak=self.is_isolated())
             index = self._tmp_dir.path / "index.html"
             self._index = index.as_uri()
             if not page:
                 page = PageGenerator(plotly=self._plotlyjs, mathjax=self._mathjax)
-            page.generate_index(index)
+            with index.open("w") as f:  # is blocking but ok
+                f.write(page.generate_index())
+        else:
+            raise TypeError(
+                "A page generator must be one of: None, a"
+                " PageGenerator, or a file path to an index.html",
+            )
         await super().open()
 
     async def _conform_tabs(self, tabs: Listish[choreo.Tab] | None = None) -> None:
