@@ -24,6 +24,10 @@ def kwargs():
     return {"width": 800}
 
 
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.open  # noqa: SLF001
+
+
 @patch("kaleido._sync_server.GlobalKaleidoServer.open")
 def test_start_sync_server_passes_args(mock_open, args, kwargs):
     """Test that start_sync_server passes args and silence_warnings correctly."""
@@ -37,6 +41,10 @@ def test_start_sync_server_passes_args(mock_open, args, kwargs):
     mock_open.assert_called_with(*args, silence_warnings=True, **kwargs)
 
 
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.close  # noqa: SLF001
+
+
 @patch("kaleido._sync_server.GlobalKaleidoServer.close")
 def test_stop_sync_server_passes_args(mock_close):
     """Test that stop_sync_server passes silence_warnings correctly."""
@@ -48,6 +56,10 @@ def test_stop_sync_server_passes_args(mock_close):
     mock_close.reset_mock()
     kaleido.stop_sync_server(silence_warnings=True)
     mock_close.assert_called_with(silence_warnings=True)
+
+
+# line serves to force static check of string in @patch
+_ = kaleido.Kaleido
 
 
 @patch("kaleido.Kaleido")
@@ -124,6 +136,11 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     mock_kaleido.write_fig_from_object.assert_called_with(generator)
 
 
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.is_running  # noqa: SLF001
+_ = kaleido._sync_server.GlobalKaleidoServer.call_function  # noqa: SLF001
+
+
 @patch("kaleido._sync_server.GlobalKaleidoServer.is_running")
 @patch("kaleido._sync_server.GlobalKaleidoServer.call_function")
 def test_sync_wrapper_server(mock_call_function, mock_is_running, args, kwargs):
@@ -145,6 +162,11 @@ def test_sync_wrapper_server(mock_call_function, mock_is_running, args, kwargs):
     # Test write_fig_from_object_sync
     kaleido.write_fig_from_object_sync(*args, **kwargs)
     mock_call_function.assert_called_with("write_fig_from_object", *args, **kwargs)
+
+
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.is_running  # noqa: SLF001
+_ = kaleido._sync_server.oneshot_async_run  # noqa: SLF001
 
 
 @patch("kaleido._sync_server.GlobalKaleidoServer.is_running")
