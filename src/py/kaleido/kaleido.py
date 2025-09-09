@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, TypedDict, cast
+from typing import TYPE_CHECKING, TypedDict, cast, overload
 
 import choreographer as choreo
 import logistro
@@ -24,7 +24,16 @@ _utils.warn_incompatible_plotly()
 
 if TYPE_CHECKING:
     from types import TracebackType
-    from typing import Any, List, Tuple, TypeVar, Union, ValuesView
+    from typing import (
+        Any,
+        AsyncGenerator,
+        List,
+        Literal,
+        Tuple,
+        TypeVar,
+        Union,
+        ValuesView,
+    )
 
     from typing_extensions import NotRequired, Required, TypeAlias
 
@@ -313,6 +322,41 @@ class Kaleido(choreo.Browser):
             await self._return_kaleido_tab(tab)
 
     ### API ###
+    @overload
+    async def write_fig_from_object(
+        self,
+        generator: AnyIterable[FigureDict],
+        *,
+        cancel_on_error: bool = False,
+        _write: Literal[False],
+    ) -> bytes: ...
+
+    @overload
+    async def write_fig_from_object(
+        self,
+        generator: AnyIterable[FigureDict],
+        *,
+        cancel_on_error: Literal[True],
+        _write: Literal[True] = True,
+    ) -> None: ...
+
+    @overload
+    async def write_fig_from_object(
+        self,
+        generator: AnyIterable[FigureDict],
+        *,
+        cancel_on_error: Literal[False] = False,
+        _write: Literal[True] = True,
+    ) -> tuple[Exception]: ...
+
+    @overload
+    async def write_fig_from_object(
+        self,
+        generator: AnyIterable[FigureDict],
+        *,
+        cancel_on_error: bool,
+        _write: Literal[True] = True,
+    ) -> tuple[Exception] | None: ...
 
     async def write_fig_from_object(
         self,
@@ -320,8 +364,10 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error=False,
         _write: bool = True,  # backwards compatibility!
-    ) -> tuple[bytes | None | Exception]:
+    ) -> None | bytes | tuple[Exception]:
         """Temp."""
+        if not _write:
+            cancel_on_error = True
         if main_task := asyncio.current_task():
             self._main_render_coroutines.add(main_task)
         tasks: set[asyncio.Task] = set()
@@ -349,7 +395,13 @@ class Kaleido(choreo.Browser):
                 )
                 tasks.add(t)
 
-            return await asyncio.gather(*tasks, return_exceptions=not cancel_on_error)
+            res = await asyncio.gather(*tasks, return_exceptions=not cancel_on_error)
+            if not _write:
+                return cast("bytes", res[0])
+            elif cancel_on_error:
+                return None
+            else:
+                return cast("tuple[Exception]", tuple(r for r in res if r))
 
         finally:
             for task in tasks:
@@ -357,7 +409,6 @@ class Kaleido(choreo.Browser):
                     task.cancel()
             if main_task:
                 self._main_render_coroutines.remove(main_task)
-            # return errors?
 
     async def write_fig(
         self,
@@ -366,8 +417,8 @@ class Kaleido(choreo.Browser):
         opts: None | _fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
-        cancel_on_error=False,
-    ) -> tuple[None | Exception]:  # TODO this should be filtered
+        cancel_on_error: bool = False,
+    ) -> tuple[Exception] | None:
         """Temp."""
         if _fig_tools.is_figurish(fig) or not isinstance(
             fig,
@@ -375,7 +426,7 @@ class Kaleido(choreo.Browser):
         ):
             fig = [fig]
 
-        async def _temp_generator():
+        async def _temp_generator() -> AsyncGenerator[FigureDict, None]:
             async for f in _utils.ensure_async_iter(fig):
                 yield {
                     "fig": f,
@@ -384,13 +435,11 @@ class Kaleido(choreo.Browser):
                     "topojson": topojson,
                 }
 
-        res = await self.write_fig_from_object(
-            generator=_temp_generator(),
+        generator = cast("AsyncIterable[FigureDict]", _temp_generator())
+        return await self.write_fig_from_object(
+            generator=generator,
             cancel_on_error=cancel_on_error,
         )
-        return cast("tuple[Exception]", tuple(r for r in res if r is not None))
-        # we're using cast, but @overload would be better
-        # because with _write = True, return is a tuple[Exception | None]
 
     async def calc_fig(
         self,
@@ -408,11 +457,8 @@ class Kaleido(choreo.Browser):
                 "topojson": topojson,
             }
 
-        res = await self.write_fig_from_object(
+        return await self.write_fig_from_object(
             generator=_temp_generator(),
             cancel_on_error=True,
             _write=False,
         )
-        return cast("bytes", res[0])
-        # Complex type mechanics. Exceptions will raise. None not possible.
-        # Bytes only option
