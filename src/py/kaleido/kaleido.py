@@ -360,7 +360,7 @@ class Kaleido(choreo.Browser):
 
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureDict],  # TODO: must take a FigureDict alone
+        generator: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error=False,
         _write: bool = True,  # backwards compatibility!
@@ -368,8 +368,13 @@ class Kaleido(choreo.Browser):
         """Temp."""
         if not _write:
             cancel_on_error = True
+
+        if isinstance(generator, dict) and "fig" in generator:
+            generator = [generator]
+
         if main_task := asyncio.current_task():
             self._main_render_coroutines.add(main_task)
+
         tasks: set[asyncio.Task] = set()
 
         try:
