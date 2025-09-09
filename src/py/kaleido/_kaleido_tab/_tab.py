@@ -116,16 +116,12 @@ class _KaleidoTab:
     async def _calc_fig(
         self,
         spec: _fig_tools.Spec,
-        full_path: Path,
         *,
         topojson: str | None = None,
         **_kwargs,
     ):
         _kwargs.pop("error_log", None)  # not used at the moment
         _kwargs.pop("profiler", None)  # not used at the moment
-
-        _logger.debug(f"In tab {self.tab.target_id[:4]} calc_fig for {full_path.name}.")
-        _logger.info(f"Processing {full_path.name}")
 
         # js script
         kaleido_js_fn = (
@@ -135,7 +131,6 @@ class _KaleidoTab:
             r"}"
         )
 
-        _logger.info(f"Sending big command for {full_path.name}.")
         result = await _dtools.exec_js_fn(
             self.tab,
             self._current_js_id,
