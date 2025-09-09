@@ -59,7 +59,7 @@ SUPPORTED_FORMATS: tuple[FormatString, ...] = (
 
 
 # validation function
-def _is_figurish(o: Any) -> TypeGuard[Figurish]:
+def is_figurish(o: Any) -> TypeGuard[Figurish]:
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
     if not valid:
         _logger.debug(
@@ -92,7 +92,7 @@ def coerce_for_js(
     path: Path | str | None,
     opts: LayoutOpts | None,
 ) -> Spec:
-    if not _is_figurish(fig):  # VALIDATE FIG
+    if not is_figurish(fig):  # VALIDATE FIG
         raise TypeError("Figure supplied doesn't seem to be a valid plotly figure.")
     if hasattr(fig, "to_dict"):  # COERCE FIG
         fig = fig.to_dict()

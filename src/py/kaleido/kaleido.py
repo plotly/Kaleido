@@ -327,15 +327,15 @@ class Kaleido(choreo.Browser):
         tasks: set[asyncio.Task] = set()
 
         try:
-            async for args in _utils.ensure_async_iter(generator):
+            async for fig_arg in _utils.ensure_async_iter(generator):
                 spec = _fig_tools.coerce_for_js(
-                    args.get("fig"),
-                    args.get("path", None),
-                    args.get("opts", None),
+                    fig_arg.get("fig"),
+                    fig_arg.get("path", None),
+                    fig_arg.get("opts", None),
                 )
 
                 full_path = _path_tools.determine_path(
-                    args.get("path", None),
+                    fig_arg.get("path", None),
                     spec["data"],
                     spec["format"],  # should just take spec
                 )
@@ -344,7 +344,7 @@ class Kaleido(choreo.Browser):
                     self._render_task(
                         spec=spec,
                         write_path=full_path if _write else None,  # bwrds - compat!
-                        topojson=args.get("topojson"),
+                        topojson=fig_arg.get("topojson"),
                     ),
                 )
                 tasks.add(t)
@@ -369,7 +369,10 @@ class Kaleido(choreo.Browser):
         cancel_on_error=False,
     ) -> tuple[None | Exception]:  # TODO this should be filtered
         """Temp."""
-        if not isinstance(fig, (Iterable, AsyncIterable)):
+        if _fig_tools.is_figurish(fig) or not isinstance(
+            fig,
+            (Iterable, AsyncIterable),
+        ):
             fig = [fig]
 
         async def _temp_generator():
