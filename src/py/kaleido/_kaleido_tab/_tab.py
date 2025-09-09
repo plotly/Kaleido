@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING
 
 import logistro
 
-from kaleido._utils import to_thread
-
 from . import _devtools_utils as _dtools
 from . import _js_logger
 from ._errors import _raise_error
@@ -90,9 +88,8 @@ class _KaleidoTab:
 
         await page_ready  # don't care result, ready is ready
 
-        # might miss console stuff, would need to
-        # catch an intermediate event and run it via callback
-        # catches all render errors though
+        # this runs *after* page load because running it first thing
+        # requires a couple extra lines
         self.js_logger.reset()
 
     # reload is truly so close to navigate

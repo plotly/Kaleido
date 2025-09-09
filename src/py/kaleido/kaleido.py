@@ -12,8 +12,7 @@ import logistro
 from choreographer.errors import ChromeNotFoundError
 from choreographer.utils import TmpDirectory
 
-from . import _utils
-from ._fig_tools import _is_figurish, build_fig_spec
+from . import _fig_tools, _path_tools, _utils
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
 
@@ -28,8 +27,6 @@ if TYPE_CHECKING:
     from typing import Any, List, Tuple, TypeVar, Union, ValuesView
 
     from typing_extensions import NotRequired, Required, TypeAlias
-
-    from . import _fig_tools
 
     T = TypeVar("T")
     AnyIterable: TypeAlias = Union[Iterable[T], AsyncIterable[T]]  # not runtime
@@ -73,7 +70,6 @@ class Kaleido(choreo.Browser):
 
     tabs_ready: asyncio.Queue[_KaleidoTab]
     """A queue of tabs ready to process a kaleido figure."""
-    _tab_requeue_tasks: set[asyncio.Task]
     _main_render_coroutines: set[asyncio.Task]
     # technically Tasks, user sees coroutines
 
@@ -137,11 +133,10 @@ class Kaleido(choreo.Browser):
                 respectively.
 
         """
-        self._tab_requeue_tasks = set()
         # State variables
         self._main_render_coroutines = set()
         self.tabs_ready = asyncio.Queue(maxsize=0)
-        self._total_tabs = 0 # tabs properly registered
+        self._total_tabs = 0  # tabs properly registered
         self._html_tmp_dir = None
 
         # Kaleido Config
@@ -246,9 +241,6 @@ class Kaleido(choreo.Browser):
         for task in self._main_render_coroutines:
             if not task.done():
                 task.cancel()
-        for task in self._tab_requeue_tasks:
-            if not task.done():
-                task.cancel()
 
         _logger.info("Exiting Kaleido/Choreo.")
 
@@ -262,7 +254,8 @@ class Kaleido(choreo.Browser):
         _logger.info("Waiting for all cleanups to finish.")
 
         # render "tasks" are coroutines, so use is awaiting them
-        await asyncio.gather(*self._tab_requeue_tasks, return_exceptions=True)
+
+        await asyncio.gather(*self._main_render_coroutines, return_exceptions=True)
 
         _logger.info("Exiting Kaleido.")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
@@ -291,46 +284,39 @@ class Kaleido(choreo.Browser):
 
     #### WE'RE HERE
 
-    def _create_render_task(
+    async def _render_task(
         self,
-        tab: _KaleidoTab,
         spec: _fig_tools.Spec,
-        full_path: Path,
+        write_path: Path | None,
         **kwargs: Any,
-    ) -> asyncio.Task:
-        _logger.info(f"Posting a task for {full_path.name}")
-        t: asyncio.Task = asyncio.create_task(
-            asyncio.wait_for(
-                tab._write_fig(  # noqa: SLF001
+    ) -> None | bytes:
+        tab = await self._get_kaleido_tab()
+
+        try:
+            img_bytes = await asyncio.wait_for(
+                tab._calc_fig(  # noqa: SLF001
                     spec,
-                    full_path,
                     **kwargs,
                 ),
                 self._timeout,
-            ),
-        )
+            )
+            if write_path:
+                await _utils.to_thread(write_path.write_bytes, img_bytes)
+                return None
+            else:
+                return bytes
 
-        # a weak solution to chaining tasks
-        # maybe consider an async closure instead
-        # avoids try/except....
-        t.add_done_callback(
-            lambda _f: self._tab_requeue_tasks.add(
-                _utils.create_task_log_error(
-                    self._return_kaleido_tab(tab),
-                ),
-            ),
-        )
-        _logger.info(f"Posted task ending for {full_path.name}")
-        return t
+        finally:
+            await self._return_kaleido_tab(tab)
 
     ### API ###
 
-    # also write_fig_from_dict
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureDict], # TODO: must take a FigureDict alone
+        generator: AnyIterable[FigureDict],  # TODO: must take a FigureDict alone
         *,
         cancel_on_error=False,
+        _write: bool = True,  # backwards compatibility!
     ) -> None:
         """Temp."""
         if main_task := asyncio.current_task():
@@ -339,20 +325,24 @@ class Kaleido(choreo.Browser):
 
         try:
             async for args in _utils.ensure_async_iter(generator):
-                spec, full_path = build_fig_spec(
+                spec = _fig_tools.coerce_for_js(
                     args.get("fig"),
                     args.get("path", None),
                     args.get("opts", None),
                 )
-                topojson = args.get("topojson")
 
-                tab = await self._get_kaleido_tab()
+                full_path = _path_tools.determine_path(
+                    args.get("path", None),
+                    args["fig"],
+                    spec["format"],
+                )
 
-                t: asyncio.Task = self._create_render_task(
-                    tab,
-                    spec,
-                    full_path,
-                    topojson=topojson,
+                t: asyncio.Task = asyncio.create_task(
+                    self._render_task(
+                        spec=spec,
+                        write_path=full_path if _write else None,  # bwrds - compat!
+                        topojson=args.get("topojson"),
+                    ),
                 )
                 tasks.add(t)
 
@@ -373,6 +363,7 @@ class Kaleido(choreo.Browser):
         opts: None | _fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
+        cancel_on_error=False,
     ) -> None:
         """Temp."""
         if not isinstance(fig, (Iterable, AsyncIterable)):
@@ -389,4 +380,28 @@ class Kaleido(choreo.Browser):
 
         return await self.write_fig_from_object(
             generator=_temp_generator(),
+            cancel_on_error=cancel_on_error,
+        )
+
+    async def calc_fig(
+        self,
+        fig: _fig_tools.Figurish,
+        opts: None | _fig_tools.LayoutOpts = None,
+        *,
+        topojson: str | None = None,
+        cancel_on_error=False,
+    ) -> bytes:
+        """Temp."""
+
+        async def _temp_generator():
+            yield {
+                "fig": fig,
+                "opts": opts,
+                "topojson": topojson,
+            }
+
+        return await self.write_fig_from_object(
+            generator=_temp_generator(),
+            cancel_on_error=cancel_on_error,
+            _write=False,
         )

@@ -4,15 +4,6 @@ Tools to help prepare data for plotly.js from kaleido.
 It 1. validates, 2. write defaults, 3. packages object.
 """
 
-# Adapted from old code, it's mixed in order, it should go in the order above.
-# build_fig_spec should probably be factored out.
-# 1. Validate
-# 2. Write Defaults/Automatics
-# 3. Packages Object
-# The structure should be more readable.
-
-# The main entry point is the last function, build_fig_spec
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Literal, TypedDict
@@ -66,6 +57,7 @@ SUPPORTED_FORMATS: tuple[FormatString, ...] = (
     "pdf",
 )
 
+
 # validation function
 def _is_figurish(o: Any) -> TypeGuard[Figurish]:
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
@@ -100,10 +92,9 @@ def coerce_for_js(
     path: Path | str | None,
     opts: LayoutOpts | None,
 ) -> Spec:
-
-    if not _is_figurish(fig): # VALIDATE FIG
+    if not _is_figurish(fig):  # VALIDATE FIG
         raise TypeError("Figure supplied doesn't seem to be a valid plotly figure.")
-    if hasattr(fig, "to_dict"): # COERCE FIG
+    if hasattr(fig, "to_dict"):  # COERCE FIG
         fig = fig.to_dict()
 
     path = _utils.get_path(path) if path else None
@@ -115,10 +106,8 @@ def coerce_for_js(
 
     # Extract info
     file_format = _coerce_format(
-        opts.get("format") or (
-                path.suffix.lstrip(".")
-                if path and path.suffix
-                else DEFAULT_EXT )
+        opts.get("format")
+        or (path.suffix.lstrip(".") if path and path.suffix else DEFAULT_EXT),
     )
 
     layout = fig.get("layout", {})
