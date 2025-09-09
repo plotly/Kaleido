@@ -35,21 +35,12 @@ def determine_path(
     fig: _fig_tools.Figurish,
     ext: _fig_tools.FormatString,
 ) -> Path:
-
     path = path or Path()
 
-    if not path.suffix or path.is_dir(): # they gave us a directory
+    if not path.suffix or path.is_dir():  # they gave us a directory
         if not path.is_dir():
             raise ValueError(f"Directory {path} not found. Please create it.")
         directory = path
-    else: # we have full path, supposedly
-        full_path = path
-        if not full_path.parent.is_dir():
-            raise RuntimeError(
-                f"Cannot reach path {path.parent}. Are all directories created?",
-            )
-
-    if not full_path:
         _logger.debug("Looking for title")
         prefix = fig.get("layout", {}).get("title", {}).get("text", "fig")
         prefix = re.sub(r"[ \-]", "_", prefix)
@@ -58,4 +49,10 @@ def determine_path(
         _logger.debug(f"Found: {prefix}")
         name = _next_filename(directory, prefix, ext)
         full_path = directory / name
+    else:  # we have full path, supposedly
+        full_path = path
+        if not full_path.parent.is_dir():
+            raise RuntimeError(
+                f"Cannot reach path {path.parent}. Are all directories created?",
+            )
     return full_path
