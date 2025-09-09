@@ -110,6 +110,9 @@ def warn_incompatible_plotly():
 def get_path(p: str | Path) -> Path:
     if isinstance(p, Path):
         return p
+    elif not isinstance(p, str):
+        raise TypeError("Path should be a string or `pathlib.Path` object.")
+
     parsed = urlparse(str(p))
 
     return Path(
