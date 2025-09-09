@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
     AnyIterable = Union[AsyncIterable[T], Iterable[T]]
 
-    from .kaleido import FigureGenerator
+    from .kaleido import FigureDict
 
 __all__ = [
     "Kaleido",
@@ -141,7 +141,7 @@ async def write_fig(
 
 
 async def write_fig_from_object(
-    generator: AnyIterable[FigureGenerator],
+    generator: AnyIterable[FigureDict],
     *,
     kopts: dict[str, Any] | None = None,
     **kwargs,  # TODO(AJP): what might we pass here?

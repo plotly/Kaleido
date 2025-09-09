@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     # Iterable & Sized
     Listish: TypeAlias = Union[Tuple[T], List[T], ValuesView[T]]
 
-    class FigureGenerator(TypedDict):
+    class FigureDict(TypedDict):
         """The type a generator returns for `write_fig_from_object`."""
 
         fig: Required[_fig_tools.Figurish]
@@ -328,7 +328,7 @@ class Kaleido(choreo.Browser):
     # also write_fig_from_dict
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureGenerator],
+        generator: AnyIterable[FigureDict], # TODO: must take a FigureDict alone
         *,
         cancel_on_error=False,
     ) -> None:
