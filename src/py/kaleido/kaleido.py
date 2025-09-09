@@ -138,9 +138,10 @@ class Kaleido(choreo.Browser):
 
         """
         self._tab_requeue_tasks = set()
+        # State variables
         self._main_render_coroutines = set()
         self.tabs_ready = asyncio.Queue(maxsize=0)
-        self._total_tabs = 0
+        self._total_tabs = 0 # tabs properly registered
         self._html_tmp_dir = None
 
         # Kaleido Config
@@ -209,7 +210,6 @@ class Kaleido(choreo.Browser):
 
         kaleido_tabs = [_KaleidoTab(tab, _stepper=self._stepper) for tab in tabs]
         # TODO(AJP): why doesn't stepper use the global?
-        # KaleidoTab has access to Kaleido?
 
         await asyncio.gather(*(tab.navigate(self._index) for tab in kaleido_tabs))
 
