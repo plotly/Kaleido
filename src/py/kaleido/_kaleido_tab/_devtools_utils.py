@@ -101,7 +101,7 @@ def check_kaleido_js_response(
     if js_response["code"] != 0:
         return {}, KaleidoError(js_response["code"], js_response["message"])
 
-    return js_response
+    return js_response, None
 
 
 async def print_pdf(
