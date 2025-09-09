@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterable, Iterable
 from pathlib import Path
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING, TypedDict, cast
 
 import choreographer as choreo
 import logistro
@@ -304,7 +304,7 @@ class Kaleido(choreo.Browser):
                 await _utils.to_thread(write_path.write_bytes, img_bytes)
                 return None
             else:
-                return bytes
+                return img_bytes
 
         finally:
             await self._return_kaleido_tab(tab)
@@ -317,7 +317,7 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error=False,
         _write: bool = True,  # backwards compatibility!
-    ) -> None:
+    ) -> tuple[bytes | None | Exception]:
         """Temp."""
         if main_task := asyncio.current_task():
             self._main_render_coroutines.add(main_task)
@@ -333,8 +333,8 @@ class Kaleido(choreo.Browser):
 
                 full_path = _path_tools.determine_path(
                     args.get("path", None),
-                    args["fig"],
-                    spec["format"],
+                    spec["data"],
+                    spec["format"],  # should just take spec
                 )
 
                 t: asyncio.Task = asyncio.create_task(
@@ -346,7 +346,7 @@ class Kaleido(choreo.Browser):
                 )
                 tasks.add(t)
 
-            await asyncio.gather(*tasks, return_exceptions=not cancel_on_error)
+            return await asyncio.gather(*tasks, return_exceptions=not cancel_on_error)
 
         finally:
             for task in tasks:
@@ -364,7 +364,7 @@ class Kaleido(choreo.Browser):
         *,
         topojson: str | None = None,
         cancel_on_error=False,
-    ) -> None:
+    ) -> tuple[None | Exception]:  # TODO this should be filtered
         """Temp."""
         if not isinstance(fig, (Iterable, AsyncIterable)):
             fig = [fig]
@@ -378,10 +378,13 @@ class Kaleido(choreo.Browser):
                     "topojson": topojson,
                 }
 
-        return await self.write_fig_from_object(
+        res = await self.write_fig_from_object(
             generator=_temp_generator(),
             cancel_on_error=cancel_on_error,
         )
+        return cast("tuple[Exception]", tuple(r for r in res if r is not None))
+        # we're using cast, but @overload would be better
+        # because with _write = True, return is a tuple[Exception | None]
 
     async def calc_fig(
         self,
@@ -389,7 +392,6 @@ class Kaleido(choreo.Browser):
         opts: None | _fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
-        cancel_on_error=False,
     ) -> bytes:
         """Temp."""
 
@@ -400,8 +402,15 @@ class Kaleido(choreo.Browser):
                 "topojson": topojson,
             }
 
-        return await self.write_fig_from_object(
-            generator=_temp_generator(),
-            cancel_on_error=cancel_on_error,
-            _write=False,
+        return cast(
+            "bytes",
+            (
+                await self.write_fig_from_object(
+                    generator=_temp_generator(),
+                    cancel_on_error=True,
+                    _write=False,
+                )
+            )[0],
         )
+        # Complex type mechanics. Exceptions will raise. None not possible.
+        # Bytes only option

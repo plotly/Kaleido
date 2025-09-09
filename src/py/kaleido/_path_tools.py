@@ -32,7 +32,7 @@ def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
 
 def determine_path(
     path: Path | None,
-    fig: _fig_tools.Figurish,
+    fig: dict,
     ext: _fig_tools.FormatString,
 ) -> Path:
     path = path or Path()
