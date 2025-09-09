@@ -405,15 +405,11 @@ class Kaleido(choreo.Browser):
                 "topojson": topojson,
             }
 
-        return cast(
-            "bytes",
-            (
-                await self.write_fig_from_object(
-                    generator=_temp_generator(),
-                    cancel_on_error=True,
-                    _write=False,
-                )
-            )[0],
+        res = await self.write_fig_from_object(
+            generator=_temp_generator(),
+            cancel_on_error=True,
+            _write=False,
         )
+        return cast("bytes", res[0])
         # Complex type mechanics. Exceptions will raise. None not possible.
         # Bytes only option
