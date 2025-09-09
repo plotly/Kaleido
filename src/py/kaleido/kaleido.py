@@ -375,10 +375,8 @@ class Kaleido(choreo.Browser):
         topojson: str | None = None,
     ) -> None:
         """Temp."""
-        if _is_figurish(fig) or not isinstance(fig, (Iterable, AsyncIterable)):
+        if not isinstance(fig, (Iterable, AsyncIterable)):
             fig = [fig]
-        else:
-            _logger.debug(f"Is iterable {type(fig)}")
 
         async def _temp_generator():
             async for f in _utils.ensure_async_iter(fig):
