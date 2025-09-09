@@ -83,13 +83,12 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     topojson = "test_topojson"
     kopts = {"some_option": "value"}
 
-    result = await kaleido.calc_fig(fig, path, opts, topojson=topojson, kopts=kopts)
+    result = await kaleido.calc_fig(fig, opts, topojson=topojson, kopts=kopts)
 
     expected_kopts = {"some_option": "value", "n": 1}
     mock_kaleido_class.assert_called_with(**expected_kopts)
     mock_kaleido.calc_fig.assert_called_with(
         fig,
-        path=path,
         opts=opts,
         topojson=topojson,
     )

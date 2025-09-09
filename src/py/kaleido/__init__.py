@@ -80,7 +80,6 @@ def stop_sync_server(*, silence_warnings: bool = False):
 
 async def calc_fig(
     fig: Figurish,
-    path: str | None | Path = None,
     opts: LayoutOpts | None = None,
     *,
     topojson: str | None = None,
@@ -104,7 +103,6 @@ async def calc_fig(
     async with Kaleido(**kopts) as k:
         return await k.calc_fig(
             fig,
-            path=path,
             opts=opts,
             topojson=topojson,
         )
