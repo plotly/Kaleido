@@ -116,7 +116,7 @@ class _KaleidoTab:
         *,
         topojson: str | None = None,
         **_kwargs,
-    ):
+    ) -> bytes:
         _kwargs.pop("error_log", None)  # not used at the moment
         _kwargs.pop("profiler", None)  # not used at the moment
 
@@ -160,6 +160,6 @@ class _KaleidoTab:
             raise error
 
         if response_format not in _TEXT_FORMATS:
-            return base64.b64decode(img_raw), None
+            return base64.b64decode(img_raw)
         else:
-            return str.encode(img_raw), None
+            return str.encode(img_raw)
