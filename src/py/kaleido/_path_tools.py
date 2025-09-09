@@ -31,11 +31,11 @@ def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
 
 
 def determine_path(
-    path: Path | None,
+    path: Path | str | None,
     fig: dict,
     ext: _fig_tools.FormatString,
 ) -> Path:
-    path = path or Path()
+    path = Path(path) if path else Path()
 
     if not path.suffix or path.is_dir():  # they gave us a directory
         if not path.is_dir():
