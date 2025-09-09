@@ -174,8 +174,8 @@ class Kaleido(choreo.Browser):
             else:
                 raise FileNotFoundError(f"{page!s} does not exist.")
         elif not page or hasattr(page, "generate_index"):
-            self._tmp_dir = TmpDirectory(sneak=self.is_isolated())
-            index = self._tmp_dir.path / "index.html"
+            self._html_tmp_dir = TmpDirectory(sneak=self.is_isolated())
+            index = self._html_tmp_dir.path / "index.html"
             self._index = index.as_uri()
             if not page:
                 page = PageGenerator(plotly=self._plotlyjs, mathjax=self._mathjax)
@@ -231,10 +231,13 @@ class Kaleido(choreo.Browser):
 
     async def close(self) -> None:
         """Close the browser."""
-        await super().close()
-
         if self._html_tmp_dir:
+            _logger.debug(f"Cleaning up {self._html_tmp_dir}")
             self._html_tmp_dir.clean()
+        else:
+            _logger.debug("No kaleido._html_tmp_dir to clean up.")
+
+        await super().close()
 
         # cancellation only happens if crash/early
         _logger.info("Cancelling tasks.")
