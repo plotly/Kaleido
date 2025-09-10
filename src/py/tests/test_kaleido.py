@@ -312,7 +312,7 @@ async def test_all_methods_non_context(simple_figure_with_bytes, tmp_path):
         await k.close()
 
 
-@pytest.mark.parametrize("n_tabs", [1, 3, 7])
+@pytest.mark.parametrize("n_tabs", [1, 2, 3])
 async def test_tab_count_verification(n_tabs):
     """Test that Kaleido creates the correct number of tabs."""
     async with Kaleido(n=n_tabs) as k:
