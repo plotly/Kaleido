@@ -1,16 +1,69 @@
+from __future__ import annotations
+
 import asyncio
-import traceback
 import warnings
 from functools import partial
 from importlib.metadata import PackageNotFoundError, version
+from pathlib import Path
+from typing import TYPE_CHECKING
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import logistro
 from packaging.version import Version
 
 _logger = logistro.getLogger(__name__)
 
+if TYPE_CHECKING:
+    from typing import Any, Callable, Coroutine
+
+
+def event_printer(name: str) -> Callable[[Any], Coroutine[Any, Any, None]]:
+    """Return function that prints whatever argument received."""
+
+    async def print_all(response: Any) -> None:
+        _logger.debug2(f"{name!s}:{response!s}")
+
+    return print_all
+
+
+def _clean_error(t: asyncio.Task) -> None:
+    """Check a task to avoid "task never awaited" errors."""
+    if t.cancelled():
+        _logger.error(f"{t} cancelled.")
+    elif (exc := t.exception()) is not None:
+        _logger.error(f"{t} raised error.", exc_info=exc)
+
+
+def create_task_log_error(coroutine) -> asyncio.Task:
+    """Create a task and assign a callback to log its errors."""
+    t = asyncio.create_task(coroutine)
+    t.add_done_callback(_clean_error)
+    return t
+
+
+def ensure_async_iter(obj):
+    """Convert any iterable to an async iterator."""
+    if hasattr(obj, "__aiter__"):
+        return obj
+
+    it = iter(obj)
+
+    class _AIter:
+        def __aiter__(self):
+            return self
+
+        async def __anext__(self):
+            try:
+                return next(it)
+            except StopIteration:
+                raise StopAsyncIteration  # noqa: B904
+
+    return _AIter()
+
 
 async def to_thread(func, *args, **kwargs):
+    """Polyfill `asyncio.to_thread()`."""
     _loop = asyncio.get_running_loop()
     fn = partial(func, *args, **kwargs)
     await _loop.run_in_executor(None, fn)
@@ -35,7 +88,10 @@ def warn_incompatible_plotly():
                 "This means that static image generation (e.g. `fig.write_image()`) "
                 "will not work.\n\n"
                 f"Please upgrade Plotly to version {min_compatible_plotly_version} "
-                "or greater, or downgrade Kaleido to version 0.2.1."
+                "or greater, or downgrade Kaleido to version 0.2.1.\n\n"
+                "You can however, use the Kaleido API directly which will work "
+                "with your plotly version. `kaleido.write_fig(...)`, for example. "
+                "Please see the kaleido documentation."
                 "\n",
                 UserWarning,
                 stacklevel=3,
@@ -51,28 +107,18 @@ def warn_incompatible_plotly():
         _logger.info("Error while checking Plotly version.", exc_info=e)
 
 
-class ErrorEntry:
-    """A simple object to record errors and context."""
+def get_path(p: str | Path) -> Path:
+    if isinstance(p, Path):
+        return p
+    elif not isinstance(p, str):
+        raise TypeError("Path should be a string or `pathlib.Path` object.")
 
-    def __init__(self, name, error, javascript_log):
-        """
-        Construct an error entry.
+    parsed = urlparse(str(p))
 
-        Args:
-            name: the name of the image with the error
-            error: the error object (from class BaseException)
-            javascript_log: an array of entries from the javascript console
+    return Path(
+        url2pathname(parsed.path) if parsed.scheme.startswith("file") else p,
+    )
 
-        """
-        self.name = name
-        self.error = error
-        self.javascript_log = javascript_log
 
-    def __str__(self):
-        """Display the error object in a concise way."""
-        ret = f"{self.name}:\n"
-        e = self.error
-        ret += " ".join(traceback.format_exception(type(e), e, e.__traceback__))
-        ret += " javascript Log:\n"
-        ret += "\n ".join(self.javascript_log)
-        return ret
+def is_httpish(p: str) -> bool:
+    return urlparse(str(p)).scheme.startswith("http")

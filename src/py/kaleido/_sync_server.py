@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, NamedTuple
 from .kaleido import Kaleido
 
 if TYPE_CHECKING:
-    from typing import Any
+    from typing import Any, Callable
 
 
 class Task(NamedTuple):
@@ -95,7 +95,20 @@ class GlobalKaleidoServer:
         del self._return_queue
         self._initialized = False
 
-    def call_function(self, cmd: str, *args, **kwargs):
+    def call_function(self, cmd: str, *args: Any, **kwargs: Any):
+        """
+        Call any function on the singleton Kaleido object.
+
+        Preferred functions would be: `calc_fig`, `write_fig`, and
+        `write_fig_from_object`. Methods that doesn't exist will raise a
+        BaseException.
+
+        Args:
+            cmd (str): the name of the method to call
+            args (Any): the method's arguments
+            kwargs (Any): the method's keyword arguments
+
+        """
         if not self.is_running():
             raise RuntimeError("Can't call function on stopped server.")
         if kwargs.pop("kopts", None):
@@ -113,7 +126,24 @@ class GlobalKaleidoServer:
             return res
 
 
-def oneshot_async_run(func, args: tuple[Any, ...], kwargs: dict):
+def oneshot_async_run(
+    func: Callable,
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> Any:
+    """
+    Run a thread to execute a single function.
+
+    Used by _sync functions in
+    `__init__` to ensure their async loop is separate from the users main
+    one.
+
+    Args:
+        func: the function to run
+        args: a tuple of arguments to pass
+        kwargs: a dictionary of keyword arguments to pass
+
+    """
     q: Queue[Any] = Queue(maxsize=1)
 
     def run(func, q, *args, **kwargs):

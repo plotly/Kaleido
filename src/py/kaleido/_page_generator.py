@@ -1,9 +1,19 @@
 from __future__ import annotations
 
 from pathlib import Path
-from urllib.parse import urlparse
+from typing import TYPE_CHECKING
 
 import logistro
+
+from . import _utils
+
+if TYPE_CHECKING:
+    from typing import Tuple, Union
+
+    from typing_extensions import TypeAlias
+
+    UrlAndCharset: TypeAlias = Tuple[Union[str, Path], str]
+    """A tuple to explicitly set charset= in the <script> tag."""
 
 _logger = logistro.getLogger(__name__)
 
@@ -16,12 +26,19 @@ DEFAULT_MATHJAX = (
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
 
-def _ensure_path(path: Path | str):
-    _logger.debug(f"Ensuring path {path!s}")
-    if urlparse(str(path)).scheme.startswith("http"):  # is url
+def _ensure_file(path: Path | str | UrlAndCharset) -> None:
+    if isinstance(path, tuple):
+        path = path[0]
+    if isinstance(path, Path):
+        if path.is_file():
+            return
+        else:
+            pass  # FileNotFound
+    elif _utils.is_httpish(path):  # noqa: SIM114 clarity
         return
-    if not Path(path).exists():
-        raise FileNotFoundError(f"{path!s} does not exist.")
+    elif _utils.get_path(path).is_file():
+        return
+    raise FileNotFoundError(f"{path!s} does not exist.")
 
 
 class PageGenerator:
@@ -54,7 +71,14 @@ class PageGenerator:
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
 
-    def __init__(self, *, plotly=None, mathjax=None, others=None, force_cdn=False):
+    def __init__(  # noqa: C901
+        self,
+        *,
+        plotly: None | Path | str | UrlAndCharset = None,
+        mathjax: None | Path | str | bool | UrlAndCharset = None,
+        others: None | list[Path | str | UrlAndCharset] = None,
+        force_cdn: bool = False,
+    ):
         """
         Create a PageGenerator.
 
@@ -71,10 +95,10 @@ class PageGenerator:
         """
         self._scripts = []
         if mathjax is not False:
-            if not mathjax:
+            if mathjax is None or mathjax is True:
                 mathjax = DEFAULT_MATHJAX
-            else:
-                _ensure_path(mathjax)
+            elif mathjax:
+                _ensure_file(mathjax)
             self._scripts.append(mathjax)
         if force_cdn:
             plotly = (DEFAULT_PLOTLY, "utf-8")
@@ -101,36 +125,26 @@ class PageGenerator:
             except ImportError:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
-        elif isinstance(plotly, str):
-            _ensure_path(plotly)
+        elif isinstance(plotly, (str, Path)):
+            _ensure_file(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
         if others:
             for o in others:
-                _ensure_path(o)
+                _ensure_file(o)
             self._scripts.extend(others)
 
-    def generate_index(self, path=None):
-        """
-        Generate the page.
-
-        Args:
-            path: If specified, page is written to path. Otherwise it is returned.
-
-        """
+    def generate_index(self):
+        """Generate the page."""
         page = self.header
         script_tag = '\n        <script src="%s"></script>'
         script_tag_charset = '\n        <script src="%s" charset="%s"></script>'
         for script in self._scripts:
-            if isinstance(script, str):
-                page += script_tag % script
+            if isinstance(script, (str, Path)):
+                page += script_tag % str(script)
             else:
                 page += script_tag_charset % script
         page += self.footer
         _logger.debug2(page)
-        if not path:
-            return page
-        with (path).open("w") as f:
-            f.write(page)
-        return path.as_uri()
+        return page
