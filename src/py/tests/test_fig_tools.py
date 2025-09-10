@@ -184,7 +184,7 @@ def test_build_full_path_no_suffix_directory(tmp_path, fig_fixture):
 
     # Test error
     nonexistent_dir = Path("/nonexistent/directory")
-    with pytest.raises(ValueError, match="Directory .* not found. Please create it."):
+    with pytest.raises(ValueError, match=r"Directory .* not found. Please create it."):
         _fig_tools._build_full_path(nonexistent_dir, fig_dict, "ext")  # noqa: SLF001
 
 
@@ -205,7 +205,7 @@ def test_build_full_path_directory_with_suffix(tmp_path, fig_fixture):
 
 def test_build_full_path_file_with_suffix(tmp_path, fig_fixture):
     """Test _build_full_path with file path having suffix."""
-    fig_dict, expected_prefix = fig_fixture
+    fig_dict, _expected_prefix = fig_fixture
 
     # Exists
     file_path = tmp_path / "output.png"
@@ -218,6 +218,6 @@ def test_build_full_path_file_with_suffix(tmp_path, fig_fixture):
     file_path = Path("/nonexistent/directory/output.png")
     with pytest.raises(
         RuntimeError,
-        match="Cannot reach path .* Are all directories created?",
+        match=r"Cannot reach path .* Are all directories created?",
     ):
         _fig_tools._build_full_path(file_path, fig_dict, "ext")  # noqa: SLF001
