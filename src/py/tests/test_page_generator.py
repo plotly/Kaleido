@@ -192,7 +192,7 @@ async def test_defaults_no_plotly_available():
 
     # Test no imports (plotly not available)
     no_imports = PageGenerator().generate_index()
-    scripts, encodings = get_scripts_from_html(no_imports)
+    scripts, _encodings = get_scripts_from_html(no_imports)
 
     # Should have mathjax, plotly default, and kaleido_scopes
     assert len(scripts) == 3  # noqa: PLR2004
@@ -206,7 +206,7 @@ async def test_defaults_no_plotly_available():
 async def test_defaults_with_plotly_available():
     """Test defaults when plotly package is available."""
     all_defaults = PageGenerator().generate_index()
-    scripts, encodings = get_scripts_from_html(all_defaults)
+    scripts, _encodings = get_scripts_from_html(all_defaults)
 
     # Should have mathjax, plotly package data, and kaleido_scopes
     assert len(scripts) == 3  # noqa: PLR2004
@@ -222,7 +222,7 @@ async def test_force_cdn():
         pytest.skip("Plotly not available - cannot test force_cdn override")
 
     forced_cdn = PageGenerator(force_cdn=True).generate_index()
-    scripts, encodings = get_scripts_from_html(forced_cdn)
+    scripts, _encodings = get_scripts_from_html(forced_cdn)
 
     assert len(scripts) == 3  # noqa: PLR2004
     assert scripts[0] == DEFAULT_MATHJAX
@@ -234,7 +234,7 @@ async def test_force_cdn():
 async def test_mathjax_false():
     """Test that mathjax=False disables mathjax."""
     without_mathjax = PageGenerator(mathjax=False).generate_index()
-    scripts, encodings = get_scripts_from_html(without_mathjax)
+    scripts, _encodings = get_scripts_from_html(without_mathjax)
 
     assert len(scripts) == 2  # noqa: PLR2004
     assert scripts[0].endswith("package_data/plotly.min.js")
@@ -367,7 +367,7 @@ async def test_existing_file_path(temp_js_file):
     # Test with regular path
     generator = PageGenerator(plotly=str(temp_js_file))
     html = generator.generate_index()
-    scripts, encodings = get_scripts_from_html(html)
+    scripts, _encodings = get_scripts_from_html(html)
     assert len(scripts) == 3  # noqa: PLR2004
     assert scripts[0] == DEFAULT_MATHJAX
     assert scripts[1] == str(temp_js_file)
@@ -376,7 +376,7 @@ async def test_existing_file_path(temp_js_file):
     # Test with file:/// protocol
     generator_uri = PageGenerator(plotly=temp_js_file.as_uri())
     html_uri = generator_uri.generate_index()
-    scripts_uri, encodings_uri = get_scripts_from_html(html_uri)
+    scripts_uri, _encodings_uri = get_scripts_from_html(html_uri)
     assert len(scripts_uri) == 3  # noqa: PLR2004
     assert scripts_uri[0] == DEFAULT_MATHJAX
     assert scripts_uri[1] == temp_js_file.as_uri()
@@ -444,7 +444,7 @@ async def test_http_urls_skip_file_validation():
         others=["https://nonexistent.example.com/other.js"],
     )
     html = generator.generate_index()
-    scripts, encodings = get_scripts_from_html(html)
+    scripts, _encodings = get_scripts_from_html(html)
 
     assert len(scripts) == 4  # noqa: PLR2004
     assert scripts[0] == "https://nonexistent.example.com/mathjax.js"

@@ -30,6 +30,7 @@ dependencies = [
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
+  "pytest-timeout>=2.4.0",
 ]
 
 [project.urls]
@@ -94,7 +95,7 @@ log_cli = false
 # name = cmd
 
 [tool.poe.tasks.test]
-cmd = "pytest --log-level=1 -W error -n auto -v -rfE --capture=fd"
+cmd = "pytest --timeout=90 --log-level=1 -W error -n auto -v -rfE --capture=fd"
 help = "Run all tests quickly"
 
 [tool.poe.tasks.debug-test]
