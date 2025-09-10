@@ -203,7 +203,7 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
         mock_write_fig_from_object.assert_called_once()
 
         # Extract the generator that was passed as first argument
-        args, kwargs = mock_write_fig_from_object.call_args
+        args, _kwargs = mock_write_fig_from_object.call_args  # not sure.
         assert len(args) == 1, "Expected exactly one argument (the generator)"
 
         generator = args[0]
