@@ -219,7 +219,7 @@ async def test_force_cdn():
     """Test force_cdn=True forces use of CDN plotly even when plotly is available."""
     # Verify plotly is available first
     if not find_spec("plotly"):
-        pytest.skip("Plotly not available - cannot test force_cdn override")
+        pytest.fail("Plotly not available - cannot test force_cdn override")
 
     forced_cdn = PageGenerator(force_cdn=True).generate_index()
     scripts, encodings = get_scripts_from_html(forced_cdn)
