@@ -6,7 +6,7 @@ exclude: |
   (?x)(
   src/py/site/.*|
   src/py/integration_tests/mocks/.*|
-  src/py/intergation_tests/renders/.*|
+  src/py/integration_tests/renders/.*|
   src/js/.*|
   \.js$
   )
@@ -30,7 +30,7 @@ repos:
       - id: add-trailing-comma
   - repo: https://github.com/astral-sh/ruff-pre-commit
     #  Ruff version.
-    rev: v0.8.2
+    rev: v0.12.10
     hooks:
       #  Run the linter.
       - id: ruff

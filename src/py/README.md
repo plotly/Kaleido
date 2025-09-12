@@ -7,8 +7,8 @@
 </div>
 
 # Overview
-
-Kaleido is a cross-platform Python library for generating static images (e.g. png, svg, pdf, etc.) for Plotly.js, to be used by Plotly.py.
+Kaleido is a cross-platform Python library for generating static images
+(e.g. png, svg, pdf, etc.) for Plotly.js, to be used by Plotly.py.
 
 ## Installation
 
@@ -18,7 +18,9 @@ Kaleido can be installed from [PyPI](https://pypi.org/project/kaleido) using `pi
 $ pip install kaleido --upgrade
 ```
 
-As of version 1.0.0, Kaleido requires Chrome to be installed. If you already have Chrome on your system, Kaleido should find it; otherwise, you can install a compatible Chrome version using the `kaleido_get_chrome` command:
+As of version 1.0.0, Kaleido requires Chrome to be installed. If you already have
+Chrome on your system, Kaleido should find it; otherwise, you can install
+a compatible Chrome version using the `kaleido_get_chrome` command:
 
 ```bash
 $ kaleido_get_chrome
@@ -33,12 +35,20 @@ kaleido.get_chrome_sync()
 
 ## Migrating from v0 to v1
 
-Kaleido v1 introduces a new API. If you're currently using v0, you'll need to make changes to your code and environment where you are running Kaleido.
+Kaleido v1 introduces a new API. If you're currently using v0, you'll need
+to make changes to your code and environment where you are running Kaleido.
 
-- If using Kaleido v1 with Plotly.py, you will need to install Plotly.py v6.1.1 or later.
-- Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome installation, but also provides commands for installing Chrome. If you don't have Chrome, you'll need to install it. See the installation section above for instructions.
-- If your code uses Kaleido directly: `kaleido.scopes.plotly` has been removed in v1. Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
-```
+- If using Kaleido v1 with Plotly.py, you will need to install
+Plotly.py v6.1.1 or later.
+- Chrome is no longer included with Kaleido. Kaleido will look for an existing Chrome
+installation, but also provides commands for installing Chrome.
+If you don't have Chrome, you'll need to install it.
+See the installation section above for instructions.
+- If your code uses Kaleido directly: `kaleido.scopes.plotly` has been
+removed in v1.
+Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
+
+```python
 from kaleido import write_fig_sync
 import plotly.graph_objects as go
 
@@ -50,7 +60,9 @@ kaleido.write_fig_sync(fig, path="figure.png")
 
 Below are examples of how to use Kaleido directly in your Python program.
 
-If you want to export images of Plotly charts, it's not necessary to call Kaleido directly; you can use functions in the Plotly library. [See the Plotly documentation for instructions.](https://plotly.com/python/static-image-export/)
+If you want to export images of Plotly charts, it's not necessary to call
+Kaleido directly; you can use functions in the Plotly library.
+[See the Plotly documentation for instructions.](https://plotly.com/python/static-image-export/)
 
 ### Usage examples
 
@@ -79,7 +91,8 @@ async with kaleido.Kaleido(n=4, timeout=90) as k:
 # where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
 ```
 
-There are shortcut functions which can be used to generate images without creating a `Kaleido()` object:
+There are shortcut functions which can be used to generate images without
+creating a `Kaleido()` object:
 
 ```python
 import asyncio
@@ -95,7 +108,7 @@ asyncio.run(
 
 ### Page Customization
 
-Plotly figures are rendered in Chrome before being exported. The HTML of the page on which the Figure is rendered contains scripts that determine how the Figure is rendered. For example, by default if Plotly.py is installed, Kaleido uses the Plotly.js version included with Plotly.py in the HTML template. 
+Plotly figures are rendered in Chrome before being exported. The HTML of the page on which the Figure is rendered contains scripts that determine how the Figure is rendered. For example, by default if Plotly.py is installed, Kaleido uses the Plotly.js version included with Plotly.py in the HTML template.
 
 You can customize the specific scripts used in the HTML using the `page` parameter on the `kaleido.Kaleido` class, or through the `kopts` parameter in shortcut functions like `kaleido.write_fig`, `kaleido.write_fig_sync`, `kaleido.calc_fig`, etc.
 
@@ -124,11 +137,11 @@ async with kaleido.Kaleido(page=pathlib.Path("<path-to-template>")) as k:
 
 #### PageGenerator
 
-The `kaleido.PageGenerator` class allows you to customize the HTML of the page where the Plotly figure is rendered before it is exported. 
+The `kaleido.PageGenerator` class allows you to customize the HTML of the page where the Plotly figure is rendered before it is exported.
 
 `kaleido.PageGenerator` accepts the following arguments and builds a HTML template using the values provided.
 
-- **`plotly`** (str): URL to the Plotly.js script. Default uses Plotly.js included with the installed Plotly.py version. 
+- **`plotly`** (str): URL to the Plotly.js script. Default uses Plotly.js included with the installed Plotly.py version.
 - **`mathjax`** (str or bool): URL to MathJax script, or `False` to disable
 - **`others`** (list): Additional script URLs to include (strings or `(url, encoding)` tuples)
 - **`force_cdn`** (bool): Force CDN usage instead of local Plotly (default: `False`)
@@ -146,7 +159,7 @@ custom_page = kaleido.PageGenerator(plotly="https://cdn.plot.ly/plotly-2.0.0.min
 kaleido.write_fig_sync(fig, path="my_graph.png", kopts={"page_generator": custom_page})
 ```
 
-A page generator can also be used on the `kaleido.Kaleido` class by passing it to the `page_generator` parameter. 
+A page generator can also be used on the `kaleido.Kaleido` class by passing it to the `page_generator` parameter.
 
 ```python
 import kaleido
