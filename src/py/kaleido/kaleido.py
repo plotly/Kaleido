@@ -122,8 +122,7 @@ class Kaleido(choreo.Browser):
             timeout: limit on any single render (default 90 seconds).
             width: width of window (headless only)
             height: height of window (headless only)
-            page: This can be a `kaleido.PageGenerator`, a `pathlib.Path`, or a string.
-
+            page (optional): The HTML page to use for rendering. This can be a `kaleido.PageGenerator` object, or a path to an HTML file as either a `pathlib.Path`, or a string.
         """
         self._background_render_tasks = set()
         self._main_tasks = set()

@@ -106,17 +106,67 @@ asyncio.run(
 )
 ```
 
-### PageGenerators
+### Page Customization
 
-The `page` argument takes a `kaleido.PageGenerator()` to customize versions.
-Normally, kaleido looks for an installed plotly as uses that version. You can pass
-`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (the
-default if plotly is not installed).
+Plotly figures are rendered in Chrome before being exported. The HTML of the page on which the Figure is rendered contains scripts that determine how the Figure is rendered. For example, by default if Plotly.py is installed, Kaleido uses the Plotly.js version included with Plotly.py in the HTML template.
 
+You can customize the specific scripts used in the HTML using the `page` parameter on the `kaleido.Kaleido` class, or through the `kopts` parameter in shortcut functions like `kaleido.write_fig`, `kaleido.write_fig_sync`, `kaleido.calc_fig`, etc.
+
+Provide a path to a HTML file as a string or `pathlib.Path`, or use a `kaleido.PageGenerator` object that specifies which scripts to include in the HTML.
+
+```python
+import kaleido
+import plotly.graph_objects as go
+import pathlib
+
+fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+kaleido.write_fig_sync(fig, path="figure.png", kopts=dict(page_generator=pathlib.Path("<path-to-template>")))
 ```
-my_page = kaleido.PageGenerator(
-  plotly="A fully qualified link to plotly (https:// or file://)",
-  mathjax=False # no mathjax, or another fully quality link
-  others=["a list of other script links to include"]
-)
+
+```python
+import kaleido
+import plotly.graph_objects as go
+import pathlib
+
+fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+
+# Using Kaleido class directly
+async with kaleido.Kaleido(page=pathlib.Path("<path-to-template>")) as k:
+    await k.write_fig(fig, path="figure.png")
+```
+
+#### PageGenerator
+
+The `kaleido.PageGenerator` class allows you to customize the HTML of the page where the Plotly figure is rendered before it is exported.
+
+`kaleido.PageGenerator` accepts the following arguments and builds a HTML template using the values provided.
+
+- **`plotly`** (str): URL to the Plotly.js script. Default uses Plotly.js included with the installed Plotly.py version.
+- **`mathjax`** (str or bool): URL to MathJax script, or `False` to disable
+- **`others`** (list): Additional script URLs to include (strings or `(url, encoding)` tuples)
+- **`force_cdn`** (bool): Force CDN usage instead of local Plotly (default: `False`)
+
+Here's an example of a `PageGenerator` configured to use an older version of Plotly.js when rendering and exporting the figure.
+
+```python
+import kaleido
+import plotly.graph_objects as go
+
+fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+
+custom_page = kaleido.PageGenerator(plotly="https://cdn.plot.ly/plotly-2.0.0.min.js")
+
+kaleido.write_fig_sync(fig, path="my_graph.png", kopts={"page_generator": custom_page})
+```
+
+A page generator can also be used on the `kaleido.Kaleido` class by passing it to the `page_generator` parameter.
+
+```python
+import kaleido
+import plotly.graph_objects as go
+
+fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
+
+async with kaleido.Kaleido(page_generator=kaleido.PageGenerator(plotly="https://cdn.plot.ly/plotly-2.0.0.min.js")) as k:
+  await k.write_fig(fig, path="my_graph.png", opts={"format":"jpg"})
 ```
