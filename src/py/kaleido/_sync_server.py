@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import atexit
 import warnings
+from functools import partial
 from queue import Queue
 from threading import Thread
 from typing import TYPE_CHECKING, NamedTuple
@@ -53,30 +55,38 @@ class GlobalKaleidoServer:
     def is_running(self):
         return self._initialized
 
-    def open(self, *args: Any, **kwargs: Any) -> None:
+    def open(self, *args: Any, silence_warnings=False, **kwargs: Any) -> None:
         """Initialize the singleton with three values."""
         if self.is_running():
-            warnings.warn(
-                "Server already open.",
-                RuntimeWarning,
-                stacklevel=2,
-            )
+            if not silence_warnings:
+                warnings.warn(
+                    "Server already open.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
             return
         coroutine = self._server(*args, **kwargs)
-        self._thread: Thread = Thread(target=asyncio.run, args=(coroutine,))
+        self._thread: Thread = Thread(
+            target=asyncio.run,
+            args=(coroutine,),
+            daemon=True,
+        )
         self._task_queue: Queue[Task | None] = Queue()
         self._return_queue: Queue[Any] = Queue()
         self._thread.start()
         self._initialized = True
+        close = partial(self.close, silence_warnings=True)
+        atexit.register(close)
 
-    def close(self):
+    def close(self, *, silence_warnings=False):
         """Reset the singleton back to an uninitialized state."""
         if not self.is_running():
-            warnings.warn(
-                "Server already closed.",
-                RuntimeWarning,
-                stacklevel=2,
-            )
+            if not silence_warnings:
+                warnings.warn(
+                    "Server already closed.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
             return
         self._task_queue.put(None)
         self._thread.join()

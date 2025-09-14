@@ -1,13 +1,37 @@
+from __future__ import annotations
+
 from pathlib import Path
+from urllib.parse import urlparse
+from urllib.request import url2pathname
 
 import logistro
 
 _logger = logistro.getLogger(__name__)
 
 DEFAULT_PLOTLY = "https://cdn.plot.ly/plotly-2.35.2.js"
-DEFAULT_MATHJAX = "https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"
+DEFAULT_MATHJAX = (
+    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"
+    "?config=TeX-AMS-MML_SVG"
+)
 
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
+
+
+def _ensure_path(path: Path | str | tuple[str | Path, str]) -> None:
+    if isinstance(path, tuple):
+        path = path[0]
+    _logger.debug(f"Ensuring path {path!s}")
+    parsed = urlparse(str(path))
+    _logger.debug(f"Parsed file path: {parsed}")
+    if parsed.scheme.startswith("http"):  # is url
+        return
+    elif parsed.scheme.startswith("file"):
+        if (_p := Path(url2pathname(parsed.path))).exists():
+            return
+        _logger.error(f"File parsed to: {_p}")
+    elif Path(path).exists():
+        return
+    raise FileNotFoundError(f"{path!s} does not exist.")
 
 
 class PageGenerator:
@@ -35,26 +59,40 @@ class PageGenerator:
     footer = f"""
         <script src="{KJS_PATH.as_uri()}"></script>
     </head>
-    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image"><img></body>
+    <body style="{{margin: 0; padding: 0;}}"><img id="kaleido-image" /></body>
 </html>
 """
     """The footer is the HTML that always goes on the bottom. Rarely needs changing."""
 
-    def __init__(self, *, plotly=None, mathjax=None, others=None, force_cdn=False):
+    def __init__(  # noqa: C901
+        self,
+        *,
+        plotly: None | Path | str | tuple[Path | str, str] = None,
+        mathjax: None | Path | str | bool | tuple[Path | str, str] = None,
+        others: None | list[Path | str | tuple[Path | str, str]] = None,
+        force_cdn: bool = False,
+    ):
         """
         Create a PageGenerator.
 
         Args:
-            plotly: the url to the plotly script to use. The default is the one
-            plotly.py is using, if not installed, it uses the constant declared.
-            mathjax: the url to the mathjax script. By default is constant above.
-            Can be set to false to turn off.
-            others: a list of other script urls to include. Usually strings, but can be
-            (str, str) where its (url, encoding).
-            force_cdn: (default False) Don't use plotly import, use CDN
+            plotly: The url to the plotly.js to use. Defaults to plotly.js
+                present in plotly.py, if installed. Otherwise fallback to
+                value of DEFAULT_PLOTLY.
+            mathjax: The url to the mathjax script. Defaults to values of
+                DEFAULT_MATHJAX. Can be set to false to disable mathjax.
+            others: A list of other script urls to include. Usually strings, but
+                can be (str, str) where it's (url, encoding).
+            force_cdn: Set True to force CDN use, defaults to False.
 
         """
         self._scripts = []
+        if mathjax is not False:
+            if mathjax is None or mathjax is True:
+                mathjax = DEFAULT_MATHJAX
+            elif mathjax:
+                _ensure_path(mathjax)
+            self._scripts.append(mathjax)
         if force_cdn:
             plotly = (DEFAULT_PLOTLY, "utf-8")
         elif not plotly:
@@ -80,15 +118,14 @@ class PageGenerator:
             except ImportError:
                 _logger.info("Plotly not installed. Using CDN.")
                 plotly = (DEFAULT_PLOTLY, "utf-8")
-        elif isinstance(plotly, str):
+        elif isinstance(plotly, (str, Path)):
+            _ensure_path(plotly)
             plotly = (plotly, "utf-8")
         _logger.debug(f"Plotly script: {plotly}")
         self._scripts.append(plotly)
-        if mathjax is not False:
-            if not mathjax:
-                mathjax = DEFAULT_MATHJAX
-            self._scripts.append(mathjax)
         if others:
+            for o in others:
+                _ensure_path(o)
             self._scripts.extend(others)
 
     def generate_index(self, path=None):
@@ -103,8 +140,8 @@ class PageGenerator:
         script_tag = '\n        <script src="%s"></script>'
         script_tag_charset = '\n        <script src="%s" charset="%s"></script>'
         for script in self._scripts:
-            if isinstance(script, str):
-                page += script_tag % script
+            if isinstance(script, (str, Path)):
+                page += script_tag % str(script)
             else:
                 page += script_tag_charset % script
         page += self.footer
