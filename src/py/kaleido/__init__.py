@@ -6,11 +6,23 @@ Please see the README.md for more information and a quickstart.
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from choreographer.cli import get_chrome, get_chrome_sync
 
 from . import _sync_server
 from ._page_generator import PageGenerator
 from .kaleido import Kaleido
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterable, Iterable
+    from pathlib import Path
+    from typing import Any, TypeVar, Union
+
+    from ._fig_tools import Figurish, LayoutOpts
+
+    T = TypeVar("T")
+    AnyIterable = Union[AsyncIterable[T], Iterable[T]]
 
 __all__ = [
     "Kaleido",
@@ -30,7 +42,7 @@ __all__ = [
 _global_server = _sync_server.GlobalKaleidoServer()
 
 
-def start_sync_server(*args, silence_warnings=False, **kwargs):
+def start_sync_server(*args: Any, silence_warnings: bool = False, **kwargs: Any):
     """
     Start a kaleido server which will process all sync generation requests.
 
@@ -50,7 +62,7 @@ def start_sync_server(*args, silence_warnings=False, **kwargs):
     _global_server.open(*args, silence_warnings=silence_warnings, **kwargs)
 
 
-def stop_sync_server(*, silence_warnings=False):
+def stop_sync_server(*, silence_warnings: bool = False):
     """
     Stop the kaleido server. It can be restarted. Warns if not started.
 
@@ -63,12 +75,12 @@ def stop_sync_server(*, silence_warnings=False):
 
 
 async def calc_fig(
-    fig,
-    path=None,
-    opts=None,
+    fig: Figurish,
+    path: str | None | Path = None,
+    opts: LayoutOpts | None = None,
     *,
-    topojson=None,
-    kopts=None,
+    topojson: str | None = None,
+    kopts: dict[str, Any] | None = None,
 ):
     """
     Return binary for plotly figure.
@@ -85,7 +97,7 @@ async def calc_fig(
 
     """
     kopts = kopts or {}
-    kopts["n"] = 1
+    kopts["n"] = 1  # should we force this?
     async with Kaleido(**kopts) as k:
         return await k.calc_fig(
             fig,
@@ -95,15 +107,14 @@ async def calc_fig(
         )
 
 
-async def write_fig(  # noqa: PLR0913 (too many args, complexity)
-    fig,
-    path=None,
-    opts=None,
+async def write_fig(
+    fig: Figurish,
+    path: str | None | Path = None,
+    opts: LayoutOpts | None = None,
     *,
-    topojson=None,
-    error_log=None,
-    profiler=None,
-    kopts=None,
+    topojson: str | None = None,
+    kopts: dict[str, Any] | None = None,
+    **kwargs,
 ):
     """
     Write a plotly figure(s) to a file.
@@ -123,17 +134,15 @@ async def write_fig(  # noqa: PLR0913 (too many args, complexity)
             path=path,
             opts=opts,
             topojson=topojson,
-            error_log=error_log,
-            profiler=profiler,
+            **kwargs,
         )
 
 
 async def write_fig_from_object(
-    generator,
+    generator: AnyIterable,  # this could be more specific with []
     *,
-    error_log=None,
-    profiler=None,
-    kopts=None,
+    kopts: dict[str, Any] | None = None,
+    **kwargs,
 ):
     """
     Write a plotly figure(s) to a file.
@@ -150,12 +159,11 @@ async def write_fig_from_object(
     async with Kaleido(**(kopts or {})) as k:
         await k.write_fig_from_object(
             generator,
-            error_log=error_log,
-            profiler=profiler,
+            **kwargs,
         )
 
 
-def calc_fig_sync(*args, **kwargs):
+def calc_fig_sync(*args: Any, **kwargs: Any):
     """Call `calc_fig` but blocking."""
     if _global_server.is_running():
         return _global_server.call_function("calc_fig", *args, **kwargs)
@@ -163,7 +171,7 @@ def calc_fig_sync(*args, **kwargs):
         return _sync_server.oneshot_async_run(calc_fig, args=args, kwargs=kwargs)
 
 
-def write_fig_sync(*args, **kwargs):
+def write_fig_sync(*args: Any, **kwargs: Any):
     """Call `write_fig` but blocking."""
     if _global_server.is_running():
         _global_server.call_function("write_fig", *args, **kwargs)
@@ -171,7 +179,7 @@ def write_fig_sync(*args, **kwargs):
         _sync_server.oneshot_async_run(write_fig, args=args, kwargs=kwargs)
 
 
-def write_fig_from_object_sync(*args, **kwargs):
+def write_fig_from_object_sync(*args: Any, **kwargs: Any):
     """Call `write_fig_from_object` but blocking."""
     if _global_server.is_running():
         _global_server.call_function("write_fig_from_object", *args, **kwargs)
