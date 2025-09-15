@@ -50,10 +50,11 @@ class Kaleido(choreo.Browser):
     also be used like:
 
     ```
-    k = Kaleido(...)
-    k = await Kaleido.open()
-    ... # do stuff
-    k.close()
+    k = Kaleido()
+    await k.open()
+    # Use the Kaleido instance
+    await k.write_fig(...)
+    await k.close()
     ```
     """
 
