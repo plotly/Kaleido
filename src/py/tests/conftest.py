@@ -20,7 +20,7 @@ settings.register_profile(
 )
 
 is_ci = os.getenv("GITHUB_ACTIONS") == "true" or os.getenv("CI") == "true"
-if is_ci and platform.system in {"Windows", "Darwin"}:
+if is_ci and platform.system() in {"Windows", "Darwin"}:
     settings.load_profile("ci")
 
 
