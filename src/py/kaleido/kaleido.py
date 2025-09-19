@@ -339,7 +339,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureDict],
+        generator: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: bool = False,
         _write: Literal[False],
@@ -348,7 +348,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureDict],
+        generator: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: Literal[True],
         _write: Literal[True] = True,
@@ -357,7 +357,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureDict],
+        generator: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: Literal[False] = False,
         _write: Literal[True] = True,
@@ -366,7 +366,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: AnyIterable[FigureDict],
+        generator: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: bool,
         _write: Literal[True] = True,

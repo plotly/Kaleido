@@ -139,7 +139,7 @@ async def write_fig(
 
 
 async def write_fig_from_object(
-    generator: AnyIterable[FigureDict],
+    generator: FigureDict | AnyIterable[FigureDict],
     *,
     kopts: dict[str, Any] | None = None,
     **kwargs,  # TODO(AJP): what might we pass here?
