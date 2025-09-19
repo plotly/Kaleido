@@ -331,7 +331,7 @@ class Kaleido(choreo.Browser):
                 spec["data"],
                 spec["format"],  # should just take spec
             )
-            full_path.touch()
+            full_path.touch()  # claim our name
 
         tab = await self._get_kaleido_tab()
 
@@ -350,7 +350,7 @@ class Kaleido(choreo.Browser):
                 return img_bytes
         except:
             if _write:
-                full_path.unlink()
+                full_path.unlink()  # failure, no write
             raise
         finally:
             await self._return_kaleido_tab(tab)
