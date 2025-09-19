@@ -340,7 +340,7 @@ async def test_unreasonable_timeout(simple_figure_with_bytes):
     opts = simple_figure_with_bytes["opts"]
 
     # Use an infinitely small timeout
-    async with Kaleido(timeout=0.000001) as k:
+    async with Kaleido(timeout=0.0001) as k:
         with pytest.raises((asyncio.TimeoutError, TimeoutError)):
             await k.calc_fig(fig, opts=opts)
 
