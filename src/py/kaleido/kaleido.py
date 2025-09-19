@@ -312,10 +312,24 @@ class Kaleido(choreo.Browser):
 
     async def _render_task(
         self,
-        spec: _fig_tools.Spec,
-        write_path: Path | None,
+        fig_arg: FigureDict,
+        *,
+        _write: bool,
         **kwargs: Any,
     ) -> None | bytes:
+        spec = _fig_tools.coerce_for_js(
+            fig_arg.get("fig"),
+            fig_arg.get("path", None),
+            fig_arg.get("opts", None),
+        )
+
+        if _write:
+            full_path = _path_tools.determine_path(
+                fig_arg.get("path", None),
+                spec["data"],
+                spec["format"],  # should just take spec
+            )
+
         tab = await self._get_kaleido_tab()
 
         try:
@@ -326,8 +340,8 @@ class Kaleido(choreo.Browser):
                 ),
                 self._timeout,
             )
-            if write_path:
-                await _utils.to_thread(write_path.write_bytes, img_bytes)
+            if _write:
+                await _utils.to_thread(full_path.write_bytes, img_bytes)
                 return None
             else:
                 return img_bytes
@@ -339,7 +353,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        fig_dicts: FigureDict | AnyIterable[FigureDict],
+        fig_dicts: FigureDict,
         *,
         cancel_on_error: bool = False,
         _write: Literal[False],
@@ -393,23 +407,11 @@ class Kaleido(choreo.Browser):
 
         try:
             async for fig_arg in _utils.ensure_async_iter(fig_dicts):
-                spec = _fig_tools.coerce_for_js(
-                    fig_arg.get("fig"),
-                    fig_arg.get("path", None),
-                    fig_arg.get("opts", None),
-                )
-
-                full_path = _path_tools.determine_path(
-                    fig_arg.get("path", None),
-                    spec["data"],
-                    spec["format"],  # should just take spec
-                )
-
                 t: asyncio.Task = asyncio.create_task(
                     self._render_task(
-                        spec=spec,
-                        write_path=full_path if _write else None,  # bwrds - compat!
+                        fig_arg=fig_arg,
                         topojson=fig_arg.get("topojson"),
+                        _write=_write,  # backwards compatibility
                     ),
                 )
                 tasks.add(t)
