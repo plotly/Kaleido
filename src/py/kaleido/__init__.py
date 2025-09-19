@@ -139,13 +139,13 @@ async def write_fig(
 
 
 async def write_fig_from_object(
-    generator: FigureDict | AnyIterable[FigureDict],
+    fig_dicts: FigureDict | AnyIterable[FigureDict],
     *,
     kopts: dict[str, Any] | None = None,
     **kwargs,  # TODO(AJP): what might we pass here?
 ):
     """
-    Write a plotly figure(s) to a file specified by a dictionary generator.
+    Write a plotly figure(s) to a file specified by a dictionary or iterable of.
 
     A convenience wrapper for `Kaleido.write_fig_from_object()` which starts a
     `Kaleido` and executes the `write_fig_from_object()`
@@ -157,7 +157,7 @@ async def write_fig_from_object(
     """
     async with Kaleido(**(kopts or {})) as k:
         await k.write_fig_from_object(
-            generator,
+            fig_dicts,
             **kwargs,
         )
 

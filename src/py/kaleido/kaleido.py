@@ -39,7 +39,7 @@ if TYPE_CHECKING:
     Listish: TypeAlias = Union[Tuple[T], List[T], ValuesView[T]]
 
     class FigureDict(TypedDict):
-        """The type a generator returns for `write_fig_from_object`."""
+        """The type a fig_dicts returns for `write_fig_from_object`."""
 
         fig: Required[_fig_tools.Figurish]
         path: NotRequired[None | str | Path]
@@ -339,7 +339,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: FigureDict | AnyIterable[FigureDict],
+        fig_dicts: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: bool = False,
         _write: Literal[False],
@@ -348,7 +348,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: FigureDict | AnyIterable[FigureDict],
+        fig_dicts: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: Literal[True],
         _write: Literal[True] = True,
@@ -357,7 +357,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: FigureDict | AnyIterable[FigureDict],
+        fig_dicts: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: Literal[False] = False,
         _write: Literal[True] = True,
@@ -366,7 +366,7 @@ class Kaleido(choreo.Browser):
     @overload
     async def write_fig_from_object(
         self,
-        generator: FigureDict | AnyIterable[FigureDict],
+        fig_dicts: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error: bool,
         _write: Literal[True] = True,
@@ -374,7 +374,7 @@ class Kaleido(choreo.Browser):
 
     async def write_fig_from_object(
         self,
-        generator: FigureDict | AnyIterable[FigureDict],
+        fig_dicts: FigureDict | AnyIterable[FigureDict],
         *,
         cancel_on_error=False,
         _write: bool = True,  # backwards compatibility!
@@ -383,8 +383,8 @@ class Kaleido(choreo.Browser):
         if not _write:
             cancel_on_error = True
 
-        if _is_figuredict(generator):
-            generator = [generator]
+        if _is_figuredict(fig_dicts):
+            fig_dicts = [fig_dicts]
 
         if main_task := asyncio.current_task():
             self._main_render_coroutines.add(main_task)
@@ -392,7 +392,7 @@ class Kaleido(choreo.Browser):
         tasks: set[asyncio.Task] = set()
 
         try:
-            async for fig_arg in _utils.ensure_async_iter(generator):
+            async for fig_arg in _utils.ensure_async_iter(fig_dicts):
                 spec = _fig_tools.coerce_for_js(
                     fig_arg.get("fig"),
                     fig_arg.get("path", None),
@@ -456,7 +456,7 @@ class Kaleido(choreo.Browser):
 
         generator = cast("AsyncIterable[FigureDict]", _temp_generator())
         return await self.write_fig_from_object(
-            generator=generator,
+            fig_dicts=generator,
             cancel_on_error=cancel_on_error,
         )
 
@@ -477,7 +477,7 @@ class Kaleido(choreo.Browser):
             }
 
         return await self.write_fig_from_object(
-            generator=_temp_generator(),
+            fig_dicts=_temp_generator(),
             cancel_on_error=True,
             _write=False,
         )
