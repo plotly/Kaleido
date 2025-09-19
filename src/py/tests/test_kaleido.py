@@ -117,6 +117,44 @@ async def test_write_fig_from_object_iterator(simple_figure_with_bytes, tmp_path
         )
 
 
+async def test_write_fig_from_object_return_modes(simple_figure_with_bytes, tmp_path):
+    """Test write_fig_from_object with different return schemes."""
+
+    fig_list = []
+    file_paths = []
+    for i in range(2):
+        path = tmp_path / "does_not_exist" / f"test_iter_{i}.png"
+        file_paths.append(path)
+        fig_list.append(
+            {
+                "fig": simple_figure_with_bytes["fig"],
+                "path": path,
+                "opts": simple_figure_with_bytes["opts"],
+            },
+        )
+
+    # test collecting errors
+    async with Kaleido() as k:
+        res = await k.write_fig_from_object(fig_list, cancel_on_error=False)
+    for r in res:
+        assert isinstance(r, RuntimeError)
+    assert len(res) == len(fig_list)
+
+    # test not collecting errors
+    with pytest.raises(RuntimeError):
+        async with Kaleido() as k:
+            res = await k.write_fig_from_object(fig_list, cancel_on_error=True)
+
+    # test returning
+    async with Kaleido() as k:
+        res = await k.write_fig_from_object(fig_list[0], _write=False)
+    assert res == simple_figure_with_bytes["bytes"]
+
+    # Assert that each created file matches the fixture bytes
+    for path in file_paths:
+        assert not path.exists()
+
+
 async def test_write_fig_from_object_bare_dictionary(
     simple_figure_with_bytes,
     tmp_path,
