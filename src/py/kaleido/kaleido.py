@@ -16,12 +16,6 @@ from . import _fig_tools, _path_tools, _utils
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
 
-_logger = logistro.getLogger(__name__)
-
-# Show a warning if the installed Plotly version
-# is incompatible with this version of Kaleido
-_utils.warn_incompatible_plotly()
-
 if TYPE_CHECKING:
     from types import TracebackType
     from typing import (
@@ -35,7 +29,7 @@ if TYPE_CHECKING:
         ValuesView,
     )
 
-    from typing_extensions import NotRequired, Required, TypeAlias
+    from typing_extensions import NotRequired, Required, TypeAlias, TypeGuard
 
     T = TypeVar("T")
     AnyIterable: TypeAlias = Union[Iterable[T], AsyncIterable[T]]  # not runtime
@@ -51,6 +45,26 @@ if TYPE_CHECKING:
         path: NotRequired[None | str | Path]
         opts: NotRequired[_fig_tools.LayoutOpts | None]
         topojson: NotRequired[None | str]
+
+
+def _is_figuredict(obj: Any) -> TypeGuard[FigureDict]:
+    return isinstance(obj, dict) and "fig" in obj
+
+
+_logger = logistro.getLogger(__name__)
+
+# Show a warning if the installed Plotly version
+# is incompatible with this version of Kaleido
+_utils.warn_incompatible_plotly()
+
+try:
+    from plotly.utils import PlotlyJSONEncoder  # type: ignore[import-untyped] # noqa: I001
+    from choreographer import channels
+
+    channels.register_custom_encoder(PlotlyJSONEncoder)
+    _logger.debug("Successfully registered PlotlyJSONEncoder.")
+except ImportError as e:
+    _logger.debug(f'Couldn\'t import plotly due to "{e!s}" - skipping.')
 
 
 class Kaleido(choreo.Browser):
@@ -369,7 +383,7 @@ class Kaleido(choreo.Browser):
         if not _write:
             cancel_on_error = True
 
-        if isinstance(generator, dict) and "fig" in generator:
+        if _is_figuredict(generator):
             generator = [generator]
 
         if main_task := asyncio.current_task():

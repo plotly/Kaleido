@@ -1,3 +1,15 @@
+v1.3.0
+- Significant refactor, better organization
+- `write_fig` and `_from_object` now take an additional argument:
+  `fail_on_error: bool`. If False, default True, returns a list of errors.
+- Documentation improved
+- Unused `path` argument for `calc_fig` was removed.
+
+
+v1.2.0
+- Try to use plotly JSON encoder instead of default
+
+v1.1.0
 - Add testing
 - Fix a variety of type bugs
 - Change order of browser closer to fix hang

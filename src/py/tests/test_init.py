@@ -6,8 +6,8 @@ import pytest
 
 import kaleido
 
-# Pretty complicated for basically testing a bunch of wrappers, but it works.
-# Integration tests seem more important.
+# Pretty complicated for basically testing a bunch of wrappers,
+# but it works. Integration tests seem more important.
 # I much prefer the public_api file, this set of tests can be considered
 # for deletion.
 

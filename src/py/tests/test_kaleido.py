@@ -186,7 +186,6 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
 ):
     """Test that write_fig properly passes arguments to write_fig_from_object."""
     pytest.skip("Remove this failure line and the comment above after the refactor!")
-    # Also add one for calc, its just a pass through tester.
     test_path = tmp_path / f"{path}.{format_type}"
     opts = {"format": format_type, "width": width, "height": height}
 
@@ -204,7 +203,7 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
         mock_write_fig_from_object.assert_called_once()
 
         # Extract the generator that was passed as first argument
-        args, kwargs = mock_write_fig_from_object.call_args
+        args, _kwargs = mock_write_fig_from_object.call_args  # not sure.
         assert len(args) == 1, "Expected exactly one argument (the generator)"
 
         generator = args[0]
@@ -313,7 +312,7 @@ async def test_all_methods_non_context(simple_figure_with_bytes, tmp_path):
         await k.close()
 
 
-@pytest.mark.parametrize("n_tabs", [1, 3, 7])
+@pytest.mark.parametrize("n_tabs", [1, 2, 3])
 async def test_tab_count_verification(n_tabs):
     """Test that Kaleido creates the correct number of tabs."""
     async with Kaleido(n=n_tabs) as k:

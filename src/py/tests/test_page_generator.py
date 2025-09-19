@@ -175,38 +175,35 @@ def st_mathjax(dir_path: Path):
 # Test default combinations
 @pytest.mark.order(1)
 async def test_defaults_no_plotly_available():
-    """Test defaults when plotly package is not available."""
-    if not find_spec("plotly"):
-        raise ImportError("Tests must be run with plotly installed to function")
+    """
+    Test defaults when plotly package is not available.
 
-    old_path = sys.path
-    sys.path = sys.path[:1]
-    if find_spec("plotly"):
-        raise RuntimeError(
-            "Plotly cannot be imported during this test, "
-            "as this tests default behavior while trying to import plotly. "
-            "The best solution is to make sure this test always runs first, "
-            "or if you really need to, run it separately and then skip it "
-            "in the main group.",
-        )
+    When we generate_index(), if we don't have plotly in path, we use a CDN.
+    """
+    _old_path = sys.path
+    try:
+        sys.path = []
+        _plotly_mo = sys.modules.pop("plotly", None)
 
-    # Test no imports (plotly not available)
-    no_imports = PageGenerator().generate_index()
-    scripts, encodings = get_scripts_from_html(no_imports)
+        # Test no imports (plotly not available)
+        no_imports = PageGenerator().generate_index()
+        scripts, _encodings = get_scripts_from_html(no_imports)
 
-    # Should have mathjax, plotly default, and kaleido_scopes
-    assert len(scripts) == 3  # noqa: PLR2004
-    assert scripts[0] == DEFAULT_MATHJAX
-    assert scripts[1] == DEFAULT_PLOTLY
-    assert scripts[2].endswith("kaleido_scopes.js")
-
-    sys.path = old_path
+        # Should have mathjax, plotly default, and kaleido_scopes
+        assert len(scripts) == 3  # noqa: PLR2004
+        assert scripts[0] == DEFAULT_MATHJAX
+        assert scripts[1] == DEFAULT_PLOTLY
+        assert scripts[2].endswith("kaleido_scopes.js")
+    finally:
+        sys.path = _old_path
+        if _plotly_mo:
+            sys.modules.update({"plotly": _plotly_mo})
 
 
 async def test_defaults_with_plotly_available():
     """Test defaults when plotly package is available."""
     all_defaults = PageGenerator().generate_index()
-    scripts, encodings = get_scripts_from_html(all_defaults)
+    scripts, _encodings = get_scripts_from_html(all_defaults)
 
     # Should have mathjax, plotly package data, and kaleido_scopes
     assert len(scripts) == 3  # noqa: PLR2004
@@ -234,7 +231,7 @@ async def test_force_cdn():
 async def test_mathjax_false():
     """Test that mathjax=False disables mathjax."""
     without_mathjax = PageGenerator(mathjax=False).generate_index()
-    scripts, encodings = get_scripts_from_html(without_mathjax)
+    scripts, _encodings = get_scripts_from_html(without_mathjax)
 
     assert len(scripts) == 2  # noqa: PLR2004
     assert scripts[0].endswith("package_data/plotly.min.js")
@@ -371,7 +368,7 @@ async def test_existing_file_path(temp_js_file):
     # Test with regular path
     generator = PageGenerator(plotly=str(temp_js_file))
     html = generator.generate_index()
-    scripts, encodings = get_scripts_from_html(html)
+    scripts, _encodings = get_scripts_from_html(html)
     assert len(scripts) == 3  # noqa: PLR2004
     assert scripts[0] == DEFAULT_MATHJAX
     assert scripts[1] == str(temp_js_file)
@@ -380,15 +377,11 @@ async def test_existing_file_path(temp_js_file):
     # Test with file:/// protocol
     generator_uri = PageGenerator(plotly=temp_js_file.as_uri())
     html_uri = generator_uri.generate_index()
-    scripts_uri, encodings_uri = get_scripts_from_html(html_uri)
+    scripts_uri, _encodings_uri = get_scripts_from_html(html_uri)
     assert len(scripts_uri) == 3  # noqa: PLR2004
     assert scripts_uri[0] == DEFAULT_MATHJAX
     assert scripts_uri[1] == temp_js_file.as_uri()
     assert scripts_uri[2].endswith("kaleido_scopes.js")
-
-
-# Claude, please for all bottom, please make a fixture like "existing_dir"
-# and make sure we still raise an error
 
 
 async def test_nonexistent_file_path_raises_error(
@@ -467,7 +460,7 @@ async def test_http_urls_skip_file_validation():
         others=["https://nonexistent.example.com/other.js"],
     )
     html = generator.generate_index()
-    scripts, encodings = get_scripts_from_html(html)
+    scripts, _encodings = get_scripts_from_html(html)
 
     assert len(scripts) == 4  # noqa: PLR2004
     assert scripts[0] == "https://nonexistent.example.com/mathjax.js"
