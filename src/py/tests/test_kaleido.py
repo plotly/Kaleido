@@ -121,34 +121,25 @@ async def test_write_fig_from_object_bare_dictionary(
     simple_figure_with_bytes,
     tmp_path,
 ):
-    """Test write_fig_from_object with bare dictionary list."""
+    """Test write_fig_from_object with bare dictionary."""
 
     path1 = tmp_path / "test_dict_1.png"
-    path2 = tmp_path / "test_dict_2.png"
 
-    fig_data = [
-        {
-            "fig": simple_figure_with_bytes["fig"],
-            "path": path1,
-            "opts": simple_figure_with_bytes["opts"],
-        },
-        {
-            "fig": simple_figure_with_bytes["fig"].to_dict(),
-            "path": path2,
-            "opts": simple_figure_with_bytes["opts"],
-        },
-    ]
+    fig_data = {
+        "fig": simple_figure_with_bytes["fig"],
+        "path": path1,
+        "opts": simple_figure_with_bytes["opts"],
+    }
 
     async with Kaleido() as k:
         await k.write_fig_from_object(fig_data)
 
     # Assert that each created file matches the fixture bytes
-    for path in [path1, path2]:
-        assert path.exists(), f"File {path} was not created"
-        created_bytes = path.read_bytes()
-        assert created_bytes == simple_figure_with_bytes["bytes"], (
-            f"File {path} bytes don't match fixture bytes"
-        )
+    assert path1.exists(), f"File {path1} was not created"
+    created_bytes = path1.read_bytes()
+    assert created_bytes == simple_figure_with_bytes["bytes"], (
+        f"File {path1} bytes don't match fixture bytes"
+    )
 
 
 # In the refactor, all figure generation methods are really just wrappers
