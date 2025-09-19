@@ -9,7 +9,7 @@ from hypothesis import strategies as st
 from kaleido import Kaleido
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 async def simple_figure_with_bytes():
     """Create a simple figure with calculated bytes and PNG assertion."""
     import plotly.express as px  # noqa: PLC0415
