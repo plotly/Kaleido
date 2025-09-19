@@ -349,7 +349,8 @@ class Kaleido(choreo.Browser):
             else:
                 return img_bytes
         except:
-            full_path.unlink()
+            if _write:
+                full_path.unlink()
             raise
         finally:
             await self._return_kaleido_tab(tab)
