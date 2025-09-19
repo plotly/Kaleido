@@ -310,6 +310,8 @@ class Kaleido(choreo.Browser):
 
     #### WE'RE HERE
 
+    # this task must calculate full_path before it
+    # awaits, ie yielding control.
     async def _render_task(
         self,
         fig_arg: FigureDict,
@@ -329,6 +331,7 @@ class Kaleido(choreo.Browser):
                 spec["data"],
                 spec["format"],  # should just take spec
             )
+            full_path.touch()
 
         tab = await self._get_kaleido_tab()
 
@@ -345,7 +348,9 @@ class Kaleido(choreo.Browser):
                 return None
             else:
                 return img_bytes
-
+        except:
+            full_path.unlink()
+            raise
         finally:
             await self._return_kaleido_tab(tab)
 
@@ -415,6 +420,7 @@ class Kaleido(choreo.Browser):
                     ),
                 )
                 tasks.add(t)
+                await asyncio.sleep(0)  # this forces the added task to run
 
             res = await asyncio.gather(*tasks, return_exceptions=not cancel_on_error)
             if not _write:
