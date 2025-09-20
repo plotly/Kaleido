@@ -1,9 +1,9 @@
 import asyncio
 import re
-from unittest.mock import patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
-from hypothesis import HealthCheck, Phase, given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from kaleido import Kaleido
@@ -180,18 +180,14 @@ async def test_write_fig_from_object_bare_dictionary(
     )
 
 
-# In the refactor, all figure generation methods are really just wrappers
-# for the most flexible, tested above, generate_fig_from_object.
-# So we test that one, and then test to make sure its receiving arguments
-# properly for the other tests.
+@pytest.fixture(scope="function")
+def test_kaleido():
+    return Kaleido()
 
 
-# Uncomment these settings after refactor.
-# @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @settings(
-    phases=[Phase.generate],
-    max_examples=1,
     suppress_health_check=[HealthCheck.function_scoped_fixture],
+    max_examples=50,
 )
 @given(
     path=st.text(
@@ -204,8 +200,17 @@ async def test_write_fig_from_object_bare_dictionary(
     format_type=st.sampled_from(["png", "svg", "pdf", "html"]),
     topojson=st.one_of(st.none(), st.text(min_size=1, max_size=20)),
 )
+@pytest.mark.parametrize(
+    "cancel_on_error",
+    [
+        True,
+        False,
+    ],
+    ids=("cancel_on_error", "collect_errors"),
+)
 async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
-    simple_figure_with_bytes,
+    test_kaleido,
+    cancel_on_error,
     tmp_path,
     path,
     width,
@@ -213,32 +218,33 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
     format_type,
     topojson,
 ):
-    """Test that write_fig properly passes arguments to write_fig_from_object."""
-    pytest.skip("Remove this failure line and the comment above after the refactor!")
     test_path = tmp_path / f"{path}.{format_type}"
     opts = {"format": format_type, "width": width, "height": height}
-
+    fig = {"data": "test"}
     # Mock write_fig_from_object to capture arguments
-    with patch.object(Kaleido, "write_fig_from_object") as mock_write_fig_from_object:
-        async with Kaleido() as k:
-            await k.write_fig(
-                simple_figure_with_bytes["fig"],
-                path=test_path,
-                opts=opts,
-                topojson=topojson,
-            )
-
+    with patch.object(
+        Kaleido,
+        "write_fig_from_object",
+        new=AsyncMock(return_value=[]),
+    ) as mock_write_fig_from_object:
+        await test_kaleido.write_fig(
+            fig,
+            path=test_path,
+            opts=opts,
+            topojson=topojson,
+            cancel_on_error=cancel_on_error,
+        )
         # Verify write_fig_from_object was called
         mock_write_fig_from_object.assert_called_once()
 
         # Extract the generator that was passed as first argument
-        args, _kwargs = mock_write_fig_from_object.call_args  # not sure.
-        assert len(args) == 1, "Expected exactly one argument (the generator)"
+        _, kwargs = mock_write_fig_from_object.call_args  # not sure.
 
-        generator = args[0]
+        generator = kwargs["fig_dicts"]
+        assert kwargs["cancel_on_error"] == cancel_on_error
 
         # Convert generator to list to inspect its contents
-        generated_args_list = list(generator)
+        generated_args_list = [v async for v in generator]
         assert len(generated_args_list) == 1, (
             "Expected generator to yield exactly one item"
         )
@@ -252,9 +258,7 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
         assert "topojson" in generated_args, "Generated args should contain 'topojson'"
 
         # Check that the values match
-        assert generated_args["fig"] == simple_figure_with_bytes["fig"], (
-            "Figure should match"
-        )
+        assert generated_args["fig"] == fig, "Figure should match"
         assert str(generated_args["path"]) == str(test_path), "Path should match"
         assert generated_args["opts"] == opts, "Options should match"
         assert generated_args["topojson"] == topojson, "Topojson should match"

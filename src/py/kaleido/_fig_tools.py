@@ -60,6 +60,7 @@ SUPPORTED_FORMATS: tuple[FormatString, ...] = (
 
 # validation function
 def is_figurish(o: Any) -> TypeGuard[Figurish]:
+    # so if data isn't in the dict things get weird.
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
     if not valid:
         _logger.debug(
