@@ -129,7 +129,7 @@ async def write_fig(
 
     """
     async with Kaleido(**(kopts or {})) as k:
-        await k.write_fig(
+        return await k.write_fig(
             fig,
             path=path,
             opts=opts,
@@ -156,7 +156,7 @@ async def write_fig_from_object(
 
     """
     async with Kaleido(**(kopts or {})) as k:
-        await k.write_fig_from_object(
+        return await k.write_fig_from_object(
             fig_dicts,
             **kwargs,
         )
@@ -173,14 +173,18 @@ def calc_fig_sync(*args: Any, **kwargs: Any):
 def write_fig_sync(*args: Any, **kwargs: Any):
     """Call `write_fig` but blocking."""
     if _global_server.is_running():
-        _global_server.call_function("write_fig", *args, **kwargs)
+        return _global_server.call_function("write_fig", *args, **kwargs)
     else:
-        _sync_server.oneshot_async_run(write_fig, args=args, kwargs=kwargs)
+        return _sync_server.oneshot_async_run(write_fig, args=args, kwargs=kwargs)
 
 
 def write_fig_from_object_sync(*args: Any, **kwargs: Any):
     """Call `write_fig_from_object` but blocking."""
     if _global_server.is_running():
-        _global_server.call_function("write_fig_from_object", *args, **kwargs)
+        return _global_server.call_function("write_fig_from_object", *args, **kwargs)
     else:
-        _sync_server.oneshot_async_run(write_fig_from_object, args=args, kwargs=kwargs)
+        return _sync_server.oneshot_async_run(
+            write_fig_from_object,
+            args=args,
+            kwargs=kwargs,
+        )
