@@ -30,7 +30,12 @@ async def test_async_api_functions(simple_figure, tmp_path):
 
     # Test write_fig and compare with calc_fig output
     write_fig_output = tmp_path / "test_write_fig.png"
-    await kaleido.write_fig(simple_figure, path=str(write_fig_output))
+    res = await kaleido.write_fig(
+        simple_figure,
+        path=str(write_fig_output),
+        cancel_on_error=True,
+    )
+    assert res is None
 
     with Path(write_fig_output).open("rb") as f:  # noqa: ASYNC230
         write_fig_bytes = f.read()
@@ -40,7 +45,7 @@ async def test_async_api_functions(simple_figure, tmp_path):
 
     # Test write_fig_from_object and compare with calc_fig output
     write_fig_from_object_output = tmp_path / "test_write_fig_from_object.png"
-    await kaleido.write_fig_from_object(
+    res = await kaleido.write_fig_from_object(
         [
             {
                 "fig": simple_figure,
@@ -48,6 +53,7 @@ async def test_async_api_functions(simple_figure, tmp_path):
             },
         ],
     )
+    assert res == ()
 
     with Path(write_fig_from_object_output).open("rb") as f:  # noqa: ASYNC230
         write_fig_from_object_bytes = f.read()
@@ -61,7 +67,7 @@ async def test_async_api_functions(simple_figure, tmp_path):
     assert write_fig_bytes == write_fig_from_object_bytes == calc_result
 
 
-async def test_sync_api_functions(simple_figure, tmp_path):
+async def test_sync_api_functions(simple_figure, tmp_path):  # noqa: PLR0915
     """Test sync wrappers with cross-validation."""
     # Get expected bytes from calc_fig for comparison
     expected_bytes = await kaleido.calc_fig(simple_figure)
@@ -88,7 +94,12 @@ async def test_sync_api_functions(simple_figure, tmp_path):
             assert calc_result_1 == expected_bytes
 
             # Test write_fig_sync
-            kaleido.write_fig_sync(simple_figure, path=str(write_fig_output_1))
+            res = kaleido.write_fig_sync(
+                simple_figure,
+                path=str(write_fig_output_1),
+                cancel_on_error=True,
+            )
+            assert res is None
 
             with Path(write_fig_output_1).open("rb") as f:  # noqa: ASYNC230
                 write_fig_bytes_1 = f.read()
@@ -96,7 +107,7 @@ async def test_sync_api_functions(simple_figure, tmp_path):
             assert write_fig_bytes_1.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
 
             # Test write_fig_from_object_sync
-            kaleido.write_fig_from_object_sync(
+            res = kaleido.write_fig_from_object_sync(
                 [
                     {
                         "fig": simple_figure,
@@ -104,6 +115,7 @@ async def test_sync_api_functions(simple_figure, tmp_path):
                     },
                 ],
             )
+            assert res == ()
 
             with Path(write_fig_from_object_output_1).open("rb") as f:  # noqa: ASYNC230
                 from_object_bytes_1 = f.read()
@@ -140,7 +152,8 @@ async def test_sync_api_functions(simple_figure, tmp_path):
         assert calc_result_2 == expected_bytes
 
         # Test write_fig_sync
-        kaleido.write_fig_sync(simple_figure, path=str(write_fig_output_2))
+        res = kaleido.write_fig_sync(simple_figure, path=str(write_fig_output_2))
+        assert res == ()
 
         with Path(write_fig_output_2).open("rb") as f:  # noqa: ASYNC230
             write_fig_bytes_2 = f.read()
@@ -148,14 +161,16 @@ async def test_sync_api_functions(simple_figure, tmp_path):
         assert write_fig_bytes_2.startswith(b"\x89PNG\r\n\x1a\n"), "Not a PNG file"
 
         # Test write_fig_from_object_sync
-        kaleido.write_fig_from_object_sync(
+        res = kaleido.write_fig_from_object_sync(
             [
                 {
                     "fig": simple_figure,
                     "path": write_fig_from_object_output_2,
                 },
             ],
+            cancel_on_error=True,
         )
+        assert res is None
 
         with Path(write_fig_from_object_output_2).open("rb") as f:  # noqa: ASYNC230
             from_object_bytes_2 = f.read()
