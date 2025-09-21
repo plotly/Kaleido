@@ -6,10 +6,8 @@ import pytest
 
 import kaleido
 
-# Pretty complicated for basically testing a bunch of wrappers,
-# but it works. Integration tests seem more important.
-# I much prefer the public_api file, this set of tests can be considered
-# for deletion.
+# Just tests wrapping, but in a way tests internals.
+# These are better done as part of integration tests.
 
 
 @pytest.fixture
