@@ -185,7 +185,7 @@ async def test_write_fig_from_object_bare_dictionary(
 
 
 @pytest.fixture(scope="function")
-def test_kaleido():
+def test_kaleido():  # speed up hypothesis test using a function fixture
     return Kaleido()
 
 
@@ -264,6 +264,65 @@ async def test_write_fig_argument_passthrough(  #  noqa: PLR0913
         # Check that the values match
         assert generated_args["fig"] == fig, "Figure should match"
         assert str(generated_args["path"]) == str(test_path), "Path should match"
+        assert generated_args["opts"] == opts, "Options should match"
+        assert generated_args["topojson"] == topojson, "Topojson should match"
+
+
+@settings(
+    suppress_health_check=[HealthCheck.function_scoped_fixture],
+    max_examples=50,
+)
+@given(
+    width=st.integers(min_value=100, max_value=2000),
+    height=st.integers(min_value=100, max_value=2000),
+    format_type=st.sampled_from(["png", "svg", "pdf", "html"]),
+    topojson=st.one_of(st.none(), st.text(min_size=1, max_size=20)),
+)
+async def test_calc_fig_argument_passthrough(
+    test_kaleido,
+    width,
+    height,
+    format_type,
+    topojson,
+):
+    opts = {"format": format_type, "width": width, "height": height}
+    fig = {"data": "test"}
+    # Mock write_fig_from_object to capture arguments
+    with patch.object(
+        Kaleido,
+        "write_fig_from_object",
+        new=AsyncMock(return_value=[]),
+    ) as mock_write_fig_from_object:
+        await test_kaleido.calc_fig(
+            fig,
+            opts=opts,
+            topojson=topojson,
+        )
+        # Verify write_fig_from_object was called
+        mock_write_fig_from_object.assert_called_once()
+
+        # Extract the generator that was passed as first argument
+        _, kwargs = mock_write_fig_from_object.call_args  # not sure.
+
+        generator = kwargs["fig_dicts"]
+        assert kwargs["cancel_on_error"] is True
+        assert kwargs["_write"] is False
+
+        # Convert generator to list to inspect its contents
+        generated_args_list = [v async for v in generator]
+        assert len(generated_args_list) == 1, (
+            "Expected generator to yield exactly one item"
+        )
+
+        generated_args = generated_args_list[0]
+
+        # Validate that the generated arguments match what we passed to write_fig
+        assert "fig" in generated_args, "Generated args should contain 'fig'"
+        assert "opts" in generated_args, "Generated args should contain 'opts'"
+        assert "topojson" in generated_args, "Generated args should contain 'topojson'"
+
+        # Check that the values match
+        assert generated_args["fig"] == fig, "Figure should match"
         assert generated_args["opts"] == opts, "Options should match"
         assert generated_args["topojson"] == topojson, "Topojson should match"
 
