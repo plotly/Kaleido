@@ -138,26 +138,13 @@ class _KaleidoTab:
         )
         _raise_error(result)
 
-        # TODO(AJP): better define these error mechanics, is this a devtools
-        # function or what
-        # upon implementation of error, might not be necessary
-        # to do these go-lang/c style returns
-        # but we have to collect and associate
-        # with the gather + profile
-        # None-non return values are a problem
-        # In general, need to better understand stuff here
-
         _logger.debug2(f"Result of function call: {result}")
-        js_response, error = _dtools.check_kaleido_js_response(result)
-        if error:
-            raise error
+        js_response = _dtools.check_kaleido_js_response(result)
 
         if (response_format := js_response.get("format")) == "pdf":
-            img_raw, error = await _dtools.print_pdf(self.tab)
+            img_raw = await _dtools.print_pdf(self.tab)
         else:
-            img_raw = js_response.get("result")  # type: ignore[assignment]
-        if error:
-            raise error
+            img_raw = js_response["result"]
 
         if response_format not in _TEXT_FORMATS:
             return base64.b64decode(img_raw)

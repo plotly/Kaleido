@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import logistro
 
-from ._errors import JavascriptError, KaleidoError, _get_error, _raise_error
+from ._errors import KaleidoError, _raise_error
 
 if TYPE_CHECKING:
     from typing import Any
@@ -75,11 +75,8 @@ async def exec_js_fn(
 
 def check_kaleido_js_response(
     response,
-) -> tuple[
-    dict,
-    Exception | None,
-]:
-    # TODO(AJP) provoke a js error and return js error
+) -> dict:
+    _raise_error(response)
     js_response = json.loads(
         response.get(
             "result",
@@ -93,23 +90,24 @@ def check_kaleido_js_response(
             "value",
         ),
     )
-    if not js_response:  # not loved, neither {}
-        return {}, RuntimeError(
-            f"JS Response not understood: {response}",
+    if not js_response:
+        raise RuntimeError(
+            f"Javascript response not understood: {response}",
         )
+    # NOTE: Why above "JavascriptError"
+    # This is an error in extracting a response when we expected javascript.
+    # If its an actual javascript error, the response will be coherent, and
+    # _raise_error above will find it.
 
     if js_response["code"] != 0:
-        return {}, KaleidoError(js_response["code"], js_response["message"])
+        raise KaleidoError(js_response["code"], js_response["message"])
 
-    return js_response, None
+    return js_response
 
 
 async def print_pdf(
     tab: choreographer.Tab,
-) -> tuple[
-    str,
-    Exception | None,
-]:
+) -> str:
     pdf_params = {
         "printBackground": True,
         "marginTop": 0.1,
@@ -123,7 +121,5 @@ async def print_pdf(
         "Page.printToPDF",
         params=pdf_params,
     )
-    e = _get_error(pdf_response)
-    if e:
-        return "", e
-    return pdf_response.get("result", {}).get("data"), None
+    _raise_error(pdf_response)
+    return pdf_response.get("result", {}).get("data")  # Check for None?
