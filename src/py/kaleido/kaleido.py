@@ -101,15 +101,14 @@ class Kaleido(choreo.Browser):
 
     ### KALEIDO LIFECYCLE FUNCTIONS ###
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
-        *args: Any,  # TODO(AJP): does choreographer take args?
+        # *args: Any, force named vars for all choreographer passthrough
         n: int = 1,
         timeout: int | None = 90,
         page_generator: None | PageGenerator | str | Path = None,
         plotlyjs: str | Path | None = None,  # TODO(AJP): with page generator
         mathjax: str | Path | None = None,  # TODO(AJP): with page generator?
-        stepper: bool = False,
         **kwargs: Any,
     ) -> None:
         """
@@ -142,17 +141,12 @@ class Kaleido(choreo.Browser):
                 disabled. Defaults to None- which means to use version 2.35 via
                 CDN.
 
-            stepper (bool, optional):
-                A diagnostic tool that will ask the user to press enter between
-                rendering each image. Only useful if also used with
-                `headless=False`. See below. Defaults to False.
-
             **kwargs (Any):
                 Additional keyword arguments passed through to the underlying
-                Choreographer.browser constructor. Notable options include,
+                Choreographer.browser constructor. Notable options include
                 `headless=False` (show window), `enable_sandbox=True` (turn on
                 sandboxing), and `enable_gpu=True` which will allow use of the
-                GPU. The defaults for these options are True, False, False
+                GPU. The defaults for these options are True, False, and False
                 respectively.
 
         """
@@ -166,7 +160,6 @@ class Kaleido(choreo.Browser):
         page = page_generator
         self._timeout = timeout
         self._n = n
-        self._stepper = stepper
         self._plotlyjs = plotlyjs
         self._mathjax = mathjax
 
@@ -174,14 +167,14 @@ class Kaleido(choreo.Browser):
         _logger.debug(f"Timeout: {self._timeout}")
 
         try:
-            super().__init__(*args, **kwargs)
+            super().__init__(**kwargs)
         except ChromeNotFoundError:
             raise ChromeNotFoundError(
                 "Kaleido v1 and later requires Chrome to be installed. "
                 "To install Chrome, use the CLI command `kaleido_get_chrome`, "
                 "or from Python, use either `await kaleido.get_chrome()` "
                 "or `kaleido.get_chrome_sync()`.",
-            ) from None  # overwriting the error entirely.
+            ) from None  # overwriting the error entirely. (diagnostics)
 
         # save this for open() because it requires close()
         self._saved_page_arg = page
@@ -226,8 +219,7 @@ class Kaleido(choreo.Browser):
             _logger.debug2(f"Subscribing * to tab: {tab}.")
             tab.subscribe("*", _utils.event_printer(f"tab-{i!s}: Event Dump:"))
 
-        kaleido_tabs = [_KaleidoTab(tab, _stepper=self._stepper) for tab in tabs]
-        # TODO(AJP): why doesn't stepper use the global?
+        kaleido_tabs = [_KaleidoTab(tab) for tab in tabs]
 
         await asyncio.gather(*(tab.navigate(self._index) for tab in kaleido_tabs))
 
@@ -308,10 +300,7 @@ class Kaleido(choreo.Browser):
         await self.tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
-    #### WE'RE HERE
-
-    # this task must calculate full_path before it
-    # awaits, ie yielding control.
+    # _retuner_task MUST calculate full_path before it awaits
     async def _render_task(
         self,
         fig_arg: FigureDict,
@@ -363,6 +352,7 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error: bool = False,
         _write: Literal[False],
+        stepper: bool = False,
     ) -> bytes: ...
 
     @overload
@@ -372,6 +362,7 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error: Literal[True],
         _write: Literal[True] = True,
+        stepper: bool = False,
     ) -> None: ...
 
     @overload
@@ -381,6 +372,7 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error: Literal[False] = False,
         _write: Literal[True] = True,
+        stepper: bool = False,
     ) -> tuple[Exception]: ...
 
     @overload
@@ -390,6 +382,7 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error: bool,
         _write: Literal[True] = True,
+        stepper: bool = False,
     ) -> tuple[Exception] | None: ...
 
     async def write_fig_from_object(
@@ -398,6 +391,7 @@ class Kaleido(choreo.Browser):
         *,
         cancel_on_error=False,
         _write: bool = True,  # backwards compatibility!
+        stepper: bool = False,
     ) -> None | bytes | tuple[Exception]:
         """Temp."""
         if not _write:
@@ -418,6 +412,7 @@ class Kaleido(choreo.Browser):
                         fig_arg=fig_arg,
                         topojson=fig_arg.get("topojson"),
                         _write=_write,  # backwards compatibility
+                        stepper=stepper,
                     ),
                 )
                 tasks.add(t)
@@ -438,7 +433,7 @@ class Kaleido(choreo.Browser):
             if main_task:
                 self._main_render_coroutines.remove(main_task)
 
-    async def write_fig(
+    async def write_fig(  # noqa: PLR0913
         self,
         fig: _fig_tools.Figurish,
         path: None | Path | str = None,
@@ -446,6 +441,7 @@ class Kaleido(choreo.Browser):
         *,
         topojson: str | None = None,
         cancel_on_error: bool = False,
+        stepper: bool = False,
     ) -> tuple[Exception] | None:
         """Temp."""
         if _fig_tools.is_figurish(fig) or not isinstance(
@@ -467,6 +463,7 @@ class Kaleido(choreo.Browser):
         return await self.write_fig_from_object(
             fig_dicts=generator,
             cancel_on_error=cancel_on_error,
+            stepper=stepper,
         )
 
     async def calc_fig(
@@ -475,6 +472,7 @@ class Kaleido(choreo.Browser):
         opts: None | _fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
+        stepper: bool = False,
     ) -> bytes:
         """Temp."""
 
@@ -489,4 +487,5 @@ class Kaleido(choreo.Browser):
             fig_dicts=_temp_generator(),
             cancel_on_error=True,
             _write=False,
+            stepper=stepper,
         )

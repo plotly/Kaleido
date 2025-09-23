@@ -44,7 +44,7 @@ class _KaleidoTab:
     js_logger: _js_logger.JavascriptLogger
     """A log for recording javascript."""
 
-    def __init__(self, tab, *, _stepper=False):
+    def __init__(self, tab):
         """
         Create a new _KaleidoTab.
 
@@ -54,7 +54,6 @@ class _KaleidoTab:
         """
         self.tab = tab
         self.js_logger = _js_logger.JavascriptLogger(self.tab)
-        self._stepper = _stepper
 
     async def navigate(self, url: str | Path = ""):
         """
@@ -115,11 +114,8 @@ class _KaleidoTab:
         spec: _fig_tools.Spec,
         *,
         topojson: str | None = None,
-        **_kwargs,
+        stepper=False,
     ) -> bytes:
-        _kwargs.pop("error_log", None)  # not used at the moment
-        _kwargs.pop("profiler", None)  # not used at the moment
-
         # js script
         kaleido_js_fn = (
             r"function(spec, ...args)"
@@ -134,7 +130,7 @@ class _KaleidoTab:
             kaleido_js_fn,
             spec,
             topojson,
-            self._stepper,
+            stepper,
         )
         _raise_error(result)
 
