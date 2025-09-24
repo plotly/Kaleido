@@ -4,10 +4,7 @@ import asyncio
 import warnings
 from functools import partial
 from importlib.metadata import PackageNotFoundError, version
-from pathlib import Path
 from typing import TYPE_CHECKING
-from urllib.parse import urlparse
-from urllib.request import url2pathname
 
 import logistro
 from packaging.version import Version
@@ -105,20 +102,3 @@ def warn_incompatible_plotly():
         # Since this compatibility check is just a convenience,
         # we don't want to block the whole library if there's an issue
         _logger.info("Error while checking Plotly version.", exc_info=e)
-
-
-def get_path(p: str | Path) -> Path:
-    if isinstance(p, Path):
-        return p
-    elif not isinstance(p, str):
-        raise TypeError("Path should be a string or `pathlib.Path` object.")
-
-    parsed = urlparse(str(p))
-
-    return Path(
-        url2pathname(parsed.path) if parsed.scheme.startswith("file") else p,
-    )
-
-
-def is_httpish(p: str) -> bool:
-    return urlparse(str(p)).scheme.startswith("http")
