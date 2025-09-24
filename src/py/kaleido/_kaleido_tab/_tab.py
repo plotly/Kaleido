@@ -113,8 +113,9 @@ class _KaleidoTab:
         self,
         spec: _fig_tools.Spec,
         *,
-        topojson: str | None = None,
-        stepper=False,
+        topojson: str | None,
+        render_prof,
+        stepper,
     ) -> bytes:
         # js script
         kaleido_js_fn = (
@@ -123,7 +124,7 @@ class _KaleidoTab:
             r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
             r"}"
         )
-
+        render_prof.profile_log.tick("sending javascript")
         result = await _dtools.exec_js_fn(
             self.tab,
             self._current_js_id,
@@ -133,16 +134,23 @@ class _KaleidoTab:
             stepper,
         )
         _raise_error(result)
+        render_prof.profile_log.tick("javascript sent")
 
         _logger.debug2(f"Result of function call: {result}")
         js_response = _dtools.check_kaleido_js_response(result)
 
         if (response_format := js_response.get("format")) == "pdf":
+            render_prof.profile_log.tick("printing pdf")
             img_raw = await _dtools.print_pdf(self.tab)
+            render_prof.profile_log.tick("pdf printed")
         else:
             img_raw = js_response["result"]
 
         if response_format not in _TEXT_FORMATS:
-            return base64.b64decode(img_raw)
+            res = base64.b64decode(img_raw)
         else:
-            return str.encode(img_raw)
+            res = str.encode(img_raw)
+
+        render_prof.data_out_size = len(res)
+        render_prof.js_log = self.js_logger.log
+        return res

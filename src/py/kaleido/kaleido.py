@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections import deque
 from collections.abc import AsyncIterable, Iterable
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict, cast, overload
@@ -12,7 +13,7 @@ import logistro
 from choreographer.errors import ChromeNotFoundError
 from choreographer.utils import TmpDirectory
 
-from . import _fig_tools, _path_tools, _utils
+from . import _fig_tools, _path_tools, _profiler, _utils
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
 
@@ -155,6 +156,7 @@ class Kaleido(choreo.Browser):
         self.tabs_ready = asyncio.Queue(maxsize=0)
         self._total_tabs = 0  # tabs properly registered
         self._html_tmp_dir = None
+        self._task_profiler: deque[_profiler.WriteCall] = deque(maxlen=5)
 
         # Kaleido Config
         page = page_generator
@@ -305,8 +307,10 @@ class Kaleido(choreo.Browser):
         self,
         fig_arg: FigureDict,
         *,
+        topojson: str | None,
         _write: bool,
-        **kwargs: Any,
+        profiler: _profiler.WriteCall,
+        stepper: bool,
     ) -> None | bytes:
         spec = _fig_tools.coerce_for_js(
             fig_arg.get("fig"),
@@ -324,25 +328,40 @@ class Kaleido(choreo.Browser):
 
         tab = await self._get_kaleido_tab()
 
+        render_prof = _profiler.RenderTaskProfile(
+            spec,
+            full_path if _write else None,
+            tab.tab.target_id,
+        )
+        profiler.renders.append(render_prof)
+
         try:
             img_bytes = await asyncio.wait_for(
                 tab._calc_fig(  # noqa: SLF001
                     spec,
-                    **kwargs,
+                    topojson=topojson,
+                    render_prof=render_prof,
+                    stepper=stepper,
                 ),
                 self._timeout,
             )
             if _write:
+                render_prof.profile_log.tick("starting file write")
                 await _utils.to_thread(full_path.write_bytes, img_bytes)
+                render_prof.profile_log.tick("file write done")
                 return None
             else:
                 return img_bytes
-        except:
+        except BaseException as e:
+            render_prof.profile_log.tick("errored out")
             if _write:
                 full_path.unlink()  # failure, no write
+            render_prof.error = e
             raise
         finally:
+            render_prof.profile_log.tick("returning tab")
             await self._return_kaleido_tab(tab)
+            render_prof.profile_log.tick("tab returned")
 
     ### API ###
     @overload
@@ -400,8 +419,13 @@ class Kaleido(choreo.Browser):
         if _is_figuredict(fig_dicts):
             fig_dicts = [fig_dicts]
 
+        name = "No Name"
         if main_task := asyncio.current_task():
             self._main_render_coroutines.add(main_task)
+            name = main_task.get_name()
+
+        profiler = _profiler.WriteCall(name)
+        self._task_profiler.append(profiler)
 
         tasks: set[asyncio.Task] = set()
 
@@ -412,6 +436,7 @@ class Kaleido(choreo.Browser):
                         fig_arg=fig_arg,
                         topojson=fig_arg.get("topojson"),
                         _write=_write,  # backwards compatibility
+                        profiler=profiler,
                         stepper=stepper,
                     ),
                 )
