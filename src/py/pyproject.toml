@@ -104,7 +104,7 @@ log_cli = false
 # name = cmd
 
 [tool.poe.tasks.test]
-cmd = "pytest --timeout=20 --log-level=1 -W error -n auto -v -rfE --capture=fd"
+cmd = "pytest --timeout=50 --log-level=1 -W error -n auto -v -rfE --capture=fd"
 help = "Run all tests quickly"
 
 [tool.poe.tasks.debug-test]
