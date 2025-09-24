@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-import time
+import sys
 from random import sample
 from typing import TYPE_CHECKING
 
@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
 _logger = logistro.getLogger(__name__)
 
+# ruff: noqa: T201 we print stuff.
+
 
 def random_config(paths: list[Path]) -> list[Path]:
     """Select a portion of possible paths."""
@@ -27,7 +29,7 @@ def random_config(paths: list[Path]) -> list[Path]:
             f"Input discover {len(paths)} paths, but a sampling of"
             f"{args.random} was asked for.",
         )
-    paths = sample(paths, args.random)
+    return sample(paths, args.random)
 
 
 # Function to process the images
@@ -42,7 +44,7 @@ async def _main():
         headless=args.headless,
         timeout=args.timeout,
     ) as k:
-        await k.write_fig_from_object(
+        return await k.write_fig_from_object(
             _utils.load_figures_from_paths(paths),
             stepper=args.stepper,
             cancel_on_error=args.fail_fast,
@@ -51,11 +53,16 @@ async def _main():
 
 def main():
     """[project.scripts] expects to call a function, not a module."""
-    start = time.perf_counter()
-    try:
-        asyncio.run(_main())
-    finally:
-        elapsed = time.perf_counter() - start
+    res = asyncio.run(_main())
+    # do profile here
+    if res:
+        # better to get this from the profile
+        print(f"Number of errors: {len(res)}")
+        for i, e in enumerate(res):
+            print(str(e), file=sys.stderr)
+            if i > 10:  # noqa: PLR2004
+                print("More than 10 errors, use --profile.", file=sys.stderr)
+                break
 
 
 if __name__ == "__main__":

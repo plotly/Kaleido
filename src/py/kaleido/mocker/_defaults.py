@@ -26,6 +26,6 @@ extension = [
 cpus = multiprocessing.cpu_count()
 
 # Default Directories
-test_dir = Path(__file__).resolve().parent.parent / "integration_tests"
+test_dir = Path(__file__).resolve().parent.parent.parent / "integration_tests"
 in_dir = test_dir / "mocks"
 out_dir = test_dir / "renders"

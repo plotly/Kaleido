@@ -40,7 +40,7 @@ def load_figures_from_paths(paths: list[Path]):
     for path in paths:
         if not path.is_file():
             raise RuntimeError(f"Path {path} is not a file.")
-
+        _logger.info(f"Found file: {path!s}")
         with path.open(encoding="utf-8") as file:
             figure = orjson.loads(file.read())
             for f, w, h, s in itertools.product(  # all combos
@@ -50,7 +50,7 @@ def load_figures_from_paths(paths: list[Path]):
                 args.scale,
             ):
                 name = (
-                    f"{path.stem}.{args.format}"
+                    f"{path.stem}.{f!s}"
                     if not args.parameterize
                     else f"{path.stem!s}-{w!s}x{h!s}@{s!s}.{f!s}"
                 )
@@ -59,6 +59,7 @@ def load_figures_from_paths(paths: list[Path]):
                     "width": w,
                     "height": h,
                 }
+                _logger.info(f"Yielding spec: {name!s}")
                 yield {
                     "fig": figure,
                     "path": str(Path(args.output) / name),

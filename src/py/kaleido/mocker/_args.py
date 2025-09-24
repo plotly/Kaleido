@@ -10,14 +10,19 @@ from . import _defaults
 
 _logger = logistro.getLogger(__name__)
 
-description = """kaleido_mocker will load up json files of plotly figs and export them.
-
-If you set multiple process, -n, non-headless mode won't function well because
-chrome will actually throttle tabs or windows/visibile- unless that tab/window
-is headless.
-
-The export of the program is a json object containing information about the execution.
-"""
+description = "\n".join(  # noqa: FLY002
+    [
+        "kaleido_mocker loads & renders Plotly figures (from json or pickle).",
+        "",
+        "Furthermore, it outputs (to stdout) a JSON with performance information.",
+        "",
+        "",
+        (
+            "Note: non-headless mode often interferes with multi-process mode as "
+            "non-visible windows are often throttled"
+        ),
+    ],
+)
 
 if "--headless" in sys.argv and "--no-headless" in sys.argv:
     raise ValueError(
@@ -166,4 +171,6 @@ args_d.setdefault("format", _defaults.extension if _p else _defaults.extension[0
 
 for key in ("width", "height", "scale", "format"):
     if not isinstance(args_d[key], (list, tuple)):
-        args_d[key] = args_d[key]
+        args_d[key] = (args_d[key],)
+
+_logger.info(f"Mocker args calculated: {args_d}")
