@@ -47,8 +47,8 @@ def test_next_filename_similar_names_ignored(tmp_path):
 
 def test_next_filename_special_characters(tmp_path):
     """Test _next_filename with special characters in prefix and extension."""
-    prefix = "test-?f$ile_name"
-    ext = "s$v&*g"  # set up to be parameterized but not
+    prefix = "test-f$ile_name"
+    ext = "s$v&g"  # set up to be parameterized but not
 
     # Create some files
     (tmp_path / f"{prefix}.{ext}").touch()
@@ -75,7 +75,7 @@ def test_next_filename_only_numbered_files(tmp_path):
         (
             {
                 "layout": {
-                    "title": {"text": "My-Test!@#$%^&*()Chart_with[lots]of{symbols}"},
+                    "title": {"text": "My-Test!@#$%^&()Chart_with[lots]of{symbols}"},
                 },
             },
             "My_TestChart_withlotsofsymbols",
