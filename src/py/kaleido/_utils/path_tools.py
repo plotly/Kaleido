@@ -10,7 +10,7 @@ from urllib.request import url2pathname
 import logistro
 
 if TYPE_CHECKING:
-    from . import _fig_tools
+    from . import fig_tools
 
 _logger = logistro.getLogger(__name__)
 
@@ -35,7 +35,7 @@ def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
 def determine_path(
     path: Path | str | None,
     fig: dict,
-    ext: _fig_tools.FormatString,
+    ext: fig_tools.FormatString,
 ) -> Path:
     path = Path(path) if path else Path()
 

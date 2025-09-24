@@ -88,8 +88,7 @@ def _load_figures_from_paths(paths: list[Path]):
                                     params.append(
                                         {
                                             "name": (
-                                                f"{path.stem!s}-{w!s}"
-                                                f"x{h!s}X{s!s}.{f!s}"
+                                                f"{path.stem!s}-{w!s}x{h!s}X{s!s}.{f!s}"
                                             ),
                                             "opts": {
                                                 "scale": s,

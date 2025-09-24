@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any, TypeVar, Union
 
-    from ._fig_tools import Figurish, LayoutOpts
+    from ._utils.fig_tools import Figurish, LayoutOpts
 
     T = TypeVar("T")
     AnyIterable = Union[AsyncIterable[T], Iterable[T]]

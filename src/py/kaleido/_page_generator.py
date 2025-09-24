@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 import logistro
 
-from . import _utils
+from ._utils import path_tools
 
 if TYPE_CHECKING:
     from typing import Tuple, Union
@@ -34,9 +34,9 @@ def _ensure_file(path: Path | str | UrlAndCharset) -> None:
             return
         else:
             pass  # FileNotFound
-    elif _utils.is_httpish(path):  # noqa: SIM114 clarity
+    elif path_tools.is_httpish(path):  # noqa: SIM114 clarity
         return
-    elif _utils.get_path(path).is_file():
+    elif path_tools.get_path(path).is_file():
         return
     raise FileNotFoundError(f"{path!s} does not exist.")
 

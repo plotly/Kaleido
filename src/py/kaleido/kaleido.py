@@ -13,9 +13,10 @@ import logistro
 from choreographer.errors import ChromeNotFoundError
 from choreographer.utils import TmpDirectory
 
-from . import _fig_tools, _path_tools, _profiler, _utils
+from . import _profiler, _utils
 from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
+from ._utils import fig_tools, path_tools
 
 if TYPE_CHECKING:
     from types import TracebackType
@@ -42,9 +43,9 @@ if TYPE_CHECKING:
     class FigureDict(TypedDict):
         """The type a fig_dicts returns for `write_fig_from_object`."""
 
-        fig: Required[_fig_tools.Figurish]
+        fig: Required[fig_tools.Figurish]
         path: NotRequired[None | str | Path]
-        opts: NotRequired[_fig_tools.LayoutOpts | None]
+        opts: NotRequired[fig_tools.LayoutOpts | None]
         topojson: NotRequired[None | str]
 
 
@@ -312,14 +313,14 @@ class Kaleido(choreo.Browser):
         profiler: _profiler.WriteCall,
         stepper: bool,
     ) -> None | bytes:
-        spec = _fig_tools.coerce_for_js(
+        spec = fig_tools.coerce_for_js(
             fig_arg.get("fig"),
             fig_arg.get("path", None),
             fig_arg.get("opts", None),
         )
 
         if _write:
-            full_path = _path_tools.determine_path(
+            full_path = path_tools.determine_path(
                 fig_arg.get("path", None),
                 spec["data"],
                 spec["format"],  # should just take spec
@@ -460,16 +461,16 @@ class Kaleido(choreo.Browser):
 
     async def write_fig(  # noqa: PLR0913
         self,
-        fig: _fig_tools.Figurish,
+        fig: fig_tools.Figurish,
         path: None | Path | str = None,
-        opts: None | _fig_tools.LayoutOpts = None,
+        opts: None | fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
         cancel_on_error: bool = False,
         stepper: bool = False,
     ) -> tuple[Exception] | None:
         """Temp."""
-        if _fig_tools.is_figurish(fig) or not isinstance(
+        if fig_tools.is_figurish(fig) or not isinstance(
             fig,
             (Iterable, AsyncIterable),
         ):
@@ -493,8 +494,8 @@ class Kaleido(choreo.Browser):
 
     async def calc_fig(
         self,
-        fig: _fig_tools.Figurish,
-        opts: None | _fig_tools.LayoutOpts = None,
+        fig: fig_tools.Figurish,
+        opts: None | fig_tools.LayoutOpts = None,
         *,
         topojson: str | None = None,
         stepper: bool = False,

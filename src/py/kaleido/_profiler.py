@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any
 
-    from . import _fig_tools
+    from ._utils import fig_tools
 
     Event = str
 
@@ -35,7 +35,7 @@ class RenderTaskProfile:
 
     def __init__(
         self,
-        spec: _fig_tools.Spec,
+        spec: fig_tools.Spec,
         full_path: Path | None,
         tab_id: str,
     ) -> None:

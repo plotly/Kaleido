@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     import choreographer as choreo
 
-    from kaleido import _fig_tools
+    from kaleido._utils import fig_tools
 
 
 _TEXT_FORMATS = ("svg", "json")  # eps
@@ -111,7 +111,7 @@ class _KaleidoTab:
 
     async def _calc_fig(
         self,
-        spec: _fig_tools.Spec,
+        spec: fig_tools.Spec,
         *,
         topojson: str | None,
         render_prof,
