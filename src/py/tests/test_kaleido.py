@@ -9,6 +9,9 @@ from hypothesis import strategies as st
 from kaleido import Kaleido
 
 
+# can't do session scope because pytest complains that its used by
+# function-scoped loops. tried to create a separate loop in here with
+# session, lots of spooky errors, even asyncio.run() doesn't clean up right.
 @pytest.fixture(scope="function")
 async def simple_figure_with_bytes():
     """Create a simple figure with calculated bytes and PNG assertion."""
