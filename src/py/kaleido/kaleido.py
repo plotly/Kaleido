@@ -110,8 +110,8 @@ class Kaleido(choreo.Browser):
         n: int = 1,
         timeout: int | None = 90,
         page_generator: None | PageGenerator | str | Path = None,
-        plotlyjs: str | Path | None = None,  # TODO(AJP): with page generator
-        mathjax: str | Path | None = None,  # TODO(AJP): with page generator?
+        plotlyjs: str | Path | None = None,
+        mathjax: str | Path | Literal[False] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -139,8 +139,8 @@ class Kaleido(choreo.Browser):
                 to use the plotly.js included with your version of plotly.py or
                 if not installed, the latest version available via CDN.
 
-            mathjax (str | Path | None, optional):
-                A path or URL to a mathjax.js file. If false, mathjax is
+            mathjax (str | Path | Literal[False] | None, optional):
+                A path or URL to a mathjax.js file. If Dalse, mathjax is
                 disabled. Defaults to None- which means to use version 2.35 via
                 CDN.
 
