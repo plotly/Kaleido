@@ -53,7 +53,7 @@ async def _main():
 
 def main():
     """[project.scripts] expects to call a function, not a module."""
-    errors, profiler = asyncio.run(_main())
+    errors, _profiler = asyncio.run(_main())
     # do profile here
     if errors:
         # better to get this from the profile

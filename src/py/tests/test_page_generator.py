@@ -219,7 +219,7 @@ async def test_force_cdn():
         pytest.fail("Plotly not available - cannot test force_cdn override")
 
     forced_cdn = PageGenerator(force_cdn=True).generate_index()
-    scripts, encodings = get_scripts_from_html(forced_cdn)
+    scripts, _encodings = get_scripts_from_html(forced_cdn)
 
     assert len(scripts) == 3  # noqa: PLR2004
     assert scripts[0] == DEFAULT_MATHJAX

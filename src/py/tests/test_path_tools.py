@@ -118,7 +118,7 @@ def test_determine_path_no_suffix_directory(tmp_path, fig_fixture):
 
     # Test error
     nonexistent_dir = Path("/nonexistent/directory")
-    with pytest.raises(ValueError, match="Directory .* not found. Please create it."):
+    with pytest.raises(ValueError, match=r"Directory .* not found. Please create it."):
         _path_tools.determine_path(nonexistent_dir, fig_dict, "ext")
 
 
@@ -139,7 +139,7 @@ def test_determine_path_directory_with_suffix(tmp_path, fig_fixture):
 
 def test_determine_path_file_with_suffix(tmp_path, fig_fixture):
     """Test determine_path with file path having suffix."""
-    fig_dict, expected_prefix = fig_fixture
+    fig_dict, _expected_prefix = fig_fixture
 
     # Exists
     file_path = tmp_path / "output.png"
@@ -152,6 +152,6 @@ def test_determine_path_file_with_suffix(tmp_path, fig_fixture):
     file_path = Path("/nonexistent/directory/output.png")
     with pytest.raises(
         RuntimeError,
-        match="Cannot reach path .* Are all directories created?",
+        match=r"Cannot reach path .* Are all directories created?",
     ):
         _path_tools.determine_path(file_path, fig_dict, "ext")
