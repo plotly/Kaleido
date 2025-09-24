@@ -9,22 +9,18 @@ from hypothesis import strategies as st
 from kaleido import Kaleido
 
 
-@pytest.fixture(scope="session")
-def simple_figure_with_bytes():
+@pytest.fixture(scope="function")
+async def simple_figure_with_bytes():
     """Create a simple figure with calculated bytes and PNG assertion."""
     import plotly.express as px  # type: ignore[import-untyped] # noqa: PLC0415
 
     fig = px.line(x=[1, 2, 3], y=[1, 2, 3])
 
-    async def build_obj():
-        async with Kaleido() as k:
-            bytes_data = await k.calc_fig(
-                fig,
-                opts={"format": "png", "width": 400, "height": 300},
-            )
-        return bytes_data
-
-    bytes_data = asyncio.run(build_obj())
+    async with Kaleido() as k:
+        bytes_data = await k.calc_fig(
+            fig,
+            opts={"format": "png", "width": 400, "height": 300},
+        )
 
     # Assert it's a PNG by checking the PNG signature
     assert bytes_data[:8] == b"\x89PNG\r\n\x1a\n", "Generated data is not a valid PNG"
