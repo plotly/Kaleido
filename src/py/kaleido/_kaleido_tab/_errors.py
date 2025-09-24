@@ -1,7 +1,7 @@
 from choreographer.errors import DevtoolsProtocolError
 
 
-class JavascriptError(RuntimeError):  # TODO(AJP): process better
+class JavascriptError(RuntimeError):
     """Used to report errors from javascript."""
 
 

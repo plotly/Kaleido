@@ -12,11 +12,11 @@ if TYPE_CHECKING:
     import choreographer
 
 
-def _make_console_logger(name, log):  # TODO(AJP) how do we use this
+def _make_console_logger(name, log):
     """Create printer specifically for console events. Helper function."""
 
     async def console_printer(event):
-        _logger.debug2(f"{name}:{event}")  # TODO(AJP): parse? stretch goal.
+        _logger.debug2(f"{name}:{event}")
         log.append(str(event))
 
     return console_printer
