@@ -97,6 +97,7 @@ class Kaleido(choreo.Browser):
     """A queue of tabs ready to process a kaleido figure."""
     _main_render_coroutines: set[asyncio.Task]
     # technically Tasks, user sees coroutines
+    profiler: deque[_profiler.WriteCall]
 
     _total_tabs: int
     _html_tmp_dir: None | TmpDirectory
@@ -157,7 +158,7 @@ class Kaleido(choreo.Browser):
         self.tabs_ready = asyncio.Queue(maxsize=0)
         self._total_tabs = 0  # tabs properly registered
         self._html_tmp_dir = None
-        self._task_profiler: deque[_profiler.WriteCall] = deque(maxlen=5)
+        self.profiler: deque[_profiler.WriteCall] = deque(maxlen=5)
 
         # Kaleido Config
         page = page_generator
@@ -426,7 +427,7 @@ class Kaleido(choreo.Browser):
             name = main_task.get_name()
 
         profiler = _profiler.WriteCall(name)
-        self._task_profiler.append(profiler)
+        self.profiler.append(profiler)
 
         tasks: set[asyncio.Task] = set()
 
