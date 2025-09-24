@@ -335,6 +335,7 @@ class Kaleido(choreo.Browser):
             full_path if _write else None,
             tab.tab.target_id,
         )
+        render_prof.profile_log.tick("acquired tab")
         profiler.renders.append(render_prof)
 
         try:

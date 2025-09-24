@@ -48,17 +48,17 @@ async def _main():
             _utils.load_figures_from_paths(paths),
             stepper=args.stepper,
             cancel_on_error=args.fail_fast,
-        )
+        ), k.profiler
 
 
 def main():
     """[project.scripts] expects to call a function, not a module."""
-    res = asyncio.run(_main())
+    errors, profiler = asyncio.run(_main())
     # do profile here
-    if res:
+    if errors:
         # better to get this from the profile
-        print(f"Number of errors: {len(res)}")
-        for i, e in enumerate(res):
+        print(f"Number of errors: {len(errors)}")
+        for i, e in enumerate(errors):
             print(str(e), file=sys.stderr)
             if i > 10:  # noqa: PLR2004
                 print("More than 10 errors, use --profile.", file=sys.stderr)
