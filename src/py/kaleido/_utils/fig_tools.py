@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Literal, TypedDict
 
 import logistro
 
-from . import _utils
+from . import path_tools
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -98,7 +98,7 @@ def coerce_for_js(
     if hasattr(fig, "to_dict"):  # COERCE FIG
         fig = fig.to_dict()
 
-    path = _utils.get_path(path) if path else None
+    path = path_tools.get_path(path) if path else None
 
     opts = opts or {}
 

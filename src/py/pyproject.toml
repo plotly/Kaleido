@@ -38,7 +38,7 @@ Homepage = "https://github.com/plotly/kaleido"
 Repository = "https://github.com/plotly/kaleido"
 
 [project.scripts]
-kaleido_mocker = "kaleido._mocker:build_mocks"
+kaleido_mocker = "kaleido.mocker:main"
 kaleido_get_chrome = "choreographer.cli._cli_utils:get_chrome_cli"
 
 [dependency-groups]
