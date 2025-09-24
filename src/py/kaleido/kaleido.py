@@ -161,6 +161,11 @@ class Kaleido(choreo.Browser):
         self.profiler: deque[_profiler.WriteCall] = deque(maxlen=5)
 
         # Kaleido Config
+        if page_generator and (plotlyjs is not None or mathjax is not None):
+            raise ValueError(
+                "page_generator cannot be set with mathjax or plotlyjs",
+            )
+
         page = page_generator
         self._timeout = timeout
         self._n = n
