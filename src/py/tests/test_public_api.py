@@ -12,7 +12,7 @@ import kaleido
 def simple_figure(request):
     """Create a simple plotly figure for testing, either as figure or dict."""
     # ruff: noqa: PLC0415
-    import plotly.express as px
+    import plotly.express as px  # type: ignore[import-untyped]
 
     fig = px.line(x=[1, 2, 3, 4], y=[1, 2, 3, 4])
 

@@ -1,6 +1,6 @@
 import pytest
 
-from kaleido import _fig_tools
+from kaleido._utils import fig_tools
 
 sources = ["argument", "layout", "template", "default"]
 values = [None, 150, 800, 1500]
@@ -36,7 +36,7 @@ def test_coerce_for_js_dimensions(
 
     # Set to default if None
     if expected_width is None:
-        expected_width = _fig_tools.DEFAULT_WIDTH
+        expected_width = fig_tools.DEFAULT_WIDTH
 
     # Do for height what I did for width
     expected_height = height_value
@@ -54,13 +54,13 @@ def test_coerce_for_js_dimensions(
 
     # Set to default if None
     if expected_height is None:
-        expected_height = _fig_tools.DEFAULT_HEIGHT
+        expected_height = fig_tools.DEFAULT_HEIGHT
 
     # Create a figure dict with the layout
     fig = {"data": [], "layout": layout}
 
     # Call the function
-    spec = _fig_tools.coerce_for_js(fig, None, opts)
+    spec = fig_tools.coerce_for_js(fig, None, opts)
 
     # Assert results
     assert spec["width"] == expected_width, (

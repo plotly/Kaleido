@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from kaleido._utils import get_path, is_httpish
+from kaleido._utils.path_tools import get_path, is_httpish
 
 pytestmark = pytest.mark.asyncio(loop_scope="function")
 

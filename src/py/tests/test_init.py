@@ -1,10 +1,17 @@
 """Tests for wrapper functions in __init__.py that test argument passing."""
 
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 import kaleido
+
+if TYPE_CHECKING:
+    from typing import Any
+
+    _: Any
+
 
 # Just tests wrapping, but in a way tests internals.
 # These are better done as part of integration tests.

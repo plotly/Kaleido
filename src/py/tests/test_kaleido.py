@@ -12,7 +12,7 @@ from kaleido import Kaleido
 @pytest.fixture(scope="session")
 def simple_figure_with_bytes():
     """Create a simple figure with calculated bytes and PNG assertion."""
-    import plotly.express as px  # noqa: PLC0415
+    import plotly.express as px  # type: ignore[import-untyped] # noqa: PLC0415
 
     fig = px.line(x=[1, 2, 3], y=[1, 2, 3])
 
