@@ -41,6 +41,14 @@ jobs:
           --logistro-level INFO
           --n 1
           --timeout 200
+      - name: Test mocker pickles
+        run: >
+          uv run
+          --no-sync kaleido_mocker
+          --logistro-level INFO
+          --n 1
+          --timeout 200
+          --input integration_tests/dates/figs
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}
