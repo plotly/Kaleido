@@ -79,15 +79,6 @@ repos:
     rev: v1.28.2
     hooks:
       - id: typos
-  - repo: https://github.com/markdownlint/markdownlint
-    rev: v0.13.0
-    hooks:
-      - id: markdownlint
-        name: Markdownlint
-        description: Run markdownlint on your Markdown files
-        entry: mdl --rules ~MD026 --style .markdown.rb
-        language: ruby
-        files: \.(md|mdown|markdown)$
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
@@ -96,3 +87,15 @@ repos:
         language: python
         entry: detect-secrets-hook
         args: ['']
+  - repo: https://github.com/rvben/rumdl-pre-commit
+    rev: v0.0.151  # Use the latest release tag
+    hooks:
+      - id: rumdl
+        # To only check (default):
+        # args: []
+        # To automatically fix issues:
+        # args: [--fix]
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.405   # pin a tag; latest as of 2025-10-01
+    hooks:
+      - id: pyright
