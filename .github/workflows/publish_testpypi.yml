@@ -32,7 +32,7 @@ jobs:
       - run: uv python pin ${{ matrix.python_v }}
         if: ${{ matrix.python_v != '' }}
       # don't modify sync file! messes up version!
-      - run: uv sync --all-extras --frozen # does order matter?
+      - run: uv sync --all-groups --all-extras --frozen # does order matter?
       - run: uv build
       - name: Reinstall from wheel
         run: >
@@ -53,6 +53,14 @@ jobs:
           --timeout 200
           --output ${{ github.workspace }}/src/py/integration_tests/renders/
           --input ${{ github.workspace }}/src/py/integration_tests/mocks/
+      - name: Test mocker pickles
+        run: >
+          uv run
+          --no-sync kaleido_mocker
+          --logistro-level INFO
+          --n 1
+          --timeout 200
+          --input integration_tests/dates/figs
 
       - name: Test
         if: ${{ ! runner.debug && matrix.os != 'ubuntu-latest' }}

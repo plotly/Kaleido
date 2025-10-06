@@ -1,3 +1,13 @@
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#     "datashader",
+#     "pandas",
+#     "plotly",
+#     "zstandard",
+#     "colorcet",
+# ]
+# ///
 """Create pickled fig for use in integration tests."""
 
 import pickle
