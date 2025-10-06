@@ -29,6 +29,7 @@ jobs:
           uv sync
           --no-sources
           --all-extras
+          --all-groups
 
       - name: Install google-chrome-for-testing
         run: uv run --no-sync kaleido_get_chrome -v
@@ -44,7 +45,6 @@ jobs:
       - name: Test mocker pickles
         run: >
           uv run
-          --with zstandard
           --no-sync kaleido_mocker
           --logistro-level INFO
           --n 1

@@ -59,7 +59,7 @@ def load_figures_from_paths(paths: list[Path]) -> Generator[FigureDict, Any, Any
         elif path.suffixes[-2:] == [".pkl", ".zst"]:
             if not dctx:
                 raise RuntimeError(
-                    "Decompressing pickles requires zstandard optional dep.",
+                    "Decompressing pickles requires `pickles` optional dep-group.",
                 )
             with path.open("rb") as file:
                 binary = dctx.decompress(file.read())
