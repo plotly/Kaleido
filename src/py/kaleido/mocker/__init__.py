@@ -34,7 +34,7 @@ def random_config(paths: list[Path]) -> list[Path]:
 
 # Function to process the images
 async def _main():
-    paths = _utils.get_jsons_in_paths(args.input)
+    paths = _utils.get_mocks_in_paths(args.input)
     if args.random:
         paths = random_config(paths)
 

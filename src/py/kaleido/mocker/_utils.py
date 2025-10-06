@@ -19,18 +19,21 @@ except ImportError:
 from ._args import args
 
 if TYPE_CHECKING:
-    ...
+    from typing import Any, Generator
+
+    from kaleido import FigureDict
+    from kaleido._utils import fig_tools
 
 _logger = logistro.getLogger(__name__)
 
 
-def get_jsons_in_paths(path: str | Path) -> list[Path]:
+def get_mocks_in_paths(path: str | Path) -> list[Path]:
     # Work with Paths and directories
     path = Path(path) if isinstance(path, str) else path
 
     if path.is_dir():
         _logger.info(f"Input is path {path}")
-        return list(path.glob("*.json"))
+        return list(path.glob("*.json")) + list(path.glob("*.pkl.zst"))
     elif path.is_file():
         _logger.info(f"Input is file {path}")
         return [path]
@@ -44,7 +47,7 @@ class Param(TypedDict):
 
 
 # maybe don't have this do params and figures
-def load_figures_from_paths(paths: list[Path]):
+def load_figures_from_paths(paths: list[Path]) -> Generator[FigureDict, Any, Any]:
     # Set json
     for path in paths:
         if not path.is_file():
@@ -79,14 +82,15 @@ def load_figures_from_paths(paths: list[Path]):
                 if not args.parameterize
                 else f"{path.stem!s}-{w!s}x{h!s}@{s!s}.{f!s}"
             )
-            opts = {
+            opts: fig_tools.LayoutOpts = {
                 "scale": s,
                 "width": w,
                 "height": h,
             }
             _logger.info(f"Yielding spec: {name!s}")
-            yield {
+            _r: FigureDict = {
                 "fig": figure,
                 "path": str(Path(args.output) / name),
                 "opts": opts,
             }
+            yield _r
