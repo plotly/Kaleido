@@ -54,6 +54,7 @@ dev = [
   "pandas>=2.0.3",
   "typing-extensions>=4.12.2",
   "hypothesis>=6.113.0",
+  "pyright>=1.1.406",
 ]
 
 pickles = [
@@ -115,3 +116,8 @@ help = "Run test by test, slowly, quitting after first error"
 [tool.poe.tasks.filter-test]
 cmd = "pytest --log-level=1 -W error -vvvx -rA --capture=no --show-capture=no"
 help = "Run any/all tests one by one with basic settings: can include filename and -k filters"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+exclude= ["src/py/integration_tests/dates/*"]
