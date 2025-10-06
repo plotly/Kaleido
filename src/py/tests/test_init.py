@@ -8,9 +8,7 @@ import pytest
 import kaleido
 
 if TYPE_CHECKING:
-    from typing import Any
-
-    _: Any
+    from kaleido._utils.fig_tools import Figurish
 
 
 # Just tests wrapping, but in a way tests internals.
@@ -31,6 +29,17 @@ def kwargs():
 
 # line serves to force static check of string in @patch
 _ = kaleido._sync_server.GlobalKaleidoServer.open  # noqa: SLF001
+
+
+@pytest.mark.forked
+def test_closing_no_close():
+    kaleido.start_sync_server()
+
+
+@pytest.mark.forked
+def test_open_close():
+    kaleido.start_sync_server()
+    kaleido.stop_sync_server()
 
 
 @patch("kaleido._sync_server.GlobalKaleidoServer.open")
@@ -88,7 +97,12 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     topojson = "test_topojson"
     kopts = {"some_option": "value"}
 
-    result = await kaleido.calc_fig(fig, opts, topojson=topojson, kopts=kopts)
+    result = await kaleido.calc_fig(
+        fig,
+        opts,  # type: ignore[reportArgumentType]
+        topojson=topojson,
+        kopts=kopts,
+    )
 
     expected_kopts = {"some_option": "value", "n": 1}
     mock_kaleido_class.assert_called_with(**expected_kopts)
@@ -112,7 +126,13 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     mock_kaleido.write_fig.reset_mock()
 
     # Test write_fig with full arguments
-    await kaleido.write_fig(fig, path, opts, topojson=topojson, kopts=kopts)
+    await kaleido.write_fig(
+        fig,
+        path,
+        opts,  # type: ignore[reportArgumentType]
+        topojson=topojson,
+        kopts=kopts,
+    )
     mock_kaleido_class.assert_called_with(**kopts)  # write_fig doesn't force n=1
     mock_kaleido.write_fig.assert_called_with(
         fig,
@@ -134,7 +154,7 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     mock_kaleido.write_fig_from_object.reset_mock()
 
     # Test write_fig_from_object
-    generator = [{"data": []}]
+    generator: list[Figurish] = [{"data": []}]
     await kaleido.write_fig_from_object(generator, kopts=kopts)
     mock_kaleido_class.assert_called_with(**kopts)
     mock_kaleido.write_fig_from_object.assert_called_with(generator)

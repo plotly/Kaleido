@@ -99,4 +99,4 @@ repos:
     rev: v1.1.406   # pin a tag; latest as of 2025-10-01
     hooks:
       - id: pyright
-        args: ["--verbose", "--project=src/py"]
+        args: ["--project=src/py"]

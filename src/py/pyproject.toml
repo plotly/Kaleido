@@ -54,6 +54,7 @@ dev = [
   "pandas>=2.0.3",
   "typing-extensions>=4.12.2",
   "hypothesis>=6.113.0",
+  "pytest-forked>=1.6.0",
   "pyright>=1.1.406",
 ]
 
