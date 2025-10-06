@@ -14,7 +14,7 @@ default_install_hook_types: [pre-commit, commit-msg]
 default_stages: [pre-commit]
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: v3.2.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -25,12 +25,12 @@ repos:
       - id: check-toml
       - id: debug-statements
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.2.0
+    rev: v3.1.0
     hooks:
       - id: add-trailing-comma
   - repo: https://github.com/astral-sh/ruff-pre-commit
     #  Ruff version.
-    rev: v0.13.3
+    rev: v0.12.10
     hooks:
       #  Run the linter.
       - id: ruff
@@ -40,7 +40,7 @@ repos:
         types_or: [python, pyi]
         #  options: ignore one line things [E701]
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.37.1
+    rev: v1.35.1
     hooks:
       - id: yamllint
         name: yamllint
@@ -55,7 +55,7 @@ repos:
           }\
         }"]
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.7
+    rev: v1.7.4
     hooks:
       - id: actionlint
         name: Lint GitHub Actions workflow files
@@ -76,7 +76,7 @@ repos:
         args: [--staged, -c, "general.ignore=B6,T3", --msg-filename]
         stages: [commit-msg]
   - repo: https://github.com/crate-ci/typos
-    rev: v1
+    rev: v1.28.2
     hooks:
       - id: typos
   - repo: https://github.com/Yelp/detect-secrets
@@ -88,7 +88,7 @@ repos:
         entry: detect-secrets-hook
         args: ['']
   - repo: https://github.com/rvben/rumdl-pre-commit
-    rev: v0.0.153  # Use the latest release tag
+    rev: v0.0.151  # Use the latest release tag
     hooks:
       - id: rumdl
         # To only check (default):
@@ -96,6 +96,6 @@ repos:
         # To automatically fix issues:
         # args: [--fix]
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.406   # pin a tag; latest as of 2025-10-01
+    rev: v1.1.405   # pin a tag; latest as of 2025-10-01
     hooks:
       - id: pyright
