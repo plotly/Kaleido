@@ -1,5 +1,8 @@
 """Tests for wrapper functions in __init__.py that test argument passing."""
 
+import subprocess
+import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
@@ -31,15 +34,10 @@ def kwargs():
 _ = kaleido._sync_server.GlobalKaleidoServer.open  # noqa: SLF001
 
 
-@pytest.mark.forked
-def test_closing_no_close():
-    kaleido.start_sync_server()
-
-
-@pytest.mark.forked
-def test_open_close():
-    kaleido.start_sync_server()
-    kaleido.stop_sync_server()
+def test_hangers():
+    folder = Path(__file__).parent / "win_hang_scripts"
+    subprocess.run([sys.executable, str(folder / "open_close.py")], check=True)  # noqa: S603
+    subprocess.run([sys.executable, str(folder / "open.py")], check=True)  # noqa: S603
 
 
 @patch("kaleido._sync_server.GlobalKaleidoServer.open")
