@@ -35,7 +35,7 @@ _ = kaleido._sync_server.GlobalKaleidoServer.open  # noqa: SLF001
 
 
 def test_hangers():
-    folder = Path(__file__).parent / "win_hang_scripts"
+    folder = Path(__file__).parent / "hang_scripts"
     subprocess.run([sys.executable, str(folder / "open_close.py")], check=True)  # noqa: S603
     subprocess.run([sys.executable, str(folder / "open.py")], check=True)  # noqa: S603
 
