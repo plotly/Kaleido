@@ -14,7 +14,7 @@ kaleido = ['vendor/**']
 [project]
 name = "kaleido"
 description = "Plotly graph export library"
-license = {file = "LICENSE.md"}
+license = { "file" = "LICENSE.md" }
 readme = "README.md"
 requires-python = ">=3.8"
 dynamic = ["version"]
@@ -26,10 +26,11 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "choreographer>=1.0.7",
+  "choreographer>=1.1.1",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
+  "pytest-timeout>=2.4.0",
 ]
 
 [project.urls]
@@ -52,6 +53,14 @@ dev = [
   "pytest-order>=1.3.0",
   "pandas>=2.0.3",
   "typing-extensions>=4.12.2",
+  "hypothesis>=6.113.0",
+]
+pickles = [
+    "colorcet>=3.1.0",
+    "datashader>=0.15.2",
+    "pillow>=10.4.0",
+    "plotly[express]>=6.3.0",
+    "zstandard>=0.23.0",
 ]
 
 [tool.ruff.lint]
@@ -85,6 +94,7 @@ ignore = [
             ]
 
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 log_cli = false
 
@@ -92,7 +102,7 @@ log_cli = false
 # name = cmd
 
 [tool.poe.tasks.test]
-cmd = "pytest --log-level=1 -W error -n auto -v -rfE --capture=fd"
+cmd = "pytest --timeout=90 --log-level=1 -W error -n auto -v -rfE --capture=fd"
 help = "Run all tests quickly"
 
 [tool.poe.tasks.debug-test]
