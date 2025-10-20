@@ -175,32 +175,29 @@ def st_mathjax(dir_path: Path):
 # Test default combinations
 @pytest.mark.order(1)
 async def test_defaults_no_plotly_available():
-    """Test defaults when plotly package is not available."""
-    if not find_spec("plotly"):
-        raise ImportError("Tests must be run with plotly installed to function")
+    """
+    Test defaults when plotly package is not available.
 
-    old_path = sys.path
-    sys.path = sys.path[:1]
-    if find_spec("plotly"):
-        raise RuntimeError(
-            "Plotly cannot be imported during this test, "
-            "as this tests default behavior while trying to import plotly. "
-            "The best solution is to make sure this test always runs first, "
-            "or if you really need to, run it separately and then skip it "
-            "in the main group.",
-        )
+    When we generate_index(), if we don't have plotly in path, we use a CDN.
+    """
+    _old_path = sys.path
+    try:
+        sys.path = []
+        _plotly_mo = sys.modules.pop("plotly", None)
 
-    # Test no imports (plotly not available)
-    no_imports = PageGenerator().generate_index()
-    scripts, _encodings = get_scripts_from_html(no_imports)
+        # Test no imports (plotly not available)
+        no_imports = PageGenerator().generate_index()
+        scripts, _encodings = get_scripts_from_html(no_imports)
 
-    # Should have mathjax, plotly default, and kaleido_scopes
-    assert len(scripts) == 3  # noqa: PLR2004
-    assert scripts[0] == DEFAULT_MATHJAX
-    assert scripts[1] == DEFAULT_PLOTLY
-    assert scripts[2].endswith("kaleido_scopes.js")
-
-    sys.path = old_path
+        # Should have mathjax, plotly default, and kaleido_scopes
+        assert len(scripts) == 3  # noqa: PLR2004
+        assert scripts[0] == DEFAULT_MATHJAX
+        assert scripts[1] == DEFAULT_PLOTLY
+        assert scripts[2].endswith("kaleido_scopes.js")
+    finally:
+        sys.path = _old_path
+        if _plotly_mo:
+            sys.modules.update({"plotly": _plotly_mo})
 
 
 async def test_defaults_with_plotly_available():
