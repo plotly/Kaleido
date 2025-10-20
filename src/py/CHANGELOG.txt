@@ -1,3 +1,6 @@
+v1.2.0
+- Try to use plotly JSON encoder instead of default
+
 v1.1.0
 - Add testing
 - Fix a variety of type bugs
