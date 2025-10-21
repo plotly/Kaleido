@@ -14,9 +14,7 @@ jobs:
   changelog:
     runs-on: ubuntu-latest
     env:
-      TAG: ${{ github.ref_name }}
       DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-      IS_TAG_PUSH: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
       IS_PR_TO_DEFAULT: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == github.event.repository.default_branch }}
     defaults:
       run:
@@ -38,7 +36,7 @@ jobs:
         uses: geopozo/changelogtxt-parser@main
         with:
           working-directory: ./src/py/
-          tag-check: ${{ env.IS_TAG_PUSH == 'true' && env.TAG || '' }}
+          from-push: true
           summarize-news: ${{ env.IS_PR_TO_DEFAULT == 'true' && 'origin.txt updated.txt' || '' }}
       - name: Check .editorconfig exists
         run: |
