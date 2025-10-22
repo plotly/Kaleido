@@ -13,31 +13,17 @@ on:
 jobs:
   changelog:
     runs-on: ubuntu-latest
-    env:
-      DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
-      IS_PR_TO_DEFAULT: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == github.event.repository.default_branch }}
     defaults:
       run:
         working-directory: ./src/py/
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: compare files
-        if: env.IS_PR_TO_DEFAULT == 'true'
-        run: |
-          set -euo pipefail
-          cat ./CHANGELOG.txt > updated.txt
-          git fetch origin $DEFAULT_BRANCH
-          git show origin/"$DEFAULT_BRANCH":src/py/CHANGELOG.txt > origin.txt
       - name: Run composite action
         id: changelog
         uses: geopozo/changelogtxt-parser@main
         with:
-          working-directory: ./src/py/
-          from-push: true
-          summarize-news: ${{ env.IS_PR_TO_DEFAULT == 'true' && 'origin.txt updated.txt' || '' }}
+          file-path: ./src/py/
+          check-tag: "from-push"
+          summarize-news: "from-pr"
       - name: Check .editorconfig exists
         run: |
           test -e .editorconfig || exit 1
