@@ -30,7 +30,6 @@ dependencies = [
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
-  "pytest-timeout>=2.4.0",
 ]
 
 [project.urls]
@@ -45,6 +44,7 @@ kaleido_get_chrome = "choreographer.cli._cli_utils:get_chrome_cli"
 dev = [
   "pytest",
   "pytest-asyncio",
+  "pytest-timeout>=2.4.0",
   "pytest-xdist",
   "async-timeout",
   "mypy>=1.14.1",
