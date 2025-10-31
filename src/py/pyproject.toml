@@ -26,7 +26,7 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "choreographer>=1.0.10",
+  "choreographer>=1.1.1",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
@@ -54,6 +54,13 @@ dev = [
   "pandas>=2.0.3",
   "typing-extensions>=4.12.2",
   "hypothesis>=6.113.0",
+]
+pickles = [
+    "colorcet>=3.1.0",
+    "datashader>=0.15.2",
+    "pillow>=10.4.0",
+    "plotly[express]>=6.3.0",
+    "zstandard>=0.23.0",
 ]
 
 [tool.ruff.lint]
