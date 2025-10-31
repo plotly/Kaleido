@@ -88,13 +88,6 @@ class GlobalKaleidoServer:
         _logger.debug("Registering close with atexit.")
         atexit.register(close)
 
-        # python bug
-        from time import sleep  # noqa: PLC0415 import at top, is hack
-
-        sleep(0.1)
-        # python seems to sometimes not like calling atext.register
-        # too close to the end of a program
-
     def close(self, *, silence_warnings=False, _atexit=False):
         """Reset the singleton back to an uninitialized state."""
         if _atexit:
