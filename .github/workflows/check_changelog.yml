@@ -22,7 +22,7 @@ jobs:
         uses: geopozo/changelogtxt-parser@main
         with:
           file-path: ./src/py/
-          check-tag: "from-push"
+          get-tag: "from-push"
           summarize-news: "from-pr"
       - name: Check .editorconfig exists
         run: |
