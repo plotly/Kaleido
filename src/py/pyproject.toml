@@ -100,9 +100,13 @@ ignore = [
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 log_cli = false
+addopts = "--import-mode=append"
+
+[tool.poe]
+executor.type = "virtualenv"
 
 [tool.poe.tasks]
-# name = cmd
+# <name> = "cmd"
 
 [tool.poe.tasks.test]
 cmd = "pytest --timeout=50 --log-level=1 -W error -n auto -v -rfE --capture=fd"

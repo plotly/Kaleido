@@ -27,6 +27,7 @@ jobs:
       - name: Install dependencies
         run: >
           uv sync
+          --locked
           --no-sources
           --all-extras
 
@@ -53,10 +54,14 @@ jobs:
         timeout-minutes: 7
 
       - name: Test (Debug)
-        if: runner.debug
+        if: ${{ runner.debug && matrix.os != 'ubuntu-latest' }}
+        env:
+          CHOREO_ENABLE_DEBUG: 1
         run: uv run --no-sync poe debug-test
 
       - name: Test (Debug, Linux)
         if: ${{ runner.debug && matrix.os == 'ubuntu-latest' }}
+        env:
+          CHOREO_ENABLE_DEBUG: 1
         run: xvfb-run uv run --no-sync poe debug-test
         timeout-minutes: 7
