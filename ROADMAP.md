@@ -7,3 +7,12 @@ considered a bug.
 
 Any significant development would likely occur on the browser-renderer layer:
 [choreographer](https://www.github.com/plotly/choreographer).
+
+- [ ] To improve performance:
+
+```python
+await tab.send_command(
+        "Emulation.setIdleOverride",
+        params={"isUserActive": True, "isScreenUnlocked": True},
+    )
+```
