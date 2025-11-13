@@ -1,3 +1,17 @@
+v1.2.0
+- Try to use plotly JSON encoder instead of default
+
+v1.1.0
+- Add testing
+- Fix a variety of type bugs
+- Change order of browser closer to fix hang
+- Explicitly handle certain argument options better
+- Move temp file creation to .open() out of __init__()
+- Reduce mathjax version to plotly.py
+- Fix hang and add automatic close with stop_sync_server
+- Add option to silence warnings in start/stop_sync_server
+- Fix bug where attribute was inconsistently named
+
 v1.1.0rc0
 - Improve verbosity of errors when starting kaleido improperly
 - Add new api functions start/stop_sync_server

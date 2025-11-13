@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import warnings
-from collections.abc import Iterable
+from collections.abc import AsyncIterable, Iterable
 from functools import partial
 from pathlib import Path
+from typing import TYPE_CHECKING
+from urllib.parse import unquote, urlparse
 
 import choreographer as choreo
 import logistro
@@ -18,17 +20,32 @@ from ._kaleido_tab import _KaleidoTab
 from ._page_generator import PageGenerator
 from ._utils import ErrorEntry, warn_incompatible_plotly
 
+if TYPE_CHECKING:
+    from types import TracebackType
+    from typing import Any, Callable, Coroutine
+
+    from . import _fig_tools
+
 _logger = logistro.getLogger(__name__)
+
+try:
+    from plotly.utils import PlotlyJSONEncoder  #  noqa: I001
+    from choreographer import channels
+
+    channels.register_custom_encoder(PlotlyJSONEncoder)
+    _logger.debug("Successfully registered PlotlyJSONEncoder.")
+except ImportError as e:
+    _logger.debug(f'Couldn\'t import plotly due to "{e!s}" - skipping.')
 
 # Show a warning if the installed Plotly version
 # is incompatible with this version of Kaleido
 warn_incompatible_plotly()
 
 
-def _make_printer(name):
+def _make_printer(name: str) -> Callable[[Any], Coroutine[Any, Any, None]]:
     """Create event printer for generic events. Helper function."""
 
-    async def print_all(response):
+    async def print_all(response: Any) -> None:
         _logger.debug2(f"{name}:{response}")
 
     return print_all
@@ -49,15 +66,17 @@ class Kaleido(choreo.Browser):
     ```
     """
 
-    _tabs_ready: asyncio.Queue[_KaleidoTab]
+    tabs_ready: asyncio.Queue[_KaleidoTab]
+    """A queue of ready tabs."""
     _background_render_tasks: set[asyncio.Task]
     # not really render tasks
     _main_tasks: set[asyncio.Task]
 
-    async def close(self):
+    async def close(self) -> None:
         """Close the browser."""
-        if self.tmp_dir:
-            self.tmp_dir.clean()
+        await super().close()
+        if self._tmp_dir:
+            self._tmp_dir.clean()
         _logger.info("Cancelling tasks.")
         for task in self._main_tasks:
             if not task.done():
@@ -66,16 +85,32 @@ class Kaleido(choreo.Browser):
             if not task.done():
                 task.cancel()
         _logger.info("Exiting Kaleido/Choreo")
-        return await super().close()
 
-    async def __aexit__(self, exc_type, exc_value, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> bool | None:
         """Close the browser."""
         _logger.info("Waiting for all cleanups to finish.")
         await asyncio.gather(*self._background_render_tasks, return_exceptions=True)
         _logger.info("Exiting Kaleido")
         return await super().__aexit__(exc_type, exc_value, exc_tb)
 
-    def __init__(self, *args, **kwargs):  # noqa: D417 no args/kwargs in description
+    def __init__(  # noqa: D417, PLR0913 no args/kwargs in description
+        self,
+        *args: Any,
+        page_generator: None | PageGenerator | str | Path = None,
+        n: int = 1,
+        timeout: int | None = 90,
+        width: int | None = None,  # deprecate
+        height: int | None = None,  # deprecate
+        stepper: bool = False,
+        plotlyjs: str | None = None,
+        mathjax: str | None = None,
+        **kwargs: Any,
+    ) -> None:
         """
         Initialize Kaleido, a `choreo.Browser` wrapper adding kaleido functionality.
 
@@ -101,18 +136,18 @@ class Kaleido(choreo.Browser):
         """
         self._background_render_tasks = set()
         self._main_tasks = set()
-        self._tabs_ready = asyncio.Queue(maxsize=0)
+        self.tabs_ready = asyncio.Queue(maxsize=0)
         self._total_tabs = 0
         self._tmp_dir = None
 
-        page = kwargs.pop("page_generator", None)
-        self._timeout = kwargs.pop("timeout", 90)
-        self._n = kwargs.pop("n", 1)
-        self._height = kwargs.pop("height", None)
-        self._width = kwargs.pop("width", None)
-        self._stepper = kwargs.pop("stepper", False)
-        self._plotlyjs = kwargs.pop("plotlyjs", None)
-        self._mathjax = kwargs.pop("mathjax", None)
+        page = page_generator
+        self._timeout = timeout
+        self._n = n
+        self._height = height  # deprecate
+        self._width = width  # deprecate
+        self._stepper = stepper
+        self._plotlyjs = plotlyjs
+        self._mathjax = mathjax
         if not kwargs.get("headless", True) and (self._height or self._width):
             warnings.warn(
                 "Height and Width can only be used if headless=True, "
@@ -133,19 +168,36 @@ class Kaleido(choreo.Browser):
                 "or `kaleido.get_chrome_sync()`.",
             ) from ChromeNotFoundError
 
-        if page and isinstance(page, str) and Path(page).is_file():
-            self._index = page
-        elif page and hasattr(page, "is_file") and page.is_file():
-            self._index = page.as_uri()
+        # do this during open because it requires close
+        self._saved_page_arg = page
+
+    async def open(self):
+        """Build temporary file if we need one."""
+        page = self._saved_page_arg
+        del self._saved_page_arg
+
+        if isinstance(page, str):
+            if page.startswith(r"file://") and Path(unquote(urlparse(page).path)):
+                self._index = page
+            elif Path(page).is_file():
+                self._index = Path(page).as_uri()
+            else:
+                raise FileNotFoundError(f"{page} does not exist.")
+        elif isinstance(page, Path):
+            if page.is_file():
+                self._index = page.as_uri()
+            else:
+                raise FileNotFoundError(f"{page!s} does not exist.")
         else:
-            self.tmp_dir = TmpDirectory(sneak=self.is_isolated())
-            index = self.tmp_dir.path / "index.html"
+            self._tmp_dir = TmpDirectory(sneak=self.is_isolated())
+            index = self._tmp_dir.path / "index.html"
             self._index = index.as_uri()
             if not page:
                 page = PageGenerator(plotly=self._plotlyjs, mathjax=self._mathjax)
             page.generate_index(index)
+        await super().open()
 
-    async def _conform_tabs(self, tabs=None) -> None:
+    async def _conform_tabs(self, tabs: list[choreo.Tab] | None = None) -> None:
         if not tabs:
             tabs = list(self.tabs.values())
         _logger.info(f"Conforming {len(tabs)} to {self._index}")
@@ -164,8 +216,9 @@ class Kaleido(choreo.Browser):
         _logger.info("Waiting on all navigates")
         await asyncio.gather(*tasks)
         _logger.info("All navigates done, putting them all in queue.")
-        for tab in kaleido_tabs:
-            await self._tabs_ready.put(tab)
+
+        for ktab in kaleido_tabs:
+            await self.tabs_ready.put(ktab)
         self._total_tabs = len(kaleido_tabs)
         _logger.debug("Tabs fully navigated/enabled/ready")
 
@@ -217,16 +270,16 @@ class Kaleido(choreo.Browser):
             A kaleido-tab from the queue.
 
         """
-        _logger.info(f"Getting tab from queue (has {self._tabs_ready.qsize()})")
+        _logger.info(f"Getting tab from queue (has {self.tabs_ready.qsize()})")
         if not self._total_tabs:
             raise RuntimeError(
                 "Before generating a figure, you must await `k.open()`.",
             )
-        tab = await self._tabs_ready.get()
+        tab = await self.tabs_ready.get()
         _logger.info(f"Got {tab.tab.target_id[:4]}")
         return tab
 
-    async def _return_kaleido_tab(self, tab):
+    async def _return_kaleido_tab(self, tab: _KaleidoTab) -> None:
         """
         Refresh tab and put it back into the available queue.
 
@@ -238,12 +291,16 @@ class Kaleido(choreo.Browser):
         await tab.reload()
         _logger.info(
             f"Putting tab {tab.tab.target_id[:4]} back (queue size: "
-            f"{self._tabs_ready.qsize()}).",
+            f"{self.tabs_ready.qsize()}).",
         )
-        await self._tabs_ready.put(tab)
+        await self.tabs_ready.put(tab)
         _logger.debug(f"{tab.tab.target_id[:4]} put back.")
 
-    def _clean_tab_return_task(self, main_task, task):
+    def _clean_tab_return_task(
+        self,
+        main_task: asyncio.Task,
+        task: asyncio.Task,
+    ) -> None:
         _logger.info("Cleaning out background tasks.")
         self._background_render_tasks.remove(task)
         e = task.exception()
@@ -253,12 +310,20 @@ class Kaleido(choreo.Browser):
                 main_task.cancel()
             raise e
 
-    def _check_render_task(self, name, tab, main_task, error_log, task):
+    def _check_render_task(
+        self,
+        name: str,
+        tab: _KaleidoTab,
+        main_task: asyncio.Task,
+        error_log: None | list[ErrorEntry],
+        task: asyncio.Task,
+    ) -> None:
         if task.cancelled():
             _logger.info(f"Something cancelled {name}.")
-            error_log.append(
-                ErrorEntry(name, asyncio.CancelledError, tab.javascript_log),
-            )
+            if error_log:
+                error_log.append(
+                    ErrorEntry(name, asyncio.CancelledError, tab.javascript_log),
+                )
         elif e := task.exception():
             _logger.error(f"Render Task Error In {name}- ", exc_info=e)
             if isinstance(e, (asyncio.TimeoutError, TimeoutError)) and error_log:
@@ -275,7 +340,13 @@ class Kaleido(choreo.Browser):
         self._background_render_tasks.add(t)
         t.add_done_callback(partial(self._clean_tab_return_task, main_task))
 
-    async def _render_task(self, tab, args, error_log=None, profiler=None):
+    async def _render_task(
+        self,
+        tab: _KaleidoTab,
+        args: Any,
+        error_log: None | list[ErrorEntry] = None,
+        profiler: None | list = None,
+    ):
         _logger.info(f"Posting a task for {args['full_path'].name}")
         if self._timeout:
             try:
@@ -314,11 +385,11 @@ class Kaleido(choreo.Browser):
 
     async def calc_fig(
         self,
-        fig,
-        path=None,
-        opts=None,
+        fig: _fig_tools.Figurish,
+        path: str | Path | None = None,
+        opts: None | _fig_tools.LayoutOpts = None,
         *,
-        topojson=None,
+        topojson: str | None = None,
     ):
         """
         Calculate the bytes for a figure.
@@ -347,15 +418,15 @@ class Kaleido(choreo.Browser):
         await self._return_kaleido_tab(tab)
         return data[0]
 
-    async def write_fig(  # noqa: PLR0913, C901 (too many args, complexity)
+    async def write_fig(  # noqa: PLR0913, PLR0912, C901 (too many args, complexity)
         self,
-        fig,
-        path=None,
-        opts=None,
+        fig: _fig_tools.Figurish,
+        path: str | Path | None = None,
+        opts: _fig_tools.LayoutOpts | None = None,
         *,
-        topojson=None,
-        error_log=None,
-        profiler=None,
+        topojson: str | None = None,
+        error_log: None | list[ErrorEntry] = None,
+        profiler: None | list = None,
     ):
         """
         Call the plotly renderer via javascript on first available tab.
@@ -388,8 +459,8 @@ class Kaleido(choreo.Browser):
         else:
             _logger.debug(f"Is iterable {type(fig)}")
 
-        main_task = asyncio.current_task()
-        self._main_tasks.add(main_task)
+        if main_task := asyncio.current_task():
+            self._main_tasks.add(main_task)
         tasks = set()
 
         async def _loop(f):
@@ -438,14 +509,15 @@ class Kaleido(choreo.Browser):
                     task.cancel()
             raise
         finally:
-            self._main_tasks.remove(main_task)
+            if main_task:
+                self._main_tasks.remove(main_task)
 
     async def write_fig_from_object(  # noqa: C901 too complex
         self,
-        generator,
+        generator: Iterable | AsyncIterable,
         *,
-        error_log=None,
-        profiler=None,
+        error_log: None | list[ErrorEntry] = None,
+        profiler: None | list = None,
     ):
         """
         Equal to `write_fig` but allows the user to generate all arguments.
@@ -483,8 +555,8 @@ class Kaleido(choreo.Browser):
         if profiler is not None:
             _logger.info("Using profiler.")
 
-        main_task = asyncio.current_task()
-        self._main_tasks.add(main_task)
+        if main_task := asyncio.current_task():
+            self._main_tasks.add(main_task)
         tasks = set()
 
         async def _loop(args):
@@ -535,4 +607,5 @@ class Kaleido(choreo.Browser):
                     task.cancel()
             raise
         finally:
-            self._main_tasks.remove(main_task)
+            if main_task:
+                self._main_tasks.remove(main_task)
