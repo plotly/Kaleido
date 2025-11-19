@@ -16,3 +16,6 @@ await tab.send_command(
         params={"isUserActive": True, "isScreenUnlocked": True},
     )
 ```
+
+- [ ] `start_sync_server`: use `os.register_at_fork` to invalidate server, or
+      to switch to using multiprocesses inter-process communication.
