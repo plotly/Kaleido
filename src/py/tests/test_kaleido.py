@@ -429,16 +429,25 @@ async def test_tab_count_verification(n_tabs):
         )
 
 
-async def test_unreasonable_timeout(simple_figure_with_bytes):
+async def test_unreasonable_timeout(simple_figure_with_bytes, tmp_path):
     """Test that an unreasonably small timeout actually times out."""
 
     fig = simple_figure_with_bytes["fig"]
     opts = simple_figure_with_bytes["opts"]
 
-    # Use an infinitely small timeout
-    async with Kaleido(timeout=0.005) as k:
+    async def slow_fig_generator() -> AsyncGenerator[FigureDict, None]:
+        """Generator that sleeps to simulate slow figure generation."""
+        await asyncio.sleep(10)  # This will cause timeout with small timeout value
+        yield {
+            "fig": fig,
+            "path": tmp_path / "test_timeout.png",
+            "opts": opts,
+        }
+
+    # Use a small timeout that will trigger before the sleep completes
+    async with Kaleido(timeout=1) as k:
         with pytest.raises((asyncio.TimeoutError, TimeoutError)):
-            await k.calc_fig(fig, opts=opts)
+            await k.write_fig(slow_fig_generator())
 
 
 @pytest.mark.parametrize(
