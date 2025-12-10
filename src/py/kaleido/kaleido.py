@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import warnings
 from collections import deque
 from collections.abc import AsyncIterable, Iterable
 from pathlib import Path
@@ -140,7 +141,7 @@ class Kaleido(choreo.Browser):
                 if not installed, the latest version available via CDN.
 
             mathjax (str | Path | Literal[False] | None, optional):
-                A path or URL to a mathjax.js file. If Dalse, mathjax is
+                A path or URL to a mathjax.js file. If False, mathjax is
                 disabled. Defaults to None- which means to use version 2.35 via
                 CDN.
 
@@ -504,10 +505,18 @@ class Kaleido(choreo.Browser):
         fig: fig_tools.Figurish,
         opts: None | fig_tools.LayoutOpts = None,
         *,
+        path: None = None,
         topojson: str | None = None,
         stepper: bool = False,
     ) -> bytes:
         """Temp."""
+        if path is not None:
+            warnings.warn(
+                "The path argument is deprecated in `kaleido.calc_fig`. "
+                "It is ignored and will be removed in a future version",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         async def _temp_generator():
             yield {
