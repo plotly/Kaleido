@@ -12,7 +12,7 @@ from packaging.version import Version
 _logger = logistro.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Coroutine
+    from typing import Any, AsyncIterator, Callable, Coroutine
 
 
 def event_printer(name: str) -> Callable[[Any], Coroutine[Any, Any, None]]:
@@ -39,7 +39,7 @@ def create_task_log_error(coroutine) -> asyncio.Task:
     return t
 
 
-def ensure_async_iter(obj):
+def ensure_async_iter(obj) -> AsyncIterator[Any]:
     """Convert any iterable to an async iterator."""
     if hasattr(obj, "__aiter__"):
         return obj

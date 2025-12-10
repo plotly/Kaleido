@@ -195,7 +195,7 @@ class Kaleido(choreo.Browser):
         del self._saved_page_arg
 
         if isinstance(page, (Path, str)):
-            if (_p := _utils.get_path(page)).is_file():
+            if (_p := path_tools.get_path(page)).is_file():
                 self._index = _p.as_uri()
             else:
                 raise FileNotFoundError(f"{page!s} does not exist.")
@@ -333,6 +333,8 @@ class Kaleido(choreo.Browser):
                 spec["format"],  # should just take spec
             )
             full_path.touch()  # claim our name
+        else:
+            full_path = None
 
         tab = await self._get_kaleido_tab()
 
@@ -354,7 +356,7 @@ class Kaleido(choreo.Browser):
                 ),
                 self._timeout,
             )
-            if _write:
+            if _write and full_path:
                 render_prof.profile_log.tick("starting file write")
                 await _utils.to_thread(full_path.write_bytes, img_bytes)
                 render_prof.profile_log.tick("file write done")
@@ -363,7 +365,7 @@ class Kaleido(choreo.Browser):
                 return img_bytes
         except BaseException as e:
             render_prof.profile_log.tick("errored out")
-            if _write:
+            if _write and full_path:
                 full_path.unlink()  # failure, no write
             render_prof.error = e
             raise
@@ -518,15 +520,15 @@ class Kaleido(choreo.Browser):
                 stacklevel=2,
             )
 
-        async def _temp_generator():
-            yield {
+        spec: FigureDict = {
                 "fig": fig,
                 "opts": opts,
                 "topojson": topojson,
             }
-
-        return await self.write_fig_from_object(
-            fig_dicts=_temp_generator(),
+        # pyright > mypy, but:
+        # pyright doesn't understand literals in overloads as well
+        return await self.write_fig_from_object( # type: ignore[reportCallIssue]
+            fig_dicts=spec,
             cancel_on_error=True,
             _write=False,
             stepper=stepper,
