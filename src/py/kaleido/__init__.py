@@ -19,10 +19,12 @@ if TYPE_CHECKING:
     from pathlib import Path
     from typing import Any, TypeVar, Union
 
-    from ._fig_tools import Figurish, LayoutOpts
+    from ._utils.fig_tools import Figurish, LayoutOpts
 
     T = TypeVar("T")
     AnyIterable = Union[AsyncIterable[T], Iterable[T]]
+
+    from .kaleido import FigureDict
 
 __all__ = [
     "Kaleido",
@@ -50,7 +52,7 @@ def start_sync_server(*args: Any, silence_warnings: bool = False, **kwargs: Any)
     function will warn you if the server is already running.
 
     This wrapper function takes the exact same arguments as kaleido.Kaleido(),
-    except one extra, `silence_warnings`.
+    except one extra: `silence_warnings`.
 
     Args:
         *args: all arguments `Kaleido()` would take.
@@ -64,11 +66,13 @@ def start_sync_server(*args: Any, silence_warnings: bool = False, **kwargs: Any)
 
 def stop_sync_server(*, silence_warnings: bool = False):
     """
-    Stop the kaleido server. It can be restarted. Warns if not started.
+    Stop the kaleido server. It can be restarted.
+
+    This function will warn you if the server is already stopped.
 
     Args:
         silence_warnings: (bool, default False): If True, don't emit warning if
-        stopping a server that's not running.
+        stopping an already stopped server.
 
     """
     _global_server.close(silence_warnings=silence_warnings)
@@ -76,7 +80,6 @@ def stop_sync_server(*, silence_warnings: bool = False):
 
 async def calc_fig(
     fig: Figurish,
-    path: str | None | Path = None,
     opts: LayoutOpts | None = None,
     *,
     topojson: str | None = None,
@@ -86,14 +89,13 @@ async def calc_fig(
     Return binary for plotly figure.
 
     A convenience wrapper for `Kaleido.calc_fig()` which starts a `Kaleido` and
-    executes the `calc_fig()`.
+    executes `calc_fig()`.
     It takes an additional argument, `kopts`, a dictionary of arguments to pass
     to the kaleido process. See the `kaleido.Kaleido` docs. However,
     `calc_fig()` will never use more than one processor, so any `n` value will
     be overridden.
 
-
-    See documentation for `Kaleido.calc_fig()`.
+    See also the documentation for `Kaleido.calc_fig()`.
 
     """
     kopts = kopts or {}
@@ -101,7 +103,6 @@ async def calc_fig(
     async with Kaleido(**kopts) as k:
         return await k.calc_fig(
             fig,
-            path=path,
             opts=opts,
             topojson=topojson,
         )
@@ -122,14 +123,13 @@ async def write_fig(
     A convenience wrapper for `Kaleido.write_fig()` which starts a `Kaleido` and
     executes the `write_fig()`.
     It takes an additional argument, `kopts`, a dictionary of arguments to pass
-    to the kaleido process. See the `kaleido.Kaleido` docs.
+    to the `Kaleido` constructor. See the `kaleido.Kaleido` docs.
 
-
-    See documentation for `Kaleido.write_fig()` for the other arguments.
+    See also the documentation for `Kaleido.write_fig()`.
 
     """
     async with Kaleido(**(kopts or {})) as k:
-        await k.write_fig(
+        return await k.write_fig(
             fig,
             path=path,
             opts=opts,
@@ -139,26 +139,25 @@ async def write_fig(
 
 
 async def write_fig_from_object(
-    generator: AnyIterable,  # this could be more specific with []
+    fig_dicts: FigureDict | AnyIterable[FigureDict],
     *,
     kopts: dict[str, Any] | None = None,
     **kwargs,
 ):
     """
-    Write a plotly figure(s) to a file.
+    Write a plotly figure(s) to a file specified by a dictionary or iterable of.
 
     A convenience wrapper for `Kaleido.write_fig_from_object()` which starts a
     `Kaleido` and executes the `write_fig_from_object()`
     It takes an additional argument, `kopts`, a dictionary of arguments to pass
-    to the kaleido process. See the `kaleido.Kaleido` docs.
+    to the `Kaleido` constructor. See the `kaleido.Kaleido` docs.
 
-    See documentation for `Kaleido.write_fig_from_object()` for the other
-    arguments.
+    See also the documentation for `Kaleido.write_fig_from_object()`.
 
     """
     async with Kaleido(**(kopts or {})) as k:
-        await k.write_fig_from_object(
-            generator,
+        return await k.write_fig_from_object(
+            fig_dicts,
             **kwargs,
         )
 
@@ -174,14 +173,18 @@ def calc_fig_sync(*args: Any, **kwargs: Any):
 def write_fig_sync(*args: Any, **kwargs: Any):
     """Call `write_fig` but blocking."""
     if _global_server.is_running():
-        _global_server.call_function("write_fig", *args, **kwargs)
+        return _global_server.call_function("write_fig", *args, **kwargs)
     else:
-        _sync_server.oneshot_async_run(write_fig, args=args, kwargs=kwargs)
+        return _sync_server.oneshot_async_run(write_fig, args=args, kwargs=kwargs)
 
 
 def write_fig_from_object_sync(*args: Any, **kwargs: Any):
     """Call `write_fig_from_object` but blocking."""
     if _global_server.is_running():
-        _global_server.call_function("write_fig_from_object", *args, **kwargs)
+        return _global_server.call_function("write_fig_from_object", *args, **kwargs)
     else:
-        _sync_server.oneshot_async_run(write_fig_from_object, args=args, kwargs=kwargs)
+        return _sync_server.oneshot_async_run(
+            write_fig_from_object,
+            args=args,
+            kwargs=kwargs,
+        )

@@ -26,7 +26,7 @@ maintainers = [
   {name = "Andrew Pikul", email = "ajpikul@gmail.com"},
 ]
 dependencies = [
-  "choreographer>=1.1.1",
+  "choreographer>=1.2.0rc4",
   "logistro>=1.0.8",
   "orjson>=3.10.15",
   "packaging",
@@ -38,7 +38,7 @@ Homepage = "https://github.com/plotly/kaleido"
 Repository = "https://github.com/plotly/kaleido"
 
 [project.scripts]
-kaleido_mocker = "kaleido._mocker:build_mocks"
+kaleido_mocker = "kaleido.mocker:main"
 kaleido_get_chrome = "choreographer.cli._cli_utils:get_chrome_cli"
 
 [dependency-groups]
@@ -54,7 +54,9 @@ dev = [
   "pandas>=2.0.3",
   "typing-extensions>=4.12.2",
   "hypothesis>=6.113.0",
+  "pyright>=1.1.406",
 ]
+
 pickles = [
     "colorcet>=3.1.0",
     "datashader>=0.15.2",
@@ -82,6 +84,7 @@ ignore = [
           "SIM105", # Too opionated (try-except-pass)
           "PT003", # scope="function" implied but I like readability
           "G004", # fstrings in my logs
+          "TD003", # issue link in todos
           ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -97,12 +100,16 @@ ignore = [
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 log_cli = false
+addopts = "--import-mode=append"
+
+[tool.poe]
+executor.type = "virtualenv"
 
 [tool.poe.tasks]
-# name = cmd
+# <name> = "cmd"
 
 [tool.poe.tasks.test]
-cmd = "pytest --timeout=90 --log-level=1 -W error -n auto -v -rfE --capture=fd"
+cmd = "pytest --timeout=50 --log-level=1 -W error -n auto -v -rfE --capture=fd"
 help = "Run all tests quickly"
 
 [tool.poe.tasks.debug-test]
@@ -113,3 +120,8 @@ help = "Run test by test, slowly, quitting after first error"
 [tool.poe.tasks.filter-test]
 cmd = "pytest --log-level=1 -W error -vvvx -rA --capture=no --show-capture=no"
 help = "Run any/all tests one by one with basic settings: can include filename and -k filters"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+exclude= ["src/py/integration_tests/dates/*"]
