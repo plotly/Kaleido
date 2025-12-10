@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import asyncio
 import re
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -7,6 +10,11 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from kaleido import Kaleido
+
+if TYPE_CHECKING:
+    from typing import AsyncGenerator, Generator
+
+    from kaleido import FigureDict
 
 
 # can't do session scope because pytest complains that its used by
@@ -40,7 +48,7 @@ async def test_write_fig_from_object_sync_generator(simple_figure_with_bytes, tm
 
     file_paths = []
 
-    def fig_generator():
+    def fig_generator() -> Generator[FigureDict, None]:
         for i in range(2):
             path = tmp_path / f"test_sync_{i}.png"
             file_paths.append(path)
@@ -70,7 +78,7 @@ async def test_write_fig_from_object_async_generator(
 
     file_paths = []
 
-    async def fig_async_generator():
+    async def fig_async_generator() -> AsyncGenerator[FigureDict, None]:
         for i in range(2):
             path = tmp_path / f"test_async_{i}.png"
             file_paths.append(path)
@@ -166,7 +174,7 @@ async def test_write_fig_from_object_bare_dictionary(
 
     path1 = tmp_path / "test_dict_1.png"
 
-    fig_data = {
+    fig_data: FigureDict = {
         "fig": simple_figure_with_bytes["fig"],
         "path": path1,
         "opts": simple_figure_with_bytes["opts"],
@@ -303,27 +311,19 @@ async def test_calc_fig_argument_passthrough(
         # Extract the generator that was passed as first argument
         _, kwargs = mock_write_fig_from_object.call_args  # not sure.
 
-        generator = kwargs["fig_dicts"]
+        fig_dict = kwargs["fig_dicts"]
         assert kwargs["cancel_on_error"] is True
         assert kwargs["_write"] is False
 
-        # Convert generator to list to inspect its contents
-        generated_args_list = [v async for v in generator]
-        assert len(generated_args_list) == 1, (
-            "Expected generator to yield exactly one item"
-        )
-
-        generated_args = generated_args_list[0]
-
         # Validate that the generated arguments match what we passed to write_fig
-        assert "fig" in generated_args, "Generated args should contain 'fig'"
-        assert "opts" in generated_args, "Generated args should contain 'opts'"
-        assert "topojson" in generated_args, "Generated args should contain 'topojson'"
+        assert "fig" in fig_dict, "Generated args should contain 'fig'"
+        assert "opts" in fig_dict, "Generated args should contain 'opts'"
+        assert "topojson" in fig_dict, "Generated args should contain 'topojson'"
 
         # Check that the values match
-        assert generated_args["fig"] == fig, "Figure should match"
-        assert generated_args["opts"] == opts, "Options should match"
-        assert generated_args["topojson"] == topojson, "Topojson should match"
+        assert fig_dict["fig"] == fig, "Figure should match"
+        assert fig_dict["opts"] == opts, "Options should match"
+        assert fig_dict["topojson"] == topojson, "Topojson should match"
 
 
 async def test_kaleido_instantiate_no_hang():
@@ -374,7 +374,8 @@ async def test_all_methods_non_context(simple_figure_with_bytes, tmp_path):
     expected_bytes = simple_figure_with_bytes["bytes"]
 
     # Test without context manager
-    k = await Kaleido()
+    k: Kaleido = Kaleido()
+    await k  # could do it on one line but it tricks typer
     try:
         # Test calc_fig
         calc_bytes = await k.calc_fig(fig, opts=opts)

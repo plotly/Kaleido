@@ -109,7 +109,7 @@ class Kaleido(choreo.Browser):
         self,
         # *args: Any, force named vars for all choreographer passthrough
         n: int = 1,
-        timeout: int | None = 90,
+        timeout: float | None = 90,
         page_generator: None | PageGenerator | str | Path = None,
         plotlyjs: str | Path | None = None,
         mathjax: str | Path | Literal[False] | None = None,
@@ -124,7 +124,7 @@ class Kaleido(choreo.Browser):
             n (int, optional):
                 Number of processors to use (parallelization). Defaults to 1.
 
-            timeout (int | None, optional):
+            timeout (float | None, optional):
                 Number of seconds to wait to render any one image. None for no
                 timeout. Defaults to 90.
 
@@ -521,13 +521,13 @@ class Kaleido(choreo.Browser):
             )
 
         spec: FigureDict = {
-                "fig": fig,
-                "opts": opts,
-                "topojson": topojson,
-            }
+            "fig": fig,
+            "opts": opts,
+            "topojson": topojson,
+        }
         # pyright > mypy, but:
         # pyright doesn't understand literals in overloads as well
-        return await self.write_fig_from_object( # type: ignore[reportCallIssue]
+        return await self.write_fig_from_object(  # type: ignore[reportCallIssue]
             fig_dicts=spec,
             cancel_on_error=True,
             _write=False,
