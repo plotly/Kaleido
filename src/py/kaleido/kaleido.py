@@ -190,7 +190,7 @@ class Kaleido(choreo.Browser):
         self._saved_page_arg = page
 
     async def open(self):
-        """Build page and temporary file if we need one, then opens browser."""
+        """Build page and temporary file if we need one, then open browser."""
         page = self._saved_page_arg
         del self._saved_page_arg
 
@@ -423,7 +423,35 @@ class Kaleido(choreo.Browser):
         _write: bool = True,  # backwards compatibility!
         stepper: bool = False,
     ) -> None | bytes | tuple[Exception]:
-        """Temp."""
+        """
+        Create one or more plotly figures from a specification dictionary.
+
+        If every figure needs a different `opts` or `path` argument, you use
+        this instead of `write_fig`.
+
+        Args:
+            fig_dicts:
+                Any single figure dict, or an iterable of figure dictionaries. The
+                figure dictionaries *must* have a "fig" key with a plotly figure or
+                its dict representation. It can have the following keys: path, opts,
+                and topojson. This is roughly equal to the `write_fig` arguments.
+
+            cancel_on_error (boolean, default: False):
+                If False, any errors during rendering will be returned from the function
+                call in a list. If True, any error will be raised immediately and the
+                rest of the renders will be cancelled.
+
+            stepper (boolean, default False):
+                This is a debugging argument and is not part of the stable API.
+                If set to true, kaleido will wait for a key press to render each
+                image, in case one would want to inspect the browser environment.
+
+        Returns:
+            If cancel_on_error is True, it always returns None on success.
+            If cancel_on_error is False, it always returns a tuple, possibly
+            with errors.
+
+        """
         if not _write:
             cancel_on_error = True
 
@@ -479,7 +507,51 @@ class Kaleido(choreo.Browser):
         cancel_on_error: bool = False,
         stepper: bool = False,
     ) -> tuple[Exception] | None:
-        """Temp."""
+        """
+        Create one or more plotly figures.
+
+        While fig may be an iterable, only a single path and opts may be passed.
+        Use write_fig_from_object if you need to specify different paths or opts
+        for each figure.
+
+        Args:
+            fig:
+                A plotly figure or its dict representation. It can have the
+                following keys: path, opts, and topojson. This is roughly equal
+                to the `write_fig` arguments.
+
+            path (None, Path, str):
+                The path where the image will be written. The default is the
+                current directory. If a filename isn't specified, we try to
+                generate one from the title or use a default "fig-". If you
+                pass many figures, this argument should be a directory.
+
+            opts (None, LayoutOpts dict):
+                The layout options are a dictionary with the following optional keys:
+                - scale: a number to multiply the image by.
+                - width: a number to set the pixel width.
+                - height: a number to set the pixel height.
+                - format: One of jpg, png, svg, pdf, json, or webp.
+
+            topojson:
+                An optional json-format map specification when using geomaps.
+
+            cancel_on_error (boolean, default: False):
+                If False, any errors during rendering will be returned from the function
+                call in a list. If True, any error will be raised immediately and the
+                rest of the renders will be cancelled.
+
+            stepper (boolean, default False):
+                This is a debugging argument and is not part of the stable API.
+                If set to true, kaleido will wait for a key press to render each
+                image, in case one would want to inspect the browser environment.
+
+        Returns:
+            If cancel_on_error is True, it always returns None on success.
+            If cancel_on_error is False, it always returns a tuple, possibly
+            with errors.
+
+        """
         if fig_tools.is_figurish(fig) or not isinstance(
             fig,
             (Iterable, AsyncIterable),
@@ -511,7 +583,15 @@ class Kaleido(choreo.Browser):
         topojson: str | None = None,
         stepper: bool = False,
     ) -> bytes:
-        """Temp."""
+        """
+        Run write_fig but instead of writing a file, return the bytes.
+
+        The arguments are the same as write_fig, but path does nothing.
+
+        Returns:
+            The calculated bytes.
+
+        """
         if path is not None:
             warnings.warn(
                 "The path argument is deprecated in `kaleido.calc_fig`. "

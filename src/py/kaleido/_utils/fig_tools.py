@@ -58,8 +58,8 @@ SUPPORTED_FORMATS: tuple[FormatString, ...] = (
 )
 
 
-# validation function
 def is_figurish(o: Any) -> TypeGuard[Figurish]:
+    """Detect if input is a plotly figure or equivalent."""
     # so if data isn't in the dict things get weird.
     valid = hasattr(o, "to_dict") or (isinstance(o, dict) and "data" in o)
     if not valid:
@@ -72,7 +72,8 @@ def is_figurish(o: Any) -> TypeGuard[Figurish]:
 
 
 def _coerce_format(extension: str) -> FormatString:
-    # wrap this condition as a typeguard for typechecker's sake
+    """Satisfies a type checker that our format string is an accepted format."""
+
     def is_fmt(s: str) -> TypeGuard[FormatString]:
         return s in SUPPORTED_FORMATS
 
@@ -93,6 +94,14 @@ def coerce_for_js(
     path: Path | str | None,
     opts: LayoutOpts | None,
 ) -> Spec:
+    """
+    Package fig, path, and opts into a dictionary that javascript understands.
+
+    This will
+        - validate the inputs
+        - coerce the inputs if needed (eg. jpeg --> jpg)
+        - provide defaults if we can
+    """
     if not is_figurish(fig):  # VALIDATE FIG
         raise TypeError("Figure supplied doesn't seem to be a valid plotly figure.")
     if hasattr(fig, "to_dict"):  # COERCE FIG

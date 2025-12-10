@@ -16,6 +16,7 @@ _logger = logistro.getLogger(__name__)
 
 
 def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
+    """Figure out proper suffix for generated file name."""
     path = path if isinstance(path, Path) else Path(path)
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
     re_number = re.compile(
@@ -37,6 +38,17 @@ def determine_path(
     fig: dict,
     ext: fig_tools.FormatString,
 ) -> Path:
+    """
+    Determine the filename by the algorithm described below.
+
+    If path is a directory (which exists), we try to create a filename from the
+    chart title, or we use the word "fig". If we are generating these filenames,
+    we check to see if a file with that name already exists and if so, we suffix
+    our generated name with a number.
+
+    If we are given a full path name, we simple make sure that all the subdirs
+    exist and we accept the user's argument.
+    """
     path = Path(path) if path else Path()
 
     if not path.suffix or path.is_dir():  # they gave us a directory
@@ -62,6 +74,17 @@ def determine_path(
 
 
 def get_path(p: str | Path) -> Path:
+    """
+    Ensure we have a path object.
+
+    Args:
+        p: p might be a Path or a string, which might be a plain path: /path/to
+        or a URI format: file:///path/to.
+
+    Returns:
+        A coerced and parsed path, obeying operating system weirdness.
+
+    """
     if isinstance(p, Path):
         return p
     elif not isinstance(p, str):
@@ -75,4 +98,5 @@ def get_path(p: str | Path) -> Path:
 
 
 def is_httpish(p: str) -> bool:
+    """Use urlparser to see if the path we've been given is a URL."""
     return urlparse(str(p)).scheme.startswith("http")
