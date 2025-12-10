@@ -44,7 +44,8 @@ async def _main():
         headless=args.headless,
         timeout=args.timeout,
     ) as k:
-        return await k.write_fig_from_object(
+        # pyright doesn't understand bool = Literal[True] | Literal[False]
+        return await k.write_fig_from_object(  # type: ignore[reportCallIssue]
             _utils.load_figures_from_paths(paths),
             stepper=args.stepper,
             cancel_on_error=args.fail_fast,

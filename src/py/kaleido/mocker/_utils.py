@@ -10,7 +10,10 @@ import orjson
 from ._args import args
 
 if TYPE_CHECKING:
-    ...
+    from typing import Generator
+
+    from kaleido._utils.fig_tools import LayoutOpts
+    from kaleido.kaleido import FigureDict
 
 _logger = logistro.getLogger(__name__)
 
@@ -35,7 +38,7 @@ class Param(TypedDict):
 
 
 # maybe don't have this do params and figures
-def load_figures_from_paths(paths: list[Path]):
+def load_figures_from_paths(paths: list[Path]) -> Generator[FigureDict, None]:
     # Set json
     for path in paths:
         if not path.is_file():
@@ -54,7 +57,7 @@ def load_figures_from_paths(paths: list[Path]):
                     if not args.parameterize
                     else f"{path.stem!s}-{w!s}x{h!s}@{s!s}.{f!s}"
                 )
-                opts = {
+                opts: LayoutOpts = {
                     "scale": s,
                     "width": w,
                     "height": h,
@@ -65,3 +68,6 @@ def load_figures_from_paths(paths: list[Path]):
                     "path": str(Path(args.output) / name),
                     "opts": opts,
                 }
+
+    class FigureDict(TypedDict):
+        """The type a fig_dicts returns for `write_fig_from_object`."""
