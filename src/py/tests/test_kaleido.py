@@ -435,19 +435,31 @@ async def test_unreasonable_timeout(simple_figure_with_bytes, tmp_path):
     fig = simple_figure_with_bytes["fig"]
     opts = simple_figure_with_bytes["opts"]
 
-    async def slow_fig_generator() -> AsyncGenerator[FigureDict, None]:
-        """Generator that sleeps to simulate slow figure generation."""
-        await asyncio.sleep(10)  # This will cause timeout with small timeout value
+    async def fig_generator() -> AsyncGenerator[FigureDict, None]:
         yield {
             "fig": fig,
             "path": tmp_path / "test_timeout.png",
             "opts": opts,
         }
 
-    # Use a small timeout that will trigger before the sleep completes
-    async with Kaleido(timeout=1) as k:
-        with pytest.raises((asyncio.TimeoutError, TimeoutError)):
-            await k.write_fig(slow_fig_generator())
+    async with Kaleido(timeout=0.1) as k:
+
+        async def slow_calc_fig(*_args, **_kwargs):
+            """Wrapper that adds sleep then fails."""
+            await asyncio.sleep(1)
+            pytest.fail("Should have timed out before reaching here!")
+
+        for _ in range(k.tabs_ready.qsize()):
+            t = await k.tabs_ready.get()
+            t._calc_fig = slow_calc_fig  # noqa: SLF001
+            await k.tabs_ready.put(t)
+
+        with pytest.raises((asyncio.TimeoutError, TimeoutError)):  # noqa: PT012
+            await k.write_fig_from_object(fig_generator(), cancel_on_error=True)
+            pytest.fail("Should never reach this, should have raised.")
+
+        ret = await k.write_fig_from_object(fig_generator(), cancel_on_error=False)
+        assert isinstance(ret[0], (asyncio.TimeoutError, TimeoutError))
 
 
 @pytest.mark.parametrize(
