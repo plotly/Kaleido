@@ -9,18 +9,22 @@ on:
 jobs:
   super-test:
     strategy:
-      max-parallel: 2
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python_v: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13', '']
+        python_v: ['3.8', '3.9', '3.10', '3.12', '3.13', '3.14', '3.14t']
         # chrome_v: ['-1']
     defaults:
       run:
         working-directory: ./src/py/
     name: Build and Test
     runs-on: ${{ matrix.os }}
+    env:
+      UV_PYTHON: ${{ matrix.python_v }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
       - uses: astral-sh/setup-uv@v5
       - name: Install Dependencies
         if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -29,10 +33,10 @@ jobs:
       # must actually checkout for version determination
       - run: git checkout ${{ github.ref_name }}
       - run: uv python install ${{ matrix.python_v }}
-      - run: uv python pin ${{ matrix.python_v }}
-        if: ${{ matrix.python_v != '' }}
       # don't modify sync file! messes up version!
-      - run: uv sync --all-extras --frozen # does order matter?
+      - run: uv sync --all-extras --locked --no-sources
+      - run: git status
+      - run: git diff --quiet HEAD || { echo "Working tree dirty"; exit 1; }
       - run: uv build
       - name: Reinstall from wheel
         run: >
@@ -80,11 +84,10 @@ jobs:
         working-directory: ./src/py/
     name: Upload release to TestPyPI
     needs: super-test
-    if: |
-      always() &&
-      !cancelled() &&
-      !failure() &&
-      startsWith(github.ref, 'refs/tags/')
+    if: ${{ !cancelled() &&
+            !failure() &&
+            github.event_name == 'push' &&
+            github.run_attempt == 1 }}
     runs-on: ubuntu-latest
     environment:
       name: testpypi
