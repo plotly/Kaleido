@@ -210,7 +210,7 @@ wheels = [
 
 [[package]]
 name = "choreographer"
-version = "1.3.0rc1"
+version = "1.3.0rc2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "logistro" },
@@ -219,9 +219,9 @@ dependencies = [
     { name = "platformdirs", version = "4.5.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "simplejson" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6c/79/51ac98cfef8f905b5587e6a0eaeb39ad1b1ea5339ec2d5bb04b171de41a7/choreographer-1.3.0rc1.tar.gz", hash = "sha256:51ac4c2704aee79979e200dad6e4b4382bda42feedefc3da557976958475c587", size = 48568, upload-time = "2025-12-01T01:00:32.373Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/39/f44cdd1b0589cd8d4f0ea4427438bd224f846886c6bf58f6f2fe00bb6189/choreographer-1.3.0rc2.tar.gz", hash = "sha256:4aa911274400f44303d2ac145fb34c20f78d0e7a89c4b9454f93f138f066cf8f", size = 48458, upload-time = "2025-12-11T01:37:27.454Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/a5/fe0fe5398f400cadebdec2740bf3752a8ef4079de0f1335febfc45cceb3a/choreographer-1.3.0rc1-py3-none-any.whl", hash = "sha256:5d8d8e84a4ceb210e87855dfb4fa06665e5308cac7f04ecff7ba5ce3bb0d1915", size = 52582, upload-time = "2025-12-01T01:00:30.844Z" },
+    { url = "https://files.pythonhosted.org/packages/c0/78/2d7f0b196c97e402068d63cdab4dd5bf4adb693f92e0c0f998144e6fecd8/choreographer-1.3.0rc2-py3-none-any.whl", hash = "sha256:1ba76df8a8297cef8ea8d8fd64a92e8a5c5bf67a192fba9bdba6d804a4c8d9f1", size = 52665, upload-time = "2025-12-11T01:37:25.828Z" },
 ]
 
 [[package]]
@@ -524,7 +524,7 @@ pickles = [
 
 [package.metadata]
 requires-dist = [
-    { name = "choreographer", specifier = ">=1.3.0rc1" },
+    { name = "choreographer", specifier = ">=1.3.0rc2" },
     { name = "logistro", specifier = ">=1.0.8" },
     { name = "orjson", specifier = ">=3.10.15" },
     { name = "packaging" },
