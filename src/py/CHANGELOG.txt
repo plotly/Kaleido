@@ -1,4 +1,4 @@
-v1.3.0
+v1.3.0rc0
 - Significant refactor, better organization
 - `write_fig` and `_from_object` now take an additional argument:
   `cancel_on_error: bool, default False`. See docs.
