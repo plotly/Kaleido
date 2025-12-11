@@ -1,8 +1,8 @@
 v1.3.0
 - Significant refactor, better organization
 - `write_fig` and `_from_object` now take an additional argument:
-  `cancel_on_error: bool`. If False, default True, returns a list of errors.
-- Unused `path` argument for `calc_fig` was removed.
+  `cancel_on_error: bool, default False`. See docs.
+- Unused `path` argument for `calc_fig` was deprecated.
 - Fixed race condition where two render tasks would choose the same filename
 
 
