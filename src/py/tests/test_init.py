@@ -1,15 +1,20 @@
 """Tests for wrapper functions in __init__.py that test argument passing."""
 
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 import kaleido
 
-# Pretty complicated for basically testing a bunch of wrappers, but it works.
-# Integration tests seem more important.
-# I much prefer the public_api file, this set of tests can be considered
-# for deletion.
+if TYPE_CHECKING:
+    from typing import Any
+
+    _: Any
+
+
+# Just tests wrapping, but in a way tests internals.
+# These are better done as part of integration tests.
 
 
 @pytest.fixture
@@ -22,6 +27,10 @@ def args():
 def kwargs():
     """Basic kwargs for sync wrapper tests."""
     return {"width": 800}
+
+
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.open  # noqa: SLF001
 
 
 @patch("kaleido._sync_server.GlobalKaleidoServer.open")
@@ -37,6 +46,10 @@ def test_start_sync_server_passes_args(mock_open, args, kwargs):
     mock_open.assert_called_with(*args, silence_warnings=True, **kwargs)
 
 
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.close  # noqa: SLF001
+
+
 @patch("kaleido._sync_server.GlobalKaleidoServer.close")
 def test_stop_sync_server_passes_args(mock_close):
     """Test that stop_sync_server passes silence_warnings correctly."""
@@ -48,6 +61,10 @@ def test_stop_sync_server_passes_args(mock_close):
     mock_close.reset_mock()
     kaleido.stop_sync_server(silence_warnings=True)
     mock_close.assert_called_with(silence_warnings=True)
+
+
+# line serves to force static check of string in @patch
+_ = kaleido.Kaleido
 
 
 @patch("kaleido.Kaleido")
@@ -71,13 +88,12 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     topojson = "test_topojson"
     kopts = {"some_option": "value"}
 
-    result = await kaleido.calc_fig(fig, path, opts, topojson=topojson, kopts=kopts)
+    result = await kaleido.calc_fig(fig, opts, topojson=topojson, kopts=kopts)
 
     expected_kopts = {"some_option": "value", "n": 1}
     mock_kaleido_class.assert_called_with(**expected_kopts)
     mock_kaleido.calc_fig.assert_called_with(
         fig,
-        path=path,
         opts=opts,
         topojson=topojson,
     )
@@ -124,6 +140,11 @@ async def test_async_wrapper_functions(mock_kaleido_class):
     mock_kaleido.write_fig_from_object.assert_called_with(generator)
 
 
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.is_running  # noqa: SLF001
+_ = kaleido._sync_server.GlobalKaleidoServer.call_function  # noqa: SLF001
+
+
 @patch("kaleido._sync_server.GlobalKaleidoServer.is_running")
 @patch("kaleido._sync_server.GlobalKaleidoServer.call_function")
 def test_sync_wrapper_server(mock_call_function, mock_is_running, args, kwargs):
@@ -145,6 +166,11 @@ def test_sync_wrapper_server(mock_call_function, mock_is_running, args, kwargs):
     # Test write_fig_from_object_sync
     kaleido.write_fig_from_object_sync(*args, **kwargs)
     mock_call_function.assert_called_with("write_fig_from_object", *args, **kwargs)
+
+
+# line serves to force static check of string in @patch
+_ = kaleido._sync_server.GlobalKaleidoServer.is_running  # noqa: SLF001
+_ = kaleido._sync_server.oneshot_async_run  # noqa: SLF001
 
 
 @patch("kaleido._sync_server.GlobalKaleidoServer.is_running")
