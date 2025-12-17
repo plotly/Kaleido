@@ -33,6 +33,7 @@ __all__ = [
     "calc_fig_sync",
     "get_chrome",
     "get_chrome_sync",
+    "sync_server_is_running",
     "start_sync_server",
     "stop_sync_server",
     "write_fig",
@@ -42,6 +43,13 @@ __all__ = [
 ]
 
 _global_server = _sync_server.GlobalKaleidoServer()
+
+
+def sync_server_is_running():
+    """
+    Returns whether the kaleido sync server is running.
+    """
+    return _global_server.is_running()
 
 
 def start_sync_server(*args: Any, silence_warnings: bool = False, **kwargs: Any):
