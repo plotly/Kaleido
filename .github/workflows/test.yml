@@ -25,6 +25,7 @@ jobs:
         run: >
           uv sync
           --no-sources
+          --locked
           --all-extras
 
       - name: Install google-chrome-for-testing

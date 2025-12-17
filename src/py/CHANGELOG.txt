@@ -1,3 +1,11 @@
+v1.3.0rc0
+- Significant refactor, better organization
+- `write_fig` and `_from_object` now take an additional argument:
+  `cancel_on_error: bool, default False`. See docs.
+- Unused `path` argument for `calc_fig` was deprecated.
+- Fixed race condition where two render tasks would choose the same filename
+
+
 v1.2.0
 - Try to use plotly JSON encoder instead of default
 
