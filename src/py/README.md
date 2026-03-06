@@ -73,6 +73,10 @@ async with kaleido.Kaleido(n=4, timeout=90) as k:
   # n is number of processes
   await k.write_fig(fig, path="./", opts={"format":"jpg"})
 
+# You can also set a default timeout via environment variable:
+# export KALEIDO_RENDER_TIMEOUT=30
+# Use "none" to disable timeouts.
+
 # other `kaleido.Kaleido` arguments:
 # page:  Change library version (see PageGenerators below)
 
