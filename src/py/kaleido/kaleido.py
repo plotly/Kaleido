@@ -113,6 +113,7 @@ class Kaleido(choreo.Browser):
         page_generator: None | PageGenerator | str | Path = None,
         plotlyjs: str | Path | None = None,
         mathjax: str | Path | Literal[False] | None = None,
+        headers: dict[str, str] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -145,6 +146,12 @@ class Kaleido(choreo.Browser):
                 disabled. Defaults to None- which means to use version 2.35 via
                 CDN.
 
+            headers (dict[str, str] | None, optional):
+                A dictionary of extra HTTP headers to send with every request
+                made by the browser (e.g. {"Referer": "https://example.com/"}).
+                Uses the Chrome DevTools Protocol Network.setExtraHTTPHeaders.
+                Defaults to None.
+
             **kwargs (Any):
                 Additional keyword arguments passed through to the underlying
                 Choreographer.browser constructor. Notable options include
@@ -172,6 +179,7 @@ class Kaleido(choreo.Browser):
         self._n = n
         self._plotlyjs = plotlyjs
         self._mathjax = mathjax
+        self._headers = headers
 
         # Diagnostic
         _logger.debug(f"Timeout: {self._timeout}")
@@ -229,7 +237,7 @@ class Kaleido(choreo.Browser):
             _logger.debug2(f"Subscribing * to tab: {tab}.")
             tab.subscribe("*", _utils.event_printer(f"tab-{i!s}: Event Dump:"))
 
-        kaleido_tabs = [_KaleidoTab(tab) for tab in tabs]
+        kaleido_tabs = [_KaleidoTab(tab, headers=self._headers) for tab in tabs]
 
         await asyncio.gather(*(tab.navigate(self._index) for tab in kaleido_tabs))
 
