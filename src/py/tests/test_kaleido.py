@@ -509,3 +509,38 @@ async def test_plotlyjs_mathjax_injection(plotlyjs, mathjax):
         finally:
             # Put the tab back in the queue
             await k.tabs_ready.put(tab)
+
+
+async def test_headers_stored_on_tabs():
+    """Test that custom headers are passed through to _KaleidoTab instances."""
+    test_headers = {"Referer": "https://example.com/", "X-Custom": "value"}
+
+    async with Kaleido(headers=test_headers, n=1) as k:
+        tab = await k.tabs_ready.get()
+        try:
+            assert tab._headers == test_headers
+        finally:
+            await k.tabs_ready.put(tab)
+
+
+async def test_headers_none_by_default():
+    """Test that headers default to None when not specified."""
+    async with Kaleido(n=1) as k:
+        tab = await k.tabs_ready.get()
+        try:
+            assert tab._headers is None
+        finally:
+            await k.tabs_ready.put(tab)
+
+
+async def test_headers_rendering_works(simple_figure_with_bytes):
+    """Test that rendering still works correctly when headers are set."""
+    test_headers = {"Referer": "https://example.com/"}
+
+    async with Kaleido(headers=test_headers) as k:
+        result = await k.calc_fig(
+            simple_figure_with_bytes["fig"],
+            opts=simple_figure_with_bytes["opts"],
+        )
+
+    assert result[:8] == b"\x89PNG\r\n\x1a\n", "Generated data is not a valid PNG"
