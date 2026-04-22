@@ -105,7 +105,7 @@ class Kaleido(choreo.Browser):
 
     ### KALEIDO LIFECYCLE FUNCTIONS ###
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         # *args: Any, force named vars for all choreographer passthrough
         n: int = 1,

@@ -518,7 +518,7 @@ async def test_headers_stored_on_tabs():
     async with Kaleido(headers=test_headers, n=1) as k:
         tab = await k.tabs_ready.get()
         try:
-            assert tab._headers == test_headers
+            assert tab._headers == test_headers  # noqa: SLF001
         finally:
             await k.tabs_ready.put(tab)
 
@@ -528,7 +528,7 @@ async def test_headers_none_by_default():
     async with Kaleido(n=1) as k:
         tab = await k.tabs_ready.get()
         try:
-            assert tab._headers is None
+            assert tab._headers is None  # noqa: SLF001
         finally:
             await k.tabs_ready.put(tab)
 
