@@ -84,6 +84,9 @@ class _KaleidoTab:
         # Subscribe to event indicating page ready.
         page_ready = _subscribe_new(self.tab, "Page.loadEventFired")
 
+        # Apply headers if they exist
+        await self._apply_headers()
+
         # Navigating page. This will trigger the above events.
         _logger.debug2(f"Calling Page.navigate on {self.tab}")
         _raise_error(await self.tab.send_command("Page.navigate", params={"url": url}))
@@ -105,8 +108,6 @@ class _KaleidoTab:
         # requires a couple extra lines
         self.js_logger.reset()
 
-        await self._apply_headers()
-
     # reload is truly so close to navigate
     async def reload(self):
         """Reload the tab, and set the javascript runtime id."""
@@ -124,8 +125,6 @@ class _KaleidoTab:
         await page_ready
 
         self.js_logger.reset()
-
-        await self._apply_headers()
 
     async def _apply_headers(self):
         """Apply extra HTTP headers to the tab if configured."""
