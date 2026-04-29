@@ -158,7 +158,12 @@ function render (info, topojsonURL, stepper) {
   const style = document.getElementById("head-style")
 
   let exportPromise = promise.then((imgData) => {
-    result = imgData
+    // Normalize SVG for deterministic attribute ordering (#435)
+    if (format === 'svg') {
+      result = normalizeSVG(imgData)
+    } else {
+      result = imgData
+    }
     return done()
   })
 
@@ -216,6 +221,68 @@ function render (info, topojsonURL, stepper) {
 
 function decodeSVG (imgData) {
   return window.decodeURIComponent(imgData.replace(cst.imgPrefix.svg, ''))
+}
+
+/**
+ * Normalize SVG output for deterministic comparisons.
+ * Sorts all XML attribute names alphabetically within each element.
+ * This ensures the same SVG is produced regardless of browser/JS engine
+ * attribute enumeration order (fixes #435).
+ */
+function normalizeSVG (svgString) {
+  // Match opening tags with attributes: <tagname attr="val" ...>
+  // or <tagname attr='val' ... >
+  return svgString.replace(/<([a-zA-Z][a-zA-Z0-9]*)\s+([^>]*?)>/g, function (match, tagName, attrs) {
+    // Split attributes by whitespace, handling quoted values
+    var attrPairs = []
+    var remaining = attrs
+    while (remaining.length > 0) {
+      // Skip leading whitespace
+      remaining = remaining.replace(/^\s+/, '')
+      if (remaining.length === 0) break
+
+      // Find attribute name
+      var nameMatch = remaining.match(/^([a-zA-Z_][\w:.-]*)/)
+      if (!nameMatch) break
+      var attrName = nameMatch[1]
+      remaining = remaining.substring(attrName.length)
+
+      // Skip whitespace
+      remaining = remaining.replace(/^\s+/, '')
+
+      // Find value (quoted or unquoted)
+      var attrValue = ''
+      if (remaining.startsWith('=')) {
+        remaining = remaining.substring(1)
+        remaining = remaining.replace(/^\s+/, '')
+        if (remaining.startsWith('"')) {
+          var endQuote = remaining.indexOf('"', 1)
+          if (endQuote > 0) {
+            attrValue = remaining.substring(0, endQuote + 1)
+            remaining = remaining.substring(endQuote + 1)
+          }
+        } else if (remaining.startsWith("'")) {
+          var endQuote = remaining.indexOf("'", 1)
+          if (endQuote > 0) {
+            attrValue = remaining.substring(0, endQuote + 1)
+            remaining = remaining.substring(endQuote + 1)
+          }
+        } else {
+          // Unquoted value
+          var valMatch = remaining.match(/^([^\s>]+)/)
+          if (valMatch) {
+            attrValue = valMatch[1]
+            remaining = remaining.substring(valMatch[1].length)
+          }
+        }
+      }
+      attrPairs.push(attrName + attrValue)
+    }
+
+    // Sort attributes alphabetically for deterministic output
+    attrPairs.sort()
+    return '<' + tagName + ' ' + attrPairs.join(' ') + '>'
+  })
 }
 
 module.exports = render
