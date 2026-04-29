@@ -3,11 +3,11 @@ from __future__ import annotations
 import asyncio
 import atexit
 import warnings
+from concurrent.futures import Future
 from functools import partial
 from queue import Queue
 from threading import Thread
-from typing import TYPE_CHECKING, NamedTuple, Any
-from concurrent.futures import Future
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 from .kaleido import Kaleido
 
@@ -19,7 +19,7 @@ class Task(NamedTuple):
     fn: str
     args: Any
     kwargs: Any
-    future:Future[Any]
+    future: Future[Any]
 
 
 class _BadFunctionName(BaseException):
@@ -116,8 +116,8 @@ class GlobalKaleidoServer:
                 UserWarning,
                 stacklevel=3,
             )
-        future:Future[Any] = Future()
-        self._task_queue.put(Task(cmd, args, kwargs,future))
+        future: Future[Any] = Future()
+        self._task_queue.put(Task(cmd, args, kwargs, future))
         return future.result()
 
 
