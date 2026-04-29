@@ -129,7 +129,8 @@ class _KaleidoTab:
     async def _apply_headers(self):
         """Apply extra HTTP headers to the tab if configured."""
         if self._headers:
-            _logger.debug2(f"Setting extra HTTP headers on {self.tab}")
+            _logger.debug(f"Setting extra HTTP headers on {self.tab}")
+            _logger.debug2(f"Extra headers are: {self._headers}")
             _raise_error(await self.tab.send_command("Network.enable"))
             _raise_error(
                 await self.tab.send_command(
