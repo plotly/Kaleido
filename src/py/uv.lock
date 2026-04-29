@@ -525,7 +525,7 @@ pickles = [
 
 [package.metadata]
 requires-dist = [
-    { name = "choreographer", specifier = "==1.3.0" },
+    { name = "choreographer", specifier = ">=1.3.0" },
     { name = "logistro", specifier = ">=1.0.8" },
     { name = "orjson", specifier = ">=3.10.15" },
     { name = "packaging" },
