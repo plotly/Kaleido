@@ -53,15 +53,20 @@ class _KaleidoTab:
     js_logger: _js_logger.JavascriptLogger
     """A log for recording javascript."""
 
-    def __init__(self, tab):
+    def __init__(self, tab, *, headers: dict[str, str] | None = None):
         """
         Create a new _KaleidoTab.
 
         Args:
             tab: the choreographer tab to wrap.
 
+            headers (dict[str, str] | None, optional):
+                Extra HTTP headers to send with every request made by the
+                browser tab. Defaults to None.
+
         """
         self.tab = tab
+        self._headers = headers
         self.js_logger = _js_logger.JavascriptLogger(self.tab)
 
     async def navigate(self, url: str | Path = ""):
@@ -78,6 +83,9 @@ class _KaleidoTab:
 
         # Subscribe to event indicating page ready.
         page_ready = _subscribe_new(self.tab, "Page.loadEventFired")
+
+        # Apply headers if they exist
+        await self._apply_headers()
 
         # Navigating page. This will trigger the above events.
         _logger.debug2(f"Calling Page.navigate on {self.tab}")
@@ -117,6 +125,19 @@ class _KaleidoTab:
         await page_ready
 
         self.js_logger.reset()
+
+    async def _apply_headers(self):
+        """Apply extra HTTP headers to the tab if configured."""
+        if self._headers:
+            _logger.debug(f"Setting extra HTTP headers on {self.tab}")
+            _logger.debug2(f"Extra headers are: {self._headers}")
+            _raise_error(await self.tab.send_command("Network.enable"))
+            _raise_error(
+                await self.tab.send_command(
+                    "Network.setExtraHTTPHeaders",
+                    params={"headers": self._headers},
+                )
+            )
 
     async def _calc_fig(
         self,
