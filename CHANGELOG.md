@@ -1,7 +1,10 @@
 ## Unreleased
 
 ### Added
-- Allow for request headers to be added to Choreographer calls [[#443](https://github.com/plotly/Kaleido/issues/443)]
+- Allow for request headers to be added to Choreographer calls [[#446](https://github.com/plotly/Kaleido/pull/446)]
+
+### Changed
+- Update Choreographer to v1.3.0 [[#449](https://github.com/plotly/Kaleido/pull/449)]
 
 ### Fixed
 - Fix issue where exporting large figures could cause hang [[#442](https://github.com/plotly/Kaleido/pull/442)], with thanks to @EliasTalcott for the contribution!
