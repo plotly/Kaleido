@@ -25,3 +25,4 @@ src/py/integration_tests/report*
 node_modules/
 
 src/py/site/*
+.hypothesis/
