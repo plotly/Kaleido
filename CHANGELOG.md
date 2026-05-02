@@ -1,7 +1,26 @@
-v1.2.0
+## Unreleased
+
+### Added
+- Allow for request headers to be added to Choreographer calls [[#446](https://github.com/plotly/Kaleido/pull/446)]
+
+### Changed
+- Update Choreographer to v1.3.0 [[#449](https://github.com/plotly/Kaleido/pull/449)]
+
+### Fixed
+- Fix issue where exporting large figures could cause hang [[#442](https://github.com/plotly/Kaleido/pull/442)], with thanks to @EliasTalcott for the contribution!
+
+## v1.3.0rc0
+- Significant refactor, better organization
+- `write_fig` and `_from_object` now take an additional argument:
+  `cancel_on_error: bool, default False`. See docs.
+- Unused `path` argument for `calc_fig` was deprecated.
+- Fixed race condition where two render tasks would choose the same filename
+
+
+## v1.2.0
 - Try to use plotly JSON encoder instead of default
 
-v1.1.0
+## v1.1.0
 - Add testing
 - Fix a variety of type bugs
 - Change order of browser closer to fix hang
@@ -12,51 +31,51 @@ v1.1.0
 - Add option to silence warnings in start/stop_sync_server
 - Fix bug where attribute was inconsistently named
 
-v1.1.0rc0
+## v1.1.0rc0
 - Improve verbosity of errors when starting kaleido improperly
 - Add new api functions start/stop_sync_server
 
-v1.0.0
+## v1.0.0
 - Add warning if using incompatible Plotly version
 
-v1.0.0rc15
+## v1.0.0rc15
 - BUG: Add regex sanitization for auto-filename generation
 - Further santiize title to filename conversion
 
-v1.0.0rc14
+## v1.0.0rc14
 - Pass `plotlyjs` option through from Kaleido() to PageGenerator()
 
-v1.0.0rc13
+## v1.0.0rc13
 - Pass mathjax option through when using default plotly.js template
 
-v1.0.0rc12
+## v1.0.0rc12
 - Add `kopts` args to top-level shortcuts to pass args to `Kaleido(**kopts)`
 
-v1.0.0rc11
+## v1.0.0rc11
 - Write mocker tool to parameterize opts in tests
 - Crop page to pdf size
 - Add type checks to user input for improved error messages
 - Fix latex strings in PDF bolding
 - Add some choreographer errors to kaleido.errors
 
-v1.0.0rc10
+## v1.0.0rc10
 - Allow user to pass Figure-like dicts
 - Fix bug by which calc fig rejected plotly figures
 - Improve testing
 
-v1.0.0rc9
+## v1.0.0rc9
 - Fix v1.0.0rc7 for logic reversal (was conditional error)
 
-v1.0.0rc8
+## v1.0.0rc8
 - Add kaleido.calc_fig to return bytes, not write file automatically
 - Add calc_fig[_sync], write_fig_sync, and write_fig_from_object_sync to kaleido API
 
-v1.0.0rc7
+## v1.0.0rc7
 - Use new choreo is_isolated() to improve platform support (snap /tmp sandboxing)
 
-v1.0.0rc6
+## v1.0.0rc6
 - Allow PageGenerator(force_cdn=True) to not use plotly.py's installed js
 
-v1.0.0rc5
+## ## v1.0.0rc5
 - Fix bug by which plotly.py's internal js was always ignored
 - Adds testing for PageGenerator

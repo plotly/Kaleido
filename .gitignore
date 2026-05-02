@@ -28,3 +28,4 @@ node_modules/
 .idea
 
 src/py/site/*
+.hypothesis/
