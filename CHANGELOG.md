@@ -1,12 +1,21 @@
 ## Unreleased
 
+## v1.3.0
+
 ### Added
 - Allow for request headers to be added to Choreographer calls [[#446](https://github.com/plotly/Kaleido/pull/446)]
 
 ### Changed
+- Significant refactor, better organization
+- `write_fig` and `_from_object` now take an additional argument:
+  `cancel_on_error: bool, default False`. See docs.
 - Update Choreographer to v1.3.0 [[#449](https://github.com/plotly/Kaleido/pull/449)]
 
+### Deprecated
+- Unused `path` argument for `calc_fig` was deprecated.
+
 ### Fixed
+- Fixed race condition where two render tasks would choose the same filename
 - Fix issue where exporting large figures could cause hang [[#442](https://github.com/plotly/Kaleido/pull/442)], with thanks to @EliasTalcott for the contribution!
 
 ## v1.3.0rc0
@@ -15,7 +24,6 @@
   `cancel_on_error: bool, default False`. See docs.
 - Unused `path` argument for `calc_fig` was deprecated.
 - Fixed race condition where two render tasks would choose the same filename
-
 
 ## v1.2.0
 - Try to use plotly JSON encoder instead of default
@@ -76,6 +84,6 @@
 ## v1.0.0rc6
 - Allow PageGenerator(force_cdn=True) to not use plotly.py's installed js
 
-## ## v1.0.0rc5
+## v1.0.0rc5
 - Fix bug by which plotly.py's internal js was always ignored
 - Adds testing for PageGenerator
