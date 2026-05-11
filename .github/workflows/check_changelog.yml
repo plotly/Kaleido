@@ -1,0 +1,32 @@
+name: Check Changelog
+
+on:
+  push:
+    tags:
+      - "*"
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./src/py/
+    steps:
+      - name: Run composite action
+        id: changelog
+        uses: geopozo/changelogtxt-parser@main
+        with:
+          file-path: ./src/py/
+          get-tag: "from-push"
+          summarize-news: "from-pr"
+      - name: Check .editorconfig exists
+        run: |
+          test -e .editorconfig || exit 1
+      - name: Check .pre-commit-config exists
+        run: |
+          test -e .pre-commit-config.y*ml || exit 1
