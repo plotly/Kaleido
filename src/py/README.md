@@ -106,6 +106,82 @@ asyncio.run(
 )
 ```
 
+You can also use threaded and synchronous Python. Here is an example how to create one Kaleido instance per-application, and launch the background Chrome browser for rendering only once.
+
+```python
+import threading
+from io import BytesIO
+import asyncio
+
+from plotly.graph_objects import Figure
+from kaleido import Kaleido
+
+_kaleido = None
+_lock = threading.Lock()
+
+
+def get_kaleido() -> Kaleido:
+  """Create Kaleido rendering backend.
+
+  - Creates a Chrome browser on background
+
+  - `See usage examples <https://github.com/plotly/Kaleido>`__
+  """
+  global _kaleido
+  with _lock:
+    if _kaleido is None:
+      _kaleido = Kaleido()
+
+  return _kaleido
+
+
+def render_plotly_figure_as_image_file(
+  figure: Figure,
+  format: str = "png",
+  width: int = 512,
+  height: int = 512,
+) -> bytes:
+  """"Render Plotly figure as a static PNG image.
+
+  - Uses Kaleido to render the Plotly figure as a PNG, SVG image, PDF or similar.
+  - Creates Kaleido backend (Chrome browser) on the first call.
+
+  :param format:
+    See ``kaleido._fig_tools`` module for supported forms.
+
+  :param width:
+    Width in pixels
+
+  :param height:
+    Height in pixels
+
+  :return:
+    Image data encoded as bytes blob.
+  """
+
+  stream = BytesIO()
+
+  kaleido_instance = get_kaleido()
+
+  opts = dict(
+    format=format,
+    width=width,
+    height=height,
+  )
+
+  asyncio.run(
+    kaleido_instance.write_fig(
+      figure,
+      stream,
+      opts=opts,
+    )
+  )
+  data = stream.getvalue()
+  assert len(data) > 0, "Rendered image data is empty"
+  stream.close()
+  return data
+```
+
 ### PageGenerators
 
 The `page` argument takes a `kaleido.PageGenerator()` to customize versions.
