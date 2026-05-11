@@ -100,8 +100,7 @@ import kaleido
 asyncio.run(
   kaleido.write_fig(
     fig,
-    path="./",
-    n=4
+    path="./"
   )
 )
 ```
