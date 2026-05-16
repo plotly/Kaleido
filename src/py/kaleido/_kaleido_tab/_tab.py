@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import base64
-from typing import TYPE_CHECKING
+import json as _stdlib_json
+from typing import TYPE_CHECKING, Any
 
 import logistro
-import orjson
+
+try:
+    import orjson
+except ImportError:  # pragma: no cover - exercised only when orjson is absent
+    orjson = None  # type: ignore[assignment]
 
 from . import _devtools_utils as _dtools
 from . import _js_logger
@@ -30,6 +35,37 @@ def _orjson_default(obj):
     if hasattr(obj, "tolist"):
         return obj.tolist()
     raise TypeError(f"Type is not JSON serializable: {type(obj).__name__}")
+
+
+class _StdlibJSONEncoder(_stdlib_json.JSONEncoder):
+    """
+    Encoder used when ``orjson`` is unavailable; mirrors ``_orjson_default``.
+
+    Reproduces the ``orjson.OPT_SERIALIZE_NUMPY`` behavior via the standard
+    ``.tolist()`` round-trip so callers see the same output regardless of
+    whether ``orjson`` is installed.
+    """
+
+    def default(self, o: Any) -> Any:
+        if hasattr(o, "tolist"):
+            return o.tolist()
+        return super().default(o)
+
+
+def _serialize_spec(spec: Any) -> str:
+    """
+    Serialize a figure spec to a JSON string.
+
+    Uses :mod:`orjson` when available (fast path with native NumPy support);
+    falls back to the standard-library :mod:`json` module otherwise.
+    """
+    if orjson is not None:
+        return orjson.dumps(
+            spec,
+            default=_orjson_default,
+            option=orjson.OPT_SERIALIZE_NUMPY,
+        ).decode()
+    return _stdlib_json.dumps(spec, cls=_StdlibJSONEncoder)
 
 
 def _subscribe_new(tab: choreo.Tab, event: str) -> asyncio.Future:
@@ -148,11 +184,7 @@ class _KaleidoTab:
         stepper,
     ) -> bytes:
         render_prof.profile_log.tick("serializing spec")
-        spec_str = orjson.dumps(
-            spec,
-            default=_orjson_default,
-            option=orjson.OPT_SERIALIZE_NUMPY,
-        ).decode()
+        spec_str = _serialize_spec(spec)
         render_prof.profile_log.tick("spec serialized")
 
         render_prof.profile_log.tick("sending javascript")

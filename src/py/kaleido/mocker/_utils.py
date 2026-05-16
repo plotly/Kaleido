@@ -1,11 +1,16 @@
 from __future__ import annotations
 
 import itertools
+import json as _stdlib_json
 from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import logistro
-import orjson
+
+try:
+    import orjson
+except ImportError:  # pragma: no cover - exercised only when orjson is absent
+    orjson = None  # type: ignore[assignment]
 
 from ._args import args
 
@@ -44,30 +49,34 @@ def load_figures_from_paths(paths: list[Path]) -> Generator[FigureDict, None]:
         if not path.is_file():
             raise RuntimeError(f"Path {path} is not a file.")
         _logger.info(f"Found file: {path!s}")
-        with path.open(encoding="utf-8") as file:
-            figure = orjson.loads(file.read())
-            for f, w, h, s in itertools.product(  # all combos
-                args.format,
-                args.width,
-                args.height,
-                args.scale,
-            ):
-                name = (
-                    f"{path.stem}.{f!s}"
-                    if not args.parameterize
-                    else f"{path.stem!s}-{w!s}x{h!s}@{s!s}.{f!s}"
-                )
-                opts: LayoutOpts = {
-                    "scale": s,
-                    "width": w,
-                    "height": h,
-                }
-                _logger.info(f"Yielding spec: {name!s}")
-                yield {
-                    "fig": figure,
-                    "path": str(Path(args.output) / name),
-                    "opts": opts,
-                }
+        if orjson is not None:
+            with path.open("rb") as file:
+                figure = orjson.loads(file.read())
+        else:
+            with path.open(encoding="utf-8") as file:
+                figure = _stdlib_json.load(file)
+        for f, w, h, s in itertools.product(  # all combos
+            args.format,
+            args.width,
+            args.height,
+            args.scale,
+        ):
+            name = (
+                f"{path.stem}.{f!s}"
+                if not args.parameterize
+                else f"{path.stem!s}-{w!s}x{h!s}@{s!s}.{f!s}"
+            )
+            opts: LayoutOpts = {
+                "scale": s,
+                "width": w,
+                "height": h,
+            }
+            _logger.info(f"Yielding spec: {name!s}")
+            yield {
+                "fig": figure,
+                "path": str(Path(args.output) / name),
+                "opts": opts,
+            }
 
     class FigureDict(TypedDict):
         """The type a fig_dicts returns for `write_fig_from_object`."""
