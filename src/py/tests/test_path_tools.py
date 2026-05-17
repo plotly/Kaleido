@@ -69,6 +69,15 @@ def test_next_filename_only_numbered_files(tmp_path):
     assert result == "test-11.png"  # Should be max + 1
 
 
+def test_next_filename_caps_long_prefix_before_filesystem_lookup(tmp_path):
+    """Test _next_filename avoids probing overlong generated filenames."""
+    prefix = "a" * 500
+
+    result = path_tools._next_filename(tmp_path, prefix, "png")  # noqa: SLF001
+
+    assert result == f"{'a' * 80}.png"
+
+
 # Fixtures for determine_path tests - testing various title scenarios
 @pytest.fixture(
     params=[
@@ -135,6 +144,16 @@ def test_determine_path_directory_with_suffix(tmp_path, fig_fixture):
     # Should treat as directory
     assert result.parent == dir_with_suffix
     assert result.name == f"{expected_prefix}.ext"
+
+
+def test_determine_path_caps_long_title_prefix(tmp_path):
+    """Test determine_path keeps generated filenames within path length limits."""
+    fig_dict = {"layout": {"title": {"text": "a" * 500}}}
+
+    result = path_tools.determine_path(tmp_path, fig_dict, "png")
+
+    assert result.parent == tmp_path
+    assert result.name == f"{'a' * 80}.png"
 
 
 def test_determine_path_file_with_suffix(tmp_path, fig_fixture):
