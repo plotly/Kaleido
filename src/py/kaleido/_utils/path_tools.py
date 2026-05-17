@@ -14,10 +14,13 @@ if TYPE_CHECKING:
 
 _logger = logistro.getLogger(__name__)
 
+_MAX_GENERATED_FILENAME_PREFIX_LENGTH = 80
+
 
 def _next_filename(path: Path | str, prefix: str, ext: str) -> str:
     """Figure out proper suffix for generated file name."""
     path = path if isinstance(path, Path) else Path(path)
+    prefix = prefix[:_MAX_GENERATED_FILENAME_PREFIX_LENGTH]
     default = 1 if (path / f"{prefix}.{ext}").exists() else 0
     re_number = re.compile(
         r"^" + re.escape(prefix) + r"\-(\d+)\." + re.escape(ext) + r"$",
@@ -60,7 +63,7 @@ def determine_path(
         prefix = re.sub(r"[ \-]", "_", prefix)
         prefix = re.sub(r"[^a-zA-Z0-9_]", "", prefix)
         prefix = prefix or "fig"
-        prefix = prefix[:80]  # in case of long titles
+        prefix = prefix[:_MAX_GENERATED_FILENAME_PREFIX_LENGTH]
         _logger.debug(f"Found: {prefix}")
         name = _next_filename(directory, prefix, ext)
         full_path = directory / name
