@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from decimal import Decimal
 from typing import TYPE_CHECKING
 
 import logistro
@@ -27,6 +28,8 @@ _logger = logistro.getLogger(__name__)
 
 def _orjson_default(obj):
     """Fallback for types orjson can't handle natively (e.g. NumPy string arrays)."""
+    if isinstance(obj, Decimal):
+        return float(obj)
     if hasattr(obj, "tolist"):
         return obj.tolist()
     raise TypeError(f"Type is not JSON serializable: {type(obj).__name__}")
