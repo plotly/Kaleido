@@ -81,7 +81,11 @@ async with kaleido.Kaleido(n=4, timeout=90) as k:
 # - path:      A directory (names auto-generated based on title)
 #              or a single file.
 # - opts:      A dictionary with image options:
-#              `{"scale":..., "format":..., "width":..., "height":...}`
+#              `{"scale":..., "format":..., "width":..., "height":...,
+#                "fonts": [...]}`
+#              `fonts` is a list of paths to font files (.ttf/.otf/.woff).
+#              They are embedded into vector output (svg/pdf/eps) so charts
+#              render with the right font without installing it system-wide.
 # - error_log: If you pass a list here, image-generation errors will be appended
 #              to the list and generation continues. If left as `None`, the
 #              first error will cause failure.
