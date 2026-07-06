@@ -69,15 +69,25 @@ Kaleido directly; you can use functions in the Plotly library.
 ```python
 import asyncio
 import kaleido
+import plotly.express as px
 
 async def main():
+    # n is number of processes
     async with kaleido.Kaleido(n=4, timeout=90) as k:
-        # n is number of processes
+        # fig is a plotly figure object
+        fig = px.scatter(x=[1, 2, 3, 4], y=[2, 1, 4, 3])
         await k.write_fig(fig, path="./", opts={"format": "jpg"})
 
         # You can also use Kaleido.write_fig_from_object, where fig_objects is
         # an iterable of dicts each expanded to the write_fig arguments (fig,
         # path, opts, topojson):
+        fig_objects = [
+            {
+                "fig": px.scatter(x=[1, 2, 3, 4], y=[2+i, 1+i, 4+i, 3+i]),
+                "path": f"fig_{i}.jpg",
+                "opts": {"format": "jpg"},
+            } for i in range(10)
+        ]
         await k.write_fig_from_object(fig_objects)
 
 asyncio.run(main())
@@ -86,12 +96,12 @@ asyncio.run(main())
 # page_generator:  Change library version (see PageGenerators below)
 
 # `Kaleido.write_fig()` arguments:
-# - fig:              A single plotly figure or an iterable.
-# - path:             A directory (names auto-generated based on title)
+# - fig:              (required) A single plotly figure or an iterable.
+# - path:             (optional) A directory (names auto-generated based on title)
 #                     or a single file.
-# - opts:             A dictionary with image options:
+# - opts:             (optional) A dictionary with image options:
 #                     `{"scale":..., "format":..., "width":..., "height":...}`
-# - cancel_on_error:  If False (default), errors during rendering are collected
+# - cancel_on_error:  (optional) If False (default), errors during rendering are collected
 #                     and returned as a tuple after all figures are attempted.
 #                     If True, the first error is raised immediately and any
 #                     remaining renders are cancelled.
@@ -114,16 +124,16 @@ asyncio.run(
 )
 ```
 
-### Keeping Chrome warm across calls
+### Generate multiple images faster by reusing the same Chrome instance
 
 By default, each call to `kaleido.write_fig_sync`, `kaleido.calc_fig_sync`,
 or Plotly's `fig.write_image()` launches a fresh Chrome instance, renders
 the figure, and shuts Chrome down again. If you're exporting many figures
-in one script, the per-call Chrome startup and shutdown cost will
+in one script, the per-call Chrome startup and shutdown delay will
 dominate runtime.
 
-Call `kaleido.start_sync_server()` once at the top of your script to keep
-a single Chrome instance warm and reuse it across all subsequent sync
+Call `kaleido.start_sync_server()` once at the top of your script to start
+a single Chrome instance and reuse it across all subsequent sync
 calls, including `fig.write_image()`:
 
 ```python
@@ -132,8 +142,8 @@ import plotly.graph_objects as go
 
 kaleido.start_sync_server()   # one-time; Chrome stays warm
 
-for fig in figures:
-    fig.write_image(f"{fig.layout.title.text}.png")
+for i, fig in enumerate(figures):
+    fig.write_image(f"fig_{i}.png")
 ```
 
 Chrome is closed automatically when Python exits. To release it sooner
@@ -142,10 +152,11 @@ Chrome is closed automatically when Python exits. To release it sooner
 
 ### PageGenerators
 
-The `page_generator` argument takes a `kaleido.PageGenerator()` to customize versions.
-Normally, kaleido looks for an installed copy of plotly and uses that version. You can pass
-`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (the
-default if plotly is not installed).
+The `page_generator` argument takes a `kaleido.PageGenerator()` to customize which versions
+of plotly.js, MathJax, and other scripts are used when generating an image.
+If plotly is installed, kaleido defaults to the version of plotly.js contained in that package. You can pass
+`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (which is
+the default behavior if plotly is not installed).
 
 ```python
 my_page = kaleido.PageGenerator(
