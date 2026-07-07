@@ -49,7 +49,7 @@ removed in v1.
 Kaleido v1 provides `write_fig` and `write_fig_sync` for exporting Plotly figures.
 
 ```python
-from kaleido import write_fig_sync
+import kaleido
 import plotly.graph_objects as go
 
 fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
@@ -67,28 +67,44 @@ Kaleido directly; you can use functions in the Plotly library.
 ### Usage examples
 
 ```python
+import asyncio
 import kaleido
+import plotly.express as px
 
-async with kaleido.Kaleido(n=4, timeout=90) as k:
-  # n is number of processes
-  await k.write_fig(fig, path="./", opts={"format":"jpg"})
+async def main():
+    # n is number of processes
+    async with kaleido.Kaleido(n=4, timeout=90) as k:
+        # fig is a plotly figure object
+        fig = px.scatter(x=[1, 2, 3, 4], y=[2, 1, 4, 3])
+        await k.write_fig(fig, path="./", opts={"format": "jpg"})
+
+        # You can also use Kaleido.write_fig_from_object, where fig_objects is
+        # an iterable of dicts each expanded to the write_fig arguments (fig,
+        # path, opts, topojson):
+        fig_objects = [
+            {
+                "fig": px.scatter(x=[1, 2, 3, 4], y=[2+i, 1+i, 4+i, 3+i]),
+                "path": f"fig_{i}.jpg",
+                "opts": {"format": "jpg"},
+            } for i in range(10)
+        ]
+        await k.write_fig_from_object(fig_objects)
+
+asyncio.run(main())
 
 # other `kaleido.Kaleido` arguments:
-# page:  Change library version (see PageGenerators below)
+# page_generator:  Change library version (see PageGenerators below)
 
 # `Kaleido.write_fig()` arguments:
-# - fig:       A single plotly figure or an iterable.
-# - path:      A directory (names auto-generated based on title)
-#              or a single file.
-# - opts:      A dictionary with image options:
-#              `{"scale":..., "format":..., "width":..., "height":...}`
-# - error_log: If you pass a list here, image-generation errors will be appended
-#              to the list and generation continues. If left as `None`, the
-#              first error will cause failure.
-
-# You can also use Kaleido.write_fig_from_object:
-  await k.write_fig_from_object(fig_objects, error_log)
-# where `fig_objects` is a dict to be expanded to the fig, path, opts arguments.
+# - fig:              (required) A single plotly figure or an iterable.
+# - path:             (optional) A directory (names auto-generated based on title)
+#                     or a single file.
+# - opts:             (optional) A dictionary with image options:
+#                     `{"scale":..., "format":..., "width":..., "height":...}`
+# - cancel_on_error:  (optional) If False (default), errors during rendering are collected
+#                     and returned as a tuple after all figures are attempted.
+#                     If True, the first error is raised immediately and any
+#                     remaining renders are cancelled.
 ```
 
 There are shortcut functions which can be used to generate images without
@@ -97,25 +113,55 @@ creating a `Kaleido()` object:
 ```python
 import asyncio
 import kaleido
+
+# Pass `Kaleido()` constructor arguments (e.g. `n`, `timeout`) via `kopts`.
 asyncio.run(
-  kaleido.write_fig(
-    fig,
-    path="./"
-  )
+    kaleido.write_fig(
+        fig,
+        path="./",
+        kopts={"n": 4},
+    )
 )
 ```
 
+### Generate multiple images faster by reusing the same Chrome instance
+
+By default, each call to `kaleido.write_fig_sync`, `kaleido.calc_fig_sync`,
+or Plotly's `fig.write_image()` launches a fresh Chrome instance, renders
+the figure, and shuts Chrome down again. If you're exporting many figures
+in one script, the per-call Chrome startup and shutdown delay will
+dominate runtime.
+
+Call `kaleido.start_sync_server()` once at the top of your script to start
+a single Chrome instance and reuse it across all subsequent sync
+calls, including `fig.write_image()`:
+
+```python
+import kaleido
+import plotly.graph_objects as go
+
+kaleido.start_sync_server()   # one-time; Chrome stays warm
+
+for i, fig in enumerate(figures):
+    fig.write_image(f"fig_{i}.png")
+```
+
+Chrome is closed automatically when Python exits. To release it sooner
+(for example, in a long-running service or Jupyter kernel), call
+`kaleido.stop_sync_server()` explicitly.
+
 ### PageGenerators
 
-The `page` argument takes a `kaleido.PageGenerator()` to customize versions.
-Normally, kaleido looks for an installed plotly as uses that version. You can pass
-`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (the
-default if plotly is not installed).
+The `page_generator` argument takes a `kaleido.PageGenerator()` to customize which versions
+of plotly.js, MathJax, and other scripts are used when generating an image.
+If plotly is installed, kaleido defaults to the version of plotly.js contained in that package. You can pass
+`kaleido.PageGenerator(force_cdn=True)` to force use of a CDN version of plotly (which is
+the default behavior if plotly is not installed).
 
-```
+```python
 my_page = kaleido.PageGenerator(
-  plotly="A fully qualified link to plotly (https:// or file://)",
-  mathjax=False # no mathjax, or another fully quality link
-  others=["a list of other script links to include"]
+    plotly="https://cdn.plot.ly/plotly-3.7.0.js",  # a fully qualified https:// or file:// link
+    mathjax=False,  # False to disable, or a fully qualified link
+    others=["a list of other script links to include"],
 )
 ```
