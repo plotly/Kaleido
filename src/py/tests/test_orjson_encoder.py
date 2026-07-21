@@ -17,6 +17,12 @@ def test_orjson_default_handles_datetime_like():
     a_date = datetime.date(2026, 1, 2)
     assert _orjson_default(a_date) == a_date.isoformat()
 
+    # tz-aware Timestamps keep their offset (unlike plotly.py's cleaner, which
+    # drops tz on scalars via .to_pydatetime()). Plotly.js parses either form.
+    tz_ts = pd.Timestamp("2026-06-03 12:00:00", tz="UTC")
+    assert _orjson_default(tz_ts) == tz_ts.isoformat()
+    assert _orjson_default(tz_ts).endswith("+00:00")
+
     # A figure spec carrying a Timestamp now round-trips through orjson.
     spec = {"x": [ts]}
     dumped = orjson.dumps(
