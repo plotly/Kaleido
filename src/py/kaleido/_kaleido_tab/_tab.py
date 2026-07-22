@@ -30,6 +30,8 @@ def _orjson_default(obj):
     """Fallback for types orjson can't handle natively (e.g. NumPy string arrays)."""
     if isinstance(obj, Decimal):
         return float(obj)
+    if hasattr(obj, "isoformat"):  # datetime-like, e.g. pandas Timestamp (#458)
+        return obj.isoformat()
     if hasattr(obj, "tolist"):
         return obj.tolist()
     raise TypeError(f"Type is not JSON serializable: {type(obj).__name__}")
