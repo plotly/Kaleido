@@ -1,5 +1,11 @@
 ## Unreleased
 
+### Fixed
+- Fix datetime-like values JSON serialization regression [[#461](https://github.com/plotly/Kaleido/pull/461)]
+
+### Changed
+- Switch default MathJax version from v2 to v3 [[#469](https://github.com/plotly/Kaleido/pull/469)]
+
 ## v1.3.0
 
 ### Added
