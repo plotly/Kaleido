@@ -1,7 +1,11 @@
 ## Unreleased
 
 ### Fixed
-- Fixed `TypeError: Type is not JSON serializable: Timestamp` when a figure contains datetime-like values such as a `pandas` `Timestamp`; these now serialize to ISO strings [[#458](https://github.com/plotly/Kaleido/issues/458)], with thanks to @gaoflow for the contribution!
+- Fix `TypeError: Type is not JSON serializable: Timestamp` when a figure contains datetime-like values such as a `pandas` `Timestamp`; these now serialize to ISO strings [[#461](https://github.com/plotly/Kaleido/pull/461)], with thanks to @gaoflow for the contribution!
+- Fix `orjson` serialization of `Decimal` values [[issue #453](https://github.com/plotly/Kaleido/issues/453)]
+
+### Changed
+- Switch default MathJax version from v2 to v3 [[#469](https://github.com/plotly/Kaleido/pull/469)]
 
 ## v1.3.0
 
