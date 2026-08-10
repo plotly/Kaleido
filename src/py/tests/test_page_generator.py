@@ -25,12 +25,6 @@ EXPECTED_BOILERPLATE = """<!DOCTYPE html>
     <head>
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
-        <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({ "SVG": { blacker: 0 }})
-        </script>
 
     </head>
     <body style="{margin: 0; padding: 0;}"><img id="kaleido-image" /></body>

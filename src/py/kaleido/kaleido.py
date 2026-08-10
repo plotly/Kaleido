@@ -143,7 +143,7 @@ class Kaleido(choreo.Browser):
 
             mathjax (str | Path | Literal[False] | None, optional):
                 A path or URL to a mathjax.js file. If False, mathjax is
-                disabled. Defaults to None- which means to use version 2.35 via
+                disabled. If not provided, Kaleido will use MathJax v3 via
                 CDN.
 
             headers (dict[str, str] | None, optional):

@@ -17,11 +17,8 @@ if TYPE_CHECKING:
 
 _logger = logistro.getLogger(__name__)
 
-DEFAULT_PLOTLY = "https://cdn.plot.ly/plotly-2.35.2.js"
-DEFAULT_MATHJAX = (
-    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js"
-    "?config=TeX-AMS-MML_SVG"
-)
+DEFAULT_PLOTLY = "https://cdn.plot.ly/plotly-3.7.0.js"
+DEFAULT_MATHJAX = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"
 
 KJS_PATH = Path(__file__).resolve().parent / "vendor" / "kaleido_scopes.js"
 
@@ -54,12 +51,6 @@ class PageGenerator:
     <head>
         <style id="head-style"></style>
         <title>Kaleido-fier</title>
-        <script>
-          window.PlotlyConfig = {MathJaxConfig: 'local'}
-        </script>
-        <script type="text/x-mathjax-config">
-          MathJax.Hub.Config({ "SVG": { blacker: 0 }})
-        </script>
 """
     """The header is the HTML that always goes at the top. Rarely needs changing."""
 
