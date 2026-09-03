@@ -1,4 +1,10 @@
-# Release process for `kaleido` package
+# Releasing Kaleido
+
+## Overview
+
+Versions are determined automatically from git tags by `setuptools-git-versioning`. There is no hard-coded version string to update. Pushing a `v*` tag triggers CI, which tests and publishes the package to TestPyPI. Publishing to PyPI is done manually.
+
+## Release steps
 
 1. Create release branch titled `release-vX.Y.Z`
   - We try to follow [semantic versioning guidelines](https://semver.org) as much as possible
