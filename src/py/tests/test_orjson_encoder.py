@@ -2,10 +2,11 @@ import datetime
 from decimal import Decimal
 
 import numpy as np
-import orjson
 import pandas as pd
 
+import kaleido._json as kaleido_json
 from kaleido._kaleido_tab._tab import _orjson_default
+from kaleido._json import dumps as _json_dumps
 
 
 def test_orjson_default_handles_datetime_like():
@@ -23,15 +24,29 @@ def test_orjson_default_handles_datetime_like():
     assert _orjson_default(tz_ts) == tz_ts.isoformat()
     assert _orjson_default(tz_ts).endswith("+00:00")
 
-    # A figure spec carrying a Timestamp now round-trips through orjson.
+    # A figure spec carrying a Timestamp now round-trips through the JSON backend.
     spec = {"x": [ts]}
-    dumped = orjson.dumps(
-        spec, default=_orjson_default, option=orjson.OPT_SERIALIZE_NUMPY
-    )
-    assert ts.isoformat().encode() in dumped
+    dumped = _json_dumps(spec)
+    assert ts.isoformat() in dumped
 
     # Existing fallbacks are unaffected.
     decimal_value = Decimal("1.5")
     assert _orjson_default(decimal_value) == float(decimal_value)
     array_values = [1, 2, 3]
     assert _orjson_default(np.array(array_values)) == array_values
+
+
+def test_json_backend_falls_back_without_orjson(monkeypatch):
+    monkeypatch.setattr(kaleido_json, "orjson", None)
+
+    dumped = _json_dumps(
+        {
+            "date": datetime.date(2026, 1, 2),
+            "decimal": Decimal("1.5"),
+            "array": np.array([1, 2, 3]),
+        }
+    )
+
+    assert '"date":"2026-01-02"' in dumped
+    assert '"decimal":1.5' in dumped
+    assert '"array":[1,2,3]' in dumped

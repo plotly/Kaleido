@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import base64
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 import logistro
-import orjson
 
+from kaleido._json import default as _orjson_default
+from kaleido._json import dumps as _json_dumps
 from . import _devtools_utils as _dtools
 from . import _js_logger
 from ._errors import _raise_error
@@ -24,17 +24,6 @@ _TEXT_FORMATS = ("svg", "json")  # eps
 _CHUNK_SIZE = 10 * 1024 * 1024  # 10 MB
 
 _logger = logistro.getLogger(__name__)
-
-
-def _orjson_default(obj):
-    """Fallback for types orjson can't handle natively (e.g. NumPy string arrays)."""
-    if isinstance(obj, Decimal):
-        return float(obj)
-    if hasattr(obj, "isoformat"):  # datetime-like, e.g. pandas Timestamp (#458)
-        return obj.isoformat()
-    if hasattr(obj, "tolist"):
-        return obj.tolist()
-    raise TypeError(f"Type is not JSON serializable: {type(obj).__name__}")
 
 
 def _subscribe_new(tab: choreo.Tab, event: str) -> asyncio.Future:
@@ -153,11 +142,7 @@ class _KaleidoTab:
         stepper,
     ) -> bytes:
         render_prof.profile_log.tick("serializing spec")
-        spec_str = orjson.dumps(
-            spec,
-            default=_orjson_default,
-            option=orjson.OPT_SERIALIZE_NUMPY,
-        ).decode()
+        spec_str = _json_dumps(spec)
         render_prof.profile_log.tick("spec serialized")
 
         render_prof.profile_log.tick("sending javascript")

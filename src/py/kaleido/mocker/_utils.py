@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, TypedDict
 
 import logistro
-import orjson
 
+from kaleido._json import loads as _json_loads
 from ._args import args
 
 if TYPE_CHECKING:
@@ -45,7 +45,7 @@ def load_figures_from_paths(paths: list[Path]) -> Generator[FigureDict, None]:
             raise RuntimeError(f"Path {path} is not a file.")
         _logger.info(f"Found file: {path!s}")
         with path.open(encoding="utf-8") as file:
-            figure = orjson.loads(file.read())
+            figure = _json_loads(file.read())
             for f, w, h, s in itertools.product(  # all combos
                 args.format,
                 args.width,
