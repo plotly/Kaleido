@@ -12,7 +12,8 @@ from packaging.version import Version
 _logger = logistro.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from typing import Any, AsyncIterator, Callable, Coroutine
+    from collections.abc import AsyncIterator, Coroutine
+    from typing import Any, Callable
 
 
 def event_printer(name: str) -> Callable[[Any], Coroutine[Any, Any, None]]:

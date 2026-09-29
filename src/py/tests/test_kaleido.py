@@ -12,7 +12,7 @@ from hypothesis import strategies as st
 from kaleido import Kaleido
 
 if TYPE_CHECKING:
-    from typing import AsyncGenerator, Generator
+    from collections.abc import AsyncGenerator, Generator
 
     from kaleido import FigureDict
 

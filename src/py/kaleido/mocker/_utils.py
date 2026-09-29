@@ -10,7 +10,7 @@ import orjson
 from ._args import args
 
 if TYPE_CHECKING:
-    from typing import Generator
+    from collections.abc import Generator
 
     from kaleido._utils.fig_tools import LayoutOpts
     from kaleido.kaleido import FigureDict

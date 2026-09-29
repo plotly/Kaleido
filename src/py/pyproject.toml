@@ -16,7 +16,7 @@ name = "kaleido"
 description = "Plotly graph export library"
 license = { "file" = "LICENSE.md" }
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dynamic = ["version"]
 authors = [
   {name = "Andrew Pikul", email="ajpikul@gmail.com"},

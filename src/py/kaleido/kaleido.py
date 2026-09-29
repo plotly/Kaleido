@@ -20,16 +20,13 @@ from ._page_generator import PageGenerator
 from ._utils import fig_tools, path_tools
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator, ValuesView
     from types import TracebackType
     from typing import (
         Any,
-        AsyncGenerator,
-        List,
         Literal,
-        Tuple,
         TypeVar,
         Union,
-        ValuesView,
     )
 
     from typing_extensions import NotRequired, Required, TypeAlias, TypeGuard
@@ -39,7 +36,7 @@ if TYPE_CHECKING:
 
     # union of sized iterables since 3.8 doesn't have & operator
     # Iterable & Sized
-    Listish: TypeAlias = Union[Tuple[T], List[T], ValuesView[T]]
+    Listish: TypeAlias = Union[tuple[T], list[T], ValuesView[T]]
 
     class FigureDict(TypedDict):
         """The type a fig_dicts returns for `write_fig_from_object`."""
