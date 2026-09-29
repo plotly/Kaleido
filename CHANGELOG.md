@@ -1,5 +1,15 @@
 ## Unreleased
 
+### Changed
+- Update Choreographer to v1.4.0 and use its large figure chunking, remove the Kaleido chunking code [[#478](https://github.com/plotly/Kaleido/pull/478)]
+
+### Removed
+- Drop support for Python 3.8 [[#478](https://github.com/plotly/Kaleido/pull/478)]
+- Remove the `orjson` dependency [[#478](https://github.com/plotly/Kaleido/pull/478)]
+
+### Fixed
+- Restore serialization of figure specs through the `plotly` JSON encoder [[#478](https://github.com/plotly/Kaleido/pull/478)]
+
 ## v1.4.0
 
 ### Fixed
