@@ -1,4 +1,8 @@
+import json
+from decimal import Decimal
+
 import numpy as np
+import pandas as pd
 import plotly.graph_objects as go
 import pytest
 from plotly.subplots import make_subplots
@@ -113,3 +117,33 @@ async def test_complex_plotly_encoder():
     img_bytes = await kaleido.calc_fig(fig)
 
     assert isinstance(img_bytes, bytes)
+
+
+@pytest.mark.parametrize(
+    ("trace_kwargs", "key", "expected"),
+    [
+        # Decimal values
+        ({"y": [Decimal("10.5"), Decimal(20)]}, "y", [10.5, 20]),
+        # pandas Timestamp values
+        (
+            {"x": [pd.Timestamp("2024-01-01"), pd.Timestamp("2024-01-02")]},
+            "x",
+            ["2024-01-01T00:00:00", "2024-01-02T00:00:00"],
+        ),
+        # pandas missing-value sentinels
+        (
+            {"x": [pd.Timestamp("2024-01-01"), pd.NaT]},
+            "x",
+            ["2024-01-01T00:00:00", None],
+        ),
+        ({"customdata": [1, pd.NA]}, "customdata", [1, None]),
+    ],
+    ids=["decimal", "timestamp", "nat", "na"],
+)
+async def test_plotly_encoder_types(trace_kwargs, key, expected):
+    """Test that kaleido serializes values the way the Plotly encoder does."""
+    fig = go.Figure(go.Scatter(**{"x": [1, 2], "y": [1, 2], **trace_kwargs}))
+
+    result = json.loads(await kaleido.calc_fig(fig, opts={"format": "json"}))
+
+    assert result["data"][0][key] == expected
