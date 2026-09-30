@@ -7,11 +7,11 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from choreographer.browsers import chromium
-from choreographer.errors import ChromeNotFoundError
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from kaleido import Kaleido
+from kaleido.errors import ChromeNotFoundError
 
 if TYPE_CHECKING:
     from typing import AsyncGenerator, Generator
