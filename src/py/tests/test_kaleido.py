@@ -6,10 +6,12 @@ from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from choreographer.browsers import chromium
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from kaleido import Kaleido
+from kaleido.errors import ChromeNotFoundError
 
 if TYPE_CHECKING:
     from typing import AsyncGenerator, Generator
@@ -336,6 +338,22 @@ async def test_kaleido_instantiate_and_close():
     # Maybe there should be a warning or error when closing without opening?
     k = Kaleido()
     await k.close()
+
+
+async def test_kaleido_reports_bad_path():
+    """Test that a browser path passed by the user is named in the error."""
+    with pytest.raises(ChromeNotFoundError, match="path='/nonexistent/chrome'"):
+        Kaleido(path="/nonexistent/chrome")
+
+
+async def test_kaleido_reports_bad_browser_path_env(monkeypatch):
+    """Test that a BROWSER_PATH set by the user is named in the error."""
+    monkeypatch.setenv("BROWSER_PATH", "/nonexistent/chrome")
+    # a downloaded chrome takes precedence over BROWSER_PATH, so hide it
+    monkeypatch.setattr(chromium, "get_chrome_download_path", lambda **_: None)
+    monkeypatch.setattr(chromium, "get_old_chrome_download_path", lambda: None)
+    with pytest.raises(ChromeNotFoundError, match="BROWSER_PATH='/nonexistent/chrome'"):
+        Kaleido()
 
 
 async def test_all_methods_context(simple_figure_with_bytes, tmp_path):
