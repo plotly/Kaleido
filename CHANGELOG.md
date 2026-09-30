@@ -1,7 +1,7 @@
 ## Unreleased
 
 ### Fixed
-- Add the browser path to message in `ChromeNotFoundError` when it was set with `path=` or `BROWSER_PATH` and points to nothing [[#476](https://github.com/plotly/Kaleido/pull/476)]
+- Add the browser path to message in `ChromeNotFoundError` when it was set with `path=` or `BROWSER_PATH` and points to nothing [[#476](https://github.com/plotly/Kaleido/pull/476)], with thanks to @Blizzeq for the contribution!
 
 ## v1.4.0
 
