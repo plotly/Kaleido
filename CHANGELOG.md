@@ -8,6 +8,7 @@
 - Remove the `orjson` dependency [[#478](https://github.com/plotly/Kaleido/pull/478)]
 
 ### Fixed
+- Add the browser path to message in `ChromeNotFoundError` when it was set with `path=` or `BROWSER_PATH` and points to nothing [[#476](https://github.com/plotly/Kaleido/pull/476)], with thanks to @Blizzeq for the contribution!
 - Restore serialization of figure specs through the `plotly` JSON encoder [[#478](https://github.com/plotly/Kaleido/pull/478)]
 
 ## v1.4.0

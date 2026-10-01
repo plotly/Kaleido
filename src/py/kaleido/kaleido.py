@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import warnings
 from collections import deque
 from collections.abc import AsyncIterable, Iterable
@@ -184,12 +185,19 @@ class Kaleido(choreo.Browser):
         try:
             super().__init__(**kwargs)
         except ChromeNotFoundError:
-            raise ChromeNotFoundError(
+            msg = (
                 "Kaleido v1 and later requires Chrome to be installed. "
                 "To install Chrome, use the CLI command `kaleido_get_chrome`, "
                 "or from Python, use either `await kaleido.get_chrome()` "
-                "or `kaleido.get_chrome_sync()`.",
-            ) from None  # overwriting the error entirely. (diagnostics)
+                "or `kaleido.get_chrome_sync()`."
+            )
+            # a path the user set explicitly is the likelier cause
+            if browser_path := kwargs.get("path"):
+                msg = f"No browser found at path={str(browser_path)!r}. {msg}"
+            elif browser_path := os.environ.get("BROWSER_PATH"):
+                msg = f"No browser found at BROWSER_PATH={browser_path!r}. {msg}"
+            # overwriting the error entirely. (diagnostics)
+            raise ChromeNotFoundError(msg) from None
 
         # save this for open() because it requires close()
         self._saved_page_arg = page
