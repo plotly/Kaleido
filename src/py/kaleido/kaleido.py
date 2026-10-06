@@ -35,8 +35,8 @@ if TYPE_CHECKING:
     T = TypeVar("T")
     AnyIterable: TypeAlias = Union[Iterable[T], AsyncIterable[T]]  # not runtime
 
-    # union of sized iterables since 3.8 doesn't have & operator
-    # Iterable & Sized
+    # Python typing has no intersection type for Iterable & Sized, so list the
+    # sized iterables that _conform_tabs accepts
     Listish: TypeAlias = Union[tuple[T], list[T], ValuesView[T]]
 
     class FigureDict(TypedDict):

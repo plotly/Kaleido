@@ -147,3 +147,13 @@ async def test_plotly_encoder_types(trace_kwargs, key, expected):
     result = json.loads(await kaleido.calc_fig(fig, opts={"format": "json"}))
 
     assert result["data"][0][key] == expected
+
+
+async def test_plotly_encoder_large_int():
+    """Test that kaleido exports integers outside the 64-bit range."""
+    fig = go.Figure(go.Scatter(x=[1], y=[2**64]))
+
+    result = json.loads(await kaleido.calc_fig(fig, opts={"format": "json"}))
+
+    # plotly.js stores numbers as 64-bit floats, so compare as a float
+    assert float(result["data"][0]["y"][0]) == 2**64
