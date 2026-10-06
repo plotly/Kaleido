@@ -1,5 +1,7 @@
 ## Unreleased
 
+## v1.5.0 -- 2026-10-06
+
 ### Changed
 - Update Choreographer to v1.4.0 and use its large figure chunking, remove the Kaleido chunking code [[#478](https://github.com/plotly/Kaleido/pull/478)]
 
@@ -11,7 +13,7 @@
 - Add the browser path to message in `ChromeNotFoundError` when it was set with `path=` or `BROWSER_PATH` and points to nothing [[#476](https://github.com/plotly/Kaleido/pull/476)], with thanks to @Blizzeq for the contribution!
 - Restore serialization of figure specs through the `plotly` JSON encoder [[#478](https://github.com/plotly/Kaleido/pull/478)]
 
-## v1.4.0
+## v1.4.0 -- 2026-08-31
 
 ### Fixed
 - Fix `TypeError: Type is not JSON serializable: Timestamp` when a figure contains datetime-like values such as a `pandas` `Timestamp`; these now serialize to ISO strings [[#461](https://github.com/plotly/Kaleido/pull/461)], with thanks to @binggao1230 for the contribution!
