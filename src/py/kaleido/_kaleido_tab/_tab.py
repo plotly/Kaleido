@@ -1,11 +1,9 @@
 from __future__ import annotations
 
 import base64
-from decimal import Decimal
 from typing import TYPE_CHECKING
 
 import logistro
-import orjson
 
 from . import _devtools_utils as _dtools
 from . import _js_logger
@@ -21,20 +19,8 @@ if TYPE_CHECKING:
 
 
 _TEXT_FORMATS = ("svg", "json")  # eps
-_CHUNK_SIZE = 10 * 1024 * 1024  # 10 MB
 
 _logger = logistro.getLogger(__name__)
-
-
-def _orjson_default(obj):
-    """Fallback for types orjson can't handle natively (e.g. NumPy string arrays)."""
-    if isinstance(obj, Decimal):
-        return float(obj)
-    if hasattr(obj, "isoformat"):  # datetime-like, e.g. pandas Timestamp (#458)
-        return obj.isoformat()
-    if hasattr(obj, "tolist"):
-        return obj.tolist()
-    raise TypeError(f"Type is not JSON serializable: {type(obj).__name__}")
 
 
 def _subscribe_new(tab: choreo.Tab, event: str) -> asyncio.Future:
@@ -152,38 +138,23 @@ class _KaleidoTab:
         render_prof,
         stepper,
     ) -> bytes:
-        render_prof.profile_log.tick("serializing spec")
-        spec_str = orjson.dumps(
-            spec,
-            default=_orjson_default,
-            option=orjson.OPT_SERIALIZE_NUMPY,
-        ).decode()
-        render_prof.profile_log.tick("spec serialized")
-
+        # Choreographer serializes the spec with the registered PlotlyJSONEncoder
+        # and splits messages that exceed the Chrome devtools buffer
+        kaleido_js_fn = (
+            r"function(spec, ...args)"
+            r"{"
+            r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
+            r"}"
+        )
         render_prof.profile_log.tick("sending javascript")
-        if len(spec_str) <= _CHUNK_SIZE:
-            kaleido_js_fn = (
-                r"function(specStr, ...args)"
-                r"{"
-                r"return kaleido_scopes"
-                r".plotly(JSON.parse(specStr), ...args)"
-                r".then(JSON.stringify);"
-                r"}"
-            )
-            result = await _dtools.exec_js_fn(
-                self.tab,
-                self._current_js_id,
-                kaleido_js_fn,
-                spec_str,
-                topojson,
-                stepper,
-            )
-        else:
-            result = await self._calc_fig_chunked(
-                spec_str,
-                topojson=topojson,
-                stepper=stepper,
-            )
+        result = await _dtools.exec_js_fn(
+            self.tab,
+            self._current_js_id,
+            kaleido_js_fn,
+            spec,
+            topojson,
+            stepper,
+        )
         _raise_error(result)
         render_prof.profile_log.tick("javascript sent")
 
@@ -205,45 +176,3 @@ class _KaleidoTab:
         render_prof.data_out_size = len(res)
         render_prof.js_log = self.js_logger.log
         return res
-
-    async def _calc_fig_chunked(
-        self,
-        spec_str: str,
-        *,
-        topojson: str | None,
-        stepper,
-    ):
-        _raise_error(
-            await _dtools.exec_js_fn(
-                self.tab,
-                self._current_js_id,
-                r"function() { window.__kaleido_chunks = []; }",
-            )
-        )
-
-        for i in range(0, len(spec_str), _CHUNK_SIZE):
-            chunk = spec_str[i : i + _CHUNK_SIZE]
-            _raise_error(
-                await _dtools.exec_js_fn(
-                    self.tab,
-                    self._current_js_id,
-                    r"function(c) { window.__kaleido_chunks.push(c); }",
-                    chunk,
-                )
-            )
-
-        kaleido_js_fn = (
-            r"function(...args)"
-            r"{"
-            r"var spec = JSON.parse(window.__kaleido_chunks.join(''));"
-            r"delete window.__kaleido_chunks;"
-            r"return kaleido_scopes.plotly(spec, ...args).then(JSON.stringify);"
-            r"}"
-        )
-        return await _dtools.exec_js_fn(
-            self.tab,
-            self._current_js_id,
-            kaleido_js_fn,
-            topojson,
-            stepper,
-        )

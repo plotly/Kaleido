@@ -14,7 +14,7 @@ from kaleido import Kaleido
 from kaleido.errors import ChromeNotFoundError
 
 if TYPE_CHECKING:
-    from typing import AsyncGenerator, Generator
+    from collections.abc import AsyncGenerator, Generator
 
     from kaleido import FigureDict
 
