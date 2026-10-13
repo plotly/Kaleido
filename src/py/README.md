@@ -53,7 +53,7 @@ import kaleido
 import plotly.graph_objects as go
 
 fig = go.Figure(data=[go.Scatter(y=[1, 3, 2])])
-kaleido.write_fig_sync(fig, path="figure.png")
+write_fig_sync(fig, path="figure.png")
 ```
 
 ## Development guide
