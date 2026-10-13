@@ -1,0 +1,27 @@
+name: pre-commit
+
+# Trigger: This workflow runs on every push to the repository
+on:
+  push:
+
+# Permissions: Only read access to repository contents is needed
+permissions:
+  contents: read
+
+jobs:
+  # Job: pre-commit
+  # Purpose: Executes the pre-commit checks against the codebase
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout [${{ github.repository }}]
+        uses: actions/checkout@v4
+
+      - name: Install Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: '--all-files --config src/py/.pre-commit-config.yaml'
