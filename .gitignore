@@ -24,5 +24,8 @@ src/py/integration_tests/report*
 !src/py/integration_tests/renders/.gitkeep
 node_modules/
 
+# IDE
+.idea
+
 src/py/site/*
 .hypothesis/
