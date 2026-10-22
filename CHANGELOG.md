@@ -1,5 +1,8 @@
 ## Unreleased
 
+### Fixed
+- Fix `ValueError: Invalid format` when `path` is an existing directory whose name has a dot, such as `2024.01.31`; the image format now falls back to the default
+
 ## v1.5.0 -- 2026-10-06
 
 ### Changed
